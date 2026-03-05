@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop — Calculateur d'espace de récupération</title>
+<style>
+/* Styles inchangés (conservés) */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%);color:#e8e0d5;font-family:Georgia,serif;min-height:100vh}
+button{font-family:inherit;cursor:pointer;transition:all .15s}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#c8a96e}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#c8a96e;border:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px}
+input[type=text]{font-family:sans-serif;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e8e0d5;padding:.55rem .75rem;font-size:.82rem;width:100%;outline:none}
+input[type=text]:focus{border-color:#c8a96e}
+input[type=text]::placeholder{color:#4a4a6a}
+#hdr{border-bottom:1px solid rgba(255,200,100,.2);padding:1.2rem 2rem;background:rgba(255,200,100,.03);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+#hdr h1{margin:0;font-size:clamp(1rem,2.5vw,1.7rem);font-weight:400;color:#f5efe6}
+.brand{font-size:.67rem;letter-spacing:.35em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif}
+#mode-lbl{margin-left:auto;font-size:.7rem;color:#5a5a7a;font-family:sans-serif}
+#grid{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 62px)}
+#left{padding:1.7rem 2rem;overflow-y:auto;border-right:1px solid rgba(255,200,100,.1)}
+#right{padding:1.5rem 1.35rem;background:rgba(0,0,0,.28);position:sticky;top:0;height:100vh;overflow-y:auto}
+@media(max-width:860px){#grid{grid-template-columns:1fr}#right{position:static;height:auto;border-top:1px solid rgba(255,200,100,.1)}}
+.sec{margin-bottom:2rem}
+.sec-ttl{font-size:.67rem;letter-spacing:.22em;text-transform:uppercase;padding-bottom:.4rem;margin-bottom:1rem;font-family:sans-serif;border-bottom-width:1px;border-bottom-style:solid}
+.srow{display:flex;justify-content:space-between;font-size:.73rem;font-family:sans-serif;margin-bottom:.35rem}
+.slbl{color:#9090b0}.sval{color:#e8e0d5;font-weight:700}
+.rcard{padding:1.1rem;border-radius:12px;margin-top:.75rem}
+.rttl{font-size:.66rem;letter-spacing:.1em;font-family:sans-serif;margin-bottom:.5rem}
+.big{font-size:2.7rem;font-weight:300;color:#e8e0d5;line-height:1}
+.bunit{font-size:1.1rem;margin-left:.2rem}
+.rsub{font-size:.7rem;color:#9090b0;font-family:sans-serif;margin-top:.28rem}
+.rli{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rl{color:#8080a0;font-size:.75rem;font-family:sans-serif}
+.rv{color:#c8c0b8;font-size:.75rem;font-family:sans-serif;white-space:nowrap}
+.rli.tot{border-top:1px solid rgba(200,169,110,.3);border-bottom:none;margin-top:4px;padding-top:5px}
+.rli.tot .rl{color:#c8a96e;font-weight:700;font-size:.78rem}
+.rli.tot .rv{color:#f5efe6;font-weight:700;font-size:.78rem}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:.38rem;margin-top:.5rem}
+.sb{background:rgba(255,255,255,.05);border-radius:8px;padding:.5rem .7rem}
+.sv{font-size:.95rem;font-weight:700;color:#e8e0d5}
+.sl{font-size:.61rem;color:#7a7a9a;font-family:sans-serif;margin-top:.1rem}
+.sat-bg{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-bottom:.7rem}
+.sat-f{height:100%;border-radius:3px;transition:width .35s}
+.tbtn{flex:1;padding:.72rem .85rem;border-radius:10px;text-align:left;color:inherit}
+.dbtn{flex:1;padding:.48rem 0;border-radius:8px;text-align:center;font-family:sans-serif;font-weight:700}
+.achip{padding:.2rem .52rem;border-radius:6px;font-size:.61rem;font-family:sans-serif}
+.acard{padding:.78rem;border-radius:10px;transition:all .2s}
+.qbtn{width:28px;height:28px;border-radius:7px;border:1px solid rgba(184,150,232,.3);background:rgba(184,150,232,.12);color:#b896e8;font-size:1.15rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.qbtn.off{background:transparent;color:#3a3a5a}
+.pbtn{padding:.75rem .85rem;border-radius:10px;text-align:left;width:100%;color:inherit}
+.scbtn{flex:1;padding:.43rem .05rem;border-radius:7px;text-align:center;color:inherit}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;align-items:center;justify-content:center}
+#modal.on{display:flex}
+#mbox{background:#1a1a2e;border:1px solid rgba(200,169,110,.35);border-radius:16px;padding:2rem;width:440px;max-width:94vw}
+.mflbl{font-size:.67rem;color:#9090b0;font-family:sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.vbtn{flex:1;padding:.45rem;border-radius:8px;font-family:sans-serif;font-size:.75rem}
+#btn-devis{width:100%;margin-top:1rem;padding:.9rem 1rem;border-radius:12px;background:linear-gradient(135deg,rgba(200,169,110,.3),rgba(200,169,110,.12));border:1px solid rgba(200,169,110,.6);color:#c8a96e;font-size:.85rem;font-weight:700;font-family:sans-serif;display:flex;align-items:center;justify-content:center;gap:.6rem}
+#dov{display:none;position:fixed;inset:0;z-index:1000;background:#dde;overflow-y:auto}
+#dov.on{display:block}
+#dbar{position:sticky;top:0;z-index:10;background:#1a1a2e;border-bottom:1px solid rgba(200,169,110,.3);padding:.7rem 1.5rem;display:flex;align-items:center;gap:.75rem}
+#dbar .brand{font-size:.65rem}
+#dbar .inf{color:#9090b0;font-family:sans-serif;font-size:.8rem;flex:1}
+#bprint{padding:.55rem 1.2rem;border-radius:8px;font-family:sans-serif;font-weight:700;font-size:.82rem;background:linear-gradient(135deg,rgba(200,169,110,.35),rgba(200,169,110,.15));border:1px solid rgba(200,169,110,.6);color:#c8a96e}
+#bback{padding:.55rem 1rem;border-radius:8px;font-family:sans-serif;font-size:.82rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9090b0}
+#dhint{background:rgba(96,192,96,.1);border:1px solid rgba(96,192,96,.25);margin:1rem auto;max-width:860px;border-radius:8px;padding:.6rem 1rem;font-family:sans-serif;font-size:.75rem;color:#60c060}
+#dpaper{max-width:860px;margin:0 auto 3rem;background:#fff;box-shadow:0 4px 40px rgba(0,0,0,.25);overflow:hidden}
+/* Styles du devis (inchangés) */
+.dv{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1a1a2e;font-size:9pt;line-height:1.5}
+.dstrip{height:4pt;background:linear-gradient(90deg,#c8a96e,#7eb8c9,#b896e8)}
+.dhdr{background:linear-gradient(135deg,#0f0f1a,#1a1a2e);color:#e8e0d5;padding:22pt 28pt 18pt;display:flex;justify-content:space-between;align-items:flex-start}
+.dlogo{font-size:7pt;letter-spacing:4pt;color:#c8a96e;text-transform:uppercase;font-weight:700;margin-bottom:4pt}
+.dtitle{font-size:16pt;font-weight:300;color:#f5efe6;margin:0}
+.dsub{font-size:8pt;color:#9090b0;margin-top:3pt}
+.dmeta{text-align:right;font-size:8pt;color:#9090b0;line-height:2}
+.dmeta strong{color:#c8a96e;font-size:9.5pt;display:block}
+.dbody{padding:18pt 28pt}
+.dsttl{font-size:7pt;letter-spacing:3pt;text-transform:uppercase;color:#c8a96e;font-weight:700;border-bottom:.5pt solid rgba(200,169,110,.4);padding-bottom:3pt;margin-bottom:8pt;margin-top:14pt}
+.dpros{background:#f8f6f2;border-left:3pt solid #c8a96e;padding:10pt 14pt;border-radius:0 6pt 6pt 0;margin-bottom:14pt;display:flex;gap:20pt;flex-wrap:wrap}
+.dpb{flex:1;min-width:120pt}
+.dplbl{font-size:7pt;color:#9090b0;text-transform:uppercase;letter-spacing:1pt;margin-bottom:2pt}
+.dpval{font-size:10pt;font-weight:700}
+.dpsub{font-size:8pt;color:#6a6a8a;margin-top:1pt}
+.dtbl{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:6pt}
+.dtbl th{background:#f0f0f8;color:#5a5a8a;font-size:7pt;letter-spacing:1pt;text-transform:uppercase;padding:5pt 8pt;text-align:left;font-weight:600}
+.dtbl td{padding:5pt 8pt;border-bottom:.5pt solid #eee;vertical-align:middle}
+.dtbl .num{text-align:right;font-weight:600}
+.dtbl .st{background:#f4f4fb;font-weight:700}
+.dli{display:flex;justify-content:space-between;padding:4pt 0;border-bottom:.5pt solid #f0f0f0;font-size:8.5pt}
+.dli .ll{color:#6a6a8a}.dli .lv{font-weight:600}
+.dli.tl{background:#f8f6f2;padding:6pt 8pt;border-radius:4pt;margin-top:6pt;font-size:9.5pt;font-weight:700;border:none}
+.dli.tl .ll{color:#c8a96e}
+.dli.tval{background:#f0f4ff;padding:5pt 8pt;border-radius:4pt;margin-top:3pt;border:none}
+.dli.tval .ll{color:#3a3a8a}.dli.tval .lv{color:#3a3a8a}
+.dli.ttc{background:#1a1a2e;padding:7pt 10pt;border-radius:4pt;margin-top:3pt;font-size:11pt;font-weight:700;border:none}
+.dli.ttc .ll{color:#c8a96e}.dli.ttc .lv{color:#f5efe6}
+.droi{display:flex;gap:8pt;margin:8pt 0}
+.drbox{flex:1;border-radius:6pt;padding:9pt;text-align:center}
+.drbox.pos{background:#f0faf4;border:.5pt solid rgba(16,185,129,.3)}
+.drbox.neg{background:#fff5f5;border:.5pt solid rgba(239,68,68,.3)}
+.drbox.neu{background:#f8f8ff;border:.5pt solid #dde}
+.drbig{font-size:18pt;font-weight:700;line-height:1}
+.drbig.pos{color:#10b981}.drbig.neg{color:#ef4444}.drbig.neu{color:#1a1a2e;font-size:12pt}
+.drlbl{font-size:6.5pt;color:#9090b0;margin-top:2pt;text-transform:uppercase;letter-spacing:.8pt}
+.dcond{background:#fff8f0;border:.5pt solid rgba(200,169,110,.35);border-radius:6pt;padding:10pt 14pt}
+.dcond ul{padding-left:12pt}
+.dcond li{font-size:8pt;color:#4a4a6a;line-height:2}
+.dbadge{display:inline-block;font-size:5.5pt;font-weight:700;padding:1pt 3pt;border-radius:2pt;margin-left:3pt;vertical-align:middle}
+.dbadge.cr{background:#fde8e8;color:#c0392b}
+.dbadge.si{background:#fef3e2;color:#b7791f}
+.dbadge.mo{background:#f0f0f0;color:#6a6a8a}
+.dctx{background:#f5f8ff;border-radius:5pt;padding:8pt 12pt;font-size:7.5pt;color:#5a5a8a;line-height:1.7;margin-top:6pt}
+.dnxt{background:#f8f8ff;border:.5pt solid #dde;border-radius:6pt;padding:10pt 14pt;margin-top:10pt}
+.dnxt-ttl{font-size:7pt;letter-spacing:2pt;text-transform:uppercase;color:#5a5a8a;font-weight:700;margin-bottom:6pt}
+.dnxt-yr{font-size:7pt;font-weight:700;color:#3a3a6a;letter-spacing:1pt;text-transform:uppercase;margin:5pt 0 3pt;border-bottom:.5pt solid #eee;padding-bottom:2pt}
+.dli.sep{border-top:.5pt solid rgba(200,169,110,.3);margin-top:8pt;padding-top:6pt}
+.dftr{background:#f0f0f8;padding:10pt 28pt;display:flex;justify-content:space-between;align-items:center;border-top:.5pt solid #dde;margin-top:8pt}
+.dfl{font-size:7.5pt;color:#6a6a8a;line-height:1.7}
+.dfr{font-size:7pt;color:#9090b0;text-align:right;line-height:1.7}
+@media print{
+  #hdr,#grid,#modal{display:none!important}
+  #dov{position:static!important;overflow:visible!important;background:#fff!important;display:block!important}
+  #dbar,#dhint{display:none!important}
+  #dpaper{box-shadow:none!important;margin:0!important;max-width:100%!important}
+  @page{margin:0;size:A4}
+}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <span class="brand">beOtop</span>
+  <h1>Calculateur d'espace de récupération</h1>
+  <span id="mode-lbl">Modèle 5j / semaine</span>
+</div>
+
+<div id="grid">
+<div id="left">
+
+  <!-- 01 · Entreprise -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#c8a96e;border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">
+      <div>
+        <div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div>
+        <input type="range" id="s-nbs" min="50" max="2000" step="50" value="400">
+      </div>
+      <div>
+        <div class="srow"><span class="slbl">Salaire brut moyen</span><span class="sval" id="v-sal">70 200 €</span></div>
+        <input type="range" id="s-sal" min="28000" max="150000" step="1000" value="70200">
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 · Mode de travail -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#7eb8c9;border-color:rgba(126,184,201,.2)">02 · Mode de travail</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+      <button class="tbtn" id="bm5j" onclick="setMode('5j')" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.13)">
+        <div style="font-size:.8rem;font-weight:700;color:#7eb8c9;font-family:sans-serif">🏢  5j / semaine</div>
+        <div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Flux lissé</div>
+      </button>
+      <button class="tbtn" id="bmhy" onclick="setMode('hybride')" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)">
+        <div style="font-size:.8rem;font-weight:700;color:#7a7a9a;font-family:sans-serif">🔄  Hybride</div>
+        <div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Pic concentré</div>
+      </button>
+    </div>
+    <div id="jpanel" style="display:none;background:rgba(126,184,201,.06);border-radius:10px;padding:.85rem;border:1px solid rgba(126,184,201,.15);margin-bottom:.85rem">
+      <div style="font-size:.7rem;color:#9090b0;font-family:sans-serif;margin-bottom:.5rem">Jours de présence / semaine</div>
+      <div style="display:flex;gap:.4rem">
+        <button class="dbtn" data-j="1" onclick="setJours(1)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">1j</button>
+        <button class="dbtn" data-j="2" onclick="setJours(2)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">2j</button>
+        <button class="dbtn" data-j="3" onclick="setJours(3)" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.2);color:#7eb8c9">3j<div style="font-size:.5rem;color:#c8a96e">✓ reco</div></button>
+        <button class="dbtn" data-j="4" onclick="setJours(4)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">4j</button>
+      </div>
+      <div id="picinfo" style="margin-top:.5rem;font-size:.63rem;color:#6a6a8a;font-family:sans-serif"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem;margin-bottom:.85rem">
+      <div class="sb"><div class="sv" id="v-nbp" style="color:#7eb8c9">400</div><div class="sl">présents / jour</div></div>
+      <div class="sb"><div class="sv" id="v-nbu" style="color:#c8a96e">240</div><div class="sl">utilisateurs réels</div></div>
+      <div class="sb"><div class="sv" id="v-dh" style="color:#b896e8">480</div><div class="sl">séances / sem.</div></div>
+    </div>
+    <div style="border-top:1px solid rgba(126,184,201,.15);padding-top:.85rem">
+      <div class="srow"><span class="slbl">% salariés utilisant l'espace</span><span class="sval" id="v-ado">60%</span></div>
+      <input type="range" id="s-ado" min="5" max="100" step="5" value="60">
+      <div id="ado-posture-hint" style="margin-top:.4rem;font-size:.6rem;font-family:sans-serif;color:#7a9a8a;min-height:1rem"></div>
+    </div>
+  </div>
+
+  <!-- 03 · Ateliers & quantités (nouvelle liste) -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#b896e8;border-color:rgba(184,150,232,.2)">03 · Ateliers & quantités</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <button class="opt-btn" data-opt="A" onclick="setOption('A')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option A (éco)</button>
+      <button class="opt-btn" data-opt="B" onclick="setOption('B')" style="flex:1;padding:.5rem;border-radius:8px;border:2px solid #b896e8;background:rgba(184,150,232,.2)">Option B (standard)</button>
+      <button class="opt-btn" data-opt="C" onclick="setOption('C')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option C (premium)</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.62rem" id="agrid"></div>
+    <div id="arecap" style="margin-top:.65rem;font-size:.7rem;color:#7a7a9a;font-family:sans-serif;background:rgba(184,150,232,.06);padding:.55rem .75rem;border-radius:8px;line-height:1.6"></div>
+  </div>
+
+  <!-- 04 · Posture managériale -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#f0a060;border-color:rgba(240,160,96,.2)">04 · Posture managériale</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.52rem" id="pgrid"></div>
+    <div style="margin-top:.65rem;font-size:.7rem;color:#f0a060;font-family:sans-serif;background:rgba(240,160,96,.08);padding:.52rem .72rem;border-radius:8px">⚠️ Variable clé : la posture détermine le % d'adoption.</div>
+  </div>
+
+  <!-- 05 · Scénario d'impact -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#60c060;border-color:rgba(96,192,96,.2)">05 · Scénario d'impact</div>
+    <div style="display:flex;gap:.3rem;margin-bottom:.65rem" id="scgrid"></div>
+    <div style="font-size:.7rem;color:#9090b0;font-family:sans-serif;background:rgba(96,192,96,.06);padding:.52rem .72rem;border-radius:8px">💡 Médian (−10%) ancré ANACT/CIPD. Référence : +434% pour 400 sal., option B, adoption 100%.</div>
+  </div>
+
+  <!-- 06 · PARAMÈTRES OPTIONNELS -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
+
+    <!-- Agencement déco -->
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">🎨 Agencement & décoration <span style="color:#6a6a8a;font-size:.6rem">€/m² client</span></span>
+        <span class="sval" id="v-deco-pm2">0 €/m²</span>
+      </div>
+      <input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0"
+             style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem">
+        <span>0 — Sans déco</span><span>750 — Standard</span><span>1 500 — Premium</span>
+      </div>
+    </div>
+
+    <!-- Immobilier -->
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">🏢 Coût immobilier <span style="color:#6a6a8a;font-size:.6rem">€/m²/an charges incluses</span></span>
+        <span class="sval" id="v-im-pm2">336 €/m²</span>
+      </div>
+      <input type="range" id="s-im-pm2" min="100" max="500" step="10" value="336"
+             style="accent-color:#7eb8c9" oninput="ST.im_pm2=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem">
+        <span>100 — Province</span><span>336 — IDF moyen</span><span>500 — Paris centre</span>
+      </div>
+    </div>
+
+    <!-- Formation managers -->
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">🎓 Budget formation managers <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="sval" id="v-form">2 860 €</span>
+          <span id="v-form-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px;background:rgba(96,192,96,.15);color:#60c060">ROI normal</span>
+        </div>
+      </div>
+      <input type="range" id="s-form" min="0" max="10000" step="500" value="2860"
+             style="accent-color:#60c060" oninput="ST.form=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem">
+        <span>0 — ROI −20%</span><span>2 860 — Normal</span><span>5 720 — ROI +20%</span>
+      </div>
+    </div>
+
+    <!-- Animation espace -->
+    <div style="margin-bottom:.5rem">
+      <div class="srow">
+        <span class="slbl">✨ Budget animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="sval" id="v-anim">0 €</span>
+          <span id="v-anim-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px;background:rgba(96,192,96,.15);color:#60c060">ROI normal</span>
+        </div>
+      </div>
+      <input type="range" id="s-anim" min="0" max="5000" step="250" value="0"
+             style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem">
+        <span>0 — ROI −5%</span><span>2 500 — ROI +10%</span><span>5 000 — ROI +20%</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:.58rem;color:#3a3a5a;font-family:sans-serif;padding-bottom:2rem;line-height:1.7">Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Note de Synthèse ROI beOtop 02/2026</div>
+</div>
+
+<!-- RIGHT -->
+<div id="right">
+  <div style="font-size:.6rem;letter-spacing:.28em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif;margin-bottom:1.1rem">Recommandation</div>
+
+  <div class="rcard" style="background:rgba(126,184,201,.09);border:1px solid rgba(126,184,201,.35);margin-top:0">
+    <div class="rttl" style="color:#7eb8c9">SURFACE RECOMMANDÉE</div>
+    <div class="big"><span id="r-surf">36</span><span class="bunit" style="color:#7eb8c9">m²</span></div>
+    <div class="rsub" id="r-surf-sub">Surface calculée · <span id="r-espaces">1</span> espace(s) · <span id="r-postes">11</span> postes</div>
+    <div style="margin:.7rem 0 .28rem;display:flex;justify-content:space-between;font-size:.64rem;color:#9090b0;font-family:sans-serif">
+      <span>Taux d'occupation</span><span id="r-satp" style="font-weight:700">—</span>
+    </div>
+    <div class="sat-bg"><div class="sat-f" id="r-satb" style="width:0%;background:#7eb8c9"></div></div>
+    <div class="sgrid">
+      <div class="sb"><div class="sv" id="r-np">400</div><div class="sl">Présents / jour</div></div>
+      <div class="sb"><div class="sv" id="r-dp">480</div><div class="sl">Séances pic / jour</div></div>
+      <div class="sb"><div class="sv" id="r-ce">281</div><div class="sl">Capacité / espace</div></div>
+      <div class="sb"><div class="sv">15 min</div><div class="sl">Durée séance</div></div>
+    </div>
+  </div>
+
+  <div class="rcard" style="background:rgba(200,169,110,.09);border:1px solid rgba(200,169,110,.35)">
+    <div class="rttl" style="color:#c8a96e">COÛT TOTAL DE POSSESSION</div>
+    <div id="r-ctp"></div>
+  </div>
+
+  <div class="rcard" id="r-roi-card" style="background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem">
+      <div class="rttl" id="r-roi-ttl" style="color:#10b981;margin:0">RETOUR SUR INVESTISSEMENT</div>
+      <div id="r-sc-badge" style="font-size:.58rem;color:#7a7a9a;font-family:sans-serif;background:rgba(255,255,255,.05);padding:.15rem .42rem;border-radius:4px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin-bottom:.65rem;align-items:end">
+      <div><div id="r-roi-pct" style="font-size:1.9rem;font-weight:300;line-height:1">+434%</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">ROI annuel net</div></div>
+      <div><div id="r-pb" style="font-size:1.9rem;font-weight:300;color:#e8e0d5;line-height:1">3 m.</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Payback</div></div>
+      <div style="text-align:right"><div id="r-eco-adj" style="font-size:.95rem;font-weight:700">+142 378 €</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Éco. nette / an</div></div>
+    </div>
+    <div style="font-size:.58rem;color:#7a8a7a;font-family:sans-serif;margin-bottom:.5rem" id="r-po-badge"></div>
+    <div id="r-roi-lines"></div>
+  </div>
+
+  <div style="margin-top:.75rem;padding:.8rem;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.05)">
+    <div style="color:#c8a96e;font-weight:700;font-size:.68rem;font-family:sans-serif;margin-bottom:.42rem">5 conditions d'atteinte du ROI</div>
+    <ul style="font-size:.65rem;color:#8080a0;font-family:sans-serif;line-height:1.85;padding-left:1rem">
+      <li>Charte d'accès signée par la Direction <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li>
+      <li>Formation des managers avant ouverture <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li>
+      <li>Protocole de mesure dès J1 <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li>
+      <li>Communication interne structurée <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li>
+      <li>Pilote instrumenté 6 mois <span style="color:#7a7a9a;font-size:.58rem">● MODÉRÉ</span></li>
+    </ul>
+  </div>
+
+  <button id="btn-devis" onclick="openModal()">
+    <span style="font-size:1.1rem">📄</span> Générer le devis PDF
+  </button>
+  <div style="margin-top:.45rem;font-size:.6rem;color:#4a4a6a;font-family:sans-serif;text-align:center">Récapitulatif complet · Numéro automatique · Prêt à envoyer</div>
+</div>
+</div>
+
+<!-- MODALE -->
+<div id="modal">
+  <div id="mbox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div>
+        <div style="font-size:.65rem;letter-spacing:.25em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif;margin-bottom:.25rem">beOtop</div>
+        <div style="font-size:1.1rem;color:#f5efe6">Générer le devis</div>
+      </div>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9090b0;width:32px;height:32px;border-radius:8px;font-size:1rem">✕</button>
+    </div>
+    <div style="display:grid;gap:1rem">
+      <div><div class="mflbl">Entreprise prospect</div><input type="text" id="f-pro" placeholder="Nom de l'entreprise"></div>
+      <div><div class="mflbl">Contact prospect</div><input type="text" id="f-con" placeholder="Prénom Nom, Fonction"></div>
+      <div><div class="mflbl">Commercial beOtop</div><input type="text" id="f-com" placeholder="Prénom Nom"></div>
+      <div>
+        <div class="mflbl">Validité du devis</div>
+        <div style="display:flex;gap:.4rem">
+          <button class="vbtn" data-v="15" onclick="setVal(15)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">15 j.</button>
+          <button class="vbtn" data-v="30" onclick="setVal(30)" style="border:1px solid #c8a96e;background:rgba(200,169,110,.15);color:#c8a96e;font-weight:700">30 j.</button>
+          <button class="vbtn" data-v="60" onclick="setVal(60)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">60 j.</button>
+          <button class="vbtn" data-v="90" onclick="setVal(90)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">90 j.</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+      <button onclick="closeModal()" style="flex:1;padding:.75rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#8080a0;font-size:.82rem;font-family:sans-serif">Annuler</button>
+      <button onclick="genDevis()" style="flex:2;padding:.75rem;border-radius:10px;border:1px solid rgba(200,169,110,.5);background:linear-gradient(135deg,rgba(200,169,110,.25),rgba(200,169,110,.1));color:#c8a96e;font-size:.82rem;font-family:sans-serif;font-weight:700">📄 Générer le devis</button>
+    </div>
+    <div style="margin-top:.75rem;font-size:.62rem;color:#4a4a6a;font-family:sans-serif;text-align:center">Aperçu s'ouvre dans la page → bouton Imprimer → "Enregistrer en PDF"</div>
+  </div>
+</div>
+
+<!-- DEVIS OVERLAY -->
+<div id="dov">
+  <div id="dbar">
+    <span class="brand">beOtop</span>
+    <span class="inf">Aperçu du devis — vérifiez avant d'imprimer</span>
+    <button id="bprint" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>
+    <button id="bback" onclick="closeDevis()">← Retour</button>
+  </div>
+  <div id="dhint">💡 Dans la boîte d'impression → <strong>"Enregistrer en PDF"</strong> · Format A4 · Décocher "En-têtes et pieds de page"</div>
+  <div id="dpaper"></div>
+</div>
+
+<script>
+// ─── Nouvelle liste des ateliers (selon les données fournies) ─────
+const AT = [
+  { id: "bol_air",         label: "Bol d'Air",               icon: "🌬️", m2: 1.0, prix: 3950, cible: "Fatigue / Cognitif" },
+  { id: "p127",            label: "P127",                    icon: "🪑", m2: 2.0, prix: 2750, cible: "TMS / Lombaires" },
+  { id: "lunettes_psio",   label: "Lunettes Psio",           icon: "👓", m2: 0.2, prix: 995, cible: "Relaxation" },
+  { id: "cocon_sieste",    label: "Cocon de sieste",         icon: "😴", m2: 2.0, prix: 4500, cible: "Fatigue / Sommeil" },
+  { id: "siege_massant",   label: "Siège massant",           icon: "💆", m2: 2.0, prix: 3950, cible: "TMS / Stress" },
+  { id: "neurosonic_f",    label: "Neurosonic Fauteuil",     icon: "🎵", m2: 2.0, prix: 5490, cible: "Décompression" },
+  { id: "neurosonic_l",    label: "Neurosonic lit",          icon: "🛏️", m2: 2.5, prix: 6450, cible: "Relaxation profonde" },
+  { id: "photobio",        label: "Photobiomodulation",      icon: "💡", m2: 0.5, prix: 3250, cible: "TMS / Régénération" },
+  { id: "transat_127",     label: "Transat 127",             icon: "🛋️", m2: 2.0, prix: 395, cible: "Détente" },
+  { id: "sensolight",      label: "Sensolight",              icon: "💡", m2: 0.3, prix: 2990, cible: "Luminothérapie" },
+  { id: "siege_lecture",   label: "Siège Lecture",           icon: "📖", m2: 1.5, prix: 1480, cible: "Repos" },
+  { id: "cabine_sur_mesure", label: "Cabine sur mesure",     icon: "🚪", m2: 2.0, prix: 4950, cible: "Intimité" }
+];
+
+// Postures managériales (adoption en %)
+const POSTURES = [
+  { id: "h", label: "Hostile",   adopt: 10, color: "#ef4444" },
+  { id: "m", label: "Mitigé",    adopt: 30, color: "#f59e0b" },
+  { id: "l", label: "Libre",     adopt: 60, color: "#3b82f6" },
+  { id: "e", label: "Encouragé", adopt: 85, color: "#10b981" }
+];
+
+const SCENARIOS = [
+  { label: "−1% (seuil)",     rate: 0.01 },
+  { label: "−3% (pessimiste)", rate: 0.03 },
+  { label: "−5%",             rate: 0.05 },
+  { label: "−10% (médian)",   rate: 0.10 },
+  { label: "−15% (optimiste)", rate: 0.15 }
+];
+
+// Quantités par défaut pour chaque option (ajustées pour la nouvelle liste)
+const DEFAULT_QTYS = {
+  A: {
+    bol_air: 1,
+    p127: 1,
+    lunettes_psio: 0,
+    cocon_sieste: 0,
+    siege_massant: 1,
+    neurosonic_f: 0,
+    neurosonic_l: 0,
+    photobio: 0,
+    transat_127: 1,
+    sensolight: 0,
+    siege_lecture: 1,
+    cabine_sur_mesure: 0
+  },
+  B: {
+    bol_air: 1,
+    p127: 2,
+    lunettes_psio: 1,
+    cocon_sieste: 2,
+    siege_massant: 2,
+    neurosonic_f: 2,
+    neurosonic_l: 1,
+    photobio: 1,
+    transat_127: 2,
+    sensolight: 1,
+    siege_lecture: 2,
+    cabine_sur_mesure: 0
+  },
+  C: {
+    bol_air: 2,
+    p127: 3,
+    lunettes_psio: 2,
+    cocon_sieste: 3,
+    siege_massant: 3,
+    neurosonic_f: 3,
+    neurosonic_l: 2,
+    photobio: 2,
+    transat_127: 3,
+    sensolight: 2,
+    siege_lecture: 3,
+    cabine_sur_mesure: 1
+  }
+};
+
+// État global
+let ST = {
+  nbs: 400,
+  sal: 70200,
+  mode: "5j",
+  jours: 3,
+  qty: { ...DEFAULT_QTYS.B }, // départ avec option B
+  po: "l",
+  sc: 4,
+  ado: 60,
+  val: 30,
+  deco_pm2: 0,
+  im_pm2: 336,
+  form: 2860,
+  anim: 0
+};
+
+// ─── Utilitaires ───────────────────────────────────────────────────
+function eur(n) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n); }
+function fnum(n) { return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(n); }
+function dateStr() { return new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }); }
+function devisNum() { return "BEO-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 9000) + 1000); }
+
+// ─── Calculs principaux ────────────────────────────────────────────
+function calc() {
+  const nbs = ST.nbs, sal = ST.sal, mode = ST.mode, jours = ST.jours;
+  const sc = SCENARIOS[ST.sc - 1];
+  const po = POSTURES.find(p => p.id === ST.po);
+  const ado = ST.ado;
+
+  // Présents par jour (pour info)
+  const tauxP = mode === "5j" ? 1 : jours / 5;
+  const nbp = Math.round(nbs * tauxP);
+
+  // Utilisateurs réels et séances par semaine (2 séances par utilisateur)
+  const nbu = Math.round(nbs * ado / 100);
+  const seancesSem = nbu * 2;
+
+  // Coefficient de pic selon le mode
+  const picC = mode === "5j" ? 0.20 : jours <= 1 ? 0.80 : jours <= 2 ? 0.55 : jours <= 3 ? 0.40 : jours <= 4 ? 0.28 : 0.20;
+  const seancesPic = Math.round(seancesSem * picC);
+
+  // Coût dysfonctionnements RH = 16,67% de la masse salariale
+  const cd = Math.round(nbs * sal * 0.1667);
+  // Base adressable = 37,5% des dysfonctionnements
+  const ba = Math.round(cd * 0.375);
+
+  // Calcul des surfaces et coûts d'équipement
+  let surfNet = 0, eqT = 0;
+  AT.forEach(a => {
+    const q = ST.qty[a.id] || 0;
+    surfNet += a.m2 * q;
+    eqT += a.prix * q;
+  });
+  // +50% pour circulation (au lieu de 40%)
+  const surfAt = Math.round(surfNet * 1.50);
+  const nbPostes = AT.reduce((s, a) => s + (ST.qty[a.id] || 0), 0);
+
+  // Capacité par espace (80% du max théorique)
+  const capaciteParEspace = Math.round(nbPostes * 32 * 0.8);
+
+  // Nombre d'espaces nécessaire pour que le taux d'occupation ≤ 75%
+  // On utilise un facteur de sécurité de 75%
+  const nbEsp = Math.max(1, Math.ceil(seancesPic / (capaciteParEspace * 0.75)));
+  const surfTot = surfAt * nbEsp;
+  const capaciteTotale = capaciteParEspace * nbEsp;
+  const tauxOcc = Math.min(100, Math.round(seancesPic / capaciteTotale * 100));
+
+  // Paramètres optionnels
+  const deco = Math.round(surfTot * ST.deco_pm2);
+  const decoAm = Math.round(deco / 5); // amorti sur 5 ans
+  const im = Math.round(surfTot * ST.im_pm2);
+  const form = ST.form;
+  const anim = ST.anim;
+
+  // Coefficients d'impact (linéaires)
+  const formCoef = 1 + (form - 2860) / 2860 * 0.2;
+  const animCoef = 1 + anim / 5000 * 0.2;
+
+  // Coûts fixes (communication + formation fixes) – calibrés pour l'option B
+  const comForm = 2860; // valeur issue de l'étude
+
+  // Amortissement équipement sur 3 ans (total pour tous les espaces)
+  const am = Math.round(eqT * nbEsp / 3);
+  const maint = Math.round(eqT * nbEsp * 0.12);
+
+  // CTP annuel (base ROI)
+  const CTP = am + maint + im + comForm + decoAm + form + anim;
+  const CTPaffiche = eqT * nbEsp + maint + im + comForm + deco + form + anim;
+
+  // Gain = base adressable * taux scénario * adoption/100 * coefficients optionnels
+  const gain = ba * sc.rate * (ado / 100) * formCoef * animCoef;
+  const eco = gain - CTP;
+  const roi = CTP === 0 ? 0 : (eco / CTP * 100);
+  const pb = CTP / Math.max(gain / 12, 0.001);
+
+  return {
+    nbp, nbu, seancesSem, picC, capaciteParEspace, capaciteTotale, seancesPic,
+    nbEsp, tauxOcc,
+    cd, ba, sc, po, ado, gain, eco, roi, pb,
+    surfNet, surfAt, surfTot, nbPostes, eqT, am, maint, im, comForm,
+    deco, decoAm, form, anim, formCoef, animCoef, CTP, CTPaffiche
+  };
+}
+
+// ─── Rendu de l'interface ──────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+
+function render() {
+  const c = calc();
+  const sc = SCENARIOS[ST.sc - 1];
+  const po = POSTURES.find(p => p.id === ST.po);
+
+  // Header
+  $("mode-lbl").textContent = ST.mode === "5j" ? "Modèle 5j / semaine" : `Hybride ${ST.jours}j / semaine`;
+
+  // Sliders
+  $("v-nbs").textContent = fnum(ST.nbs) + " pers.";
+  $("v-sal").textContent = eur(ST.sal);
+  $("v-ado").textContent = ST.ado + "%";
+  $("v-nbp").textContent = c.nbp;
+  $("v-nbu").textContent = c.nbu;
+  $("v-dh").textContent = c.seancesSem;
+
+  // Mode hybride panel
+  $("jpanel").style.display = ST.mode === "hybride" ? "block" : "none";
+  const picC = c.picC;
+  $("picinfo").textContent = `Pic : ${Math.round(picC * 100)}% · ${c.nbp} présents/jour`;
+
+  // Boutons mode
+  const bm5j = $("bm5j"), bmhy = $("bmhy");
+  if (ST.mode === "5j") {
+    bm5j.style.border = "2px solid #7eb8c9"; bm5j.style.background = "rgba(126,184,201,.13)"; bm5j.querySelector("div").style.color = "#7eb8c9";
+    bmhy.style.border = "1px solid rgba(255,255,255,.1)"; bmhy.style.background = "rgba(255,255,255,.03)"; bmhy.querySelector("div").style.color = "#7a7a9a";
+  } else {
+    bmhy.style.border = "2px solid #7eb8c9"; bmhy.style.background = "rgba(126,184,201,.13)"; bmhy.querySelector("div").style.color = "#7eb8c9";
+    bm5j.style.border = "1px solid rgba(255,255,255,.1)"; bm5j.style.background = "rgba(255,255,255,.03)"; bm5j.querySelector("div").style.color = "#7a7a9a";
+  }
+
+  // Mise en évidence du bouton d'option (comparaison simple)
+  const isOptionA = Object.keys(DEFAULT_QTYS.A).every(k => ST.qty[k] === DEFAULT_QTYS.A[k]);
+  const isOptionB = Object.keys(DEFAULT_QTYS.B).every(k => ST.qty[k] === DEFAULT_QTYS.B[k]);
+  const isOptionC = Object.keys(DEFAULT_QTYS.C).every(k => ST.qty[k] === DEFAULT_QTYS.C[k]);
+  document.querySelectorAll(".opt-btn").forEach(btn => {
+    const opt = btn.dataset.opt;
+    if (opt === "A" && isOptionA) btn.style.border = "2px solid #b896e8";
+    else if (opt === "B" && isOptionB) btn.style.border = "2px solid #b896e8";
+    else if (opt === "C" && isOptionC) btn.style.border = "2px solid #b896e8";
+    else btn.style.border = "1px solid #b896e8";
+  });
+
+  // Récapitulatif des ateliers
+  $("arecap").innerHTML = `<span style="color:#d4b8f0;font-weight:700">${c.nbPostes}</span> poste(s) par espace · surface nette <span style="color:#d4b8f0">${c.surfNet.toFixed(1)} m²</span><span style="color:#b896e8"> → ${c.surfAt} m²</span> (+50% circ.) · équipement total par espace ${eur(c.eqT)}`;
+
+  // Surface recommandée
+  $("r-surf").textContent = c.surfTot;
+  $("r-postes").textContent = c.nbPostes;
+  $("r-espaces").textContent = c.nbEsp;
+
+  // Taux d'occupation
+  $("r-satp").textContent = c.tauxOcc + "%";
+  $("r-satb").style.width = Math.min(c.tauxOcc, 100) + "%";
+  $("r-satb").style.background = c.tauxOcc > 90 ? "#ef4444" : c.tauxOcc > 75 ? "#f59e0b" : "#7eb8c9";
+
+  $("r-np").textContent = c.nbp;
+  $("r-dp").textContent = c.seancesPic;
+  $("r-ce").textContent = c.capaciteParEspace;
+
+  // Paramètres optionnels
+  $("v-deco-pm2").textContent = ST.deco_pm2 + ' €/m²';
+  $("v-im-pm2").textContent = ST.im_pm2 + ' €/m²';
+  $("v-form").textContent = eur(ST.form);
+  $("v-anim").textContent = eur(ST.anim);
+  $("s-deco-pm2").value = ST.deco_pm2;
+  $("s-im-pm2").value = ST.im_pm2;
+  $("s-form").value = ST.form;
+  $("s-anim").value = ST.anim;
+
+  // Badges
+  const fBadge = $("v-form-impact");
+  if (fBadge) {
+    const fc = c.formCoef;
+    const fPct = Math.round((fc - 1) * 100);
+    fBadge.textContent = fPct > 0 ? 'ROI +' + fPct + '%' : fPct < 0 ? 'ROI ' + fPct + '%' : 'ROI normal';
+    fBadge.style.background = fc >= 1 ? 'rgba(96,192,96,.15)' : fc >= 0.9 ? 'rgba(245,158,11,.15)' : 'rgba(239,68,68,.15)';
+    fBadge.style.color = fc >= 1 ? '#60c060' : fc >= 0.9 ? '#f59e0b' : '#ef4444';
+  }
+  const aBadge = $("v-anim-impact");
+  if (aBadge) {
+    const ac = c.animCoef;
+    const aPct = Math.round((ac - 1) * 100);
+    aBadge.textContent = aPct > 0 ? 'ROI +' + aPct + '%' : aPct < 0 ? 'ROI ' + aPct + '%' : 'ROI normal';
+    aBadge.style.background = ac >= 1 ? 'rgba(96,192,96,.15)' : ac >= 0.98 ? 'rgba(245,158,11,.15)' : 'rgba(239,68,68,.15)';
+    aBadge.style.color = ac >= 1 ? '#60c060' : ac >= 0.98 ? '#f59e0b' : '#ef4444';
+  }
+
+  // CTP
+  const decoLine = c.deco ? `<div class="rli"><span class="rl">Décoration (amort. 5 ans)</span><span class="rv">${eur(c.decoAm)}</span></div>` : '';
+  $("r-ctp").innerHTML = `
+    <div class="rli"><span class="rl">Équipements (amort. 3 ans) × ${c.nbEsp} esp.</span><span class="rv">${eur(c.am)}</span></div>
+    <div class="rli"><span class="rl">Maintenance 12% × ${c.nbEsp} esp.</span><span class="rv">${eur(c.maint)}</span></div>
+    <div class="rli"><span class="rl">Loyer / coût d'opportunité</span><span class="rv">${eur(c.im)}</span></div>
+    <div class="rli"><span class="rl">Communication + formation fixes</span><span class="rv">${eur(c.comForm)}</span></div>
+    ${decoLine}
+    <div class="rli"><span class="rl">Formation managers</span><span class="rv">${eur(c.form)}</span></div>
+    <div class="rli"><span class="rl">Animation espace</span><span class="rv">${eur(c.anim)}</span></div>
+    <div class="rli tot"><span class="rl">CTP annuel (base ROI)</span><span class="rv">${eur(c.CTP)}</span></div>
+    <div style="text-align:right;font-size:.6rem;color:#7a7a9a;margin-top:3px">${eur(Math.round(c.CTP / ST.nbs))} / collaborateur / an</div>
+  `;
+
+  // ROI
+  const rC = c.roi > 200 ? "#10b981" : c.roi > 60 ? "#3b82f6" : c.roi > 0 ? "#f59e0b" : "#ef4444";
+  $("r-roi-card").style.background = rC + "14";
+  $("r-roi-card").style.border = `1px solid ${rC}50`;
+  $("r-roi-ttl").style.color = rC;
+  $("r-sc-badge").textContent = sc.label;
+  $("r-roi-pct").textContent = (c.roi > 0 ? "+" : "") + Math.round(c.roi) + "%";
+  $("r-roi-pct").style.color = rC;
+  const pbStr = c.pb < 1 ? "<1 m." : c.pb > 24 ? "24+ m." : Math.round(c.pb) + " m.";
+  $("r-pb").textContent = pbStr;
+  $("r-eco-adj").textContent = (c.eco > 0 ? "+" : "") + eur(c.eco);
+  $("r-eco-adj").style.color = rC;
+  $("r-po-badge").textContent = `Adoption ${c.ado}% (posture ${po.label}) · Coeffs formation ${c.formCoef.toFixed(2)} / anim ${c.animCoef.toFixed(2)}`;
+
+  $("r-roi-lines").innerHTML = `
+    <div class="rli"><span class="rl">Coût dysfonctionnements RH</span><span class="rv">${eur(c.cd)}</span></div>
+    <div class="rli"><span class="rl">Base adressable (37,5%)</span><span class="rv">${eur(c.ba)}</span></div>
+    <div class="rli"><span class="rl">Gain brut (${sc.label} × ${c.ado}% adoption)</span><span class="rv">${eur(c.gain)}</span></div>
+    <div class="rli tot" style="border-color:${rC}40"><span class="rl" style="color:${rC}">Économie nette</span><span class="rv">${c.eco > 0 ? "+" : ""}${eur(c.eco)}</span></div>
+  `;
+}
+
+// ─── Rendu de la grille des ateliers ───────────────────────────────
+function renderAt() {
+  const g = $("agrid");
+  g.innerHTML = "";
+  AT.forEach(a => {
+    const q = ST.qty[a.id] || 0;
+    const on = q > 0;
+    const d = document.createElement("div");
+    d.className = "acard";
+    d.style.border = on ? "1px solid rgba(184,150,232,.55)" : "1px solid rgba(255,255,255,.08)";
+    d.style.background = on ? "rgba(184,150,232,.09)" : "rgba(255,255,255,.03)";
+    d.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.28rem">
+        <span style="font-size:.95rem">${a.icon}</span>
+        <span style="font-size:.71rem;color:${on ? "#d4b8f0" : "#8080a0"};font-family:sans-serif;flex:1;line-height:1.2">${a.label}</span>
+      </div>
+      <div style="font-size:.59rem;color:#5a5a7a;font-family:sans-serif;margin-bottom:.52rem;line-height:1.4">${a.m2} m² · ${eur(a.prix)} HT · ${a.cible}</div>
+      <div style="display:flex;align-items:center;gap:.32rem">
+        <button class="qbtn ${q === 0 ? "off" : ""}" onclick="addQ('${a.id}',-1)">−</button>
+        <div style="flex:1;text-align:center;font-weight:700;font-size:1.05rem;color:${on ? "#d4b8f0" : "#3a3a5a"};font-family:sans-serif">${q}</div>
+        <button class="qbtn ${q >= 5 ? "off" : ""}" onclick="addQ('${a.id}',1)">+</button>
+        ${q > 0 ? `<span style="font-size:.59rem;color:#8a7aaa;font-family:sans-serif;white-space:nowrap">${(a.m2 * q).toFixed(1)} m²</span>` : ''}
+      </div>
+    `;
+    g.appendChild(d);
+  });
+}
+
+// ─── Rendu des postures ────────────────────────────────────────────
+function renderPo() {
+  const g = $("pgrid");
+  g.innerHTML = "";
+  POSTURES.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "pbtn";
+    btn.onclick = () => { ST.po = p.id; ST.ado = p.adopt; renderPo(); render(); };
+    btn.style.border = ST.po === p.id ? `1px solid ${p.color}80` : "1px solid rgba(255,255,255,.08)";
+    btn.style.background = ST.po === p.id ? p.color + "16" : "rgba(255,255,255,.03)";
+    btn.innerHTML = `<div style="font-size:.78rem;font-weight:700;color:${ST.po === p.id ? p.color : "#8080a0"};font-family:sans-serif">${p.label}</div>
+      <div style="font-size:.63rem;color:#6a6a8a;margin-top:.18rem">Adoption ${p.adopt}%</div>`;
+    g.appendChild(btn);
+  });
+}
+
+// ─── Rendu des scénarios ───────────────────────────────────────────
+function renderSc() {
+  const g = $("scgrid");
+  g.innerHTML = "";
+  const lbs = ["−1%", "−3%", "−5%", "−10%", "−15%"];
+  const sbs = ["seuil", "pessim.", "", "médian", "optim."];
+  SCENARIOS.forEach((s, i) => {
+    const btn = document.createElement("button");
+    btn.className = "scbtn";
+    btn.onclick = () => { ST.sc = i + 1; renderSc(); render(); };
+    btn.style.border = ST.sc === i + 1 ? "1px solid #60c060" : "1px solid rgba(255,255,255,.08)";
+    btn.style.background = ST.sc === i + 1 ? "rgba(96,192,96,.13)" : "rgba(255,255,255,.03)";
+    btn.innerHTML = `<div style="font-size:.63rem;font-weight:700;color:${ST.sc === i + 1 ? "#60c060" : i === 0 ? "#ef4444" : "#5a5a7a"}">${lbs[i]}</div>
+      <div style="font-size:.57rem;color:${i === 0 ? "#ef4444" : ST.sc === i + 1 ? "#60c060" : "#4a4a6a"}">${sbs[i]}</div>`;
+    g.appendChild(btn);
+  });
+}
+
+// ─── Rendu des jours ───────────────────────────────────────────────
+function renderJours() {
+  document.querySelectorAll(".dbtn").forEach(b => {
+    const j = +b.dataset.j;
+    if (j === ST.jours) {
+      b.style.border = "2px solid #7eb8c9";
+      b.style.background = "rgba(126,184,201,.2)";
+      b.style.color = "#7eb8c9";
+    } else {
+      b.style.border = "1px solid rgba(255,255,255,.1)";
+      b.style.background = "rgba(255,255,255,.03)";
+      b.style.color = "#7a7a9a";
+    }
+  });
+}
+
+// ─── Actions ───────────────────────────────────────────────────────
+function setMode(m) { ST.mode = m; renderJours(); render(); }
+function setJours(j) { ST.jours = j; renderJours(); render(); }
+function addQ(id, delta) {
+  const cur = ST.qty[id] || 0;
+  ST.qty[id] = Math.max(0, Math.min(5, cur + delta));
+  renderAt();
+  render();
+}
+function setOption(opt) {
+  ST.qty = { ...DEFAULT_QTYS[opt] };
+  renderAt();
+  render();
+}
+function setVal(v) {
+  ST.val = v;
+  document.querySelectorAll(".vbtn").forEach(b => {
+    const bv = +b.dataset.v;
+    if (bv === v) {
+      b.style.border = "1px solid #c8a96e";
+      b.style.background = "rgba(200,169,110,.15)";
+      b.style.color = "#c8a96e";
+      b.style.fontWeight = "700";
+    } else {
+      b.style.border = "1px solid rgba(255,255,255,.1)";
+      b.style.background = "rgba(255,255,255,.03)";
+      b.style.color = "#7a7a9a";
+      b.style.fontWeight = "400";
+    }
+  });
+}
+
+// Sliders
+$("s-nbs").oninput = e => { ST.nbs = +e.target.value; render(); };
+$("s-sal").oninput = e => { ST.sal = +e.target.value; render(); };
+$("s-ado").oninput = e => {
+  ST.ado = +e.target.value;
+  // Ajuster la posture la plus proche
+  let best = POSTURES[0];
+  POSTURES.forEach(p => { if (Math.abs(p.adopt - ST.ado) < Math.abs(best.adopt - ST.ado)) best = p; });
+  ST.po = best.id;
+  renderPo();
+  render();
+};
+
+// Modale
+function openModal() { $("modal").classList.add("on"); }
+function closeModal() { $("modal").classList.remove("on"); }
+function closeDevis() { $("dov").classList.remove("on"); }
+
+// Génération du devis PDF
+function genDevis() {
+  closeModal();
+  const c = calc();
+  const sc = SCENARIOS[ST.sc - 1];
+  const po = POSTURES.find(p => p.id === ST.po);
+  const pro = $("f-pro").value || "—";
+  const con = $("f-con").value || "—";
+  const com = $("f-com").value || "—";
+  const today = dateStr();
+  const dnum = devisNum();
+  const vd = new Date(); vd.setDate(vd.getDate() + ST.val);
+  const vstr = vd.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
+  // Lignes du tableau des ateliers (par espace)
+  const sel = AT.filter(a => (ST.qty[a.id] || 0) > 0);
+  const rows = sel.map(a => {
+    const q = ST.qty[a.id];
+    return `<tr><td>${a.label}</td><td style="color:#6a6a8a;font-size:8pt">${a.cible}</td><td style="text-align:center">${a.m2}</td><td class="num">${q}</td><td class="num">${eur(a.prix)}</td><td class="num">${eur(a.prix * q)}</td></tr>`;
+  }).join("");
+
+  const rpos = c.roi >= 0;
+  const pbStr = c.pb < 1 ? "< 1 mois" : c.pb > 24 ? "+ 24 mois" : Math.round(c.pb) + " mois";
+
+  const html = `
+  <div class="dv">
+    <div class="dstrip"></div>
+    <div class="dhdr">
+      <div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération & bien-être au travail</div></div>
+      <div class="dmeta"><strong>N° ${dnum}</strong>Établi le ${today}<br>Valable jusqu'au ${vstr}<br>Commercial : ${com}</div>
+    </div>
+    <div class="dbody">
+      <div class="dpros">
+        <div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">${pro}</div><div class="dpsub">${con}</div></div>
+        <div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">${ST.nbs} collaborateurs</div><div class="dpsub">${ST.mode === "5j" ? "Présentiel 5j/sem." : "Hybride " + ST.jours + "j/sem."} · Adoption ${ST.ado}%</div></div>
+        <div class="dpb"><div class="dplbl">Configuration</div><div class="dpval">${c.nbPostes} poste(s) par espace · ${c.nbEsp} espace(s)</div><div class="dpsub">Surface totale : ${c.surfTot} m²</div></div>
+      </div>
+      <div class="dsttl" style="margin-top:0">01 · Équipements sélectionnés (par espace)</div>
+      <table class="dtbl"><thead><tr>
+        <th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th>
+      </tr></thead><tbody>
+        ${rows}
+        <tr class="st"><td colspan="5">Sous-total équipements HT par espace</td><td class="num">${eur(c.eqT)}</td></tr>
+      </tbody></table>
+      <div class="dctx">Surface par espace : ${c.surfAt} m² (${c.surfNet.toFixed(1)} m² nets + 50% circ.) · Capacité par espace : ${c.capaciteParEspace} séances/jour · ${c.nbEsp} espace(s) → capacité totale ${c.capaciteTotale} séances/jour</div>
+
+      <div class="dsttl">02 · Coût total de possession annuel (CTP) pour ${c.nbEsp} espace(s)</div>
+      <div class="dli"><span class="ll">Amortissement équipements (3 ans)</span><span class="lv">${eur(c.am)}/an</span></div>
+      <div class="dli"><span class="ll">Maintenance 12%</span><span class="lv">${eur(c.maint)}/an</span></div>
+      <div class="dli"><span class="ll">Loyer / coût d'opportunité</span><span class="lv">${eur(c.im)}/an</span></div>
+      <div class="dli"><span class="ll">Communication + formation fixes</span><span class="lv">${eur(c.comForm)}/an</span></div>
+      ${c.deco ? `<div class="dli"><span class="ll">Décoration (amort. 5 ans)</span><span class="lv">${eur(c.decoAm)}/an</span></div>` : ''}
+      <div class="dli"><span class="ll">Formation managers</span><span class="lv">${eur(c.form)}/an</span></div>
+      <div class="dli"><span class="ll">Animation espace</span><span class="lv">${eur(c.anim)}/an</span></div>
+      <div class="dli tl"><span class="ll">CTP annuel total</span><span class="lv">${eur(c.CTP)}</span></div>
+
+      <div class="dsttl">03 · Retour sur investissement — ${sc.label} · Adoption ${ST.ado}%</div>
+      <div class="droi">
+        <div class="drbox ${rpos ? "pos" : "neg"}"><div class="drbig ${rpos ? "pos" : "neg"}">${(c.roi > 0 ? "+" : "") + Math.round(c.roi)}%</div><div class="drlbl">ROI annuel net</div></div>
+        <div class="drbox ${rpos ? "pos" : "neg"}"><div class="drbig ${rpos ? "pos" : "neg"}" style="font-size:14pt">${pbStr}</div><div class="drlbl">Payback estimé</div></div>
+        <div class="drbox neu"><div class="drbig neu">${eur(c.cd)}</div><div class="drlbl">Coût dysfonctionnements RH</div></div>
+      </div>
+      <div class="dli"><span class="ll">Base adressable (37,5%)</span><span class="lv">${eur(c.ba)}</span></div>
+      <div class="dli"><span class="ll">Gain brut (${sc.label} × ${ST.ado}% adoption)</span><span class="lv">${eur(c.gain)}</span></div>
+      <div class="dli"><span class="ll">CTP annuel</span><span class="lv">− ${eur(c.CTP)}</span></div>
+      <div class="dli tl"><span class="ll">Économie nette / an</span><span class="lv" style="color:${rpos ? "#10b981" : "#ef4444"}">${c.eco > 0 ? "+" : ""}${eur(c.eco)}</span></div>
+      <div class="dctx">Modèle calé sur la Note de Synthèse ROI beOtop 02/2026. Sources : INRS 2022, Assurance Maladie 2023, Malakoff Humanis 2023. <strong>Référence : +434% pour 400 sal., option B, adoption 100%, scénario médian.</strong></div>
+
+      <div class="dsttl">04 · Conditions d'atteinte du ROI</div>
+      <div class="dcond"><ul>
+        <li>Charte d'accès signée par la Direction <span class="dbadge cr">CRITIQUE</span></li>
+        <li>Formation des managers avant ouverture <span class="dbadge cr">CRITIQUE</span></li>
+        <li>Protocole de mesure KPI dès J1 <span class="dbadge si">SIGNIFICATIF</span></li>
+        <li>Communication interne structurée <span class="dbadge si">SIGNIFICATIF</span></li>
+        <li>Pilote instrumenté 6 mois <span class="dbadge mo">MODÉRÉ</span></li>
+      </ul></div>
+    </div>
+    <div class="dftr">
+      <div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Solutions de récupération en entreprise<br>Commercial : ${com} · nj@beotop.fr<br>Devis n° ${dnum} · Valable jusqu'au ${vstr}</div>
+      <div class="dfr">${pro} · ${ST.nbs} collaborateurs<br>${today}<br><em>Estimations indicatives — étude complète sur demande</em></div>
+    </div>
+    <div class="dstrip"></div>
+  </div>
+  `;
+  $("dpaper").innerHTML = html;
+  $("dov").classList.add("on");
+  $("dov").scrollTop = 0;
+}
+
+// Initialisation
+renderJours();
+renderAt();
+renderPo();
+renderSc();
+render();
+</script>
+</body>
+</html>
