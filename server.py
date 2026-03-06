@@ -773,32 +773,27 @@ def get_current_user():
             return cur.fetchone()
 
 @app.route('/api/auth/login', methods=['POST'])
-def login():
+def auth_login():
     data = request.get_json()
     email = (data.get('email') or '').strip().lower()
     password = data.get('password', '')
-
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM users WHERE email=%s AND actif=1", [email])
             user = cur.fetchone()
-
     if not user or not check_password_hash(user['password'], password):
         return jsonify({'error': 'Email ou mot de passe incorrect'}), 401
-
     session.permanent = True
     session['user_id']   = user['id']
     session['role']      = user['role']
     session['client_id'] = user['client_id']
     session['nom']       = user['nom']
-
     return jsonify({
         'ok': True,
         'role': user['role'],
         'nom': user['nom'],
         'redirect': '/admin' if user['role'] == 'admin' else '/dashboard'
     })
-
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     session.clear()
