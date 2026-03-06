@@ -1,5 +1,5 @@
-beOtop · Serveur complet
-Auth + Multi-clients + Rôles (admin / client / kiosque)
+beOtop - Serveur complet
+Auth + Multi-clients + Roles (admin / client / kiosque)
 Version PostgreSQL
 """
 
@@ -13,4 +13,4 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
-app.secret_key
+app.secret_key = os
