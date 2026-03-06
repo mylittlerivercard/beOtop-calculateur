@@ -5,7 +5,7 @@ Auth + Multi-clients + Roles (admin / client / kiosque)
 Version PostgreSQL
 """
 
-from flask import Flask, request, jsonify, session, redirect, url_for, Response
+from flask import Flask, request, jsonify, session, redirect, Response
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -24,7 +24,6 @@ CORS(app, supports_credentials=True)
 # ========== BASE DE DONNEES ==========
 
 def get_db():
-    """Connexion a la base de donnees PostgreSQL."""
     try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'], cursor_factory=RealDictCursor)
         return conn
@@ -32,8 +31,15 @@ def get_db():
         print("Erreur de connexion a la base :", e)
         raise e
 
+def serialize_row(row):
+    """Convertit les types non-serialisables (date, time, datetime) en string."""
+    d = dict(row)
+    for k, v in d.items():
+        if hasattr(v, 'isoformat'):
+            d[k] = v.isoformat()
+    return d
+
 def init_db():
-    """Cree les tables et l'admin par defaut si necessaire."""
     print("Initialisation de la base de donnees...")
     try:
         conn = get_db()
@@ -211,7 +217,7 @@ def admin_get_clients():
                 GROUP BY c.id ORDER BY c.created_at DESC
             ''')
             clients = cur.fetchall()
-    return jsonify([dict(c) for c in clients])
+    return jsonify([serialize_row(c) for c in clients])
 
 @app.route('/api/admin/clients', methods=['POST'])
 @login_required
@@ -272,7 +278,7 @@ def admin_get_sites():
                 ORDER BY c.nom, s.nom
             ''')
             sites = cur.fetchall()
-    return jsonify([dict(s) for s in sites])
+    return jsonify([serialize_row(s) for s in sites])
 
 @app.route('/api/admin/sites', methods=['POST'])
 @login_required
@@ -318,7 +324,7 @@ def admin_get_users():
                 ORDER BY u.role, u.created_at DESC
             ''')
             users = cur.fetchall()
-    return jsonify([dict(u) for u in users])
+    return jsonify([serialize_row(u) for u in users])
 
 @app.route('/api/admin/users', methods=['POST'])
 @login_required
@@ -393,7 +399,7 @@ def kiosk_info(site_slug):
             site = cur.fetchone()
     if not site:
         return jsonify({'error': 'Site introuvable'}), 404
-    return jsonify(dict(site))
+    return jsonify(serialize_row(site))
 
 # ========== STATISTIQUES ==========
 
@@ -446,7 +452,7 @@ def get_stats():
             by_dept = cur.fetchall()
 
             cur.execute(f'''
-                SELECT EXTRACT(HOUR FROM heure) as h, COUNT(*) as n FROM sessions {where}
+                SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where}
                 GROUP BY h ORDER BY h
             ''', site_params)
             by_hour = cur.fetchall()
@@ -487,12 +493,12 @@ def get_stats():
     return jsonify({
         'period': period,
         'total_seances': total,
-        'by_departement': [dict(r) for r in by_dept],
-        'by_hour':        [dict(r) for r in by_hour],
+        'by_departement': [serialize_row(r) for r in by_dept],
+        'by_hour':        [serialize_row(r) for r in by_hour],
         'by_atelier':     by_atelier,
-        'by_mood':        [dict(r) for r in by_mood],
-        'by_day':         [dict(r) for r in by_day],
-        'by_site':        [dict(r) for r in by_site],
+        'by_mood':        [serialize_row(r) for r in by_mood],
+        'by_day':         [serialize_row(r) for r in by_day],
+        'by_site':        [serialize_row(r) for r in by_site],
     })
 
 @app.route('/api/sessions', methods=['GET'])
@@ -515,7 +521,7 @@ def get_sessions():
                 params + [limit]
             )
             rows = cur.fetchall()
-    return jsonify([dict(r) for r in rows])
+    return jsonify([serialize_row(r) for r in rows])
 
 @app.route('/api/export', methods=['GET'])
 @login_required
@@ -536,7 +542,8 @@ def export_csv():
     writer = csv.writer(output)
     writer.writerow(['date', 'heure', 'departement', 'ateliers', 'mood', 'site'])
     for r in rows:
-        writer.writerow([r['date'], r['heure'], r['departement'], r['ateliers'], r['mood'], r['site_slug']])
+        sr = serialize_row(r)
+        writer.writerow([sr['date'], sr['heure'], sr['departement'], sr['ateliers'], sr['mood'], sr['site_slug']])
     return Response(
         output.getvalue(), mimetype='text/csv',
         headers={'Content-Disposition': f'attachment; filename=beotop_{from_date}_{to_date}.csv'}
@@ -557,7 +564,7 @@ def client_get_sites():
             else:
                 cur.execute("SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom", [client_id])
             sites = cur.fetchall()
-    return jsonify([dict(s) for s in sites])
+    return jsonify([serialize_row(s) for s in sites])
 
 # ========== HEALTH ==========
 
