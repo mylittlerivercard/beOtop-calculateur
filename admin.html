@@ -468,21 +468,34 @@ async function resetPw(id){
 
 // ── Sessions ──
 async function loadSessions(){
-  var period = document.getElementById('f-period').value;
+  var periodEl = document.getElementById('f-period');
+  if(!periodEl) return;
+  var period = periodEl.value;
   var url = period === 'all' ? '/api/sessions?limit=1000' : '/api/sessions?period=' + period + '&limit=500';
-  var data = await fetch(url, {credentials:'include'}).then(r => r.json());
   var tbl = document.getElementById('sessions-table');
-  tbl.innerHTML = '<tr><th>Date</th><th>Heure</th><th>Site</th><th>Département</th><th>Atelier(s)</th><th>Mood</th></tr>';
-  data.forEach(function(s){
-    tbl.innerHTML += '<tr>' +
-      '<td>' + s.date + '</td>' +
-      '<td>' + s.heure + '</td>' +
-      '<td>' + (s.site_slug || '—') + '</td>' +
-      '<td class="td-main">' + (s.departement || '—') + '</td>' +
-      '<td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (s.ateliers || '—') + '</td>' +
-      '<td>' + (s.mood || '—') + '</td>' +
-      '</tr>';
-  });
+  if(!tbl) return;
+  try {
+    var r = await fetch(url, {credentials:'include'});
+    var data = await r.json();
+    tbl.innerHTML = '<tr><th>Date</th><th>Heure</th><th>Site</th><th>Département</th><th>Atelier(s)</th><th>Mood</th></tr>';
+    if(!Array.isArray(data) || data.length === 0){
+      tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Aucune séance sur cette période</td></tr>';
+      return;
+    }
+    data.forEach(function(s){
+      var heure = (s.heure || '—').substring(0, 5);
+      tbl.innerHTML += '<tr>' +
+        '<td>' + (s.date || '—') + '</td>' +
+        '<td>' + heure + '</td>' +
+        '<td>' + (s.site_slug || '—') + '</td>' +
+        '<td class="td-main">' + (s.departement || '—') + '</td>' +
+        '<td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (s.ateliers || '—') + '</td>' +
+        '<td>' + (s.mood || '—') + '</td>' +
+        '</tr>';
+    });
+  } catch(e) {
+    tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#e88">Erreur de chargement</td></tr>';
+  }
 }
 
 function exportCSV(){
