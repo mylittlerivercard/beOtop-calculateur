@@ -508,4 +508,514 @@ loadMe();
 loadOverview();
 </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop · Back-office</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--bg2:#161820;--bg3:#1e2030;--gold:#c9a96e;--gold2:#e8c88a;--cream:#f0ead8;--sage:#8aab94;--mist:#7a9eb5;--text:#eeeae0;--muted:#666880;--muted2:#8a8ca8;--border:rgba(255,255,255,0.07);--red:#ef4444;--green:#10b981}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+  .sidebar-logo{padding:1.4rem 1.5rem;border-bottom:1px solid var(--border)}
+  .sidebar-logo .logo{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold)}
+  .sidebar-logo .role{font-size:.58rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.2rem}
+  .nav{flex:1;padding:1rem 0}
+  .nav-item{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+  .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,169,110,.05)}
+  .nav-icon{font-size:.95rem;width:18px;text-align:center}
+  .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid var(--border)}
+  .btn-logout{width:100%;padding:.5rem;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.68rem;cursor:pointer;transition:all .15s;font-family:'Jost',sans-serif}
+  .btn-logout:hover{border-color:var(--red);color:var(--red)}
+  .main{margin-left:220px;padding:2rem}
+  .page{display:none}.page.active{display:block}
+  .page-header{margin-bottom:1.8rem}
+  .page-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:400;color:var(--cream)}
+  .page-title em{font-style:italic;color:var(--gold2)}
+  .page-sub{font-size:.7rem;color:var(--muted);margin-top:.3rem}
+
+  /* KPI row */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.8rem}
+  .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden}
+  .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--gold));opacity:.5}
+  .kpi-label{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+  .kpi-val{font-size:1.6rem;font-weight:200;color:var(--text)}
+
+  /* Cards */
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin-bottom:1rem}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+  .card-title{font-size:.63rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em}
+
+  /* Table */
+  .tbl{width:100%;border-collapse:collapse;font-size:.72rem}
+  .tbl th{text-align:left;padding:.4rem .7rem;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+  .tbl td{padding:.55rem .7rem;border-bottom:1px solid rgba(255,255,255,.03);color:var(--muted2)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl tr:hover td{background:rgba(255,255,255,.02)}
+  .td-main{color:var(--text) !important;font-weight:400}
+  .pill{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.58rem}
+  .pill.admin{background:rgba(201,169,110,.12);color:var(--gold)}
+  .pill.client{background:rgba(126,184,201,.12);color:var(--mist)}
+  .pill.ok{background:rgba(16,185,129,.1);color:var(--green)}
+  .pill.off{background:rgba(239,68,68,.1);color:var(--red)}
+
+  /* Forms / Modals */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid rgba(201,169,110,.2);border-radius:16px;width:100%;max-width:460px;padding:1.8rem}
+  .modal h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);margin-bottom:1.3rem}
+  .field{margin-bottom:.9rem}
+  .field label{display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem}
+  .field input,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);font-family:'Jost',sans-serif;font-size:.8rem;padding:.55rem .8rem;border-radius:8px;outline:none;transition:border-color .2s}
+  .field input:focus,.field select:focus{border-color:rgba(201,169,110,.4)}
+  .field select option{background:var(--bg2)}
+  .btn-row{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem}
+  .btn{padding:.5rem 1.2rem;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:'Jost',sans-serif;border:none;transition:all .15s}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted2)}
+  .btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+  .btn-primary{background:var(--gold);color:#0f1117;font-weight:500}
+  .btn-primary:hover{background:var(--gold2)}
+  .btn-add{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .9rem;border-radius:8px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25);color:var(--gold);font-size:.68rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s}
+  .btn-add:hover{background:rgba(201,169,110,.18)}
+  .btn-sm{padding:.3rem .7rem;border-radius:6px;font-size:.62rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s}
+  .btn-sm:hover{color:var(--text);border-color:var(--muted)}
+
+  /* Kiosk URL */
+  .kiosk-url{font-family:monospace;font-size:.65rem;background:rgba(255,255,255,.04);padding:.3rem .6rem;border-radius:5px;color:var(--mist);cursor:pointer}
+  .kiosk-url:hover{background:rgba(255,255,255,.07)}
+
+  /* Toast */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:.7rem 1.2rem;border-radius:10px;font-size:.72rem;z-index:200;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  .result-box{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:1rem;margin-top:1rem;font-size:.72rem;color:var(--green);display:none}
+  .result-box.show{display:block}
+  .result-box strong{color:var(--cream)}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">beOtop</div>
+    <div class="role">Back-office Admin</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showPage('overview', this)"><span class="nav-icon">📊</span> Vue globale</div>
+    <div class="nav-item" onclick="showPage('clients', this)"><span class="nav-icon">🏢</span> Clients</div>
+    <div class="nav-item" onclick="showPage('sites', this)"><span class="nav-icon">📍</span> Sites</div>
+    <div class="nav-item" onclick="showPage('users', this)"><span class="nav-icon">👤</span> Utilisateurs</div>
+    <div class="nav-item" onclick="showPage('sessions', this)"><span class="nav-icon">📋</span> Séances</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="font-size:.62rem;color:var(--muted);margin-bottom:.6rem" id="user-info"></div>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <div class="page-title">Vue <em>globale</em></div>
+      <div class="page-sub">Tous les clients · toutes les séances</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Clients actifs</div><div class="kpi-val" id="ov-clients">—</div></div>
+      <div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Sites déployés</div><div class="kpi-val" id="ov-sites">—</div></div>
+      <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Séances totales</div><div class="kpi-val" id="ov-sessions">—</div></div>
+      <div class="kpi" style="--accent:#9b8fc4"><div class="kpi-label">Séances aujourd'hui</div><div class="kpi-val" id="ov-today">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Séances par site · 30 jours</div></div>
+      <table class="tbl" id="ov-by-site">
+        <tr><th>Site</th><th>Client</th><th>Séances 30j</th><th>Kiosque</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div class="page" id="page-clients">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Clients</div>
+        <div class="page-sub">Entreprises abonnées à beOtop</div>
+      </div>
+      <div class="btn-add" onclick="openModal('modal-client')">+ Nouveau client</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="clients-table">
+        <tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Statut</th><th>Actions</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SITES -->
+  <div class="page" id="page-sites">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Sites</div>
+        <div class="page-sub">Espaces beOtop déployés</div>
+      </div>
+      <div class="btn-add" onclick="openModal('modal-site')">+ Nouveau site</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="sites-table">
+        <tr><th>Site</th><th>Client</th><th>Ville</th><th>Salariés</th><th>Séances</th><th>Kiosque URL</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="page" id="page-users">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Utilisateurs</div>
+        <div class="page-sub">Accès à l'application</div>
+      </div>
+      <div class="btn-add" onclick="openModal('modal-user')">+ Nouvel utilisateur</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="users-table">
+        <tr><th>Email</th><th>Nom</th><th>Rôle</th><th>Client</th><th>Statut</th><th>Actions</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SESSIONS -->
+  <div class="page" id="page-sessions">
+    <div class="page-header">
+      <div class="page-title">Séances</div>
+      <div class="page-sub">Toutes les sessions kiosque</div>
+    </div>
+    <div style="display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+      <select id="f-period" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.4rem .7rem;border-radius:7px;font-size:.72rem;font-family:'Jost',sans-serif;outline:none" onchange="loadSessions()">
+        <option value="today">Aujourd'hui</option>
+        <option value="week">7 jours</option>
+        <option value="month" selected>30 jours</option>
+        <option value="all">Tout</option>
+      </select>
+      <div class="btn-add" onclick="exportCSV()">⬇ Export CSV</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="sessions-table">
+        <tr><th>Date</th><th>Heure</th><th>Site</th><th>Département</th><th>Atelier(s)</th><th>Mood</th></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CLIENT -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <h3>Nouveau client</h3>
+    <div class="field"><label>Nom de l'entreprise *</label><input id="c-nom" type="text" placeholder="ex. Société Générale"></div>
+    <div class="field"><label>Nom du contact</label><input id="c-contact-nom" type="text" placeholder="ex. Marie Dupont"></div>
+    <div class="field"><label>Email du contact</label><input id="c-contact-email" type="email" placeholder="marie.dupont@entreprise.fr"></div>
+    <div class="result-box" id="c-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-client')">Annuler</button>
+      <button class="btn btn-primary" onclick="createClient()">Créer le client</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SITE -->
+<div class="modal-overlay" id="modal-site">
+  <div class="modal">
+    <h3>Nouveau site</h3>
+    <div class="field"><label>Client *</label><select id="s-client"></select></div>
+    <div class="field"><label>Nom du site *</label><input id="s-nom" type="text" placeholder="ex. Siège Paris"></div>
+    <div class="field"><label>Ville</label><input id="s-ville" type="text" placeholder="ex. Paris 9e"></div>
+    <div class="field"><label>Nb salariés sur site</label><input id="s-salaries" type="number" placeholder="ex. 400"></div>
+    <div class="result-box" id="s-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-site')">Annuler</button>
+      <button class="btn btn-primary" onclick="createSite()">Créer le site</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USER -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <h3>Nouvel utilisateur</h3>
+    <div class="field"><label>Email *</label><input id="u-email" type="email" placeholder="contact@entreprise.fr"></div>
+    <div class="field"><label>Nom</label><input id="u-nom" type="text" placeholder="Prénom Nom"></div>
+    <div class="field"><label>Rôle</label>
+      <select id="u-role">
+        <option value="client">Client (DRH / DAF)</option>
+        <option value="admin">Admin beOtop</option>
+      </select>
+    </div>
+    <div class="field"><label>Client associé</label><select id="u-client"><option value="">— Aucun (admin) —</option></select></div>
+    <div class="result-box" id="u-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">Annuler</button>
+      <button class="btn btn-primary" onclick="createUser()">Créer l'utilisateur</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var clientsList = [];
+
+// ── Navigation ──
+function showPage(id, el){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id === 'overview') loadOverview();
+  if(id === 'clients')  loadClients();
+  if(id === 'sites')    loadSites();
+  if(id === 'users')    loadUsers();
+  if(id === 'sessions') loadSessions();
+}
+
+// ── Modal ──
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click', function(e){ if(e.target === this) this.classList.remove('open'); });
+});
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ── Auth ──
+async function doLogout(){
+  await fetch('/api/auth/logout', {method:'POST', credentials:'include'});
+  window.location.href = '/login';
+}
+
+async function loadMe(){
+  var r = await fetch('/api/auth/me', {credentials:'include'});
+  if(!r.ok){ window.location.href = '/login'; return; }
+  var d = await r.json();
+  document.getElementById('user-info').textContent = d.nom || d.email;
+}
+
+// ── Overview ──
+async function loadOverview(){
+  var [health, stats, sites] = await Promise.all([
+    fetch('/api/health', {credentials:'include'}).then(r => r.json()),
+    fetch('/api/stats?period=month', {credentials:'include'}).then(r => r.json()),
+    fetch('/api/admin/sites', {credentials:'include'}).then(r => r.json()),
+    fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json()).then(function(d){ clientsList = d; return d; })
+  ]);
+  document.getElementById('ov-clients').textContent  = health.clients;
+  document.getElementById('ov-sites').textContent    = health.sites;
+  document.getElementById('ov-sessions').textContent = health.sessions;
+
+  var today = await fetch('/api/stats?period=today', {credentials:'include'}).then(r => r.json());
+  document.getElementById('ov-today').textContent = today.total_seances;
+
+  var tbl = document.getElementById('ov-by-site');
+  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Séances 30j</th><th>Kiosque</th></tr>';
+  sites.forEach(function(s){
+    var n = stats.by_site ? (stats.by_site.find(function(x){ return x.site_slug === s.slug; }) || {n:0}).n : 0;
+    tbl.innerHTML += '<tr><td class="td-main">' + s.nom + '</td><td>' + (s.client_nom || '—') + '</td><td>' + n + '</td><td><span class="kiosk-url" onclick="copyKiosk(\'' + s.slug + '\')">/kiosk/' + s.slug + '</span></td></tr>';
+  });
+}
+
+function copyKiosk(slug){
+  var url = window.location.origin + '/kiosk/' + slug;
+  navigator.clipboard.writeText(url).then(function(){ toast('URL copiée : ' + url); });
+}
+
+// ── Clients ──
+async function loadClients(){
+  var data = await fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json());
+  clientsList = data;
+  var tbl = document.getElementById('clients-table');
+  tbl.innerHTML = '<tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Statut</th><th>Actions</th></tr>';
+  data.forEach(function(c){
+    tbl.innerHTML += '<tr>' +
+      '<td class="td-main">' + c.nom + '</td>' +
+      '<td>' + (c.contact_nom || '—') + '<br><small style="color:var(--muted)">' + (c.contact_email || '') + '</small></td>' +
+      '<td>' + (c.nb_sites || 0) + '</td>' +
+      '<td>' + (c.nb_sessions || 0) + '</td>' +
+      '<td><span class="pill ' + (c.actif ? 'ok' : 'off') + '">' + (c.actif ? 'Actif' : 'Inactif') + '</span></td>' +
+      '<td><button class="btn-sm" onclick="toast(\'Édition client #' + c.id + ' — à venir\')">Éditer</button></td>' +
+      '</tr>';
+  });
+}
+
+async function createClient(){
+  var nom = document.getElementById('c-nom').value.trim();
+  if(!nom){ toast('Nom requis'); return; }
+  var r = await fetch('/api/admin/clients', {
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nom,
+      contact_nom:   document.getElementById('c-contact-nom').value,
+      contact_email: document.getElementById('c-contact-email').value
+    })
+  });
+  var d = await r.json();
+  if(d.ok){
+    var box = document.getElementById('c-result');
+    box.innerHTML = 'Client créé ✓<br><strong>Login :</strong> ' + (document.getElementById('c-contact-email').value || '—') + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password;
+    box.classList.add('show');
+    loadClients();
+  } else { toast(d.error || 'Erreur'); }
+}
+
+// ── Sites ──
+async function loadSites(){
+  var [sites, clients] = await Promise.all([
+    fetch('/api/admin/sites', {credentials:'include'}).then(r => r.json()),
+    fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json())
+  ]);
+  clientsList = clients;
+  var sel = document.getElementById('s-client');
+  sel.innerHTML = '';
+  clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
+
+  var tbl = document.getElementById('sites-table');
+  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Ville</th><th>Salariés</th><th>Séances</th><th>Kiosque URL</th></tr>';
+  sites.forEach(function(s){
+    tbl.innerHTML += '<tr>' +
+      '<td class="td-main">' + s.nom + '</td>' +
+      '<td>' + (s.client_nom || '—') + '</td>' +
+      '<td>' + (s.ville || '—') + '</td>' +
+      '<td>' + (s.nb_salaries || '—') + '</td>' +
+      '<td>' + (s.nb_sessions || 0) + '</td>' +
+      '<td><span class="kiosk-url" onclick="copyKiosk(\'' + s.slug + '\')" title="Cliquer pour copier">/kiosk/' + s.slug + '</span></td>' +
+      '</tr>';
+  });
+}
+
+async function createSite(){
+  var nom = document.getElementById('s-nom').value.trim();
+  var client_id = document.getElementById('s-client').value;
+  if(!nom || !client_id){ toast('Nom et client requis'); return; }
+  var r = await fetch('/api/admin/sites', {
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nom, client_id: parseInt(client_id),
+      ville: document.getElementById('s-ville').value,
+      nb_salaries: parseInt(document.getElementById('s-salaries').value) || 0
+    })
+  });
+  var d = await r.json();
+  if(d.ok){
+    var box = document.getElementById('s-result');
+    box.innerHTML = 'Site créé ✓<br><strong>URL kiosque :</strong> ' + window.location.origin + '/kiosk/' + d.slug;
+    box.classList.add('show');
+    loadSites();
+  } else { toast(d.error || 'Erreur'); }
+}
+
+// ── Users ──
+async function loadUsers(){
+  var [users, clients] = await Promise.all([
+    fetch('/api/admin/users', {credentials:'include'}).then(r => r.json()),
+    fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json())
+  ]);
+  var sel = document.getElementById('u-client');
+  sel.innerHTML = '<option value="">— Aucun (admin) —</option>';
+  clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
+
+  var tbl = document.getElementById('users-table');
+  tbl.innerHTML = '<tr><th>Email</th><th>Nom</th><th>Rôle</th><th>Client</th><th>Statut</th><th>Actions</th></tr>';
+  users.forEach(function(u){
+    tbl.innerHTML += '<tr>' +
+      '<td class="td-main">' + u.email + '</td>' +
+      '<td>' + (u.nom || '—') + '</td>' +
+      '<td><span class="pill ' + (u.role === 'admin' ? 'admin' : 'client') + '">' + u.role + '</span></td>' +
+      '<td>' + (u.client_nom || '—') + '</td>' +
+      '<td><span class="pill ' + (u.actif ? 'ok' : 'off') + '">' + (u.actif ? 'Actif' : 'Inactif') + '</span></td>' +
+      '<td><button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button></td>' +
+      '</tr>';
+  });
+}
+
+async function createUser(){
+  var email = document.getElementById('u-email').value.trim();
+  if(!email){ toast('Email requis'); return; }
+  var r = await fetch('/api/admin/users', {
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      email,
+      nom:       document.getElementById('u-nom').value,
+      role:      document.getElementById('u-role').value,
+      client_id: document.getElementById('u-client').value || null
+    })
+  });
+  var d = await r.json();
+  if(d.ok){
+    var box = document.getElementById('u-result');
+    box.innerHTML = 'Utilisateur créé ✓<br><strong>Email :</strong> ' + email + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password;
+    box.classList.add('show');
+    loadUsers();
+  } else { toast(d.error || 'Erreur'); }
+}
+
+async function resetPw(id){
+  if(!confirm('Réinitialiser le mot de passe ?')) return;
+  var r = await fetch('/api/admin/users/' + id + '/reset-password', {method:'POST', credentials:'include'});
+  var d = await r.json();
+  if(d.ok) toast('Nouveau MDP : ' + d.new_password);
+}
+
+// ── Sessions ──
+async function loadSessions(){
+  var periodEl = document.getElementById('f-period');
+  if(!periodEl) return;
+  var period = periodEl.value;
+  var url = period === 'all' ? '/api/sessions?limit=1000' : '/api/sessions?period=' + period + '&limit=500';
+  var tbl = document.getElementById('sessions-table');
+  if(!tbl) return;
+  try {
+    var r = await fetch(url, {credentials:'include'});
+    var data = await r.json();
+    tbl.innerHTML = '<tr><th>Date</th><th>Heure</th><th>Site</th><th>Département</th><th>Atelier(s)</th><th>Mood</th></tr>';
+    if(!Array.isArray(data) || data.length === 0){
+      tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Aucune séance sur cette période</td></tr>';
+      return;
+    }
+    data.forEach(function(s){
+      var heure = (s.heure || '—').substring(0, 5);
+      tbl.innerHTML += '<tr>' +
+        '<td>' + (s.date || '—') + '</td>' +
+        '<td>' + heure + '</td>' +
+        '<td>' + (s.site_slug || '—') + '</td>' +
+        '<td class="td-main">' + (s.departement || '—') + '</td>' +
+        '<td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (s.ateliers || '—') + '</td>' +
+        '<td>' + (s.mood || '—') + '</td>' +
+        '</tr>';
+    });
+  } catch(e) {
+    tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#e88">Erreur de chargement</td></tr>';
+  }
+}
+
+function exportCSV(){
+  var today = new Date().toISOString().slice(0, 10);
+  window.open('/api/export?from=2025-01-01&to=' + today, '_blank');
+}
+
+// ── Init ──
+loadMe();
+loadOverview();
+</script>
+</body>
 </html>
