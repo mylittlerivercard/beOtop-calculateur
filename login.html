@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop · Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--bg2:#161820;--gold:#c9a96e;--gold2:#e8c88a;--cream:#f0ead8;--sage:#8aab94;--text:#eeeae0;--muted:#666880;--border:rgba(255,255,255,0.07)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .ambient{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 20% at 20% 30%,rgba(138,171,148,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 80% 70%,rgba(201,169,110,.05) 0%,transparent 70%)}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2.2rem;width:100%;max-width:380px;position:relative;z-index:1}
+  .logo{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--gold);letter-spacing:.08em;text-align:center;margin-bottom:.3rem}
+  .logo-sub{font-size:.65rem;color:var(--muted);text-align:center;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2rem}
+  .field{margin-bottom:1.1rem}
+  .field label{display:block;font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+  .field input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);font-family:'Jost',sans-serif;font-size:.85rem;padding:.7rem .9rem;border-radius:10px;outline:none;transition:border-color .2s}
+  .field input:focus{border-color:rgba(201,169,110,.4)}
+  .btn-login{width:100%;padding:.85rem;border-radius:10px;background:var(--gold);color:#0f1117;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s}
+  .btn-login:hover{background:var(--gold2)}
+  .btn-login:active{transform:scale(.98)}
+  .btn-login:disabled{opacity:.4;cursor:not-allowed}
+  .error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;border-radius:8px;padding:.6rem .9rem;font-size:.72rem;margin-top:.8rem;display:none}
+  .error.show{display:block}
+  .divider{height:1px;background:var(--border);margin:1.5rem 0}
+  .hint{font-size:.62rem;color:var(--muted);text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="card">
+  <div class="logo">beOtop</div>
+  <div class="logo-sub">Espace de gestion</div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="votre@email.fr" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Mot de passe</label>
+    <input type="password" id="password" placeholder="••••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn-login" id="btn" onclick="doLogin()">Se connecter</button>
+  <div class="error" id="error"></div>
+  <div class="divider"></div>
+  <div class="hint">Première connexion · identifiants communiqués par beOtop</div>
+</div>
+<script>
+  document.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+
+  async function doLogin(){
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var btn = document.getElementById('btn');
+    var err = document.getElementById('error');
+    if(!email || !password){ showError('Remplissez tous les champs'); return; }
+    btn.disabled = true; btn.textContent = 'Connexion...';
+    try{
+      var r = await fetch('/api/auth/login', {
+        method: 'POST', credentials: 'include',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      var d = await r.json();
+      if(d.ok){ window.location.href = d.redirect; }
+      else{ showError(d.error || 'Erreur de connexion'); btn.disabled = false; btn.textContent = 'Se connecter'; }
+    } catch(e){ showError('Serveur inaccessible'); btn.disabled = false; btn.textContent = 'Se connecter'; }
+  }
+
+  function showError(msg){ var e = document.getElementById('error'); e.textContent = msg; e.classList.add('show'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop · Mon espace</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--bg2:#161820;--bg3:#1e2030;--gold:#c9a96e;--gold2:#e8c88a;--cream:#f0ead8;--sage:#8aab94;--mist:#7a9eb5;--text:#eeeae0;--muted:#666880;--muted2:#8a8ca8;--border:rgba(255,255,255,0.07);--red:#ef4444;--green:#10b981}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(15,17,23,.9);position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}
+  .logo{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold)}
+  .topbar-right{display:flex;align-items:center;gap:1rem}
+  .user-name{font-size:.68rem;color:var(--muted)}
+  .btn-logout{padding:.35rem .8rem;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .15s}
+  .btn-logout:hover{border-color:var(--red);color:var(--red)}
+  .main{max-width:1100px;margin:0 auto;padding:2rem}
+  .page-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--cream);margin-bottom:.3rem}
+  .page-title em{font-style:italic;color:var(--gold2)}
+  .page-sub{font-size:.68rem;color:var(--muted);margin-bottom:1.8rem}
+
+  /* Site selector */
+  .site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
+  .site-chip{padding:.4rem .9rem;border-radius:20px;border:1px solid var(--border);color:var(--muted2);font-size:.7rem;cursor:pointer;transition:all .15s}
+  .site-chip:hover{border-color:var(--gold);color:var(--gold)}
+  .site-chip.active{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.08)}
+  .period-sel{margin-left:auto;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.38rem .7rem;border-radius:7px;font-size:.7rem;font-family:'Jost',sans-serif;outline:none}
+
+  /* KPIs */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+  .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden}
+  .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--gold));opacity:.5}
+  .kpi-label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+  .kpi-val{font-size:1.5rem;font-weight:200;color:var(--text)}
+  .kpi-sub{font-size:.58rem;color:var(--muted);margin-top:.2rem}
+
+  /* Cards */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem}
+  .card-title{font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem}
+
+  /* Bar chart */
+  .bar-item{display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;font-size:.7rem}
+  .bar-label{width:130px;color:var(--muted2);text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;background:var(--bar-color,var(--gold));transition:width .5s ease}
+  .bar-n{width:28px;color:var(--muted);text-align:right;flex-shrink:0}
+
+  /* Mood */
+  .mood-row{display:flex;gap:.6rem;flex-wrap:wrap}
+  .mood-pill{display:flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:.7rem}
+  .mood-pct{font-weight:400;color:var(--cream)}
+
+  /* Hour heatmap */
+  .heatmap{display:flex;gap:3px;flex-wrap:wrap}
+  .hour-cell{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.52rem;color:var(--muted);transition:all .2s;position:relative;cursor:default}
+
+  /* Sparkline */
+  .sparkline{width:100%;height:60px}
+
+  /* Export */
+  .btn-export{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:8px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25);color:var(--gold);font-size:.68rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s}
+  .btn-export:hover{background:rgba(201,169,110,.18)}
+
+  @media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">beOtop</div>
+  <div class="topbar-right">
+    <span class="user-name" id="user-name"></span>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Mon <em>espace bien-être</em></div>
+  <div class="page-sub" id="page-sub">Chargement...</div>
+
+  <!-- Site + period selector -->
+  <div class="site-bar" id="site-bar"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi" style="--accent:var(--gold)">
+      <div class="kpi-label">Séances totales</div>
+      <div class="kpi-val" id="kpi-total">—</div>
+      <div class="kpi-sub" id="kpi-period-label"></div>
+    </div>
+    <div class="kpi" style="--accent:var(--sage)">
+      <div class="kpi-label">Département le + actif</div>
+      <div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-dept">—</div>
+    </div>
+    <div class="kpi" style="--accent:var(--mist)">
+      <div class="kpi-label">Atelier le + utilisé</div>
+      <div class="kpi-val" style="font-size:.85rem;margin-top:.3rem" id="kpi-top-at">—</div>
+    </div>
+    <div class="kpi" style="--accent:#9b8fc4">
+      <div class="kpi-label">Mood dominant</div>
+      <div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-mood">—</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Séances par département</div>
+      <div id="chart-depts"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ateliers utilisés</div>
+      <div id="chart-ateliers"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Ressenti en sortie</div>
+      <div class="mood-row" id="chart-mood"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Fréquentation par heure</div>
+      <div class="heatmap" id="chart-hours"></div>
+    </div>
+  </div>
+
+  <!-- Trend -->
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+      <div class="card-title" style="margin-bottom:0">Tendance quotidienne · 30 jours</div>
+      <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <svg class="sparkline" id="sparkline" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
+  </div>
+</div>
+
+<script>
+var currentSite = null;
+var currentPeriod = 'month';
+var sites = [];
+
+async function doLogout(){
+  await fetch('/api/auth/logout', {method:'POST', credentials:'include'});
+  window.location.href = '/login';
+}
+
+async function init(){
+  var me = await fetch('/api/auth/me', {credentials:'include'}).then(r => r.ok ? r.json() : null);
+  if(!me){ window.location.href = '/login'; return; }
+  document.getElementById('user-name').textContent = me.nom || me.email;
+
+  var data = await fetch('/api/client/sites', {credentials:'include'}).then(r => r.json());
+  sites = data;
+  buildSiteBar();
+  if(sites.length){ currentSite = sites[0].slug; updateActiveChip(); }
+  loadStats();
+
+  var sub = me.role === 'admin' ? 'Vue admin · tous les sites' : sites.length + ' site(s)';
+  document.getElementById('page-sub').textContent = sub;
+}
+
+function buildSiteBar(){
+  var bar = document.getElementById('site-bar');
+  bar.innerHTML = '';
+  if(sites.length > 1){
+    var all = document.createElement('div');
+    all.className = 'site-chip' + (currentSite === null ? ' active' : '');
+    all.textContent = 'Tous les sites';
+    all.onclick = function(){ currentSite = null; updateActiveChip(); loadStats(); };
+    bar.appendChild(all);
+  }
+  sites.forEach(function(s){
+    var chip = document.createElement('div');
+    chip.className = 'site-chip' + (currentSite === s.slug ? ' active' : '');
+    chip.dataset.slug = s.slug;
+    chip.textContent = s.nom + (s.ville ? ' · ' + s.ville : '');
+    chip.onclick = function(){ currentSite = s.slug; updateActiveChip(); loadStats(); };
+    bar.appendChild(chip);
+  });
+  var sel = document.createElement('select');
+  sel.className = 'period-sel';
+  sel.innerHTML = '<option value="today">Aujourd\'hui</option><option value="week">7 jours</option><option value="month" selected>30 jours</option><option value="year">12 mois</option>';
+  sel.value = currentPeriod;
+  sel.onchange = function(){ currentPeriod = this.value; loadStats(); };
+  bar.appendChild(sel);
+}
+
+function updateActiveChip(){
+  document.querySelectorAll('.site-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.slug === currentSite || (currentSite === null && c.textContent === 'Tous les sites'));
+  });
+}
+
+async function loadStats(){
+  var url = '/api/stats?period=' + currentPeriod + (currentSite ? '&site=' + currentSite : '');
+  var d = await fetch(url, {credentials:'include'}).then(r => r.json());
+
+  document.getElementById('kpi-total').textContent = d.total_seances;
+  var pLabels = {today:"Aujourd'hui", week:'7 derniers jours', month:'30 derniers jours', year:'12 derniers mois'};
+  document.getElementById('kpi-period-label').textContent = pLabels[currentPeriod] || '';
+  document.getElementById('kpi-top-dept').textContent = d.by_departement && d.by_departement[0] ? d.by_departement[0].label : '—';
+  document.getElementById('kpi-top-at').textContent = d.by_atelier && d.by_atelier[0] ? d.by_atelier[0].atelier : '—';
+  document.getElementById('kpi-top-mood').textContent = d.by_mood && d.by_mood[0] ? d.by_mood[0].mood : '—';
+
+  renderBars('chart-depts', d.by_departement || [], 'label', 'n', 'var(--gold)');
+  renderBars('chart-ateliers', (d.by_atelier || []).map(function(x){ return {label:x.atelier, n:x.n}; }), 'label', 'n', 'var(--mist)');
+
+  var moodEl = document.getElementById('chart-mood');
+  moodEl.innerHTML = '';
+  var total = (d.by_mood || []).reduce(function(s, m){ return s + m.n; }, 0);
+  var moodIcons = {'Épuisé':'😮‍💨', 'Neutre':'😐', 'Mieux':'🙂', 'Rechargé':'✨'};
+  (d.by_mood || []).forEach(function(m){
+    var pct = total ? Math.round(m.n / total * 100) : 0;
+    moodEl.innerHTML += '<div class="mood-pill">' + (moodIcons[m.mood] || '') + ' ' + m.mood + ' <span class="mood-pct">' + pct + '%</span></div>';
+  });
+
+  var hoursEl = document.getElementById('chart-hours');
+  hoursEl.innerHTML = '';
+  var maxH = Math.max(1, ...(d.by_hour || []).map(function(h){ return h.n; }));
+  for(var h = 7; h <= 20; h++){
+    var hStr = String(h).padStart(2, '0');
+    var found = (d.by_hour || []).find(function(x){ return x.h == hStr; });
+    var n = found ? found.n : 0;
+    var opacity = n === 0 ? 0.04 : 0.1 + (n / maxH) * 0.7;
+    var cell = document.createElement('div');
+    cell.className = 'hour-cell';
+    cell.title = hStr + 'h · ' + n + ' séance(s)';
+    cell.style.background = 'rgba(201,169,110,' + opacity + ')';
+    cell.textContent = hStr;
+    hoursEl.appendChild(cell);
+  }
+
+  renderSparkline(d.by_day || []);
+}
+
+function renderBars(containerId, data, labelKey, valKey, color){
+  var el = document.getElementById(containerId);
+  if(!data.length){ el.innerHTML = '<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Aucune donnée</div>'; return; }
+  var max = Math.max(1, ...data.map(function(d){ return d[valKey]; }));
+  el.innerHTML = data.slice(0, 7).map(function(d){
+    var pct = Math.round(d[valKey] / max * 100);
+    return '<div class="bar-item"><div class="bar-label">' + d[labelKey] + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;--bar-color:' + color + '"></div></div><div class="bar-n">' + d[valKey] + '</div></div>';
+  }).join('');
+}
+
+function renderSparkline(byDay){
+  var svg = document.getElementById('sparkline');
+  if(!byDay.length){ svg.innerHTML = ''; return; }
+  var max = Math.max(1, ...byDay.map(function(d){ return d.n; }));
+  var w = 600, h = 60, pad = 4;
+  var pts = byDay.map(function(d, i){
+    var x = pad + (i / (byDay.length - 1 || 1)) * (w - 2 * pad);
+    var y = h - pad - (d.n / max) * (h - 2 * pad);
+    return [x, y];
+  });
+  var path = pts.map(function(p, i){ return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join('');
+  var fill = pts.map(function(p, i){ return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join('')
+    + ' L' + pts[pts.length-1][0] + ',' + h + ' L' + pts[0][0] + ',' + h + ' Z';
+  svg.innerHTML =
+    '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c9a96e" stop-opacity=".3"/><stop offset="100%" stop-color="#c9a96e" stop-opacity="0"/></linearGradient></defs>' +
+    '<path d="' + fill + '" fill="url(#sg)"/>' +
+    '<path d="' + path + '" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linejoin="round"/>' +
+    pts.map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.5" fill="#c9a96e" opacity=".8"/>'; }).join('');
+}
+
+function exportCSV(){
+  var today = new Date().toISOString().slice(0, 10);
+  var url = '/api/export?from=2025-01-01&to=' + today + (currentSite ? '&site=' + currentSite : '');
+  window.open(url, '_blank');
+}
+
+init();
+</script>
+</body>
+</html>
