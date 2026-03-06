@@ -17,7 +17,6 @@ from functools import wraps
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 CORS(app, supports_credentials=True)
 
