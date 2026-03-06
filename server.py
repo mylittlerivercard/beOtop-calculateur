@@ -606,8 +606,9 @@ def kiosk_page(site_slug):
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
     return html
 
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     print("\n🌿 beOtop v2.0 — Serveur complet (PostgreSQL)")
     print("─" * 45)
     print("  http://localhost:5000          → App principale")
