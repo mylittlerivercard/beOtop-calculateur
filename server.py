@@ -108,7 +108,6 @@ def init_db():
         print("Base initialisee avec succes (PostgreSQL)")
     except Exception as e:
         print("ERREUR lors de l'initialisation de la base :", e)
-        raise e
     finally:
         cur.close()
         conn.close()
