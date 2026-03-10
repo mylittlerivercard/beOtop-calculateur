@@ -638,4 +638,4 @@ if __name__ == '__main__':
     print("-" * 45)
     print("  Admin par defaut : admin@beotop.fr / beotop2026")
     print("-" * 45 + "\n")
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
