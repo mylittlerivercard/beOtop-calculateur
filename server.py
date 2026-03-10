@@ -39,11 +39,17 @@ def serialize_row(row):
             d[k] = v.isoformat()
     return d
 
+import sys  # déjà présent normalement
+
 def init_db():
-    print("Initialisation de la base de donnees...")
+    print(">>> Initialisation de la base de donnees...", file=sys.stderr)
     try:
+        print(">>> Tentative de connexion à la base...", file=sys.stderr)
         conn = get_db()
+        print(">>> Connexion réussie", file=sys.stderr)
         cur = conn.cursor()
+        
+        print(">>> Création des tables si inexistantes...", file=sys.stderr)
         cur.execute('''
             CREATE TABLE IF NOT EXISTS clients (
                 id            SERIAL PRIMARY KEY,
@@ -96,24 +102,34 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
         conn.commit()
+        print(">>> Tables et index créés/vérifiés", file=sys.stderr)
 
+        print(">>> Vérification de l'existence d'un utilisateur admin...", file=sys.stderr)
         cur.execute("SELECT COUNT(*) as n FROM users")
-        if cur.fetchone()['n'] == 0:
+        count = cur.fetchone()['n']
+        if count == 0:
+            print(">>> Aucun utilisateur trouvé, création de l'admin par défaut...", file=sys.stderr)
             cur.execute(
                 "INSERT INTO users (email, password, nom, role) VALUES (%s, %s, %s, %s)",
                 ['admin@beotop.fr', generate_password_hash('beotop2026'), 'Admin beOtop', 'admin']
             )
             conn.commit()
-            print("Admin cree : admin@beotop.fr / beotop2026")
-        print("Base initialisee avec succes (PostgreSQL)")
+            print(">>> Admin créé : admin@beotop.fr / beotop2026", file=sys.stderr)
+        else:
+            print(">>> Utilisateur admin déjà existant", file=sys.stderr)
+
+        print(">>> Base initialisée avec succès (PostgreSQL)", file=sys.stderr)
     except Exception as e:
-        print("ERREUR lors de l'initialisation de la base :", e)
+        print(">>> ERREUR lors de l'initialisation de la base :", e, file=sys.stderr)
+        raise e  # Relance l'exception pour que Gunicorn plante et affiche l'erreur
     finally:
-        cur.close()
-        conn.close()
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
+        print(">>> Connexion fermée", file=sys.stderr)
 
 init_db()
-
 # ========== DECORATEURS ==========
 
 def login_required(f):
