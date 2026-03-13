@@ -575,57 +575,31 @@ function switchTab(tab){
 // ════════════════════════════════════════════════════════════════════
 // AUTH & INIT
 // ════════════════════════════════════════════════════════════════════
-function doLogout(){
-  alert('Déconnexion — connectez votre backend Flask pour activer cette fonction.');
+async function doLogout(){
+  await fetch('/api/auth/logout', {method:'POST', credentials:'include'});
+  window.location.href = '/login';
 }
 
-// ── Données de démonstration (remplacer par les vrais appels API) ──
-var MOCK_SITES = [
-  { slug: 'siege-paris',   nom: 'Siège Paris',   ville: 'Paris' },
-  { slug: 'usine-lyon',    nom: 'Usine Lyon',     ville: 'Lyon' },
-  { slug: 'bureau-nantes', nom: 'Bureau Nantes',  ville: 'Nantes' }
-];
+async function init(){
+  var me = await fetch('/api/auth/me', {credentials:'include'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; });
+  if(!me){ window.location.href = '/login'; return; }
 
-var MOCK_STATS = {
-  total_seances: 347,
-  by_departement: [
-    { label: 'Marketing',  n: 82 }, { label: 'RH',         n: 74 },
-    { label: 'Technique',  n: 63 }, { label: 'Finance',    n: 51 },
-    { label: 'Direction',  n: 42 }, { label: 'Commercial', n: 35 }
-  ],
-  by_atelier: [
-    { atelier: 'Respiration',        n: 118 },
-    { atelier: 'Méditation',         n: 95  },
-    { atelier: 'Étirements',         n: 76  },
-    { atelier: 'Cohérence cardiaque',n: 58  }
-  ],
-  by_mood: [
-    { mood: 'Rechargé', n: 142 }, { mood: 'Mieux',  n: 108 },
-    { mood: 'Neutre',   n: 64  }, { mood: 'Épuisé', n: 33  }
-  ],
-  by_hour: [
-    {h:'8',n:12},{h:'9',n:28},{h:'10',n:45},{h:'11',n:38},
-    {h:'12',n:52},{h:'13',n:41},{h:'14',n:35},{h:'15',n:48},
-    {h:'16',n:32},{h:'17',n:14},{h:'18',n:2}
-  ],
-  by_day: (function(){
-    var days = [], base = [11,8,14,19,22,17,9,25,18,13,21,16,10,28,23,15,
-                           12,20,24,7,18,22,16,11,26,19,14,21,17,13];
-    for(var i=0;i<30;i++){
-      var d = new Date(); d.setDate(d.getDate()-29+i);
-      days.push({ date: d.toISOString().slice(0,10), n: base[i] });
-    }
-    return days;
-  })()
-};
+  document.getElementById('user-name').textContent = me.nom || me.email;
 
-function init(){
-  document.getElementById('user-name').textContent = 'Marie Dupont (démo)';
-  sites = MOCK_SITES;
+  var data = await fetch('/api/client/sites', {credentials:'include'})
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return []; });
+  sites = data;
   buildSiteBar();
   if(sites.length){ currentSite = sites[0].slug; updateActiveChip(); }
   loadStats();
-  document.getElementById('page-sub').textContent = 'Mode démonstration \u00b7 3 site(s) — connectez votre API pour les vraies données';
+
+  document.getElementById('page-sub').textContent =
+    me.role === 'admin'
+      ? 'Vue admin \u00b7 tous les sites'
+      : sites.length + ' site(s)';
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -668,16 +642,11 @@ function updateActiveChip(){
   });
 }
 
-function loadStats(){
-  // Mode démo : utilise MOCK_STATS (remplacer par fetch réel en production)
-  var d = MOCK_STATS;
-  // Pour simuler des variations par période et par site
-  var factor = {today:0.04, week:0.25, month:1, year:12}[currentPeriod] || 1;
-  d = JSON.parse(JSON.stringify(MOCK_STATS));
-  d.total_seances = Math.round(MOCK_STATS.total_seances * factor);
-  d.by_departement = MOCK_STATS.by_departement.map(function(x){
-    return {label:x.label, n:Math.round(x.n*factor)};
-  });
+async function loadStats(){
+  var url = '/api/stats?period='+currentPeriod+(currentSite ? '&site='+currentSite : '');
+  var d = await fetch(url, {credentials:'include'})
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return {total_seances:0}; });
 
   realSeancesTotal = d.total_seances || 0;
   document.getElementById('kpi-total').textContent = fnum(realSeancesTotal);
@@ -762,7 +731,8 @@ function renderSparkline(byDay){
 }
 
 function exportCSV(){
-  alert('Export CSV disponible une fois connecté au backend Flask.\nEndpoint : /api/export?from=YYYY-MM-DD&to=YYYY-MM-DD');
+  var today = new Date().toISOString().slice(0,10);
+  window.open('/api/export?from=2025-01-01&to='+today+(currentSite?'&site='+currentSite:''), '_blank');
 }
 
 // ════════════════════════════════════════════════════════════════════
