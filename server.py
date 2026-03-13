@@ -5,51 +5,60 @@ Auth + Multi-clients + Roles (admin / client / kiosque)
 Version PostgreSQL
 """
 
-from flask import Flask, request, jsonify, session, redirect, Response
+from flask import Flask, request, jsonify, session, redirect, Response, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import csv
 import io
+import sys
 import secrets
 from datetime import datetime, date
 from functools import wraps
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 CORS(app, supports_credentials=True)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def serve_html(filename):
+    """Lit et retourne un fichier HTML avec le bon Content-Type."""
+    path = os.path.join(BASE_DIR, filename)
+    try:
+        with open(path, encoding='utf-8') as f:
+            return Response(f.read(), mimetype='text/html; charset=utf-8')
+    except FileNotFoundError:
+        return Response(f'<h1>Fichier introuvable : {filename}</h1>', status=404, mimetype='text/html')
 
 # ========== BASE DE DONNEES ==========
 
 def get_db():
     try:
-        conn = psycopg2.connect(os.environ['DATABASE_URL'], cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(
+            os.environ['DATABASE_URL'],
+            cursor_factory=RealDictCursor,
+            connect_timeout=10
+        )
         return conn
     except Exception as e:
-        print("Erreur de connexion a la base :", e)
+        print("Erreur de connexion a la base :", e, file=sys.stderr)
         raise e
 
 def serialize_row(row):
-    """Convertit les types non-serialisables (date, time, datetime) en string."""
     d = dict(row)
     for k, v in d.items():
         if hasattr(v, 'isoformat'):
             d[k] = v.isoformat()
     return d
 
-import sys  # déjà présent normalement
-
 def init_db():
     print(">>> Initialisation de la base de donnees...", file=sys.stderr)
     try:
-        print(">>> Tentative de connexion à la base...", file=sys.stderr)
         conn = get_db()
-        print(">>> Connexion réussie", file=sys.stderr)
         cur = conn.cursor()
-        
-        print(">>> Création des tables si inexistantes...", file=sys.stderr)
         cur.execute('''
             CREATE TABLE IF NOT EXISTS clients (
                 id            SERIAL PRIMARY KEY,
@@ -102,37 +111,29 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
         conn.commit()
-        print(">>> Tables et index créés/vérifiés", file=sys.stderr)
 
-        print(">>> Vérification de l'existence d'un utilisateur admin...", file=sys.stderr)
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
         if count == 0:
-            print(">>> Aucun utilisateur trouvé, création de l'admin par défaut...", file=sys.stderr)
             cur.execute(
                 "INSERT INTO users (email, password, nom, role) VALUES (%s, %s, %s, %s)",
                 ['admin@beotop.fr', generate_password_hash('beotop2026'), 'Admin beOtop', 'admin']
             )
             conn.commit()
             print(">>> Admin créé : admin@beotop.fr / beotop2026", file=sys.stderr)
-        else:
-            print(">>> Utilisateur admin déjà existant", file=sys.stderr)
 
-        print(">>> Base initialisée avec succès (PostgreSQL)", file=sys.stderr)
+        print(">>> Base initialisée avec succès", file=sys.stderr)
     except Exception as e:
-        print(">>> ERREUR lors de l'initialisation de la base :", e, file=sys.stderr)
-        # On ne relance pas l'exception — gunicorn démarre quand même
+        print(">>> ERREUR init_db :", e, file=sys.stderr)
     finally:
-        if 'cur' in locals():
-            cur.close()
-        if 'conn' in locals():
-            conn.close()
-        print(">>> Connexion fermée", file=sys.stderr)
+        if 'cur' in locals(): cur.close()
+        if 'conn' in locals(): conn.close()
 
 try:
     init_db()
 except Exception as e:
     print(">>> init_db ignorée au démarrage :", e, file=sys.stderr)
+
 # ========== DECORATEURS ==========
 
 def login_required(f):
@@ -462,40 +463,18 @@ def get_stats():
         with conn.cursor() as cur:
             cur.execute(f'SELECT COUNT(*) as n FROM sessions {where}', site_params)
             total = cur.fetchone()['n']
-
-            cur.execute(f'''
-                SELECT departement as label, COUNT(*) as n FROM sessions {where}
-                GROUP BY departement ORDER BY n DESC
-            ''', site_params)
+            cur.execute(f'SELECT departement as label, COUNT(*) as n FROM sessions {where} GROUP BY departement ORDER BY n DESC', site_params)
             by_dept = cur.fetchall()
-
-            cur.execute(f'''
-                SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where}
-                GROUP BY h ORDER BY h
-            ''', site_params)
+            cur.execute(f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h", site_params)
             by_hour = cur.fetchall()
-
-            cur.execute(f'''
-                SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != ''
-                GROUP BY mood ORDER BY n DESC
-            ''', site_params)
+            cur.execute(f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC", site_params)
             by_mood = cur.fetchall()
-
-            cur.execute(f'''
-                SELECT date, COUNT(*) as n FROM sessions
-                WHERE date >= CURRENT_DATE - INTERVAL '30 days' AND {site_clause}
-                GROUP BY date ORDER BY date
-            ''', site_params)
+            cur.execute(f"SELECT date, COUNT(*) as n FROM sessions WHERE date >= CURRENT_DATE - INTERVAL '30 days' AND {site_clause} GROUP BY date ORDER BY date", site_params)
             by_day = cur.fetchall()
-
             cur.execute(f"SELECT ateliers FROM sessions {where} AND ateliers != ''", site_params)
             raw_at = cur.fetchall()
-
             if session.get('role') == 'admin':
-                cur.execute(f'''
-                    SELECT site_slug, COUNT(*) as n FROM sessions {where}
-                    GROUP BY site_slug ORDER BY n DESC
-                ''', site_params)
+                cur.execute(f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC', site_params)
                 by_site = cur.fetchall()
             else:
                 by_site = []
@@ -534,10 +513,7 @@ def get_sessions():
         params.append(dept)
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                f"SELECT * FROM sessions {where} ORDER BY created_at DESC LIMIT %s",
-                params + [limit]
-            )
+            cur.execute(f"SELECT * FROM sessions {where} ORDER BY created_at DESC LIMIT %s", params + [limit])
             rows = cur.fetchall()
     return jsonify([serialize_row(r) for r in rows])
 
@@ -610,35 +586,27 @@ def index():
 
 @app.route('/login')
 def login_page():
-    return open(os.path.join(os.path.dirname(__file__), 'login.html'), encoding='utf-8').read()
+    return serve_html('login.html')
 
 @app.route('/admin')
 def admin_page():
     if session.get('role') != 'admin':
         return redirect('/login')
-    return open(os.path.join(os.path.dirname(__file__), 'admin.html'), encoding='utf-8').read()
+    return serve_html('admin.html')
 
 @app.route('/dashboard')
 def dashboard_page():
     if 'user_id' not in session:
         return redirect('/login')
-    return open(os.path.join(os.path.dirname(__file__), 'dashboard.html'), encoding='utf-8').read()
+    return serve_html('dashboard.html')
 
 @app.route('/kiosk/<site_slug>')
 def kiosk_page(site_slug):
-    html = open(os.path.join(os.path.dirname(__file__), 'beOtop_Kiosk.html'), encoding='utf-8').read()
+    path = os.path.join(BASE_DIR, 'beOtop_Kiosk.html')
+    with open(path, encoding='utf-8') as f:
+        html = f.read()
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
-    return html
+    return Response(html, mimetype='text/html; charset=utf-8')
 
 if __name__ == '__main__':
-    print("\nbeOtop v2.0 - Serveur complet (PostgreSQL)")
-    print("-" * 45)
-    print("  http://localhost:5000           -> App principale")
-    print("  http://localhost:5000/login     -> Connexion")
-    print("  http://localhost:5000/admin     -> Back-office beOtop")
-    print("  http://localhost:5000/dashboard -> Espace client")
-    print("  http://localhost:5000/kiosk/SLUG -> Kiosque iPad")
-    print("-" * 45)
-    print("  Admin par defaut : admin@beotop.fr / beotop2026")
-    print("-" * 45 + "\n")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
