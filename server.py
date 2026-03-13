@@ -121,7 +121,7 @@ def init_db():
         print(">>> Base initialisée avec succès (PostgreSQL)", file=sys.stderr)
     except Exception as e:
         print(">>> ERREUR lors de l'initialisation de la base :", e, file=sys.stderr)
-        raise e  # Relance l'exception pour que Gunicorn plante et affiche l'erreur
+        # On ne relance pas l'exception — gunicorn démarre quand même
     finally:
         if 'cur' in locals():
             cur.close()
@@ -129,7 +129,10 @@ def init_db():
             conn.close()
         print(">>> Connexion fermée", file=sys.stderr)
 
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(">>> init_db ignorée au démarrage :", e, file=sys.stderr)
 # ========== DECORATEURS ==========
 
 def login_required(f):
