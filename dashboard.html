@@ -286,9 +286,9 @@
           <input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400"
                  oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()">
         </div>
-        <!-- Nombre d'ateliers beOtop -->
+        <!-- Nombre d'espaces beOtop -->
         <div class="context-field">
-          <label>Nombre d'ateliers beOtop</label>
+          <label>Nombre d'espaces beOtop</label>
           <input type="number" id="ctx-ateliers" min="1" max="20" step="1" value="1"
                  oninput="ROI.nbEsp=Math.max(1,+this.value||1);calcROI()">
         </div>
@@ -529,7 +529,7 @@ var roiBuilt      = false;
 // Paramètres ROI
 var ROI = {
   nbs:    400,    // nombre d'employés
-  nbEsp:  1,      // nombre d'ateliers beOtop
+  nbEsp:  1,      // nombre d'espaces beOtop
   ctx:    'siege',// 'siege' | 'industrie'
   sc:     2,      // indice scénario (1-3)
   po:     'l',    // posture managériale
@@ -581,31 +581,57 @@ function switchTab(tab){
 // ════════════════════════════════════════════════════════════════════
 // AUTH & INIT
 // ════════════════════════════════════════════════════════════════════
-async function doLogout(){
-  await fetch('/api/auth/logout', {method:'POST', credentials:'include'});
-  window.location.href = '/login';
+function doLogout(){
+  alert('Déconnexion — connectez votre backend Flask pour activer cette fonction.');
 }
 
-async function init(){
-  var me = await fetch('/api/auth/me', {credentials:'include'})
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .catch(function(){ return null; });
-  if(!me){ window.location.href = '/login'; return; }
+// ── Données de démonstration (remplacer par les vrais appels API) ──
+var MOCK_SITES = [
+  { slug: 'siege-paris',   nom: 'Siège Paris',   ville: 'Paris' },
+  { slug: 'usine-lyon',    nom: 'Usine Lyon',     ville: 'Lyon' },
+  { slug: 'bureau-nantes', nom: 'Bureau Nantes',  ville: 'Nantes' }
+];
 
-  document.getElementById('user-name').textContent = me.nom || me.email;
+var MOCK_STATS = {
+  total_seances: 347,
+  by_departement: [
+    { label: 'Marketing',  n: 82 }, { label: 'RH',         n: 74 },
+    { label: 'Technique',  n: 63 }, { label: 'Finance',    n: 51 },
+    { label: 'Direction',  n: 42 }, { label: 'Commercial', n: 35 }
+  ],
+  by_atelier: [
+    { atelier: 'Respiration',        n: 118 },
+    { atelier: 'Méditation',         n: 95  },
+    { atelier: 'Étirements',         n: 76  },
+    { atelier: 'Cohérence cardiaque',n: 58  }
+  ],
+  by_mood: [
+    { mood: 'Rechargé', n: 142 }, { mood: 'Mieux',  n: 108 },
+    { mood: 'Neutre',   n: 64  }, { mood: 'Épuisé', n: 33  }
+  ],
+  by_hour: [
+    {h:'8',n:12},{h:'9',n:28},{h:'10',n:45},{h:'11',n:38},
+    {h:'12',n:52},{h:'13',n:41},{h:'14',n:35},{h:'15',n:48},
+    {h:'16',n:32},{h:'17',n:14},{h:'18',n:2}
+  ],
+  by_day: (function(){
+    var days = [], base = [11,8,14,19,22,17,9,25,18,13,21,16,10,28,23,15,
+                           12,20,24,7,18,22,16,11,26,19,14,21,17,13];
+    for(var i=0;i<30;i++){
+      var d = new Date(); d.setDate(d.getDate()-29+i);
+      days.push({ date: d.toISOString().slice(0,10), n: base[i] });
+    }
+    return days;
+  })()
+};
 
-  var data = await fetch('/api/client/sites', {credentials:'include'})
-    .then(function(r){ return r.json(); })
-    .catch(function(){ return []; });
-  sites = data;
+function init(){
+  document.getElementById('user-name').textContent = 'Marie Dupont (démo)';
+  sites = MOCK_SITES;
   buildSiteBar();
   if(sites.length){ currentSite = sites[0].slug; updateActiveChip(); }
   loadStats();
-
-  document.getElementById('page-sub').textContent =
-    me.role === 'admin'
-      ? 'Vue admin \u00b7 tous les sites'
-      : sites.length + ' site(s)';
+  document.getElementById('page-sub').textContent = 'Mode démonstration \u00b7 3 site(s) — connectez votre API pour les vraies données';
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -648,11 +674,16 @@ function updateActiveChip(){
   });
 }
 
-async function loadStats(){
-  var url = '/api/stats?period='+currentPeriod+(currentSite ? '&site='+currentSite : '');
-  var d = await fetch(url, {credentials:'include'})
-    .then(function(r){ return r.json(); })
-    .catch(function(){ return {total_seances:0}; });
+function loadStats(){
+  // Mode démo : utilise MOCK_STATS (remplacer par fetch réel en production)
+  var d = MOCK_STATS;
+  // Pour simuler des variations par période et par site
+  var factor = {today:0.04, week:0.25, month:1, year:12}[currentPeriod] || 1;
+  d = JSON.parse(JSON.stringify(MOCK_STATS));
+  d.total_seances = Math.round(MOCK_STATS.total_seances * factor);
+  d.by_departement = MOCK_STATS.by_departement.map(function(x){
+    return {label:x.label, n:Math.round(x.n*factor)};
+  });
 
   realSeancesTotal = d.total_seances || 0;
   document.getElementById('kpi-total').textContent = fnum(realSeancesTotal);
@@ -737,8 +768,7 @@ function renderSparkline(byDay){
 }
 
 function exportCSV(){
-  var today = new Date().toISOString().slice(0,10);
-  window.open('/api/export?from=2025-01-01&to='+today+(currentSite?'&site='+currentSite:''), '_blank');
+  alert('Export CSV disponible une fois connecté au backend Flask.\nEndpoint : /api/export?from=YYYY-MM-DD&to=YYYY-MM-DD');
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -1130,7 +1160,7 @@ function calcROI(){
 
   // ── Détail des coûts ──
   var detail =
-    '<div class="detail-row"><span>Amortissement ('+ROI.nbEsp+' atelier'+(ROI.nbEsp>1?'s':'')+')</span><span>'+eur(ctpComp.am)+'</span></div>' +
+    '<div class="detail-row"><span>Amortissement ('+ROI.nbEsp+' espace'+(ROI.nbEsp>1?'s':'')+')</span><span>'+eur(ctpComp.am)+'</span></div>' +
     '<div class="detail-row"><span>Loyer d\u2019opportunit\u00e9 ('+SURF_OPT[ROI.surf]+'\u202fm\u00b2)</span><span>'+eur(ctpComp.im)+'</span></div>' +
     '<div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div>' +
     '<div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div>' +
@@ -1164,7 +1194,7 @@ function calcROI(){
     'Abs\u00e9nt\u00e9isme : '+eur(bases.absenteisme*scale)+'<br>' +
     'Turnover : '+eur(bases.turnover*scale)+'<br>' +
     'Base adressable : '+eur(baseTotale)+'<br>' +
-    ROI.nbEsp+' atelier'+(ROI.nbEsp>1?'s':'')+' \u00b7 '+ROI.nbs+' employ\u00e9s';
+    ROI.nbEsp+' espace'+(ROI.nbEsp>1?'s':'')+' \u00b7 '+ROI.nbs+' employ\u00e9s';
 
   // ── Évolution projetée (si données réelles) ──
   var evoDiv = document.getElementById('drh-evolution');
@@ -1204,3 +1234,4 @@ function calcROI(){
 init();
 </script>
 </body>
+</html>
