@@ -625,14 +625,24 @@ def sensors_stats():
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
 
-    date_clause = build_date_clause(period)
+    # Clause de date adaptée aux colonnes timestamp des tables capteurs
+    if period == 'today':
+        ts_clause = "timestamp >= CURRENT_DATE AND timestamp < CURRENT_DATE + INTERVAL '1 day'"
+    elif period == 'week':
+        ts_clause = "timestamp >= NOW() - INTERVAL '7 days'"
+    elif period == 'month':
+        ts_clause = "timestamp >= NOW() - INTERVAL '30 days'"
+    elif period == 'year':
+        ts_clause = "timestamp >= NOW() - INTERVAL '365 days'"
+    else:
+        ts_clause = "1=1"
 
     with get_db() as conn:
         with conn.cursor() as cur:
 
             # Nombre total de passages
             cur.execute(
-                f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {date_clause}",
+                f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {ts_clause}",
                 [site_slug]
             )
             total_passages = cur.fetchone()['n']
@@ -641,7 +651,7 @@ def sensors_stats():
             cur.execute(
                 f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
                     FROM sensor_passages
-                    WHERE site_slug=%s AND {date_clause}
+                    WHERE site_slug=%s AND {ts_clause}
                     GROUP BY h ORDER BY h""",
                 [site_slug]
             )
@@ -653,7 +663,7 @@ def sensors_stats():
                            COUNT(*) as total_signaux,
                            SUM(CASE WHEN occupe THEN 1 ELSE 0 END) as signaux_actifs
                     FROM sensor_occupation
-                    WHERE site_slug=%s AND {date_clause}
+                    WHERE site_slug=%s AND {ts_clause}
                     GROUP BY atelier ORDER BY atelier""",
                 [site_slug]
             )
@@ -678,7 +688,7 @@ def sensors_stats():
                            MIN(duree_sec) as duree_min_sec,
                            MAX(duree_sec) as duree_max_sec
                     FROM sensor_sessions
-                    WHERE site_slug=%s AND {date_clause}
+                    WHERE site_slug=%s AND {ts_clause}
                     GROUP BY atelier ORDER BY nb_sessions DESC""",
                 [site_slug]
             )
