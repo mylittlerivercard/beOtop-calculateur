@@ -627,13 +627,13 @@ def sensors_stats():
 
     # Clause de date adaptée aux colonnes timestamp des tables capteurs
     if period == 'today':
-        ts_clause = "timestamp >= CURRENT_DATE AND timestamp < CURRENT_DATE + INTERVAL '1 day'"
+        ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
     elif period == 'week':
-        ts_clause = "timestamp >= NOW() - INTERVAL '7 days'"
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'7 days\''
     elif period == 'month':
-        ts_clause = "timestamp >= NOW() - INTERVAL '30 days'"
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'30 days\''
     elif period == 'year':
-        ts_clause = "timestamp >= NOW() - INTERVAL '365 days'"
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'365 days\''
     else:
         ts_clause = "1=1"
 
