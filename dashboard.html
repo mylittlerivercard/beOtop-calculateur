@@ -401,6 +401,13 @@
       </div>
     </div>
 
+    <!-- Diagramme passages par heure -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Visites par heure — faisceau</div>
+      <div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div>
+      <div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div>
+    </div>
+
     <!-- Timeline passages -->
     <div class="card" style="margin-bottom:1rem">
       <div style="display:flex;align-items:center;margin-bottom:.8rem">
@@ -672,6 +679,9 @@ async function loadSensorStats(){
     }).join('');
   }
 
+  // Diagramme passages par heure
+  renderSensorHourChart(d.passages_par_heure || []);
+
   // Passages récents — on recharge depuis l'API directement
   await loadRecentPassages();
 
@@ -708,6 +718,40 @@ async function loadRecentPassages(){
       '</div>';
   });
   list.innerHTML=items||'<div class="sensor-empty">Aucun passage</div>';
+}
+
+function renderSensorHourChart(passagesParHeure){
+  var el    = document.getElementById('s-chart-heures');
+  var lblEl = document.getElementById('s-chart-heures-labels');
+  if(!el) return;
+
+  // Couvre toutes les heures 7h-20h
+  var heures = [];
+  for(var h=7; h<=20; h++) heures.push(h);
+
+  var data = {};
+  (passagesParHeure||[]).forEach(function(r){ data[parseInt(r.h)] = r.n; });
+
+  var max = Math.max.apply(null, heures.map(function(h){ return data[h]||0 }).concat([1]));
+
+  var barW = 'calc((100% - '+(heures.length-1)+'*6px) / '+heures.length+')';
+
+  el.innerHTML = heures.map(function(h){
+    var n   = data[h] || 0;
+    var pct = Math.round((n / max) * 100);
+    var col = n === 0 ? 'rgba(0,0,0,.07)'
+            : n >= max * 0.7 ? 'var(--sage)'
+            : n >= max * 0.4 ? 'var(--gold)'
+            : 'var(--mist)';
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px">'+
+      (n > 0 ? '<div style="font-size:.52rem;color:var(--muted2)">'+n+'</div>' : '')+
+      '<div style="width:100%;border-radius:4px 4px 0 0;background:'+col+';height:'+Math.max(pct,4)+'%;transition:height .4s ease" title="'+h+'h · '+n+' passage(s)"></div>'+
+      '</div>';
+  }).join('');
+
+  lblEl.innerHTML = heures.map(function(h){
+    return '<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>';
+  }).join('');
 }
 
 function showSensorEmpty(){
