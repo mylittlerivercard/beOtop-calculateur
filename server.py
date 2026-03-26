@@ -110,6 +110,52 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
+
+        # ========== NOUVELLES TABLES CAPTEURS ==========
+
+        # Passage : chaque franchissement du faisceau (entrée ou sortie)
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS sensor_passages (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_slug   TEXT NOT NULL,
+                direction   TEXT,          -- 'entree' | 'sortie' | null si inconnu
+                timestamp   TIMESTAMP NOT NULL
+            )
+        ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_site ON sensor_passages(site_slug)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_ts   ON sensor_passages(timestamp)')
+
+        # Occupation : signal PIR par atelier, toutes les N secondes
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS sensor_occupation (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_slug   TEXT NOT NULL,
+                atelier     TEXT NOT NULL,  -- ex: 'fauteuil-massage', 'bain-lumiere'
+                occupe      BOOLEAN NOT NULL,
+                timestamp   TIMESTAMP NOT NULL
+            )
+        ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_site    ON sensor_occupation(site_slug)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_atelier ON sensor_occupation(atelier)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_ts      ON sensor_occupation(timestamp)')
+
+        # Sessions capteurs : durée calculée par le RPi (début/fin de présence dans l'espace)
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS sensor_sessions (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_slug   TEXT NOT NULL,
+                atelier     TEXT,           -- null = session globale espace, sinon atelier spécifique
+                debut       TIMESTAMP NOT NULL,
+                fin         TIMESTAMP NOT NULL,
+                duree_sec   INTEGER NOT NULL
+            )
+        ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_site ON sensor_sessions(site_slug)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_ts   ON sensor_sessions(debut)')
+
         conn.commit()
 
         cur.execute("SELECT COUNT(*) as n FROM users")
@@ -420,6 +466,234 @@ def kiosk_info(site_slug):
         return jsonify({'error': 'Site introuvable'}), 404
     return jsonify(serialize_row(site))
 
+# ========== CAPTEURS — RÉCEPTION DONNÉES RPi ==========
+
+@app.route('/api/sensors/passage', methods=['POST'])
+def sensors_passage():
+    """
+    Reçoit un événement de franchissement du faisceau depuis le RPi.
+    Body JSON attendu :
+    {
+        "site_slug": "bpce-paris-19",
+        "direction": "entree",       # optionnel : 'entree' | 'sortie'
+        "timestamp": "2026-03-26T10:30:00"  # optionnel, sinon now()
+    }
+    """
+    data = request.get_json()
+    if not data or not data.get('site_slug'):
+        return jsonify({'error': 'site_slug requis'}), 400
+
+    site_slug = data['site_slug']
+    direction = data.get('direction')  # peut être null
+    ts_raw    = data.get('timestamp')
+
+    try:
+        ts = datetime.fromisoformat(ts_raw) if ts_raw else datetime.now()
+    except ValueError:
+        ts = datetime.now()
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO sensor_passages (site_slug, direction, timestamp) VALUES (%s, %s, %s) RETURNING id",
+                [site_slug, direction, ts]
+            )
+            new_id = cur.fetchone()['id']
+            conn.commit()
+
+    return jsonify({'ok': True, 'id': new_id}), 201
+
+
+@app.route('/api/sensors/occupation', methods=['POST'])
+def sensors_occupation():
+    """
+    Reçoit un signal PIR depuis le RPi (toutes les N secondes par atelier).
+    Body JSON attendu :
+    {
+        "site_slug": "bpce-paris-19",
+        "atelier": "fauteuil-massage",
+        "occupe": true,
+        "timestamp": "2026-03-26T10:30:00"  # optionnel
+    }
+    Accepte aussi un tableau d'événements pour envoi groupé :
+    [
+        {"site_slug": "...", "atelier": "...", "occupe": true, "timestamp": "..."},
+        ...
+    ]
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+
+    # Normalise : accepte un objet unique ou un tableau
+    events = data if isinstance(data, list) else [data]
+
+    inserted = 0
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            for evt in events:
+                site_slug = evt.get('site_slug')
+                atelier   = evt.get('atelier')
+                occupe    = evt.get('occupe', True)
+                ts_raw    = evt.get('timestamp')
+
+                if not site_slug or not atelier:
+                    continue  # ignore les lignes invalides, ne bloque pas le batch
+
+                try:
+                    ts = datetime.fromisoformat(ts_raw) if ts_raw else datetime.now()
+                except ValueError:
+                    ts = datetime.now()
+
+                cur.execute(
+                    "INSERT INTO sensor_occupation (site_slug, atelier, occupe, timestamp) VALUES (%s, %s, %s, %s)",
+                    [site_slug, atelier, occupe, ts]
+                )
+                inserted += 1
+            conn.commit()
+
+    return jsonify({'ok': True, 'inserted': inserted}), 201
+
+
+@app.route('/api/sensors/session', methods=['POST'])
+def sensors_session():
+    """
+    Reçoit une session complète calculée par le RPi (début + fin + durée).
+    Body JSON attendu :
+    {
+        "site_slug": "bpce-paris-19",
+        "atelier": "fauteuil-massage",  # optionnel — null = session globale espace
+        "debut": "2026-03-26T10:15:00",
+        "fin":   "2026-03-26T10:33:00",
+        "duree_sec": 1080
+    }
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+
+    site_slug = data.get('site_slug')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+
+    debut_raw = data.get('debut')
+    fin_raw   = data.get('fin')
+    if not debut_raw or not fin_raw:
+        return jsonify({'error': 'debut et fin requis'}), 400
+
+    try:
+        debut     = datetime.fromisoformat(debut_raw)
+        fin       = datetime.fromisoformat(fin_raw)
+        duree_sec = data.get('duree_sec') or int((fin - debut).total_seconds())
+    except (ValueError, TypeError) as e:
+        return jsonify({'error': f'Format de date invalide : {e}'}), 400
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO sensor_sessions (site_slug, atelier, debut, fin, duree_sec) VALUES (%s,%s,%s,%s,%s) RETURNING id",
+                [site_slug, data.get('atelier'), debut, fin, duree_sec]
+            )
+            new_id = cur.fetchone()['id']
+            conn.commit()
+
+    return jsonify({'ok': True, 'id': new_id}), 201
+
+
+# ========== CAPTEURS — STATISTIQUES ==========
+
+@app.route('/api/sensors/stats', methods=['GET'])
+@login_required
+def sensors_stats():
+    """
+    Retourne les métriques capteurs pour un site et une période.
+    Params : site_slug (requis), period (today|week|month|year)
+    """
+    site_slug = request.args.get('site_slug')
+    period    = request.args.get('period', 'today')
+
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+
+    # Vérification d'accès : admin voit tout, client voit son périmètre
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+
+    date_clause = build_date_clause(period)
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+
+            # Nombre total de passages
+            cur.execute(
+                f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {date_clause}",
+                [site_slug]
+            )
+            total_passages = cur.fetchone()['n']
+
+            # Passages par heure
+            cur.execute(
+                f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
+                    FROM sensor_passages
+                    WHERE site_slug=%s AND {date_clause}
+                    GROUP BY h ORDER BY h""",
+                [site_slug]
+            )
+            passages_par_heure = cur.fetchall()
+
+            # Taux d'occupation par atelier (% de signaux PIR actifs sur la période)
+            cur.execute(
+                f"""SELECT atelier,
+                           COUNT(*) as total_signaux,
+                           SUM(CASE WHEN occupe THEN 1 ELSE 0 END) as signaux_actifs
+                    FROM sensor_occupation
+                    WHERE site_slug=%s AND {date_clause}
+                    GROUP BY atelier ORDER BY atelier""",
+                [site_slug]
+            )
+            raw_occ = cur.fetchall()
+            occupation_par_atelier = []
+            for row in raw_occ:
+                total = row['total_signaux']
+                actifs = row['signaux_actifs']
+                taux = round((actifs / total * 100), 1) if total > 0 else 0
+                occupation_par_atelier.append({
+                    'atelier': row['atelier'],
+                    'taux_occupation': taux,
+                    'total_signaux': total,
+                    'signaux_actifs': actifs
+                })
+
+            # Sessions : durée moyenne, min, max par atelier
+            cur.execute(
+                f"""SELECT atelier,
+                           COUNT(*) as nb_sessions,
+                           ROUND(AVG(duree_sec))::int as duree_moy_sec,
+                           MIN(duree_sec) as duree_min_sec,
+                           MAX(duree_sec) as duree_max_sec
+                    FROM sensor_sessions
+                    WHERE site_slug=%s AND {date_clause}
+                    GROUP BY atelier ORDER BY nb_sessions DESC""",
+                [site_slug]
+            )
+            sessions_par_atelier = cur.fetchall()
+
+    return jsonify({
+        'site_slug': site_slug,
+        'period': period,
+        'total_passages': total_passages,
+        'passages_par_heure': [serialize_row(r) for r in passages_par_heure],
+        'occupation_par_atelier': occupation_par_atelier,
+        'sessions_par_atelier': [serialize_row(r) for r in sessions_par_atelier],
+    })
+
+
 # ========== STATISTIQUES ==========
 
 def build_date_clause(period, prefix=''):
@@ -572,7 +846,7 @@ def health():
             nb_clients = cur.fetchone()['n']
             cur.execute('SELECT COUNT(*) as n FROM sites')
             nb_sites = cur.fetchone()['n']
-    return jsonify({'status': 'ok', 'version': '2.0', 'sessions': nb_sessions, 'clients': nb_clients, 'sites': nb_sites})
+    return jsonify({'status': 'ok', 'version': '2.1', 'sessions': nb_sessions, 'clients': nb_clients, 'sites': nb_sites})
 
 # ========== PAGES HTML ==========
 
