@@ -680,7 +680,8 @@ def sensors_stats():
                     'signaux_actifs': actifs
                 })
 
-            # Sessions : durée moyenne, min, max par atelier
+            # Sessions : sensor_sessions utilise 'debut', pas 'timestamp'
+            ts_clause_sessions = ts_clause.replace('"timestamp"', 'debut')
             cur.execute(
                 f"""SELECT atelier,
                            COUNT(*) as nb_sessions,
@@ -688,7 +689,7 @@ def sensors_stats():
                            MIN(duree_sec) as duree_min_sec,
                            MAX(duree_sec) as duree_max_sec
                     FROM sensor_sessions
-                    WHERE site_slug=%s AND {ts_clause}
+                    WHERE site_slug=%s AND {ts_clause_sessions}
                     GROUP BY atelier ORDER BY nb_sessions DESC""",
                 [site_slug]
             )
