@@ -885,6 +885,10 @@ def dashboard_page():
         return redirect('/login')
     return serve_html('dashboard.html')
 
+@app.route('/roi')
+def roi_page():
+    return serve_html('ROI_beOtop.html')
+
 @app.route('/kiosk/<site_slug>')
 def kiosk_page(site_slug):
     path = os.path.join(BASE_DIR, 'beOtop_Kiosk.html')
