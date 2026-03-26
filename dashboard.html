@@ -585,6 +585,10 @@ function exportCSV(){
 function buildSensorBar(){
   var bar=document.getElementById('sensor-site-bar');
   bar.innerHTML='';
+
+  // Initialise sensorSite au premier site si pas encore défini
+  if(!sensorSite && sites.length) sensorSite=sites[0].slug;
+
   sites.forEach(function(s){
     var chip=document.createElement('div');
     chip.className='site-chip'+(sensorSite===s.slug?' active':'');
