@@ -272,7 +272,7 @@ function buildAteliers(){
   ATELIERS.forEach(function(a){
     var c=document.createElement('div');
     c.className='atelier-card'; c.dataset.id=a.id;
-    c.innerHTML='<div class="at-icon">'+a.icon+'</div><div class="at-info"><div class="at-name">'+a.label+'</div><div class="at-cible">'+a.cible+'</div></div><div class="at-check">✓</div>';
+    c.innerHTML='<div class="at-icon"><img src="'+a.icon+'" alt="'+a.label+'" onerror="this.style.display=\'none\'"></div><div class="at-info"><div class="at-name">'+a.label+'</div><div class="at-cible">'+a.cible+'</div></div><div class="at-check">✓</div>';
     c.onclick=function(){toggleAtelier(c,a.label);};
     g.appendChild(c);
   });
