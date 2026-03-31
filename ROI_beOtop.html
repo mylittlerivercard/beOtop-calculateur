@@ -39,8 +39,8 @@
 <div class="sec"><div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎨 Agencement & décoration <span style="color:#6a6a8a;font-size:.6rem">€/m²</span></span><span class="sval" id="v-deco-pm2">0 €/m²</span></div><input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span></div></div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🏢 Coût immobilier <span style="color:#6a6a8a;font-size:.6rem">€/m²/an</span></span><span class="sval" id="v-im-pm2">336 €/m²</span></div><input type="range" id="s-im-pm2" min="100" max="500" step="10" value="336" style="accent-color:#7eb8c9" oninput="ST.im_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>100 — Province</span><span>336 — IDF</span><span>500 — Paris</span></div></div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">2 860 €</span><span id="v-form-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-form" min="0" max="10000" step="500" value="2860" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — ROI −20%</span><span>2 860 — Réf.</span><span>5 720+ — ROI +15%</span></div></div>
-<div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">0 €</span><span id="v-anim-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-anim" min="0" max="5000" step="250" value="0" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Normal</span><span>5 000 — +15% max</span></div></div>
+<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">2 860 €</span><span id="v-form-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-form" min="0" max="10000" step="500" value="2860" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — ROI −25%</span><span>2 860 — Réf.</span><span>5 720+ — ROI +25%</span></div></div>
+<div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">0 €</span><span id="v-anim-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-anim" min="0" max="5000" step="250" value="0" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Normal</span><span>5 000 — +25% max</span></div></div>
 </div>
 <div class="sec"><div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
 <div class="adv-panel"><div class="adv-header" onclick="toggleAdv()"><span>🔧 Ajuster les coefficients internes</span><span id="adv-arrow">▼</span></div><div id="adv-body" class="adv-body">
@@ -143,12 +143,15 @@ function calc(){
   var agencement=Math.round(eqT*0.10),agencementAmorti=Math.round(agencement/5);
   var deco=Math.round(surfAt*ST.deco_pm2),decoAm=Math.round(deco/5),im=Math.round(surfAt*ST.im_pm2),form=ST.form,anim=ST.anim;
   var setupAmorti=Math.round(SETUP/3),am=Math.round(eqT/4),maint=Math.round(eqT*0.11);
+  
+  // LOGIQUE +25% POUR FORMATION ET ANIMATION
   var formCoef;
-  if(form<=FORM_REF){formCoef=0.80+(form/FORM_REF)*0.20}else{formCoef=Math.min(1.15,1.0+((form-FORM_REF)/FORM_REF)*0.15)}
-  var animCoef=1+(anim/5000)*0.15;
+  if(form<=FORM_REF){formCoef=0.75+(form/FORM_REF)*0.25}else{formCoef=Math.min(1.25,1.0+((form-FORM_REF)/FORM_REF)*0.25)}
+  var animCoef=1+(anim/5000)*0.25;
+  
   var CTP=am+maint+im+setupAmorti+decoAm+form+anim+agencementAmorti;
   
-  // NOUVEAU : Calcul OPEX (dépenses annuelles pures cash)
+  // Calcul OPEX (dépenses annuelles pures cash)
   var opexAnnuel = maint + im + form + anim;
   
   var investInitial=eqT+deco+SETUP+agencement;
