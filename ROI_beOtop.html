@@ -67,7 +67,11 @@ const AT=[
 {id:"cabine_sur_mesure",label:"Cabine sur mesure",icon:"🚪",m2:2.0,prix:4950,cible:"Intimité"}];
 const POSTURES=[{id:"h",label:"Hostile",adopt:10,color:"#ef4444"},{id:"m",label:"Mitigé",adopt:30,color:"#f59e0b"},{id:"l",label:"Libre",adopt:60,color:"#3b82f6"},{id:"e",label:"Encouragé",adopt:85,color:"#10b981"}];
 const SCENARIOS=[{label:"−1% (seuil)",rate:0.01},{label:"−3% (pessimiste)",rate:0.03},{label:"−5%",rate:0.05},{label:"−10% (médian)",rate:0.10},{label:"−15% (optimiste)",rate:0.15}];
-const DEFAULT_QTYS={A:{bol_air:1,p127:1,lunettes_psio:0,cocon_sieste:0,siege_massant:1,neurosonic_f:0,neurosonic_l:0,photobio:0,transat_127:1,sensolight:0,siege_lecture:1,cabine_sur_mesure:0},B:{bol_air:1,p127:2,lunettes_psio:1,cocon_sieste:2,siege_massant:2,neurosonic_f:2,neurosonic_l:1,photobio:1,transat_127:2,sensolight:1,siege_lecture:2,cabine_sur_mesure:0},C:{bol_air:2,p127:3,lunettes_psio:2,cocon_sieste:3,siege_massant:3,neurosonic_f:3,neurosonic_l:2,photobio:2,transat_127:3,sensolight:2,siege_lecture:3,cabine_sur_mesure:1}};
+const DEFAULT_QTYS = {
+  A: { bol_air: 1, p127: 0, lunettes_psio: 0, cocon_sieste: 1, siege_massant: 1, neurosonic_f: 0, neurosonic_l: 0, photobio: 0, transat_127: 0, sensolight: 0, siege_lecture: 0, cabine_sur_mesure: 0 },
+  B: { bol_air: 1, p127: 1, lunettes_psio: 1, cocon_sieste: 1, siege_massant: 1, neurosonic_f: 0, neurosonic_l: 0, photobio: 0, transat_127: 1, sensolight: 1, siege_lecture: 0, cabine_sur_mesure: 0 },
+  C: { bol_air: 1, p127: 1, lunettes_psio: 1, cocon_sieste: 1, siege_massant: 2, neurosonic_f: 0, neurosonic_l: 1, photobio: 0, transat_127: 1, sensolight: 1, siege_lecture: 0, cabine_sur_mesure: 0 }
+};
 const FORM_REF=2860,SETUP=2860;
 let ST={nbs:400,sal:70200,mode:"5j",jours:3,qty:{...DEFAULT_QTYS.B},po:"l",sc:4,ado:60,val:30,deco_pm2:0,im_pm2:336,form:FORM_REF,anim:0};
 function eur(n){return new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n)}
