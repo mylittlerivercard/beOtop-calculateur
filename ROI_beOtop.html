@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop — Calculateur d'espace de récupération</title>
+<title>beOtop — Calculateur d'espace de récupération (Expert)</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%);color:#e8e0d5;font-family:Georgia,serif;min-height:100vh}button{font-family:inherit;cursor:pointer;transition:all .15s}input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#c8a96e}input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#c8a96e;border:none}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px}input[type=text]{font-family:sans-serif;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e8e0d5;padding:.55rem .75rem;font-size:.82rem;width:100%;outline:none}input[type=text]:focus{border-color:#c8a96e}input[type=text]::placeholder{color:#4a4a6a}
 #hdr{border-bottom:1px solid rgba(255,200,100,.2);padding:1.2rem 2rem;background:rgba(255,200,100,.03);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}#hdr h1{margin:0;font-size:clamp(1rem,2.5vw,1.7rem);font-weight:400;color:#f5efe6}.brand{font-size:.67rem;letter-spacing:.35em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif}#mode-lbl{margin-left:auto;font-size:.7rem;color:#5a5a7a;font-family:sans-serif}
@@ -26,12 +26,12 @@
 </style>
 </head>
 <body>
-<div id="hdr"><span class="brand">beOtop</span><h1>Calculateur d'espace de récupération (mono‑espace)</h1><span id="mode-lbl">Modèle 5j / semaine</span></div>
+<div id="hdr"><span class="brand">beOtop</span><h1>Calculateur d'espace de récupération (Expert)</h1><span id="mode-lbl">Modèle 5j / semaine</span></div>
 <div id="grid"><div id="left">
 <div class="sec"><div class="sec-ttl" style="color:#c8a96e;border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem"><div><div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div><input type="range" id="s-nbs" min="50" max="2000" step="50" value="400"></div><div><div class="srow"><span class="slbl">Salaire brut moyen</span><span class="sval" id="v-sal">70 200 €</span></div><input type="range" id="s-sal" min="28000" max="150000" step="1000" value="70200"></div></div></div>
 <div class="sec"><div class="sec-ttl" style="color:#7eb8c9;border-color:rgba(126,184,201,.2)">02 · Mode de travail</div><div style="display:flex;gap:.5rem;margin-bottom:.85rem"><button class="tbtn" id="bm5j" onclick="setMode('5j')" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.13)"><div style="font-size:.8rem;font-weight:700;color:#7eb8c9;font-family:sans-serif">🏢 5j / semaine</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Flux lissé</div></button><button class="tbtn" id="bmhy" onclick="setMode('hybride')" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"><div style="font-size:.8rem;font-weight:700;color:#7a7a9a;font-family:sans-serif">🔄 Hybride</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Pic concentré</div></button></div>
 <div id="jpanel" style="display:none;background:rgba(126,184,201,.06);border-radius:10px;padding:.85rem;border:1px solid rgba(126,184,201,.15);margin-bottom:.85rem"><div style="font-size:.7rem;color:#9090b0;font-family:sans-serif;margin-bottom:.5rem">Jours de présence / semaine</div><div style="display:flex;gap:.4rem"><button class="dbtn" data-j="1" onclick="setJours(1)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">1j</button><button class="dbtn" data-j="2" onclick="setJours(2)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">2j</button><button class="dbtn" data-j="3" onclick="setJours(3)" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.2);color:#7eb8c9">3j<div style="font-size:.5rem;color:#c8a96e">✓ reco</div></button><button class="dbtn" data-j="4" onclick="setJours(4)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">4j</button></div><div id="picinfo" style="margin-top:.5rem;font-size:.63rem;color:#6a6a8a;font-family:sans-serif"></div></div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem;margin-bottom:.85rem"><div class="sb"><div class="sv" id="v-nbp" style="color:#7eb8c9">400</div><div class="sl">présents / jour</div></div><div class="sb"><div class="sv" id="v-nbu" style="color:#c8a96e">240</div><div class="sl">cible théorique / jour</div></div><div class="sb"><div class="sv" id="v-dh" style="color:#b896e8">480</div><div class="sl">demande / sem.</div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem;margin-bottom:.85rem"><div class="sb"><div class="sv" id="v-nbp" style="color:#7eb8c9">400</div><div class="sl">présents / jour</div></div><div class="sb"><div class="sv" id="v-nbu" style="color:#c8a96e">240</div><div class="sl" id="v-nbu-lbl">cible théorique / jour</div></div><div class="sb"><div class="sv" id="v-dh" style="color:#b896e8">480</div><div class="sl">demande / sem.</div></div></div>
 <div style="border-top:1px solid rgba(126,184,201,.15);padding-top:.85rem"><div class="srow"><span class="slbl">Cible d'adoption potentielle</span><span class="sval" id="v-ado">60%</span></div><input type="range" id="s-ado" min="5" max="100" step="5" value="60" disabled style="opacity:.5;cursor:not-allowed"><div style="margin-top:.4rem;font-size:.6rem;font-family:sans-serif;color:#7a9a8a;min-height:1rem">Pilotée par la posture managériale (objectif)</div></div></div>
 <div class="sec"><div class="sec-ttl" style="color:#b896e8;border-color:rgba(184,150,232,.2)">03 · L'Espace (un seul espace)</div><div style="display:flex;gap:.5rem;margin-bottom:1rem"><button class="opt-btn" data-opt="A" onclick="setOption('A')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option A (éco)</button><button class="opt-btn" data-opt="B" onclick="setOption('B')" style="flex:1;padding:.5rem;border-radius:8px;border:2px solid #b896e8;background:rgba(184,150,232,.2)">Option B (standard)</button><button class="opt-btn" data-opt="C" onclick="setOption('C')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option C (premium)</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.62rem" id="agrid"></div><div id="arecap" style="margin-top:.65rem;font-size:.7rem;color:#7a7a9a;font-family:sans-serif;background:rgba(184,150,232,.06);padding:.55rem .75rem;border-radius:8px;line-height:1.6"></div></div>
 <div class="sec"><div class="sec-ttl" style="color:#f0a060;border-color:rgba(240,160,96,.2)">04 · Posture managériale</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.52rem" id="pgrid"></div><div style="margin-top:.65rem;font-size:.7rem;color:#f0a060;font-family:sans-serif;background:rgba(240,160,96,.08);padding:.52rem .72rem;border-radius:8px">⚠️ La posture détermine l'ambition d'adoption (objectif).</div></div>
@@ -39,7 +39,7 @@
 <div class="sec"><div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎨 Agencement & décoration <span style="color:#6a6a8a;font-size:.6rem">€/m²</span></span><span class="sval" id="v-deco-pm2">0 €/m²</span></div><input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span></div></div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🏢 Coût immobilier <span style="color:#6a6a8a;font-size:.6rem">€/m²/an</span></span><span class="sval" id="v-im-pm2">336 €/m²</span></div><input type="range" id="s-im-pm2" min="100" max="500" step="10" value="336" style="accent-color:#7eb8c9" oninput="ST.im_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>100 — Province</span><span>336 — IDF</span><span>500 — Paris</span></div></div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">2 860 €</span><span id="v-form-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-form" min="0" max="10000" step="500" value="2860" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — ROI −25%</span><span>2 860 — Réf.</span><span>5 720+ — ROI +25%</span></div></div>
+<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">2 860 €</span><span id="v-form-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-form" min="0" max="10000" step="500" value="2860" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — ROI −30%</span><span>2 860 — Réf.</span><span>5 720+ — ROI +30%</span></div></div>
 <div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">0 €</span><span id="v-anim-impact" style="font-size:.6rem;font-family:sans-serif;padding:.1rem .3rem;border-radius:4px">ROI normal</span></div></div><input type="range" id="s-anim" min="0" max="5000" step="250" value="0" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Normal</span><span>5 000 — +40% max</span></div></div>
 </div>
 <div class="sec"><div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
@@ -51,8 +51,8 @@
   <div><div class="srow"><span class="slbl">⏰ Heures d'ouverture / jour</span><span class="sval" id="v-heures">8 h</span></div><input type="range" id="s-heures" min="4" max="12" step="1" value="8"><div style="font-size:.55rem;color:#6a6a8a">Taux de remplissage fixé à 75%</div></div>
 </div></div>
 </div>
-<div class="warning-box"><strong>⚠️ Limites du simulateur (mono‑espace)</strong><br>• Le dimensionnement est basé sur un <strong>unique espace</strong>. Si la capacité est insuffisante, l'adoption est bridée et le ROI diminue.<br>• Le Payback est calculé sur le Flux de Trésorerie Net (Économies - OPEX).<br>• ROI calculé sur un an sans actualisation des flux (pas de VAN/TRI).<br>• Les résultats sont conditionnés par les facteurs critiques (formation, charte).</div>
-<div style="font-size:.58rem;color:#3a3a5a;font-family:sans-serif;padding-bottom:2rem;line-height:1.7">Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Institut Sapiens 2018 · Note ROI beOtop 02/2026</div>
+<div class="warning-box"><strong>⚠️ Limites du simulateur (Expert)</strong><br>• Dimensionnement basé sur un <strong>unique espace</strong>. Si la capacité est insuffisante, l'adoption est bridée et le ROI diminue.<br>• Le Payback est calculé sur le Flux de Trésorerie Net (Gain - OPEX).<br>• ROI annuel sans actualisation (pas de VAN/TRI).<br>• Résultats conditionnés par les facteurs critiques (formation managers, charte).</div>
+<div style="font-size:.58rem;color:#3a3a5a;font-family:sans-serif;padding-bottom:2rem;line-height:1.7">Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Institut Sapiens 2018 · Note méthodologique beOtop 02/2026</div>
 </div>
 <div id="right">
 <div style="font-size:.6rem;letter-spacing:.28em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif;margin-bottom:1.1rem">Recommandation pour votre Espace</div>
@@ -63,7 +63,7 @@
   <div style="margin:.7rem 0 .28rem;display:flex;justify-content:space-between;font-size:.64rem;color:#9090b0;font-family:sans-serif"><span>Taux d'occupation</span><span id="r-satp" style="font-weight:700">—</span></div>
   <div class="sat-bg"><div class="sat-f" id="r-satb" style="width:0%;background:#7eb8c9"></div></div>
   <div id="r-sat-alert" class="sat-alert"></div>
-  <div class="sgrid" style="margin-top:1rem"><div class="sb"><div class="sv" id="r-dp" style="color:#ef4444">—</div><div class="sl">Demande pic / jour</div></div><div class="sb"><div class="sv" id="r-ce" style="color:#10b981">—</div><div class="sl">Capacité de l'espace</div></div></div></div>
+  <div class="sgrid" style="margin-top:1rem"><div class="sb"><div class="sv" id="r-dp" style="color:#ef4444">—</div><div class="sl">Demande pic / jour</div></div><div class="sb"><div class="sv" id="r-ce" style="color:#10b981">—</div><div class="sl">Capacité réelle</div></div></div></div>
 <div class="rcard" style="background:rgba(200,169,110,.09);border:1px solid rgba(200,169,110,.35)"><div class="rttl" style="color:#c8a96e">LA CHARGE FINANCIÈRE</div><div id="r-ctp"></div></div>
 <div class="rcard" id="r-roi-card" style="background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.35)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem"><div class="rttl" id="r-roi-ttl" style="color:#10b981;margin:0">RETOUR SUR INVESTISSEMENT</div><div id="r-sc-badge" style="font-size:.58rem;color:#7a7a9a;font-family:sans-serif;background:rgba(255,255,255,.05);padding:.15rem .42rem;border-radius:4px"></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin-bottom:.65rem;align-items:end"><div><div id="r-roi-pct" style="font-size:1.9rem;font-weight:300;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">ROI annuel net</div></div><div><div id="r-pb" style="font-size:1.9rem;font-weight:300;color:#e8e0d5;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Payback net</div></div><div style="text-align:right"><div id="r-eco-adj" style="font-size:.95rem;font-weight:700">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Éco. nette / an</div></div></div><div style="font-size:.58rem;color:#7a8a7a;font-family:sans-serif;margin-bottom:.5rem" id="r-po-badge"></div><div id="r-roi-lines"></div></div>
 <div style="margin-top:.75rem;padding:.8rem;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.05)"><div style="color:#c8a96e;font-weight:700;font-size:.68rem;font-family:sans-serif;margin-bottom:.42rem">5 conditions d'atteinte du ROI</div><ul style="font-size:.65rem;color:#8080a0;font-family:sans-serif;line-height:1.85;padding-left:1rem"><li>Charte d'accès signée par la Direction <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Formation managers avant ouverture <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Protocole de mesure dès J1 <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Communication interne structurée <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span style="color:#7a7a9a;font-size:.58rem">● MODÉRÉ</span></li></ul></div>
@@ -96,6 +96,7 @@ const DEFAULT_QTYS = {
 const FORM_REF=2860,SETUP=2860;
 let ST={nbs:400,sal:70200,mode:"5j",jours:3,qty:{...DEFAULT_QTYS.B},po:"l",sc:4,ado:60,val:30,deco_pm2:0,im_pm2:336,form:FORM_REF,anim:0,
   taux_dysf:0.11, part_adressable:0.28, seances_par_semaine:2, duree_seance:15, heures_ouverture:8};
+
 function eur(n){return new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n)}
 function fnum(n){return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n)}
 function dateStr(){return new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
@@ -104,9 +105,9 @@ function devisNum(){return"BEO-"+new Date().getFullYear()+"-"+String(Math.floor(
 function calcRef(){
   var nbs=400,sal=70200,ado=85,salC=sal*1.42,cd=Math.round(nbs*salC*ST.taux_dysf),ba=Math.round(cd*ST.part_adressable);
   var eqT=0,sN=0,nP=0;AT.forEach(function(a){var q=DEFAULT_QTYS.B[a.id]||0;eqT+=a.prix*q;sN+=a.m2*q;if(!a.addon)nP+=q;});
-  var sA=Math.round(sN*1.5),nbu=Math.round(nbs*ado/100),sS=nbu*ST.seances_par_semaine,sP=Math.round(sS*0.20);
-  var postesCalcul = nP === 0 ? 0 : Math.max(3, nP); 
-  var capaciteEspace = Math.floor((60/ST.duree_seance) * postesCalcul * ST.heures_ouverture * 0.75);
+  var sA=Math.round(sN*1.5);
+  var nbu=Math.round(nbs*ado/100),sS=nbu*ST.seances_par_semaine,sP=Math.round(sS*0.20);
+  var capaciteEspace = Math.floor((60/ST.duree_seance) * nP * ST.heures_ouverture * 0.75); // SANS PLANCHER
   var adoEffective = ado;
   if(capaciteEspace === 0) { adoEffective = 0; }
   else if (sP > capaciteEspace) { adoEffective = ado * (capaciteEspace / sP); } 
@@ -117,7 +118,7 @@ function calcRef(){
 
 function calc(){
   var nbs=ST.nbs,salB=ST.sal,mode=ST.mode,jours=ST.jours,sc=SCENARIOS[ST.sc-1],po=POSTURES.find(function(p){return p.id===ST.po}),ado=po.adopt;
-  var tauxP=mode==="5j"?1:jours/5,nbp=Math.round(nbs*tauxP);
+  var nbp=Math.round(nbs * (mode==="5j"?1:jours/5));
   var nbu=Math.round(nbp*ado/100); 
   var seancesSem=nbu*ST.seances_par_semaine;
   var picC=mode==="5j"?0.20:jours<=1?0.80:jours<=2?0.55:jours<=3?0.40:jours<=4?0.28:0.20;
@@ -126,41 +127,30 @@ function calc(){
   var surfAt=Math.round(surfNet*1.50);
   var nbPostes=AT.reduce(function(s,a){return s+(a.addon ? 0 : (ST.qty[a.id]||0))},0);
   var nbEquipementsTotal=AT.reduce(function(s,a){return s+(ST.qty[a.id]||0)},0);
-  var postesCalcul = nbPostes === 0 ? 0 : Math.max(3, nbPostes);
-  var capaciteParEspace = Math.floor((60 / ST.duree_seance) * postesCalcul * ST.heures_ouverture * 0.75);
+  
+  // LOGIQUE SANS PLANCHER : Capacité réelle
+  var capaciteParEspace = Math.floor((60 / ST.duree_seance) * nbPostes * ST.heures_ouverture * 0.75);
   
   var adoEffective = ado;
   var tauxOcc = 0;
   if (capaciteParEspace === 0) {
-      adoEffective = 0;
-      tauxOcc = 0;
+      adoEffective = 0; tauxOcc = 0;
   } else if (seancesPic > 0) {
       tauxOcc = Math.round((seancesPic / capaciteParEspace) * 100);
-      if (seancesPic > capaciteParEspace) {
-          adoEffective = ado * (capaciteParEspace / seancesPic);
-      }
+      if (seancesPic > capaciteParEspace) { adoEffective = ado * (capaciteParEspace / seancesPic); }
   }
-
   var agencement=Math.round(eqT*0.10),agencementAmorti=Math.round(agencement/5);
   var deco=Math.round(surfAt*ST.deco_pm2),decoAm=Math.round(deco/5),im=Math.round(surfAt*ST.im_pm2),form=ST.form,anim=ST.anim;
   var setupAmorti=Math.round(SETUP/3),am=Math.round(eqT/4),maint=Math.round(eqT*0.11);
-  
-  // FIX EFFET LEVIER ROI : Bonus +30% Form / +40% Anim
-  var formCoef;
-  if(form<=FORM_REF){formCoef=0.70+(form/FORM_REF)*0.30}else{formCoef=Math.min(1.30,1.0+((form-FORM_REF)/FORM_REF)*0.30)}
-  var animCoef=1+(anim/5000)*0.40;
-  
+  var formCoef = (form<=FORM_REF) ? (0.70+(form/FORM_REF)*0.30) : Math.min(1.30,1.0+((form-FORM_REF)/FORM_REF)*0.30);
+  var animCoef = 1+(anim/5000)*0.40;
   var CTP=am+maint+im+setupAmorti+decoAm+form+anim+agencementAmorti;
   var opexAnnuel = maint + im + form + anim;
   var investInitial=eqT+deco+SETUP+agencement;
-  
   var gain = nbPostes === 0 ? 0 : ba*sc.rate*(adoEffective/100)*formCoef*animCoef;
-  var eco = gain-CTP;
-  var roi = CTP===0 ? 0 : (eco/CTP*100);
-  
+  var eco = gain-CTP, roi = CTP===0 ? 0 : (eco/CTP*100);
   var cashFlowAnnuel = gain - opexAnnuel;
-  var pb = cashFlowAnnuel > 0 ? investInitial / (cashFlowAnnuel / 12) : 999;
-  
+  var pb = (cashFlowAnnuel > 0 && nbPostes > 0) ? investInitial / (cashFlowAnnuel / 12) : 999;
   return{nbp:nbp,nbu:nbu,seancesSem:seancesSem,picC:picC,capaciteParEspace:capaciteParEspace,seancesPic:seancesPic,tauxOcc:tauxOcc,cd:cd,ba:ba,sc:sc,po:po,ado:ado,adoEffective:adoEffective,gain:gain,eco:eco,roi:roi,pb:pb,surfNet:surfNet,surfAt:surfAt,nbPostes:nbPostes,nbEquipementsTotal:nbEquipementsTotal,eqT:eqT,agencement:agencement,agencementAmorti:agencementAmorti,am:am,maint:maint,im:im,setupAmorti:setupAmorti,deco:deco,decoAm:decoAm,form:form,anim:anim,formCoef:formCoef,animCoef:animCoef,CTP:CTP,opexAnnuel:opexAnnuel,investInitial:investInitial};
 }
 function $(id){return document.getElementById(id)}
@@ -169,66 +159,51 @@ function render(){
   $("mode-lbl").textContent=ST.mode==="5j"?"Modèle 5j / semaine":"Hybride "+ST.jours+"j / semaine";
   $("v-nbs").textContent=fnum(ST.nbs)+" pers.";$("v-sal").textContent=eur(ST.sal);
   $("s-ado").value=c.ado;$("v-ado").textContent=c.ado+"% (théorie posture "+po.label+")";
-  $("v-nbp").textContent=c.nbp;
-  $("v-nbu").textContent=c.nbu; 
-  $("v-nbu").nextElementSibling.textContent = ST.mode === "hybride" ? "cible théorique / jour" : "cible théorique (sur site)";
+  $("v-nbp").textContent=c.nbp; $("v-nbu").textContent=c.nbu; 
+  $("v-nbu-lbl").textContent = ST.mode === "hybride" ? "cible théorique / jour" : "cible théorique (sur site)";
   $("v-dh").textContent=c.seancesSem;
   $("jpanel").style.display=ST.mode==="hybride"?"block":"none";
   $("picinfo").textContent="Pic : "+Math.round(c.picC*100)+"% · "+c.nbp+" présents/jour";
-  var bm5j=$("bm5j"),bmhy=$("bmhy");
-  if(ST.mode==="5j"){bm5j.style.border="2px solid #7eb8c9";bm5j.style.background="rgba(126,184,201,.13)";bm5j.querySelector("div").style.color="#7eb8c9";bmhy.style.border="1px solid rgba(255,255,255,.1)";bmhy.style.background="rgba(255,255,255,.03)";bmhy.querySelector("div").style.color="#7a7a9a"}
-  else{bmhy.style.border="2px solid #7eb8c9";bmhy.style.background="rgba(126,184,201,.13)";bmhy.querySelector("div").style.color="#7eb8c9";bm5j.style.border="1px solid rgba(255,255,255,.1)";bm5j.style.background="rgba(255,255,255,.03)";bm5j.querySelector("div").style.color="#7a7a9a"}
   var isA=Object.keys(DEFAULT_QTYS.A).every(function(k){return ST.qty[k]===DEFAULT_QTYS.A[k]}),isB=Object.keys(DEFAULT_QTYS.B).every(function(k){return ST.qty[k]===DEFAULT_QTYS.B[k]}),isC=Object.keys(DEFAULT_QTYS.C).every(function(k){return ST.qty[k]===DEFAULT_QTYS.C[k]});
   document.querySelectorAll(".opt-btn").forEach(function(b){var o=b.dataset.opt;b.style.border=(o==="A"&&isA||o==="B"&&isB||o==="C"&&isC)?"2px solid #b896e8":"1px solid #b896e8"});
   $("arecap").innerHTML='<span style="color:#d4b8f0;font-weight:700">'+c.nbPostes+'</span> place(s) d\'assise · nette <span style="color:#d4b8f0">'+c.surfNet.toFixed(1)+' m²</span><span style="color:#b896e8"> → '+c.surfAt+' m²</span> (+50% circ.) · équipement : '+eur(c.eqT);
   $("ref-roi-hint").innerHTML='💡 Médian (−10%) ancré ANACT/CIPD. Référence : <strong>+'+refRoi+'%</strong> pour 400 sal., option B, posture Encouragé (85%).';
   $("r-surf").textContent=c.surfAt;$("r-postes").textContent=c.nbPostes;
   
-  var isZero = c.nbPostes === 0;
-  var isSaturated = !isZero && c.tauxOcc > 100;
-  
-  $("r-satp").textContent=c.tauxOcc+"%";
-  $("r-satp").style.color = isSaturated ? "#ef4444" : "#e8e0d5";
+  var isZero = c.nbPostes === 0, isSaturated = !isZero && c.tauxOcc > 100;
+  var rC=isZero ? "#4a4a6a" : (c.roi>150?"#10b981":c.roi>50?"#3b82f6":c.roi>0?"#f59e0b":"#ef4444");
+
+  $("r-satp").textContent=c.tauxOcc+"%"; $("r-satp").style.color = isSaturated ? "#ef4444" : "#e8e0d5";
   $("r-satb").style.width=Math.min(c.tauxOcc,100)+"%";
   $("r-satb").style.background= isSaturated ? "#ef4444" : c.tauxOcc>75?"#f59e0b":"#7eb8c9";
   
   if (isZero) {
-      $("r-sat-alert").innerHTML = "⚠️ <strong>Aucun équipement d'assise.</strong><br>Votre espace ne peut accueillir personne. Le ROI est nul.";
-      $("r-sat-alert").style.display = "block";
+      $("r-sat-alert").innerHTML = "⚠️ <strong>Aucun équipement d'assise.</strong><br>Votre espace ne peut accueillir personne. Ajoutez du matériel pour calculer le ROI.";
+      $("r-sat-alert").style.display = "block"; $("r-roi-pct").textContent = "—";
   } else if (isSaturated) {
-      $("r-sat-alert").innerHTML = "⚠️ <strong>L'espace est saturé !</strong><br>Capacité insuffisante pour l'ambition de l'entreprise. Ajoutez des places assises pour débloquer votre ROI.";
-      $("r-sat-alert").style.display = "block";
+      $("r-sat-alert").innerHTML = "⚠️ <strong>L'espace est saturé !</strong><br>Capacité insuffisante pour absorber le flux. Ajoutez des places assises ou augmentez l'amplitude horaire.";
+      $("r-sat-alert").style.display = "block"; $("r-roi-pct").textContent=(c.roi>0?"+":"")+Math.round(c.roi)+"%";
   } else {
-      $("r-sat-alert").style.display = "none";
+      $("r-sat-alert").style.display = "none"; $("r-roi-pct").textContent=(c.roi>0?"+":"")+Math.round(c.roi)+"%";
   }
 
-  $("r-dp").textContent=c.seancesPic;$("r-ce").textContent=c.capaciteParEspace;
-  $("r-duree_affiche").textContent=ST.duree_seance;
+  $("r-roi-pct").style.color=rC; $("r-roi-card").style.background=rC+"14"; $("r-roi-card").style.border="1px solid "+rC+"50"; $("r-roi-ttl").style.color=rC;
+  $("r-eco-adj").textContent=(c.eco>0?"+":"")+eur(c.eco); $("r-eco-adj").style.color=rC;
+  $("r-dp").textContent=c.seancesPic; $("r-ce").textContent=c.capaciteParEspace; $("r-duree_affiche").textContent=ST.duree_seance;
   $("v-deco-pm2").textContent=ST.deco_pm2+" €/m²";$("v-im-pm2").textContent=ST.im_pm2+" €/m²";$("v-form").textContent=eur(ST.form);$("v-anim").textContent=eur(ST.anim);
-  $("s-deco-pm2").value=ST.deco_pm2;$("s-im-pm2").value=ST.im_pm2;$("s-form").value=ST.form;$("s-anim").value=ST.anim;
-  $("v-taux_dysf").textContent=Math.round(ST.taux_dysf*100)+"%";$("s-taux_dysf").value=ST.taux_dysf;
-  $("v-part_adr").textContent=Math.round(ST.part_adressable*100)+"%";$("s-part_adr").value=ST.part_adressable;
-  $("v-seances_hebdo").textContent=ST.seances_par_semaine;$("s-seances_hebdo").value=ST.seances_par_semaine;
-  $("v-duree_seance").textContent=ST.duree_seance;$("s-duree_seance").value=ST.duree_seance;
-  $("v-heures").textContent=ST.heures_ouverture+" h";$("s-heures").value=ST.heures_ouverture;
-  var fB=$("v-form-impact");if(fB){var fp=Math.round((c.formCoef-1)*100);fB.textContent=fp>0?"ROI +"+fp+"%":fp<0?"ROI "+fp+"%":"ROI normal";fB.style.background=c.formCoef>=1?"rgba(96,192,96,.15)":c.formCoef>=0.9?"rgba(245,158,11,.15)":"rgba(239,68,68,.15)";fB.style.color=c.formCoef>=1?"#60c060":c.formCoef>=0.9?"#f59e0b":"#ef4444"}
+  $("v-taux_dysf").textContent=Math.round(ST.taux_dysf*100)+"%";$("v-part_adr").textContent=Math.round(ST.part_adressable*100)+"%"; $("v-heures").textContent=ST.heures_ouverture+" h";
+  
+  var fB=$("v-form-impact");if(fB){var fp=Math.round((c.formCoef-1)*100);fB.textContent=fp>0?"ROI +"+fp+"%":fp<0?"ROI "+fp+"%":"ROI normal";fB.style.background=c.formCoef>=1?"rgba(96,192,96,.15)":"rgba(239,68,68,.15)";fB.style.color=c.formCoef>=1?"#60c060":"#ef4444"}
   var aB=$("v-anim-impact");if(aB){var ap=Math.round((c.animCoef-1)*100);aB.textContent=ap>0?"ROI +"+ap+"%":"ROI normal";aB.style.background=ap>0?"rgba(96,192,96,.15)":"rgba(255,255,255,.05)";aB.style.color=ap>0?"#60c060":"#9090b0"}
   
   var dL=c.deco?'<div class="rli"><span class="rl">Décoration (amort. 5 ans)</span><span class="rv">'+eur(c.decoAm)+'</span></div>':"";
   $("r-ctp").innerHTML='<div class="section-sub" style="margin-top:0">Frais annuels récurrents (OPEX)</div><div class="rli"><span class="rl">Maintenance 11%</span><span class="rv">'+eur(c.maint)+'</span></div><div class="rli"><span class="rl">Formation continue</span><span class="rv">'+eur(c.form)+'</span></div><div class="rli"><span class="rl">Animation espace</span><span class="rv">'+eur(c.anim)+'</span></div><div class="section-sub">Coûts indirects / Amortissements</div><div class="rli"><span class="rl">Matériel (amort. 4 ans)</span><span class="rv">'+eur(c.am)+'</span></div><div class="rli"><span class="rl">Agencement 10% (amort. 5 ans)</span><span class="rv">'+eur(c.agencementAmorti)+'</span></div><div class="rli"><span class="rl">Setup initial (amort. 3 ans)</span><span class="rv">'+eur(c.setupAmorti)+'</span></div><div class="rli"><span class="rl">Loyer / m² alloués</span><span class="rv">'+eur(c.im)+'</span></div>'+dL+'<div class="rli tot" style="margin-top:8px;border-top-color:rgba(200,169,110,.5)"><span class="rl">Charge comptable totale / an</span><span class="rv">'+eur(c.CTP)+'</span></div><div style="text-align:right;font-size:.6rem;color:#7a7a9a;margin-top:3px">'+eur(Math.round(c.CTP/ST.nbs))+' / collab. / an</div>';
   
-  var rC=c.roi>150?"#10b981":c.roi>50?"#3b82f6":c.roi>0?"#f59e0b":"#ef4444";
-  $("r-roi-card").style.background=rC+"14";$("r-roi-card").style.border="1px solid "+rC+"50";$("r-roi-ttl").style.color=rC;$("r-sc-badge").textContent=sc.label;
-  $("r-roi-pct").textContent=(c.roi>0?"+":"")+Math.round(c.roi)+"%";$("r-roi-pct").style.color=rC;
-  
-  var pbStr = c.pb <= 0 || c.pb === 999 ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
-  $("r-pb").textContent=pbStr;
-  
-  $("r-eco-adj").textContent=(c.eco>0?"+":"")+eur(c.eco);$("r-eco-adj").style.color=rC;
+  $("r-pb").textContent=(c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
   var fw=c.formCoef<1?" · ⚠️ Form. faible (×"+c.formCoef.toFixed(2)+")":"";
   var aw=isSaturated?"<br><span style='color:#ef4444;font-weight:700'>Adoption réelle bridée à "+c.adoEffective.toFixed(1)+"%</span>":"";
   $("r-po-badge").innerHTML="Posture "+po.label+" → ambition "+c.ado+"%"+fw+aw;
-  $("r-roi-lines").innerHTML='<div class="rli"><span class="rl">Coût dysfonctionnements RH</span><span class="rv">'+eur(c.cd)+'</span></div><div class="rli"><span class="rl">Base adressable ('+Math.round(ST.part_adressable*100)+'%)</span><span class="rv">'+eur(c.ba)+'</span></div><div class="rli"><span class="rl">Gain brut ('+sc.label+' × '+c.adoEffective.toFixed(1)+'% réels)</span><span class="rv">'+eur(c.gain)+'</span></div><div class="rli tot" style="border-color:'+rC+'40"><span class="rl" style="color:'+rC+'">Économie nette</span><span class="rv">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>';
+  $("r-roi-lines").innerHTML='<div class="rli"><span class="rl">Coût dysfonctionnements RH</span><span class="rv">'+eur(c.cd)+'</span></div><div class="rli"><span class="rl">Base adressable ('+Math.round(ST.part_adressable*100)+'%)</span><span class="rv">'+eur(c.ba)+'</span></div><div class="rli"><span class="rl">Gain brut ('+sc.label+' × '+c.adoEffective.toFixed(1)+'% réels)</span><span class="rv">'+eur(c.gain)+'</span></div><div class="rli tot" style="border-color:'+rC+'40"><span class="rl" style="color:'+rC+'">Économie nette</span><span class="rv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>';
 }
 function renderAt(){var g=$("agrid");g.innerHTML="";AT.forEach(function(a){var q=ST.qty[a.id]||0,on=q>0,d=document.createElement("div");d.className="acard";d.style.border=on?"1px solid rgba(184,150,232,.55)":"1px solid rgba(255,255,255,.08)";d.style.background=on?"rgba(184,150,232,.09)":"rgba(255,255,255,.03)";d.innerHTML='<div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.28rem"><span style="font-size:.95rem">'+a.icon+'</span><span style="font-size:.71rem;color:'+(on?"#d4b8f0":"#8080a0")+';font-family:sans-serif;flex:1;line-height:1.2">'+a.label+' '+(a.addon?'<span style="font-size:0.5rem;background:rgba(255,255,255,0.1);padding:1px 3px;border-radius:3px">Add-on</span>':'')+'</span></div><div style="font-size:.59rem;color:#5a5a7a;font-family:sans-serif;margin-bottom:.52rem;line-height:1.4">'+a.m2+' m² · '+eur(a.prix)+' HT · '+a.cible+'</div><div style="display:flex;align-items:center;gap:.32rem"><button class="qbtn '+(q===0?"off":"")+'" onclick="addQ(\''+a.id+'\',-1)">−</button><div style="flex:1;text-align:center;font-weight:700;font-size:1.05rem;color:'+(on?"#d4b8f0":"#3a3a5a")+';font-family:sans-serif">'+q+'</div><button class="qbtn '+(q>=5?"off":"")+'" onclick="addQ(\''+a.id+'\',1)">+</button>'+(q>0?'<span style="font-size:.59rem;color:#8a7aaa;font-family:sans-serif;white-space:nowrap">'+(a.m2*q).toFixed(1)+' m²</span>':"")+'</div>';g.appendChild(d)})}
 function renderPo(){var g=$("pgrid");g.innerHTML="";POSTURES.forEach(function(p){var b=document.createElement("button");b.className="pbtn";b.onclick=function(){ST.po=p.id;ST.ado=p.adopt;$("s-ado").value=p.adopt;renderPo();render()};b.style.border=ST.po===p.id?"1px solid "+p.color+"80":"1px solid rgba(255,255,255,.08)";b.style.background=ST.po===p.id?p.color+"16":"rgba(255,255,255,.03)";b.innerHTML='<div style="font-size:.78rem;font-weight:700;color:'+(ST.po===p.id?p.color:"#8080a0")+';font-family:sans-serif">'+p.label+'</div><div style="font-size:.63rem;color:#6a6a8a;margin-top:.18rem">Ambition '+p.adopt+'%</div>';g.appendChild(b)})}
@@ -245,7 +220,7 @@ $("s-taux_dysf").oninput=function(e){ST.taux_dysf=+e.target.value;render()};
 $("s-part_adr").oninput=function(e){ST.part_adressable=+e.target.value;render()};
 $("s-seances_hebdo").oninput=function(e){ST.seances_par_semaine=+e.target.value;render()};
 $("s-duree_seance").oninput=function(e){ST.duree_seance=+e.target.value;render()};
-$("s-heures").oninput=function(e){ST.heures_ouverture=+e.target.value;$("v-heures").textContent=ST.heures_ouverture+" h";render()};
+$("s-heures").oninput=function(e){ST.heures_ouverture=+e.target.value;render()};
 function openModal(){$("modal").classList.add("on")}
 function closeModal(){$("modal").classList.remove("on")}
 function closeDevis(){$("dov").classList.remove("on")}
@@ -258,13 +233,13 @@ function genDevis(){
   var vstr=vd.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
   var sel=AT.filter(function(a){return(ST.qty[a.id]||0)>0});
   var rows=sel.map(function(a){var q=ST.qty[a.id];return'<tr><td>'+a.label+(a.addon?' <span style="font-size:6pt;color:#9090b0">(Add-on)</span>':'')+'<td style="color:#6a6a8a;font-size:8pt">'+a.cible+'<td style="text-align:center">'+a.m2+'<td class="num">'+q+'<td class="num">'+eur(a.prix)+'<td class="num">'+eur(a.prix*q)+'</tr>'}).join("");
-  var rpos=c.roi>=0;
-  var pbStr = c.pb <= 0 || c.pb === 999 ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
+  var rpos=c.roi>=0, rC=rpos ? "#10b981" : "#ef4444";
+  var pbStr = (c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
   var fwH=c.formCoef<1?'<div style="background:#fff5f5;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Attention :</strong> budget formation inférieur à la référence. Impact sur le ROI : −'+Math.round((1-c.formCoef)*100)+'%.</div>':"";
-  var awH=!c.nbPostes?'<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>':c.tauxOcc>100?'<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation de l\'espace :</strong> Capacité insuffisante pour atteindre l\'ambition d\'adoption. Les gains sont bridés. Ajoutez des places d\'assise pour maximiser le ROI.</div>':"";
+  var awH=!c.nbPostes?'<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>':c.tauxOcc>100?'<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation de l\'espace :</strong> Capacité insuffisante. Les gains sont bridés à l\'adoption réelle ('+c.adoEffective.toFixed(1)+'%).</div>':"";
   var dL=c.deco?'<div class="dli"><span class="ll">Décoration (amort. 5 ans)</span><span class="lv">'+eur(c.decoAm)+'/an</span></div>':'';
   
-  $("dpaper").innerHTML='<div class="dv"><div class="dstrip"></div><div class="dhdr"><div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération unique & bien-être au travail</div></div><div class="dmeta"><strong>N° '+dnum+'</strong>Établi le '+today+'<br>Valable jusqu\'au '+vstr+'<br>Commercial : '+com+'</div></div><div class="dbody"><div class="dpros"><div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">'+pro+'</div><div class="dpsub">'+con+'</div></div><div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">'+ST.nbs+' collaborateurs</div><div class="dpsub">'+(ST.mode==="5j"?"Présentiel 5j/sem.":"Hybride "+ST.jours+"j/sem.")+' · Posture '+po.label+'</div></div><div class="dpb"><div class="dplbl">L\'Espace beOtop</div><div class="dpval">'+c.nbPostes+' place(s) d\'assise</div><div class="dpsub">Surface cible : '+c.surfAt+' m²</div></div></div><div class="dsttl" style="margin-top:0">01 · Dépenses d\'investissement initial (CAPEX)</div><table class="dtbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>'+rows+'<tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT<td class="num" style="color:#6a6a8a">'+eur(c.eqT)+'</tr><tr><td colspan="5" style="color:#6a6a8a">Frais d\'agencement & Setup (10%)<td class="num" style="color:#6a6a8a">'+eur(c.agencement)+'</tr><tr class="st"><td colspan="5">Total CAPEX Espace<td class="num">'+eur(c.eqT + c.agencement)+'</tr></tbody></table><div class="dsttl">02 · Charge Financière Annuelle</div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:4pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Frais de fonctionnement (OPEX sortant)</span></div><div class="dli"><span class="ll">Maintenance 11%</span><span class="lv">'+eur(c.maint)+'/an</span></div><div class="dli"><span class="ll">Formation continue managers</span><span class="lv">'+eur(c.form)+'/an</span></div><div class="dli"><span class="ll">Animation espace</span><span class="lv">'+eur(c.anim)+'/an</span></div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:8pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Coûts indirects / Amortissements (Impact P&L)</span></div><div class="dli"><span class="ll">Amortissement équipements (4 ans)</span><span class="lv">'+eur(c.am)+'/an</span></div><div class="dli"><span class="ll">Amort. Agencement 10% (5 ans)</span><span class="lv">'+eur(c.agencementAmorti)+'/an</span></div><div class="dli"><span class="ll">Amortissement Setup initial (3 ans)</span><span class="lv">'+eur(c.setupAmorti)+'/an</span></div><div class="dli"><span class="ll">Loyer / coût d\'opportunité</span><span class="lv">'+eur(c.im)+'/an</span></div>'+dL+'<div class="dli tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">'+eur(c.CTP)+' / an</span></div><div class="dsttl">03 · Retour sur investissement (ROI)</div><div class="droi"><div class="drbox '+(rpos?"pos":"neg")+'"><div class="drbig '+(rpos?"pos":"neg")+'">'+(c.roi>0?"+":"")+Math.round(c.roi)+'%</div><div class="drlbl">ROI annuel net</div></div><div class="drbox '+(rpos?"pos":"neg")+'"><div class="drbig '+(rpos?"pos":"neg")+'" style="font-size:14pt">'+pbStr+'</div><div class="drlbl">Payback cash net</div></div><div class="drbox neu"><div class="drbig neu">'+eur(c.cd)+'</div><div class="drlbl">Coût dysfonctionnements</div></div></div><div class="dli"><span class="ll">Gain brut ('+sc.label+' × '+c.adoEffective.toFixed(1)+'% adoption réelle)</span><span class="lv">'+eur(c.gain)+'</span></div><div class="dli"><span class="ll">Charge comptable totale</span><span class="lv">− '+eur(c.CTP)+'</span></div><div class="dli tl"><span class="ll">Économie nette / an</span><span class="lv" style="color:'+(rpos?"#10b981":"#ef4444")+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>'+fwH+awH+'<div class="dftr"><div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>'+com+'<br>Devis '+dnum+' · Valable jusqu\'au '+vstr+'</div><div class="dfr">'+pro+' · '+ST.nbs+' collab.<br>'+today+'<br><em>Estimations indicatives</em></div></div><div class="dstrip"></div></div>';
+  $("dpaper").innerHTML='<div class="dv"><div class="dstrip"></div><div class="dhdr"><div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération unique & bien-être au travail</div></div><div class="dmeta"><strong>N° '+dnum+'</strong>Établi le '+today+'<br>Valable jusqu\'au '+vstr+'<br>Commercial : '+com+'</div></div><div class="dbody"><div class="dpros"><div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">'+pro+'</div><div class="dpsub">'+con+'</div></div><div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">'+ST.nbs+' collaborateurs</div><div class="dpsub">'+(ST.mode==="5j"?"Présentiel 5j/sem.":"Hybride "+ST.jours+"j/sem.")+' · Posture '+po.label+'</div></div><div class="dpb"><div class="dplbl">L\'Espace beOtop</div><div class="dpval">'+c.nbPostes+' place(s) d\'assise</div><div class="dpsub">Surface cible : '+c.surfAt+' m²</div></div></div><div class="dsttl" style="margin-top:0">01 · Dépenses d\'investissement initial (CAPEX)</div><table class="dtbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>'+rows+'<tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT<td class="num" style="color:#6a6a8a">'+eur(c.eqT)+'</tr><tr><td colspan="5" style="color:#6a6a8a">Frais d\'agencement & Setup (10%)<td class="num" style="color:#6a6a8a">'+eur(c.agencement)+'</tr><tr class="st"><td colspan="5">Total CAPEX Espace<td class="num">'+eur(c.eqT + c.agencement)+'</tr></tbody></table><div class="dsttl">02 · Charge Financière Annuelle</div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:4pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Frais de fonctionnement (OPEX sortant)</span></div><div class="dli"><span class="ll">Maintenance 11%</span><span class="lv">'+eur(c.maint)+'/an</span></div><div class="dli"><span class="ll">Formation continue managers</span><span class="lv">'+eur(c.form)+'/an</span></div><div class="dli"><span class="ll">Animation espace</span><span class="lv">'+eur(c.anim)+'/an</span></div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:8pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Coûts indirects / Amortissements (Impact P&L)</span></div><div class="dli"><span class="ll">Amortissement équipements (4 ans)</span><span class="lv">'+eur(c.am)+'/an</span></div><div class="dli"><span class="ll">Amort. Agencement 10% (5 ans)</span><span class="lv">'+eur(c.agencementAmorti)+'/an</span></div><div class="dli"><span class="ll">Amortissement Setup initial (3 ans)</span><span class="lv">'+eur(c.setupAmorti)+'/an</span></div><div class="dli"><span class="ll">Loyer / coût d\'opportunité</span><span class="lv">'+eur(c.im)+'/an</span></div>'+dL+'<div class="dli tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">'+eur(c.CTP)+' / an</span></div><div class="dsttl">03 · Retour sur investissement (ROI)</div><div class="droi"><div class="drbox" style="border-color:'+rC+'"><div class="drbig" style="color:'+rC+'">'+(c.nbPostes === 0 ? "—" : (c.roi>0?"+":"")+Math.round(c.roi)+"%")+'</div><div class="drlbl">ROI annuel net</div></div><div class="drbox"><div class="drbig" style="font-size:14pt">'+pbStr+'</div><div class="drlbl">Payback cash net</div></div><div class="drbox neu"><div class="drbig neu">'+eur(c.cd)+'</div><div class="drlbl">Coût dysfonctionnements</div></div></div><div class="dli"><span class="ll">Base adressable ('+Math.round(ST.part_adressable*100)+'%)</span><span class="lv">'+eur(c.ba)+'</span></div><div class="dli"><span class="ll">Gain brut ('+sc.label+' × '+c.adoEffective.toFixed(1)+'% adoption réelle)</span><span class="lv">'+eur(c.gain)+'</span></div><div class="dli"><span class="ll">Charge comptable totale</span><span class="lv">− '+eur(c.CTP)+'</span></div><div class="dli tl"><span class="ll">Économie nette / an</span><span class="lv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>'+fwH+awH+'<div class="dctx"><strong>Hypothèses et Paramètres :</strong> Masse chargée (+42%) · Dysf. RH : '+Math.round(ST.taux_dysf*100)+'% (Source: ANACT) · Part adressable : '+Math.round(ST.part_adressable*100)+'% (beOtop) · Sessions/sem : '+ST.seances_par_semaine+' · Ambition adoption : '+c.ado+'% · Ouverture : '+ST.heures_ouverture+'h/j (remplissage 75%). <strong>Réf. : +'+refRoi+'% pour 400 sal., option B, Encouragé, médian.</strong></div><div class="dsttl">04 · Conditions d\'atteinte du ROI</div><div class="dcond"><ul><li>Charte d\'accès signée par la Direction <span class="dbadge cr">CRITIQUE</span></li><li>Formation managers avant ouverture <span class="dbadge cr">CRITIQUE</span></li><li>Protocole de mesure KPI dès J1 <span class="dbadge si">SIGNIFICATIF</span></li><li>Communication interne structurée <span class="dbadge si">SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span class="dbadge mo">MODÉRÉ</span></li></ul></div></div><div class="dftr"><div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>'+com+'<br>Devis '+dnum+' · Valable jusqu\'au '+vstr+'</div><div class="dfr">'+pro+' · '+ST.nbs+' collab.<br>'+today+'<br><em>Estimations indicatives</em></div></div><div class="dstrip"></div></div>';
   $("dov").classList.add("on");$("dov").scrollTop=0;
 }
 renderJours();renderAt();renderPo();renderSc();render();
