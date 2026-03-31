@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop — Calculateur d'espace de récupération</title>
+<title>beOtop — Calculateur d'espace de récupération (version avancée)</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%);color:#e8e0d5;font-family:Georgia,serif;min-height:100vh}button{font-family:inherit;cursor:pointer;transition:all .15s}input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#c8a96e}input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#c8a96e;border:none}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px}input[type=text]{font-family:sans-serif;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e8e0d5;padding:.55rem .75rem;font-size:.82rem;width:100%;outline:none}input[type=text]:focus{border-color:#c8a96e}input[type=text]::placeholder{color:#4a4a6a}
 #hdr{border-bottom:1px solid rgba(255,200,100,.2);padding:1.2rem 2rem;background:rgba(255,200,100,.03);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}#hdr h1{margin:0;font-size:clamp(1rem,2.5vw,1.7rem);font-weight:400;color:#f5efe6}.brand{font-size:.67rem;letter-spacing:.35em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif}#mode-lbl{margin-left:auto;font-size:.7rem;color:#5a5a7a;font-family:sans-serif}
@@ -62,7 +62,11 @@
   <div style="margin:.7rem 0 .28rem;display:flex;justify-content:space-between;font-size:.64rem;color:#9090b0;font-family:sans-serif"><span>Taux d'occupation de l'espace</span><span id="r-satp" style="font-weight:700">—</span></div>
   <div class="sat-bg"><div class="sat-f" id="r-satb" style="width:0%;background:#7eb8c9"></div></div>
   <div id="r-sat-alert" class="sat-alert">⚠️ <strong>L'espace est trop petit pour vos équipes.</strong><br>Adoption bridée à <span id="r-ado-b"></span>% au lieu des <span id="r-ado-t"></span>% espérés. Ajoutez des équipements pour débloquer votre ROI !</div>
-  <div class="sgrid" style="margin-top:1rem"><div class="sb"><div class="sv" id="r-dp" style="color:#ef4444">—</div><div class="sl">Demande Pic/jour</div></div><div class="sb"><div class="sv" id="r-ce" style="color:#10b981">—</div><div class="sl">Capacité de l'espace</div></div></div></div>
+  <div class="sgrid" style="margin-top:1rem">
+    <div class="sb"><div class="sv" id="r-dp" style="color:#ef4444">—</div><div class="sl">Demande Pic/jour</div></div>
+    <div class="sb"><div class="sv" id="r-ce" style="color:#10b981">—</div><div class="sl">Capacité de l'espace</div></div>
+  </div>
+</div>
 <div class="rcard" style="background:rgba(200,169,110,.09);border:1px solid rgba(200,169,110,.35)"><div class="rttl" style="color:#c8a96e">COÛT TOTAL DE POSSESSION (OPEX)</div><div id="r-ctp"></div></div>
 <div class="rcard" id="r-roi-card" style="background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.35)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem"><div class="rttl" id="r-roi-ttl" style="color:#10b981;margin:0">RETOUR SUR INVESTISSEMENT</div><div id="r-sc-badge" style="font-size:.58rem;color:#7a7a9a;font-family:sans-serif;background:rgba(255,255,255,.05);padding:.15rem .42rem;border-radius:4px"></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin-bottom:.65rem;align-items:end"><div><div id="r-roi-pct" style="font-size:1.9rem;font-weight:300;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">ROI annuel net</div></div><div><div id="r-pb" style="font-size:1.9rem;font-weight:300;color:#e8e0d5;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Payback</div></div><div style="text-align:right"><div id="r-eco-adj" style="font-size:.95rem;font-weight:700">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Éco. nette / an</div></div></div><div style="font-size:.58rem;color:#7a8a7a;font-family:sans-serif;margin-bottom:.5rem" id="r-po-badge"></div><div id="r-roi-lines"></div></div>
 <div style="margin-top:.75rem;padding:.8rem;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.05)"><div style="color:#c8a96e;font-weight:700;font-size:.68rem;font-family:sans-serif;margin-bottom:.42rem">5 conditions d'atteinte du ROI</div><ul style="font-size:.65rem;color:#8080a0;font-family:sans-serif;line-height:1.85;padding-left:1rem"><li>Charte d'accès signée par la Direction <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Formation managers avant ouverture <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Protocole de mesure dès J1 <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Communication interne structurée <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span style="color:#7a7a9a;font-size:.58rem">● MODÉRÉ</span></li></ul></div>
@@ -100,38 +104,32 @@ function fnum(n){return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0})
 function dateStr(){return new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
 function devisNum(){return"BEO-"+new Date().getFullYear()+"-"+String(Math.floor(Math.random()*9000)+1000)}
 
-// CALCUL DE REFERENCE (fixé sur 1 ESPACE)
+// CALCUL DE REFERENCE
 function calcRef(){
   var nbs=400,sal=70200,ado=85,salC=sal*1.42,cd=Math.round(nbs*salC*ST.taux_dysf),ba=Math.round(cd*ST.part_adressable);
   var eqT=0,sN=0,nP=0;AT.forEach(function(a){var q=DEFAULT_QTYS.B[a.id]||0;eqT+=a.prix*q;sN+=a.m2*q;nP+=q});
   var sA=Math.round(sN*1.5),nbu=Math.round(nbs*ado/100),sS=nbu*ST.seances_par_semaine,sP=Math.round(sS*0.20);
-  
-  var postesCalcul = Math.max(3, nP); // Minimum 3 postes pour le calcul
+  var postesCalcul = Math.max(3, nP); 
   var capaciteEspace = Math.floor((60/ST.duree_seance) * postesCalcul * ST.heures_ouverture * 0.75);
-  
   var adoEffective = ado;
-  if (sP > capaciteEspace) { adoEffective = ado * (capaciteEspace / sP); } // Brider l'adoption si satu
-  
+  if (sP > capaciteEspace) { adoEffective = ado * (capaciteEspace / sP); } 
   var am=Math.round(eqT/4),mt=Math.round(eqT*0.08),im=Math.round(sA*336),su=Math.round(SETUP/3);
   var CTP=am+mt+im+su+FORM_REF,gain=ba*0.10*(adoEffective/100),eco=gain-CTP;
   return CTP===0?0:Math.round(eco/CTP*100);
 }
 
-// CALCUL PRINCIPAL (1 SEUL ESPACE)
+// CALCUL PRINCIPAL
 function calc(){
   var nbs=ST.nbs,salB=ST.sal,mode=ST.mode,jours=ST.jours,sc=SCENARIOS[ST.sc-1],po=POSTURES.find(function(p){return p.id===ST.po}),ado=po.adopt;
   var tauxP=mode==="5j"?1:jours/5,nbp=Math.round(nbs*tauxP),nbu=Math.round(nbs*ado/100),seancesSem=nbu*ST.seances_par_semaine;
   var picC=mode==="5j"?0.20:jours<=1?0.80:jours<=2?0.55:jours<=3?0.40:jours<=4?0.28:0.20;
   var seancesPic=Math.round(seancesSem*picC),salC=salB*1.42,cd=Math.round(nbs*salC*ST.taux_dysf),ba=Math.round(cd*ST.part_adressable);
-  
   var surfNet=0,eqT=0;AT.forEach(function(a){var q=ST.qty[a.id]||0;surfNet+=a.m2*q;eqT+=a.prix*q});
   var surfAt=Math.round(surfNet*1.50),nbPostes=AT.reduce(function(s,a){return s+(ST.qty[a.id]||0)},0);
   
-  // Capacité de l'espace unique (min 3 postes)
   var postesCalcul = Math.max(3, nbPostes);
   var capaciteParEspace = Math.floor((60 / ST.duree_seance) * postesCalcul * ST.heures_ouverture * 0.75);
   
-  // Saturation & Adoption bridée
   var adoEffective = ado;
   var tauxOcc = 0;
   if (seancesPic > 0) {
@@ -141,7 +139,6 @@ function calc(){
       }
   }
 
-  // Coûts pour l'espace unique
   var deco=Math.round(surfAt*ST.deco_pm2),decoAm=Math.round(deco/5),im=Math.round(surfAt*ST.im_pm2),form=ST.form,anim=ST.anim;
   var setupAmorti=Math.round(SETUP/3),am=Math.round(eqT/4),maint=Math.round(eqT*0.08);
   var formCoef;
@@ -171,7 +168,6 @@ function render(){
   $("ref-roi-hint").innerHTML='💡 Médian (−10%) ancré ANACT/CIPD. Référence : <strong>+'+refRoi+'%</strong> pour 400 sal., option B, posture Encouragé (85%).';
   $("r-surf").textContent=c.surfAt;$("r-postes").textContent=c.nbPostes;
   
-  // GESTION SATURATION UI
   var isSaturated = c.tauxOcc > 100;
   $("r-satp").textContent=c.tauxOcc+"%";
   $("r-satp").style.color = isSaturated ? "#ef4444" : "#e8e0d5";
@@ -186,7 +182,7 @@ function render(){
       $("r-sat-alert").style.display = "none";
   }
 
-  $("r-np").textContent=c.nbp;$("r-dp").textContent=c.seancesPic;$("r-ce").textContent=c.capaciteParEspace;
+  $("r-dp").textContent=c.seancesPic;$("r-ce").textContent=c.capaciteParEspace;
   $("r-duree_affiche").textContent=ST.duree_seance;
   $("v-deco-pm2").textContent=ST.deco_pm2+" €/m²";$("v-im-pm2").textContent=ST.im_pm2+" €/m²";$("v-form").textContent=eur(ST.form);$("v-anim").textContent=eur(ST.anim);
   $("s-deco-pm2").value=ST.deco_pm2;$("s-im-pm2").value=ST.im_pm2;$("s-form").value=ST.form;$("s-anim").value=ST.anim;
