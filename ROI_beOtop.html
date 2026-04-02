@@ -105,7 +105,7 @@ function devisNum(){return"BEO-"+new Date().getFullYear()+"-"+String(Math.floor(
 function calcRef(){
   var nbs=400,sal=70200,ado=85,salC=sal*1.42,cd=Math.round(nbs*salC*ST.taux_dysf),ba=Math.round(cd*ST.part_adressable);
   var eqT=0,sN=0,nP=0;AT.forEach(function(a){var q=DEFAULT_QTYS.B[a.id]||0;eqT+=a.prix*q;sN+=a.m2*q;if(!a.addon)nP+=q;});
-  var sA=Math.round(sN*1.5), nbu=Math.round(nbs*ado/100),sS=nbu*ST.seances_par_semaine,sP=Math.round(sS*0.20);
+  var sA=Math.round(sN*2.0), nbu=Math.round(nbs*ado/100),sS=nbu*ST.seances_par_semaine,sP=Math.round(sS*0.20);
   var capaciteEspace = Math.floor((60/ST.duree_seance) * nP * ST.heures_ouverture * 0.75);
   var adoEffective = (capaciteEspace === 0) ? 0 : (sP > capaciteEspace ? ado * (capaciteEspace / sP) : ado);
   var am=Math.round(eqT/4),mt=Math.round(eqT*0.11),agencement=Math.round(eqT*0.10),agAm=Math.round(agencement/5),im=Math.round(sA*336),su=Math.round(SETUP/3);
@@ -123,12 +123,12 @@ function calc(){
   var nbTotal=AT.reduce(function(s,a){return s+(ST.qty[a.id]||0)},0);
   var cap=Math.floor((60/ST.duree_seance)*nbPostes*ST.heures_ouverture*0.75);
   var adoEff=cap===0?0:(seancesPic>cap?ado*(cap/seancesPic):ado);
-  var ag=Math.round(eqT*0.10),agAm=Math.round(ag/5),am=Math.round(eqT/4),mt=Math.round(eqT*0.11),im=Math.round(Math.round(surfNet*1.5)*ST.im_pm2),su=Math.round(SETUP/3);
-  var deco=Math.round(Math.round(surfNet*1.5)*ST.deco_pm2),decoAm=Math.round(deco/5);
+  var ag=Math.round(eqT*0.10),agAm=Math.round(ag/5),am=Math.round(eqT/4),mt=Math.round(eqT*0.11),im=Math.round(Math.round(surfNet*2.0)*ST.im_pm2),su=Math.round(SETUP/3);
+  var deco=Math.round(Math.round(surfNet*2.0)*ST.deco_pm2),decoAm=Math.round(deco/5);
   var fCoef=(ST.form<=FORM_REF)?(0.70+(ST.form/FORM_REF)*0.30):Math.min(1.30,1.0+((ST.form-FORM_REF)/FORM_REF)*0.30);
   var aCoef=1+(ST.anim/5000)*0.40, CTP=am+mt+im+su+decoAm+ST.form+ST.anim+agAm, opex=mt+im+ST.form+ST.anim;
   var inv=eqT+deco+SETUP+ag, gain=nbPostes===0?0:ba*sc.rate*(adoEff/100)*fCoef*aCoef, eco=gain-CTP;
-  return{nbp:nbp,nbu:nbu,seancesSem:seancesSem,cap:cap,seancesPic:seancesPic,tauxOcc:cap===0?0:Math.round((seancesPic/cap)*100),cd:cd,ba:ba,sc:sc,po:po,ado:ado,adoEff:adoEff,gain:gain,eco:eco,roi:CTP===0?0:(eco/CTP*100),pb:(gain-opex>0&&nbPostes>0)?inv/((gain-opex)/12):999,surfAt:Math.round(surfNet*1.5),nbPostes:nbPostes,nbTotal:nbTotal,eqT:eqT,ag:ag,agAm:agAm,am:am,mt:mt,im:im,su:su,deco:deco,decoAm:decoAm,CTP:CTP,opex:opex,inv:inv,formCoef:fCoef,animCoef:aCoef};
+  return{nbp:nbp,nbu:nbu,seancesSem:seancesSem,cap:cap,seancesPic:seancesPic,tauxOcc:cap===0?0:Math.round((seancesPic/cap)*100),cd:cd,ba:ba,sc:sc,po:po,ado:ado,adoEff:adoEff,gain:gain,eco:eco,roi:CTP===0?0:(eco/CTP*100),pb:(gain-opex>0&&nbPostes>0)?inv/((gain-opex)/12):999,surfAt:Math.round(surfNet*2.0),nbPostes:nbPostes,nbTotal:nbTotal,eqT:eqT,ag:ag,agAm:agAm,am:am,mt:mt,im:im,su:su,deco:deco,decoAm:decoAm,CTP:CTP,opex:opex,inv:inv,formCoef:fCoef,animCoef:aCoef};
 }
 function $(id){return document.getElementById(id)}
 function render(){
@@ -146,7 +146,7 @@ function render(){
   else{bmhy.style.border="2px solid #7eb8c9";bmhy.style.background="rgba(126,184,201,.13)";bmhy.querySelector("div").style.color="#7eb8c9";bm5j.style.border="1px solid rgba(255,255,255,.1)";bm5j.style.background="rgba(255,255,255,.03)";bm5j.querySelector("div").style.color="#7a7a9a"}
   var isA=Object.keys(DEFAULT_QTYS.A).every(function(k){return ST.qty[k]===DEFAULT_QTYS.A[k]}),isB=Object.keys(DEFAULT_QTYS.B).every(function(k){return ST.qty[k]===DEFAULT_QTYS.B[k]}),isC=Object.keys(DEFAULT_QTYS.C).every(function(k){return ST.qty[k]===DEFAULT_QTYS.C[k]});
   document.querySelectorAll(".opt-btn").forEach(function(b){var o=b.dataset.opt;b.style.border=(o==="A"&&isA||o==="B"&&isB||o==="C"&&isC)?"2px solid #b896e8":"1px solid #b896e8"});
-  $("arecap").innerHTML='<span style="color:#d4b8f0;font-weight:700">'+c.nbPostes+'</span> place(s) d\'assise · nette <span style="color:#d4b8f0">'+(c.surfAt/1.5).toFixed(1)+' m²</span><span style="color:#b896e8"> → '+c.surfAt+' m²</span> (+50% circ.) · équipement : '+eur(c.eqT);
+  $("arecap").innerHTML='<span style="color:#d4b8f0;font-weight:700">'+c.nbPostes+'</span> place(s) d\'assise · nette <span style="color:#d4b8f0">'+(c.surfAt/2.0).toFixed(1)+' m²</span><span style="color:#b896e8"> → '+c.surfAt+' m²</span> (+100% circ.) · équipement : '+eur(c.eqT);
   $("ref-roi-hint").innerHTML='💡 Médian (−10%) ancré ANACT/CIPD. Référence : <strong>+'+refRoi+'%</strong> pour 400 sal., option B, posture Encouragé (85%).';
   $("r-surf").textContent=c.surfAt;$("r-postes").textContent=c.nbPostes;
   
