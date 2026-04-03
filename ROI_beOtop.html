@@ -290,6 +290,8 @@ function render(){
   document.getElementById("v-taux_dysf").innerText = Math.round(ST.taux_dysf*100)+"%";
   document.getElementById("v-part_adr").innerText = Math.round(ST.part_adressable*100)+"%";
   document.getElementById("v-heures").innerText = ST.heures_ouverture+" h";
+  document.getElementById("v-duree_seance").innerText = ST.duree_seance;
+  document.getElementById("v-seances_hebdo").innerText = ST.seances_par_semaine;
   document.getElementById("r-sc-badge").innerText = SCENARIOS[ST.sc-1].label;
   document.getElementById("s-taux_dysf").value = ST.taux_dysf;
   document.getElementById("s-part_adr").value = ST.part_adressable;
