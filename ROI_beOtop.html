@@ -177,7 +177,7 @@ function calc(){
   // Coûts (CORRECTION : ag n'est pas dans inv)
   let ag = Math.round(eqT * 0.10);        // agencement
   let setup = 2860;
-  let inv = eqT + setup;                  // ag exclu de l'investissement matériel
+  let inv = eqT;   // matériel seul — setup amorti séparément via su, ag via agAm
   let amortEquip = Math.round(inv / 4);   // 4 ans (matériel + setup)
   let agAm = Math.round(ag / 5);          // agencement seul, 5 ans
   let su = Math.round(setup / 3);         // 3 ans
@@ -192,7 +192,8 @@ function calc(){
   let gain = Math.round(ba * sc.rate * (adoEff / 100));
   let eco = gain - CTP;
   let roi = (CTP === 0) ? 0 : (eco / CTP * 100);
-  let pb = (gain - opex > 0 && nbPostes > 0) ? inv / ((gain - opex) / 12) : 999;
+  let capexTotal = eqT + ag + setup;
+  let pb = (gain - opex > 0 && nbPostes > 0) ? capexTotal / ((gain - opex) / 12) : 999;
 
   return { nbp, nbu, seancesSem, cap, seancesPic, tauxOcc: cap===0 ? 0 : Math.min(100, Math.round((seancesPic/cap)*100)),
            ba, gain, eco, roi, pb, surfAt, nbPostes, eqT, ag, agAm, amortEquip, maintenance, im, deco, decoAm,
