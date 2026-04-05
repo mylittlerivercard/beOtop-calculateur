@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v4.0 - 3/04/2026)</title>
+<title>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v4.1 - 5/04/2026)</title>
   <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%);color:#e8e0d5;font-family:Georgia,serif;min-height:100vh}button{font-family:inherit;cursor:pointer;transition:all .15s}input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#c8a96e}input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#c8a96e;border:none}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px}input[type=text]{font-family:sans-serif;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e8e0d5;padding:.55rem .75rem;font-size:.82rem;width:100%;outline:none}input[type=text]:focus{border-color:#c8a96e}input[type=text]::placeholder{color:#4a4a6a}
 #hdr{border-bottom:1px solid rgba(255,200,100,.2);padding:1.2rem 2rem;background:rgba(255,200,100,.03);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}#hdr h1{margin:0;font-size:clamp(1rem,2.5vw,1.7rem);font-weight:400;color:#f5efe6}.brand{font-size:.67rem;letter-spacing:.35em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif}#mode-lbl{margin-left:auto;font-size:.7rem;color:#5a5a7a;font-family:sans-serif}
@@ -23,7 +23,7 @@
 </style>
 </head>
 <body>
-<div id="hdr"><span class="brand">beOtop™</span><h1>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v4.0 - 3/04/2026)</h1><span id="mode-lbl">Modèle 5j / semaine</span></div>
+<div id="hdr"><span class="brand">beOtop™</span><h1>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v4.1 - 5/04/2026)</h1><span id="mode-lbl">Modèle 5j / semaine</span></div>
 <div id="grid"><div id="left">
 <div class="sec"><div class="sec-ttl" style="color:#c8a96e;border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem"><div><div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div><input type="range" id="s-nbs" min="50" max="2000" step="50" value="400"></div><div><div class="srow"><span class="slbl">Salaire brut moyen (€/an)</span><span class="sval" id="v-sal">47 500 €</span></div><input type="range" id="s-sal" min="20000" max="100000" step="500" value="47500"></div></div></div>
 <div class="sec"><div class="sec-ttl" style="color:#7eb8c9;border-color:rgba(126,184,201,.2)">02 · Mode de travail</div><div style="display:flex;gap:.5rem;margin-bottom:.85rem"><button class="tbtn" id="bm5j" onclick="setMode('5j')" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.13)"><div style="font-size:.8rem;font-weight:700;color:#7eb8c9;font-family:sans-serif">🏢 5j / semaine</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Flux lissé</div></button><button class="tbtn" id="bmhy" onclick="setMode('hybride')" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"><div style="font-size:.8rem;font-weight:700;color:#7a7a9a;font-family:sans-serif">🔄 Hybride</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Pic concentré</div></button></div>
@@ -131,7 +131,39 @@ function fnum(n){ return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}
 function dateStr(){ return new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"}); }
 function devisNum(){ return "BEO-"+new Date().getFullYear()+"-"+String(Math.floor(Math.random()*9000)+1000); }
 
-// Calcul principal (conforme étude, calculs dynamiques, double-comptage corrigé)
+// Calcul des coefficients d'impact (gain supplémentaire)
+function getFormCoef(form) {
+  // Référence 1300€ → coef 1.0. Plage 0-5000€ → coef de 0.85 à 1.30 (effet sur le gain)
+  const ref = 1300;
+  if (form <= ref) {
+    return 0.85 + (form / ref) * 0.15;
+  } else {
+    return 1.0 + ((form - ref) / (5000 - ref)) * 0.30;
+  }
+}
+
+function getAnimCoef(anim) {
+  // Référence 1100€ → coef 1.0. Plage 0-5000€ → coef de 0.85 à 1.35
+  const ref = 1100;
+  if (anim <= ref) {
+    return 0.85 + (anim / ref) * 0.15;
+  } else {
+    return 1.0 + ((anim - ref) / (5000 - ref)) * 0.35;
+  }
+}
+
+function getDecoCoef(decoTotal) {
+  // decoTotal = surface brute * prix/m². Seuil d'accélération à 10 000€.
+  // Pour 0€ → coef 1.0, pour 10 000€ → coef 1.05, pour 20 000€ → coef 1.15, max 1.20
+  if (decoTotal <= 0) return 1.0;
+  if (decoTotal <= 10000) {
+    return 1.0 + (decoTotal / 10000) * 0.05;
+  } else {
+    return 1.05 + (Math.min(decoTotal, 30000) - 10000) / 20000 * 0.15;
+  }
+}
+
+// Calcul principal (conforme étude, avec coefficients d'impact)
 function calc(){
   let nbs = ST.nbs;
   let salBrut = ST.sal;
@@ -153,14 +185,8 @@ function calc(){
   let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 0.80 : jours<=2 ? 0.55 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
   let seancesPic = Math.round(seancesSem * picC);
 
-  // Valeurs de référence de l'étude (point d'ancrage)
-const REF_DYSF = 0.11;
-const REF_ADR = 0.28;
-const REF_BA_RATIO = 1.228107e6 / 28.025e6; // 0.04382
-
-// On applique les écarts par rapport aux références
-let dynamicRatio = REF_BA_RATIO * (ST.taux_dysf / REF_DYSF) * (ST.part_adressable / REF_ADR);
-let ba = Math.round(masseSalariale * dynamicRatio);
+  // Base adressable (calcul direct basé sur les paramètres avancés)
+  let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
 
   // Surfaces et équipements
   let surfNet = 0;
@@ -178,49 +204,60 @@ let ba = Math.round(masseSalariale * dynamicRatio);
   let cap = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
   let adoEff = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
 
-  // Coûts (correction définitive)
-  let ag = Math.round(eqT * 0.10);        // agencement
+  // Coûts
+  let ag = Math.round(eqT * 0.10);        // agencement (10% du matériel)
   let setup = 2860;                      // forfait étude
 
-  let inv = eqT;                          // matériel seul (sans ag, sans setup)
-  let amortEquip = Math.round(inv / 4);   // 4 ans → 4 883 € pour l'option B
+  let amortEquip = Math.round(eqT / 4);   // 4 ans
+  let agAm = Math.round(ag / 5);          // agencement, 5 ans
+  let su = Math.round(setup / 3);         // setup, 3 ans
 
-  let agAm = Math.round(ag / 5);          // agencement seul, 5 ans
-  let su = Math.round(setup / 3);         // setup seul, 3 ans
-
-  let deco = Math.round(surfAt * ST.deco_pm2);
+  let decoTotal = surfAt * ST.deco_pm2;
+  let deco = Math.round(decoTotal);
   let decoAm = Math.round(deco / 5);
 
   let maintenance = Math.round(eqT * 0.11); // 11% de l'équipement
-  // Charges locatives incluses (x1.20) conformément à l'étude §6.1
-  let im = Math.round(surfAt * ST.im_pm2 * 1.20);
+  let im = Math.round(surfAt * ST.im_pm2 * 1.20); // loyer + charges locatives
+
   let opex = maintenance + ST.form + ST.anim;
   let CTP = opex + amortEquip + agAm + su + decoAm + im;
 
-  let gain = Math.round(ba * sc.rate * (adoEff / 100));
+  // Coefficients d'impact sur le gain (investissements qui améliorent l'efficacité)
+  let formCoef = getFormCoef(ST.form);
+  let animCoef = getAnimCoef(ST.anim);
+  let decoCoef = getDecoCoef(decoTotal);
+
+  let gainBase = Math.round(ba * sc.rate * (adoEff / 100));
+  let gain = Math.round(gainBase * formCoef * animCoef * decoCoef);
+
   let eco = gain - CTP;
   let roi = (CTP === 0) ? 0 : (eco / CTP * 100);
 
-  let capexTotal = eqT + ag + setup;      // investissement total décaissé
-  let pb = (gain - opex > 0 && nbPostes > 0) ? capexTotal / ((gain - opex) / 12) : 999;
+  let capexTotal = eqT + ag + setup + deco;  // investissement total décaissé
+  let cashFlow = gain - opex; // flux net avant amortissements (décaissé)
+  let pb = (cashFlow > 0 && nbPostes > 0) ? capexTotal / (cashFlow / 12) : 999;
 
   return { nbp, nbu, seancesSem, cap, seancesPic, tauxOcc: cap===0 ? 0 : Math.min(100, Math.round((seancesPic/cap)*100)),
            ba, gain, eco, roi, pb, surfAt, nbPostes, eqT, ag, agAm, amortEquip, maintenance, im, deco, decoAm,
-           CTP, opex, inv, su, setup, capexTotal, adoEff, ado, sc, po, salC, masseSalariale };
+           CTP, opex, capexTotal, su, setup, adoEff, ado, sc, po, salC, masseSalariale, decoTotal,
+           formCoef, animCoef, decoCoef };
 }
 
-// Référence (identique à l'étude §7.3, posture Libre 60%, -10%)
+// Référence (identique à l'étude §7.3, posture Libre 60%, -10%, avec coefficients par défaut)
 function calcRef(){
   let salC = 47500 * 1.475;
   let masse = 400 * salC;
-  const RATIO = 1.228107e6 / 28.025e6;
-  let ba = masse * RATIO;
+  let ba = masse * 0.11 * 0.28;
   let CTP = 17619;   // valeur étude pour option B
   let gain = ba * 0.10 * 0.60;
+  let formCoef = getFormCoef(1300);
+  let animCoef = getAnimCoef(1100);
+  let decoCoef = getDecoCoef(0);
+  gain = gain * formCoef * animCoef * decoCoef;
   return Math.round((gain - CTP) / CTP * 100);
 }
 
-// Rendu UI (identique à la version précédente)
+// Rendu UI
 function render(){
   let c = calc();
   let po = POSTURES.find(p => p.id === ST.po);
@@ -308,8 +345,9 @@ function render(){
   document.getElementById("r-ctp").innerHTML = '<div class="section-sub" style="margin-top:0">Frais annuels récurrents (OPEX)</div><div class="rli"><span class="rl">Maintenance (11% équip.)</span><span class="rv">'+eur(c.maintenance)+'</span></div><div class="rli"><span class="rl">Formation continue</span><span class="rv">'+eur(ST.form)+'</span></div><div class="rli"><span class="rl">Animation espace</span><span class="rv">'+eur(ST.anim)+'</span></div><div class="section-sub">Coûts indirects / Amortissements</div><div class="rli"><span class="rl">Matériel (amort. 4 ans)</span><span class="rv">'+eur(c.amortEquip)+'</span></div><div class="rli"><span class="rl">Agencement 10% (amort. 5 ans)</span><span class="rv">'+eur(c.agAm)+'</span></div><div class="rli"><span class="rl">Setup initial (amort. 3 ans)</span><span class="rv">'+eur(c.su)+'</span></div><div class="rli"><span class="rl">Loyer + charges locatives</span><span class="rv">'+eur(c.im)+'</span></div>'+dL+'<div class="rli tot" style="margin-top:8px;border-top-color:rgba(200,169,110,.5)"><span class="rl">Charge comptable totale / an</span><span class="rv">'+eur(c.CTP)+'</span></div><div style="text-align:right;font-size:.6rem;color:#7a7a9a;margin-top:3px">'+eur(Math.round(c.CTP/ST.nbs))+' / collab. / an</div>';
   document.getElementById("r-pb").innerText = (c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
   let aw = isSaturated ? "<br><span style='color:#ef4444;font-weight:700'>Adoption réelle bridée à "+c.adoEff.toFixed(1)+"%</span>" : "";
-  document.getElementById("r-po-badge").innerHTML = "Posture "+po.label+" → ambition "+c.ado+"%"+aw;
-  document.getElementById("r-roi-lines").innerHTML = '<div class="rli"><span class="rl">Base adressable (étude §9.1)</span><span class="rv">'+eur(c.ba)+'</span></div><div class="rli"><span class="rl">Gain brut ('+SCENARIOS[ST.sc-1].label+' × '+c.adoEff.toFixed(1)+'% réels)</span><span class="rv">'+eur(c.gain)+'</span></div><div class="rli tot" style="border-color:'+rC+'40"><span class="rl" style="color:'+rC+'">Économie nette</span><span class="rv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>';
+  let bonus = (c.formCoef>1 || c.animCoef>1 || c.decoCoef>1) ? `<br><span style='color:#60c060;font-size:.7rem'>✔ Bonus gain : formation ×${c.formCoef.toFixed(2)} · animation ×${c.animCoef.toFixed(2)} · décoration ×${c.decoCoef.toFixed(2)}</span>` : "";
+  document.getElementById("r-po-badge").innerHTML = "Posture "+po.label+" → ambition "+c.ado+"%"+aw+bonus;
+  document.getElementById("r-roi-lines").innerHTML = '<div class="rli"><span class="rl">Base adressable (étude §9.1)</span><span class="rv">'+eur(c.ba)+'</span></div><div class="rli"><span class="rl">Gain brut ('+SCENARIOS[ST.sc-1].label+' × '+c.adoEff.toFixed(1)+'% réels)</span><span class="rv">'+eur(c.gainBase)+'</span></div><div class="rli"><span class="rl">Coefficients multiplicateurs (formation, animation, décoration)</span><span class="rv">×'+(c.formCoef*c.animCoef*c.decoCoef).toFixed(2)+'</span></div><div class="rli"><span class="rl">Gain après bonus</span><span class="rv">'+eur(c.gain)+'</span></div><div class="rli tot" style="border-color:'+rC+'40"><span class="rl" style="color:'+rC+'">Économie nette</span><span class="rv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>';
 }
 
 // UI des équipements (identique)
@@ -393,7 +431,7 @@ function closeModal(){ document.getElementById("modal").classList.remove("on"); 
 function closeDevis(){ document.getElementById("dov").classList.remove("on"); }
 function toggleAdv(){ let b = document.getElementById("adv-body"); b.classList.toggle("open"); document.getElementById("adv-arrow").innerHTML = b.classList.contains("open") ? "▲" : "▼"; }
 
-// Génération du devis (correction HTML : ouverture correcte de la balise <tr>)
+// Génération du devis (inchangée, mais intégrant les nouveaux coefficients)
 function genDevis(){
   closeModal();
   let c = calc();
@@ -407,13 +445,12 @@ function genDevis(){
   let vd = new Date(); vd.setDate(vd.getDate() + ST.val);
   let vstr = vd.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
   let sel = AT.filter(a => (ST.qty[a.id]||0) > 0);
-  // Correction : '<td>' au lieu de 'tr</td>' pour ouvrir une ligne de tableau
-  let rows = sel.map(a => { let q = ST.qty[a.id]; return '<tr><td>'+a.label+(a.addon?' <span style="font-size:6pt;color:#9090b0">(Add-on)</span>':'')+'</span></td><td style="color:#6a6a8a;font-size:8pt">'+a.cible+'</td><td style="text-align:center">'+a.m2+'</td><td class="num">'+q+'</td><td class="num">'+eur(a.prix)+'</td><td class="num">'+eur(a.prix*q)+'</td></tr>'; }).join("");
+  let rows = sel.map(a => { let q = ST.qty[a.id]; return '<tr><td>'+a.label+(a.addon?' <span style="font-size:6pt;color:#9090b0">(Add-on)</span>':'')+'</span></td><td style="color:#6a6a8a;font-size:8pt">'+a.cible+'</span></td><td style="text-align:center">'+a.m2+'</span></td><td class="num">'+q+'</span></td><td class="num">'+eur(a.prix)+'</span></td><td class="num">'+eur(a.prix*q)+'</span></tr>'; }).join("");
   let rC = c.roi>=0 ? "#10b981" : "#ef4444";
   let pbStr = (c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
   let awH = !c.nbPostes ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>' : (c.tauxOcc>100 ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation de l\'espace :</strong> Capacité insuffisante. Les gains sont bridés à l\'adoption réelle ('+c.adoEff.toFixed(1)+'%).</div>' : "");
   let dL = c.deco ? '<div class="dli"><span class="ll">Décoration (amort. 5 ans)</span><span class="lv">'+eur(c.decoAm)+'/an</span></div>' : '';
-  document.getElementById("dpaper").innerHTML = '<div class="dv"><div class="dstrip"></div><div class="dhdr"><div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération unique & bien-être au travail</div></div><div class="dmeta"><strong>N° '+dnum+'</strong>Établi le '+today+'<br>Valable jusqu\'au '+vstr+'<br>Commercial : '+com+'</div></div><div class="dbody"><div class="dpros"><div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">'+pro+'</div><div class="dpsub">'+con+'</div></div><div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">'+ST.nbs+' collaborateurs</div><div class="dpsub">'+(ST.mode==="5j"?"Présentiel 5j/sem.":"Hybride "+ST.jours+"j/sem.")+' · Posture '+po.label+'</div></div><div class="dpb"><div class="dplbl">L\'Espace beOtop</div><div class="dpval">'+c.nbPostes+' place(s) d\'assise</div><div class="dpval" style="font-size:8pt;margin-top:2pt">'+AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)+' ateliers au total</div><div class="dpsub">Surface cible : '+c.surfAt+' m²</div></div></div><div class="dsttl" style="margin-top:0">01 · Dépenses d\'investissement initial (CAPEX)</div><table class="dtbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>'+rows+'</tbody></table><div class="dsttl">02 · Charge Financière Annuelle</div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:4pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Frais de fonctionnement (OPEX sortant)</span></div><div class="dli"><span class="ll">Maintenance (11% équip.)</span><span class="lv">'+eur(c.maintenance)+'/an</span></div><div class="dli"><span class="ll">Formation continue managers</span><span class="lv">'+eur(ST.form)+'/an</span></div><div class="dli"><span class="ll">Animation espace</span><span class="lv">'+eur(ST.anim)+'/an</span></div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:8pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Coûts indirects / Amortissements (Impact P&L)</span></div><div class="dli"><span class="ll">Amortissement matériel (4 ans)</span><span class="lv">'+eur(c.amortEquip)+'/an</span></div><div class="dli"><span class="ll">Amort. Agencement 10% (5 ans)</span><span class="lv">'+eur(c.agAm)+'/an</span></div><div class="dli"><span class="ll">Amortissement Setup initial (3 ans)</span><span class="lv">'+eur(c.su)+'/an</span></div><div class="dli"><span class="ll">Loyer + charges locatives</span><span class="lv">'+eur(c.im)+'/an</span></div>'+dL+'<div class="dli tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">'+eur(c.CTP)+' / an</span></div><div class="dsttl">03 · Retour sur investissement (ROI)</div><div class="droi"><div class="drbox" style="border-color:'+rC+'"><div class="drbig" style="color:'+rC+'">'+(c.nbPostes === 0 ? "—" : (c.roi>0?"+":"")+Math.round(c.roi)+"%")+'</div><div class="drlbl">ROI annuel net</div></div><div class="drbox"><div class="drbig" style="font-size:14pt">'+pbStr+'</div><div class="drlbl">Payback cash net</div></div><div class="drbox neu"><div class="drbig neu">'+eur(Math.round(c.masseSalariale * ST.taux_dysf))+'</div><div class="drlbl">Coût dysfonctionnements</div></div></div><div class="dli"><span class="ll">Base adressable (étude §9.1)</span><span class="lv">'+eur(c.ba)+'</span></div><div class="dli"><span class="ll">Gain brut ('+sc.label+' × '+c.adoEff.toFixed(1)+'% adoption réelle)</span><span class="lv">'+eur(c.gain)+'</span></div><div class="dli"><span class="ll">Charge comptable totale</span><span class="lv">− '+eur(c.CTP)+'</span></div><div class="dli tl"><span class="ll" style="color:'+rC+'">Économie nette / an</span><span class="lv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>'+awH+'<div class="dctx"><strong>Hypothèses et Paramètres :</strong> Dysf. RH : '+Math.round(ST.taux_dysf*100)+'% (ANACT) · Part adressable : '+Math.round(ST.part_adressable*100)+'% (beOtop) · Sessions/sem : '+ST.seances_par_semaine+' · Durée séance : '+ST.duree_seance+' min · Ambition adoption : '+c.ado+'% · Ouverture : '+ST.heures_ouverture+'h/j (remplissage 75%). <strong>Réf. : +'+calcRef()+'% pour 400 sal., option B, posture Libre (60%).</strong></div><div class="dsttl">04 · Conditions d\'atteinte du ROI</div><div class="dcond"><ul><li>Charte d\'accès signée par la Direction <span class="dbadge cr">CRITIQUE</span></li><li>Formation managers avant ouverture <span class="dbadge cr">CRITIQUE</span></li><li>Protocole de mesure KPI dès J1 <span class="dbadge si">SIGNIFICATIF</span></li><li>Communication interne structurée <span class="dbadge si">SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span class="dbadge mo">MODÉRÉ</span></li></ul></div></div><div class="dftr"><div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>'+com+'<br>Devis '+dnum+' · Valable jusqu\'au '+vstr+'</div><div class="dfr">'+pro+' · '+ST.nbs+' collab.<br>'+today+'<br><em>Estimations indicatives</em></div></div><div class="dstrip"></div></div>';
+  document.getElementById("dpaper").innerHTML = '<div class="dv"><div class="dstrip"></div><div class="dhdr"><div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération unique & bien-être au travail</div></div><div class="dmeta"><strong>N° '+dnum+'</strong>Établi le '+today+'<br>Valable jusqu\'au '+vstr+'<br>Commercial : '+com+'</div></div><div class="dbody"><div class="dpros"><div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">'+pro+'</div><div class="dpsub">'+con+'</div></div><div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">'+ST.nbs+' collaborateurs</div><div class="dpsub">'+(ST.mode==="5j"?"Présentiel 5j/sem.":"Hybride "+ST.jours+"j/sem.")+' · Posture '+po.label+'</div></div><div class="dpb"><div class="dplbl">L\'Espace beOtop</div><div class="dpval">'+c.nbPostes+' place(s) d\'assise</div><div class="dpval" style="font-size:8pt;margin-top:2pt">'+AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)+' ateliers au total</div><div class="dpsub">Surface cible : '+c.surfAt+' m²</div></div></div><div class="dsttl" style="margin-top:0">01 · Dépenses d\'investissement initial (CAPEX)</div><table class="dtbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>'+rows+'</tbody></table><div class="dsttl">02 · Charge Financière Annuelle</div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:4pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Frais de fonctionnement (OPEX sortant)</span></div><div class="dli"><span class="ll">Maintenance (11% équip.)</span><span class="lv">'+eur(c.maintenance)+'/an</span></div><div class="dli"><span class="ll">Formation continue managers</span><span class="lv">'+eur(ST.form)+'/an</span></div><div class="dli"><span class="ll">Animation espace</span><span class="lv">'+eur(ST.anim)+'/an</span></div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:8pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Coûts indirects / Amortissements (Impact P&L)</span></div><div class="dli"><span class="ll">Amortissement matériel (4 ans)</span><span class="lv">'+eur(c.amortEquip)+'/an</span></div><div class="dli"><span class="ll">Amort. Agencement 10% (5 ans)</span><span class="lv">'+eur(c.agAm)+'/an</span></div><div class="dli"><span class="ll">Amortissement Setup initial (3 ans)</span><span class="lv">'+eur(c.su)+'/an</span></div><div class="dli"><span class="ll">Loyer + charges locatives</span><span class="lv">'+eur(c.im)+'/an</span></div>'+dL+'<div class="dli tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">'+eur(c.CTP)+' / an</span></div><div class="dsttl">03 · Retour sur investissement (ROI)</div><div class="droi"><div class="drbox" style="border-color:'+rC+'"><div class="drbig" style="color:'+rC+'">'+(c.nbPostes === 0 ? "—" : (c.roi>0?"+":"")+Math.round(c.roi)+"%")+'</div><div class="drlbl">ROI annuel net</div></div><div class="drbox"><div class="drbig" style="font-size:14pt">'+pbStr+'</div><div class="drlbl">Payback cash net</div></div><div class="drbox neu"><div class="drbig neu">'+eur(Math.round(c.masseSalariale * ST.taux_dysf))+'</div><div class="drlbl">Coût dysfonctionnements</div></div></div><div class="dli"><span class="ll">Base adressable</span><span class="lv">'+eur(c.ba)+'</span></div><div class="dli"><span class="ll">Gain brut ('+sc.label+' × '+c.adoEff.toFixed(1)+'% adoption réelle)</span><span class="lv">'+eur(c.gainBase)+'</span></div><div class="dli"><span class="ll">Coefficients bonus (formation, animation, décoration)</span><span class="lv">×'+(c.formCoef*c.animCoef*c.decoCoef).toFixed(2)+'</span></div><div class="dli"><span class="ll">Gain après bonus</span><span class="lv">'+eur(c.gain)+'</span></div><div class="dli"><span class="ll">Charge comptable totale</span><span class="lv">− '+eur(c.CTP)+'</span></div><div class="dli tl"><span class="ll" style="color:'+rC+'">Économie nette / an</span><span class="lv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>'+awH+'<div class="dctx"><strong>Hypothèses et Paramètres :</strong> Dysf. RH : '+Math.round(ST.taux_dysf*100)+'% (ANACT) · Part adressable : '+Math.round(ST.part_adressable*100)+'% (beOtop) · Sessions/sem : '+ST.seances_par_semaine+' · Durée séance : '+ST.duree_seance+' min · Ambition adoption : '+c.ado+'% · Ouverture : '+ST.heures_ouverture+'h/j (remplissage 75%). <strong>Réf. : +'+calcRef()+'% pour 400 sal., option B, posture Libre (60%).</strong></div><div class="dsttl">04 · Conditions d\'atteinte du ROI</div><div class="dcond"><ul><li>Charte d\'accès signée par la Direction <span class="dbadge cr">CRITIQUE</span></li><li>Formation managers avant ouverture <span class="dbadge cr">CRITIQUE</span></li><li>Protocole de mesure KPI dès J1 <span class="dbadge si">SIGNIFICATIF</span></li><li>Communication interne structurée <span class="dbadge si">SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span class="dbadge mo">MODÉRÉ</span></li></ul></div></div><div class="dftr"><div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>'+com+'<br>Devis '+dnum+' · Valable jusqu\'au '+vstr+'</div><div class="dfr">'+pro+' · '+ST.nbs+' collab.<br>'+today+'<br><em>Estimations indicatives</em></div></div><div class="dstrip"></div></div>';
   document.getElementById("dov").classList.add("on");
   document.getElementById("dov").scrollTop = 0;
 }
