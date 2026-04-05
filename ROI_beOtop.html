@@ -176,7 +176,7 @@ function calc(){
   let nbu = Math.round(nbp * ado / 100);
   let seancesSem = nbu * ST.seances_par_semaine;
 
-  let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 0.80 : jours<=2 ? 0.55 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
+  let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 1.00 : jours<=2 ? 0.60 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
   let seancesPic = Math.round(seancesSem * picC);
 
   let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
