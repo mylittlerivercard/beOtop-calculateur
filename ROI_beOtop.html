@@ -38,8 +38,8 @@
 <div class="sec"><div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎨 Agencement & décoration <span style="color:#6a6a8a;font-size:.6rem">€/m²</span></span><span class="sval" id="v-deco-pm2">0 €/m²</span></div><input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span></div></div>
 <div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🏢 Coût immobilier <span style="color:#6a6a8a;font-size:.6rem">€/m²/an</span></span><span class="sval" id="v-im-pm2">280 €/m²</span></div><input type="range" id="s-im-pm2" min="100" max="1000" step="10" value="280" style="accent-color:#7eb8c9" oninput="ST.im_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>100 — Province</span><span>280 — Réf. étude</span><span>1000 — Paris</span></div></div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="Investir dans la formation augmente le gain (coefficient de 0,85 à 1,30) mais aussi le coût annuel. L'effet net dépend du niveau d'investissement.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">1 300 €</span></div></div><input type="range" id="s-form" min="0" max="5000" step="100" value="1300" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Risque adoption</span><span>1 300 — Réf. étude</span><span>5 000 — Renforcé</span></div></div>
-<div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="L'animation améliore l'adoption (coefficient de 0,85 à 1,35) mais a un coût annuel. L'effet net peut être positif si le gain supplémentaire dépasse le coût.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">1 100 €</span></div></div><input type="range" id="s-anim" min="0" max="5000" step="250" value="1100" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Minimal</span><span>1 100 — Réf. étude</span><span>5 000 — Premium</span></div></div>
+<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="Investir dans la formation augmente le gain (coefficient de 0,85 à 1,30) mais aussi le coût annuel. L'effet net dépend du niveau d'investissement.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">1 300 €</span></div></div><input type="range" id="s-form" min="0" max="5000" step="100" value="2000" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Risque adoption</span><span>1 300 — Réf. étude</span><span>5 000 — Renforcé</span></div></div>
+<div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="L'animation améliore l'adoption (coefficient de 0,85 à 1,35) mais a un coût annuel. L'effet net peut être positif si le gain supplémentaire dépasse le coût.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">1 100 €</span></div></div><input type="range" id="s-anim" min="0" max="5000" step="250" value="2000" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Minimal</span><span>1 100 — Réf. étude</span><span>5 000 — Premium</span></div></div>
 </div>
 <div class="sec"><div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
 <div class="adv-panel"><div class="adv-header" onclick="toggleAdv()"><span>🔧 Ajuster les coefficients internes</span><span id="adv-arrow">▼</span></div><div id="adv-body" class="adv-body">
@@ -116,8 +116,8 @@ let ST = {
   sc: 4,
   deco_pm2: 0,
   im_pm2: 280,
-  form: 1300,
-  anim: 1100,
+  form: 2000,
+  anim: 2000,
   taux_dysf: 0.11,
   part_adressable: 0.28,
   seances_par_semaine: 2,
@@ -135,7 +135,7 @@ function devisNum(){ return "BEO-"+new Date().getFullYear()+"-"+String(Math.floo
 
 // Coefficients d'impact
 function getFormCoef(form) {
-  const ref = 1300;
+  const ref = 2000;
   if (form <= ref) {
     return 0.85 + (form / ref) * 0.15;
   } else {
@@ -143,7 +143,7 @@ function getFormCoef(form) {
   }
 }
 function getAnimCoef(anim) {
-  const ref = 1100;
+  const ref = 2000;
   if (anim <= ref) {
     return 0.85 + (anim / ref) * 0.15;
   } else {
@@ -244,8 +244,8 @@ function calcRef(){
   ST.sc = 4;
   ST.deco_pm2 = 0;
   ST.im_pm2 = 280;
-  ST.form = 1300;
-  ST.anim = 1100;
+  ST.form = 2000;
+  ST.anim = 2000;
   ST.taux_dysf = 0.11;
   ST.part_adressable = 0.28;
   ST.seances_par_semaine = 2;
