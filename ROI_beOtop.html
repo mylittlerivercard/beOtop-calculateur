@@ -169,18 +169,17 @@ function calc(){
   let po = POSTURES.find(p => p.id === ST.po);
   let ado = po.adopt;
 
-  let salC = salBrut * 1.42;  // charges 42%
-  let masseSalariale = nbs * salC;
+ let salC = salBrut * 1.42;  // charges 42%
+let masseSalariale = nbs * salC;
+let nbp = Math.round(nbs * (mode === "5j" ? 1 : jours/5));
+let nbu = Math.round(nbp * ado / 100);
+let seancesSem = nbu * ST.seances_par_semaine;
+let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 1.00 : jours<=2 ? 0.60 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
+let nbu_total = Math.round(nbs * ado / 100);
+let seancesSem_total = (mode === "5j") ? seancesSem : nbu_total * ST.seances_par_semaine;
+let seancesPic = Math.round(seancesSem_total * picC);
 
-  let nbp = Math.round(nbs * (mode === "5j" ? 1 : jours/5));
-  let nbu = Math.round(nbp * ado / 100);
-  let seancesSem = nbu * ST.seances_par_semaine;
-
-  let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 1.00 : jours<=2 ? 0.60 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
-  let seancesPic = Math.round(seancesSem * picC);
-
-  let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
-
+let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
   let surfNet = 0;
   let eqT = 0;
   for(let a of AT){
