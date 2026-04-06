@@ -187,13 +187,11 @@ let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
     surfNet += a.m2 * q;
     eqT += a.prix * q;
   }
-  let nbPostes = AT.reduce((s,a) => s + (a.addon ? 0 : (ST.qty[a.id]||0)), 0);
+    let nbPostes = AT.reduce((s,a) => s + (a.addon ? 0 : (ST.qty[a.id]||0)), 0);
   let surfAt = Math.round(surfNet * 2.0);
-
   let sessionsParHeure = 60 / ST.duree_seance;
   let cap = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
   let adoEff = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
-
   let ag = Math.round(eqT * 0.10);
   let setup = 2860;
   let amortEquip = Math.round(eqT / 4);
@@ -206,29 +204,28 @@ let ba = Math.round(masseSalariale * ST.taux_dysf * ST.part_adressable);
   let im = Math.round(surfAt * ST.im_pm2 * 1.20);
   let opex = maintenance + ST.form + ST.anim;
   let CTP = opex + amortEquip + agAm + su + decoAm + im;
-
+  let CTP_exact = (eqT/4) + (ag/5) + (setup/3) + (decoTotal/5) + (surfAt * ST.im_pm2 * 1.20) + maintenance + ST.form + ST.anim;
   let formCoef = getFormCoef(ST.form);
   let animCoef = getAnimCoef(ST.anim);
   let decoCoef = getDecoCoef(decoTotal);
-
   let ba_exact = masseSalariale * ST.taux_dysf * ST.part_adressable;
-let gainBase_exact = ba_exact * sc.rate * (adoEff / 100);
-let gain_exact = gainBase_exact * formCoef * animCoef * decoCoef;
-let eco_exact = gain_exact - CTP_exact;
-let gainBase = Math.round(gainBase_exact);
-let gain = Math.round(gain_exact);
-let eco = Math.round(eco_exact);
-let roi = (CTP_exact === 0) ? 0 : (eco_exact / CTP_exact * 100);
-let capexTotal = eqT + ag + setup + deco;
-let cashFlow_exact = gain_exact - opex;
-let pb = (cashFlow_exact > 0 && nbPostes > 0) ? capexTotal / (cashFlow_exact / 12) : 999;
-  
-return { nbp, nbu, seancesSem, cap, seancesPic, tauxOcc: cap===0 ? 0 : Math.min(100, Math.round((seancesPic/cap)*100)),
+  let ba = Math.round(ba_exact);
+  let gainBase_exact = ba_exact * sc.rate * (adoEff / 100);
+  let gain_exact = gainBase_exact * formCoef * animCoef * decoCoef;
+  let eco_exact = gain_exact - CTP_exact;
+  let gainBase = Math.round(gainBase_exact);
+  let gain = Math.round(gain_exact);
+  let eco = Math.round(eco_exact);
+  let roi = (CTP_exact === 0) ? 0 : (eco_exact / CTP_exact * 100);
+  let capexTotal = eqT + ag + setup + deco;
+  let cashFlow_exact = gain_exact - opex;
+  let pb = (cashFlow_exact > 0 && nbPostes > 0) ? capexTotal / (cashFlow_exact / 12) : 999;
+
+  return { nbp, nbu, seancesSem, cap, seancesPic, tauxOcc: cap===0 ? 0 : Math.min(100, Math.round((seancesPic/cap)*100)),
            ba, gain, gainBase, eco, roi, pb, surfAt, nbPostes, eqT, ag, agAm, amortEquip, maintenance, im, deco, decoAm,
            CTP, CTP_exact, opex, capexTotal, su, setup, adoEff, ado, sc, po, salC, masseSalariale, decoTotal,
            formCoef, animCoef, decoCoef };
 }
-
 // Référence dynamique (appelle calc() avec les paramètres de référence)
 function calcRef(){
   let saved = {
