@@ -897,5 +897,104 @@ def kiosk_page(site_slug):
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
     return Response(html, mimetype='text/html; charset=utf-8')
 
+# ========== CONTACT FORMULAIRE ==========
+import smtplib
+from email.message import EmailMessage
+
+@app.route('/api/contact', methods=['POST'])
+def contact_form():
+    """
+    Reçoit les données du formulaire de contact (page statique beOtop)
+    et envoie un email à nj@beotop.fr
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Données JSON requises'}), 400
+
+    # Champs obligatoires
+    prenom = data.get('prennom', '').strip()  # attention faute possible dans le HTML
+    nom    = data.get('nom', '').strip()
+    email  = data.get('email', '').strip()
+    if not prenom or not nom or not email:
+        return jsonify({'error': 'Prénom, nom et email requis'}), 400
+
+    # Champs optionnels
+    role      = data.get('role', '')
+    entreprise = data.get('entreprise', '')
+    effectif   = data.get('effectif', '')
+    priorite   = data.get('priorite', '')
+    message    = data.get('message', '')
+
+    # Construction de l'email
+    msg = EmailMessage()
+    msg['Subject'] = f"[beOtop] Nouveau lead - {entreprise or 'non renseigné'}"
+    msg['From']    = f"Formulaire beOtop <{os.environ.get('SMTP_USER', 'no-reply@beotop.fr')}>"
+    msg['To']      = 'nj@beotop.fr'
+    msg['Reply-To'] = email
+
+    body = f"""
+    Nouvelle demande depuis le site beOtop
+
+    --- Contact ---
+    Prénom : {prenom}
+    Nom    : {nom}
+    Email  : {email}
+    Rôle   : {role}
+    Entreprise : {entreprise}
+    Effectif   : {effectif}
+    Priorité   : {priorite}
+
+    --- Message ---
+    {message if message else '(aucun message)'}
+
+    ---
+    Envoyé depuis le formulaire public.
+    """
+    msg.set_content(body.strip())
+
+    # Envoi via SMTP (à configurer dans les variables d'environnement Render)
+    try:
+        smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+        smtp_user = os.environ.get('SMTP_USER')
+        smtp_pass = os.environ.get('SMTP_PASSWORD')
+
+        if smtp_user and smtp_pass:
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+        else:
+            # Fallback : afficher dans les logs (pour test)
+            print(">>> Formulaire contact (email non envoyé, SMTP non configuré) :", body, file=sys.stderr)
+            # Tu peux aussi stocker en base si tu préfères
+    except Exception as e:
+        print(f"Erreur envoi email : {e}", file=sys.stderr)
+        # On retourne quand même un succès pour ne pas bloquer l'utilisateur
+        # mais tu peux aussi retourner une erreur 500
+
+    # Optionnel : stocker le lead dans une table dédiée
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS leads (
+                        id SERIAL PRIMARY KEY,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        prenom TEXT, nom TEXT, email TEXT,
+                        role TEXT, entreprise TEXT, effectif TEXT,
+                        priorite TEXT, message TEXT
+                    )
+                """)
+                cur.execute("""
+                    INSERT INTO leads (prenom, nom, email, role, entreprise, effectif, priorite, message)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (prenom, nom, email, role, entreprise, effectif, priorite, message))
+                conn.commit()
+    except Exception as e:
+        print("Erreur insertion lead en base :", e, file=sys.stderr)
+
+    return jsonify({'ok': True, 'message': 'Demande envoyée'}), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
