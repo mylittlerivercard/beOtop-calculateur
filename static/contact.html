@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>beOtop – Demande de rendez-vous</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f5f3ef;
+            padding: 2rem 1rem;
+            color: #1e2f3e;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1a2b3c;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 span {
+            color: #c9a84c;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        .form-section {
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+
+        input, select, textarea {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #c9a84c;
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: #1a2b3c;
+            color: white;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: #c9a84c;
+            color: #1a2b3c;
+        }
+
+        .success-message, .error-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #e6f4ea;
+            color: #1e7e34;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f5c6cb;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .header {
+                padding: 1.5rem;
+            }
+            .form-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>be<span>Otop</span></h1>
+        <p>Prenez rendez-vous ou demandez votre étude ROI personnalisée</p>
+    </div>
+
+    <div class="form-section">
+        <form id="contactForm">
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Prénom *</label>
+                    <input type="text" name="prenom" required>
+                </div>
+                <div class="form-field">
+                    <label>Nom *</label>
+                    <input type="text" name="nom" required>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Email professionnel *</label>
+                <input type="email" name="email" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Votre rôle</label>
+                    <select name="role">
+                        <option value="">-- Sélectionnez --</option>
+                        <option>DRH / Responsable RH</option>
+                        <option>DAF / Directeur Financier</option>
+                        <option>Directeur Général / CEO</option>
+                        <option>Responsable RSE / QVT</option>
+                        <option>Responsable Facility / Services Généraux</option>
+                        <option>Membre CSSCT / CSE</option>
+                        <option>Autre</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Entreprise</label>
+                    <input type="text" name="entreprise" placeholder="Nom de votre entreprise">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Effectif</label>
+                    <select name="effectif">
+                        <option>1 – 50</option>
+                        <option>50 – 100</option>
+                        <option>100 – 250</option>
+                        <option>250 – 500</option>
+                        <option>500 – 1 000</option>
+                        <option>1 000 – 5 000</option>
+                        <option>+ 5 000</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Votre priorité</label>
+                    <select name="priorite">
+                        <option>DUERP / conformité légale</option>
+                        <option>ROI / justification DAF</option>
+                        <option>Bien-être collaborateurs</option>
+                        <option>Capteurs et données d'usage</option>
+                        <option>Demande de devis</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Message (facultatif)</label>
+                <textarea name="message" placeholder="Précisez votre contexte, vos enjeux..."></textarea>
+            </div>
+
+            <button type="submit">Envoyer la demande →</button>
+            <div id="successMessage" class="success-message"></div>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+    </div>
+    <footer>
+        beOtop – Données traitées conformément au RGPD. Aucune information commerciale sans votre accord.
+    </footer>
+</div>
+
+<script>
+    const form = document.getElementById('contactForm');
+    const successDiv = document.getElementById('successMessage');
+    const errorDiv = document.getElementById('errorMessage');
+
+    // 🔁 Remplacez cette URL par l'adresse de votre backend Flask sur Render
+    const API_URL = 'https://votre-service-render.onrender.com/api/contact';
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Réinitialiser les messages
+        successDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+
+        // Récupérer les données du formulaire
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Désactiver le bouton pendant l'envoi
+        const submitBtn = form.querySelector('button');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = 'Envoi en cours...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                successDiv.innerText = '✅ Votre demande a bien été envoyée. Nous vous recontacterons sous 48h.';
+                successDiv.style.display = 'block';
+                form.reset();
+            } else {
+                const errorData = await response.json();
+                errorDiv.innerText = '❌ Erreur : ' + (errorData.error || 'Problème technique. Merci d’écrire directement à nj@beotop.fr');
+                errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            errorDiv.innerText = '❌ Impossible de joindre le serveur. Vérifiez votre connexion ou écrivez à nj@beotop.fr';
+            errorDiv.style.display = 'block';
+        } finally {
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
