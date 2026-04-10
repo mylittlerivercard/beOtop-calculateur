@@ -912,9 +912,9 @@ def contact_form():
         return jsonify({'error': 'Données JSON requises'}), 400
 
     # Champs obligatoires
-prenom = data.get('prenom', '').strip()
-nom = data.get('nom', '').strip()
-email = data.get('email', '').strip()
+    prenom = data.get('prenom', '').strip()
+    nom = data.get('nom', '').strip()
+    email = data.get('email', '').strip()
     if not prenom or not nom or not email:
         return jsonify({'error': 'Prénom, nom et email requis'}), 400
 
