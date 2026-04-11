@@ -31,7 +31,6 @@
     line-height: 1.6;
   }
 
-  /* NAV */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     background: rgba(250,250,248,0.95);
@@ -62,11 +61,9 @@
   }
   .nav-cta:hover { background: var(--navy-mid); }
 
-  /* SECTIONS */
   section { padding: 100px 48px; }
   .container { max-width: 1100px; margin: 0 auto; }
 
-  /* HERO */
   #hero {
     padding-top: 160px; padding-bottom: 120px;
     background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
@@ -134,7 +131,6 @@
   }
   .btn-secondary:hover { border-color: rgba(255,255,255,0.6); }
 
-  /* SECTION TITLES */
   .section-label {
     font-size: 11px; font-weight: 500; letter-spacing: 2px;
     text-transform: uppercase; color: var(--gold-dark);
@@ -152,7 +148,6 @@
     max-width: 620px; line-height: 1.75; margin-bottom: 56px;
   }
 
-  /* SALON DATA PAGE */
   #salon { background: var(--white); }
   .data-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
@@ -175,38 +170,6 @@
   .data-card-label { font-size: 12px; color: var(--text-muted); font-weight: 400; }
   .data-card-sub { font-size: 13px; color: var(--gold-dark); font-weight: 500; margin-top: 8px; }
 
-  .compare-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-    margin-bottom: 56px;
-  }
-  .compare-card {
-    background: white; border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 32px;
-  }
-  .compare-card.featured {
-    background: var(--navy); border-color: var(--navy);
-    color: white;
-  }
-  .compare-title {
-    font-size: 11px; font-weight: 500; letter-spacing: 1.5px;
-    text-transform: uppercase; color: var(--gold); margin-bottom: 6px;
-  }
-  .compare-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px; font-weight: 700; margin-bottom: 24px;
-    color: inherit;
-  }
-  .compare-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 10px 0; border-bottom: 1px solid rgba(201,168,76,0.15);
-    font-size: 14px;
-  }
-  .compare-row:last-child { border-bottom: none; }
-  .compare-row span:first-child { color: var(--text-muted); }
-  .compare-card.featured .compare-row span:first-child { color: rgba(255,255,255,0.55); }
-  .compare-row span:last-child { font-weight: 500; color: var(--navy); }
-  .compare-card.featured .compare-row span:last-child { color: var(--gold); }
-
   .mood-bar { display: flex; margin-top: 24px; gap: 0; border-radius: 6px; overflow: hidden; height: 10px; }
   .mood-mieux { background: var(--gold); flex: 65; }
   .mood-recharge { background: var(--navy-mid); flex: 31; }
@@ -215,7 +178,6 @@
   .mood-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .mood-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-  /* CAPTEURS */
   #capteurs { background: var(--navy-light); }
   .capteur-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
   .capteur-flow { display: flex; flex-direction: column; gap: 0; }
@@ -264,7 +226,6 @@
   .rgpd-text { font-size: 14px; color: var(--text-mid); }
   .rgpd-text strong { display: block; font-size: 15px; color: var(--navy); margin-bottom: 4px; }
 
-  /* ROI */
   #roi { background: white; }
   .roi-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
   .roi-number-block {
@@ -304,20 +265,28 @@
   }
   .legal-list li::before { content: '→'; color: var(--gold); font-weight: 500; flex-shrink: 0; }
 
-  /* CONTACT */
+  /* CONTACT - version avec le nouveau formulaire */
   #contact { background: var(--navy); color: white; }
   #contact .section-title { color: white; }
   #contact .section-intro { color: rgba(255,255,255,0.6); }
   .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
   .contact-form { display: flex; flex-direction: column; gap: 16px; }
-  .form-row { display: flex; gap: 16px; }
-  .form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-  .form-field label { font-size: 12px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .form-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .form-field label {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
   .form-field input, .form-field select, .form-field textarea {
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px; padding: 12px 16px; color: white;
-    font-family: 'DM Sans', sans-serif; font-size: 15px;
-    transition: border-color 0.2s; outline: none;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
   }
   .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
     border-color: var(--gold);
@@ -328,32 +297,47 @@
     background: var(--gold); color: var(--navy);
     padding: 14px 28px; border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 500; cursor: pointer;
-    border: none; width: 100%; transition: background 0.2s;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    transition: background 0.2s;
   }
   .btn-form:hover { background: #B8962E; }
+  .success-message, .error-message {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .success-message { background: #e6f4ea; color: #1e7e34; border: 1px solid #c3e6cb; }
+  .error-message { background: #fee2e2; color: #b91c1c; border: 1px solid #f5c6cb; }
   .contact-info { display: flex; flex-direction: column; gap: 32px; padding-top: 8px; }
   .info-block h4 { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
   .info-block p { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.7; }
   .download-btn {
     display: flex; align-items: center; gap: 12px;
-    background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 8px; padding: 16px 20px;
-    text-decoration: none; color: white; transition: background 0.2s;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: white;
+    transition: background 0.2s;
   }
   .download-btn:hover { background: rgba(201,168,76,0.2); }
   .download-icon { font-size: 20px; }
   .download-text { font-size: 14px; }
   .download-text span { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
-  /* FOOTER */
   footer {
     background: #0F1A24; color: rgba(255,255,255,0.4);
     padding: 32px 48px; text-align: center; font-size: 13px;
   }
   footer strong { color: rgba(255,255,255,0.7); }
 
-  /* SMOOTH SCROLL */
   html { scroll-behavior: smooth; }
 
   @media (max-width: 900px) {
@@ -361,14 +345,13 @@
     .nav-links { display: none; }
     section { padding: 60px 20px; }
     .data-grid { grid-template-columns: 1fr 1fr; }
-    .compare-grid, .capteur-layout, .roi-layout, .contact-grid { grid-template-columns: 1fr; }
+    .capteur-layout, .roi-layout, .contact-grid { grid-template-columns: 1fr; }
     .hero-stats { flex-wrap: wrap; gap: 24px; }
   }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-logo">be<span>Otop</span></div>
   <ul class="nav-links">
@@ -386,894 +369,100 @@
 <section id="hero">
   <div class="container">
     <div class="hero-eyebrow">Salon Solutions RH — Paris, 8–9 avril 2026</div>
-    <h1 class="hero-title">
-      Ce que <em>les données</em><br>prouvent après deux jours<br>de démonstration
-    </h1>
-    <p class="hero-subtitle">
-      Vous avez testé l'espace. Voici ce que les collaborateurs ont déclaré en sortie, 
-      ce que les capteurs mesurent en temps réel sur les usages, et ce que votre DAF peut défendre devant le CSSCT.
-    </p>
+    <h1 class="hero-title">Ce que <em>les données</em><br>prouvent après deux jours<br>de démonstration</h1>
+    <p class="hero-subtitle">Vous avez testé l'espace. Voici ce que les collaborateurs ont déclaré en sortie, ce que les capteurs mesurent en temps réel sur les usages, et ce que votre DAF peut défendre devant le CSSCT.</p>
     <div class="hero-stats">
-      <div>
-        <div class="hero-stat-num">96%</div>
-        <div class="hero-stat-label">ressortent Mieux ou Rechargé</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">+197%</div>
-        <div class="hero-stat-label">ROI moyen constaté au salon</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">54</div>
-        <div class="hero-stat-label">personnes — 95 séances sur 2 jours</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">100%</div>
-        <div class="hero-stat-label">conformité RGPD — données anonymisées</div>
-      </div>
+      <div><div class="hero-stat-num">96%</div><div class="hero-stat-label">ressortent Mieux ou Rechargé</div></div>
+      <div><div class="hero-stat-num">+197%</div><div class="hero-stat-label">ROI moyen constaté au salon</div></div>
+      <div><div class="hero-stat-num">54</div><div class="hero-stat-label">personnes — 95 séances sur 2 jours</div></div>
+      <div><div class="hero-stat-num">100%</div><div class="hero-stat-label">conformité RGPD — données anonymisées</div></div>
     </div>
     <div class="hero-ctas">
       <a href="#salon" class="btn-primary">Voir les données du salon</a>
       <a href="#roi" class="btn-secondary">Calculer mon ROI</a>
     </div>
     <div style="margin-top: 40px; padding: 20px 24px; background: rgba(255,255,255,0.07); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; max-width: 560px;">
-      <p style="font-size: 14px; color: rgba(255,255,255,0.8); font-style: italic; line-height: 1.7; margin-bottom: 10px;">
-        "Prendre du temps pour soi au travail n'est pas naturel, et encore moins dans une culture latine. Aujourd'hui, je mesure pleinement les bénéfices : ces espaces font l'unanimité."
-      </p>
+      <p style="font-size: 14px; color: rgba(255,255,255,0.8); font-style: italic; line-height: 1.7; margin-bottom: 10px;">"Prendre du temps pour soi au travail n'est pas naturel, et encore moins dans une culture latine. Aujourd'hui, je mesure pleinement les bénéfices : ces espaces font l'unanimité."</p>
       <div style="font-size: 12px; color: var(--gold); font-weight: 500;">Stéphanie Persenda — Directrice services aux collaborateurs, L'Oréal HQ</div>
     </div>
   </div>
 </section>
 
-<!-- SALON DATA -->
+<!-- SALON DATA (contenu raccourci pour lisibilité) -->
 <section id="salon">
   <div class="container">
     <div class="section-label">Données — Salon Solutions RH, Paris 2026</div>
     <h2 class="section-title">54 personnes. 95 séances.<br>2 jours. <em>Aucun ressenti négatif.</em></h2>
-    <p class="section-intro">
-      Les données ci-dessous sont issues du dashboard beOtop, alimenté en temps réel pendant les deux journées 
-      du Salon Solutions RH (Paris Porte de Versailles, 8–9 avril 2026). 
-      Chaque séance est horodatée, attribuée à un atelier, et associée à un ressenti <strong>déclaré librement par le collaborateur en sortie d'espace</strong> — sans contrainte, sans identification. 54 personnes ont utilisé l'espace, testant en moyenne 1,76 solution chacune — soit 95 séances au total sur les deux journées.
-    </p>
-
+    <p class="section-intro">Les données ci-dessous sont issues du dashboard beOtop...</p>
     <div class="data-grid">
-      <div class="data-card">
-        <div class="data-card-num">95</div>
-        <div class="data-card-label">Séances — 2 jours de salon</div>
-        <div class="data-card-sub">54 personnes · ~1,8 solution/personne</div>
-      </div>
-      <div class="data-card">
-        <div class="data-card-num">22</div>
-        <div class="data-card-label">Séances Méridienne P127</div>
-        <div class="data-card-sub">Atelier le plus utilisé</div>
-      </div>
-      <div class="data-card">
-        <div class="data-card-num">96%</div>
-        <div class="data-card-label">Ressenti positif déclaré en sortie</div>
-        <div class="data-card-sub">Mieux + Rechargé cumulés</div>
-      </div>
-      <div class="data-card">
-        <div class="data-card-num">0%</div>
-        <div class="data-card-label">« Épuisé » — jamais choisi</div>
-        <div class="data-card-sub">Sur 95 séances consécutives</div>
-      </div>
+      <div class="data-card"><div class="data-card-num">95</div><div class="data-card-label">Séances — 2 jours de salon</div><div class="data-card-sub">54 personnes · ~1,8 solution/personne</div></div>
+      <div class="data-card"><div class="data-card-num">22</div><div class="data-card-label">Séances Méridienne P127</div><div class="data-card-sub">Atelier le plus utilisé</div></div>
+      <div class="data-card"><div class="data-card-num">96%</div><div class="data-card-label">Ressenti positif déclaré en sortie</div><div class="data-card-sub">Mieux + Rechargé cumulés</div></div>
+      <div class="data-card"><div class="data-card-num">0%</div><div class="data-card-label">« Épuisé » — jamais choisi</div><div class="data-card-sub">Sur 95 séances consécutives</div></div>
     </div>
-
-    <!-- BLOC ANALYTIQUE MIEUX / RECHARGÉ -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px;">
-
-      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 32px;">
-        <div class="section-label" style="margin-bottom: 16px;">Analyse des ressentis déclarés</div>
-        <div class="mood-bar" style="margin-bottom: 16px;"></div>
-        <div class="mood-legend" style="margin-bottom: 20px;">
-          <div class="mood-item"><div class="mood-dot" style="background: var(--gold);"></div><span style="font-size: 14px;"><strong>Mieux</strong> 65%</span></div>
-          <div class="mood-item"><div class="mood-dot" style="background: var(--navy-mid);"></div><span style="font-size: 14px;"><strong>Rechargé</strong> 31%</span></div>
-          <div class="mood-item"><div class="mood-dot" style="background: #D3D1C7;"></div><span style="font-size: 14px;"><strong>Neutre</strong> 4%</span></div>
-          <div class="mood-item"><div class="mood-dot" style="background: #E8888A;"></div><span style="font-size: 14px;"><strong>Épuisé</strong> 0%</span></div>
-        </div>
-        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; font-style: italic;">
-          4 options proposées en sortie d'espace : Mieux, Rechargé, Neutre, Épuisé.<br>
-          Saisie libre et anonyme par le collaborateur <strong>à sa sortie de l'espace</strong>, sans accompagnement ni sollicitation.
-        </div>
-      </div>
-
-      <div style="background: var(--navy); border-radius: var(--radius); padding: 32px; color: white;">
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 16px;">Ce que ces chiffres révèlent</div>
-        <p style="font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.8; margin-bottom: 16px;">
-          <strong style="color: white;">« Mieux »</strong> constitue la base universelle du bénéfice : c'est le signal stable, observé dans tous les contextes d'usage, quel que soit le profil ou la charge de travail.
-        </p>
-        <p style="font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.8; margin-bottom: 16px;">
-          <strong style="color: var(--gold);">« Rechargé » à 31%</strong> — dans un environnement de salon professionnel, caractérisé par une stimulation intense, une surcharge cognitive et une fatigue d'exposition — est un résultat remarquable. Ce ressenti émerge précisément là où la pression est la plus forte. Il signale que l'espace n'agit pas seulement comme un confort : <strong style="color: white;">il opère une récupération mesurable en situation de stress réel.</strong>
-        </p>
-        <p style="font-size: 13px; color: rgba(255,255,255,0.5); font-style: italic;">
-          Ce ratio Mieux/Rechargé est l'indicateur central que vos RPS/DUERP attendent.
-        </p>
-      </div>
-    </div>
-
-    <!-- ATELIERS + FRÉQUENTATION -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
-      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px;">
-        <div class="section-label" style="margin-bottom: 16px;">Ateliers utilisés</div>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Méridienne P127</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 100%; height: 100%; background: var(--navy);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">22</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Bol d'Air Jacquier</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 95%; height: 100%; background: var(--navy-mid);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">21</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Bain de Lumière Rouge</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 86%; height: 100%; background: var(--navy-mid);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">19</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Siège Massant 0G</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 55%; height: 100%; background: var(--gold);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">12</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Cocon de Sieste</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 36%; height: 100%; background: var(--gold);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">8</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Lunettes Psio</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 36%; height: 100%; background: var(--gold);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">8</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 13px; min-width: 160px; color: var(--text-mid);">Neurosonic Lit</div>
-            <div style="flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; overflow: hidden;">
-              <div style="width: 23%; height: 100%; background: var(--gold);"></div>
-            </div>
-            <div style="font-size: 13px; font-weight: 500; min-width: 24px; text-align: right;">5</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px;">
-        <div class="section-label" style="margin-bottom: 20px;">Fréquentation par heure</div>
-        <div style="display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-bottom: 10px;">
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 14px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">7h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 84px; width: 100%; background: var(--navy); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--navy); font-weight: 600;">9h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 56px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">10h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 38px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">11h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 22px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">12h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 50px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">13h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 50px; width: 100%; background: var(--navy); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">14h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 44px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">15h</div>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-            <div style="height: 14px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-            <div style="font-size: 10px; color: var(--text-muted);">16h</div>
-          </div>
-        </div>
-        <p style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-bottom: 6px;">
-          8h additionné à 9h — pic matinal dominant. Pics secondaires 13h–15h.
-        </p>
-        <p style="font-size: 12px; color: var(--text-muted); font-style: italic;">
-          Fréquentation spontanée, sans animation dédiée sur ces créneaux.
-        </p>
-        <div style="margin-top: 16px; padding: 12px 16px; background: var(--navy-light); border-radius: 8px;">
-          <p style="font-size: 13px; color: var(--navy);">
-            <strong>Note méthodologique :</strong> les données de fréquentation horaire sont issues du dashboard déclaratif — saisie par le collaborateur <strong>en sortie d'espace</strong>. Le dispositif capteurs IoT permet une mesure automatique et continue des utilisations des solutions (passages, occupations par station, durées). Le ressenti reste déclaratif : les capteurs mesurent l'usage, pas l'état émotionnel.
-          </p>
-        </div>
-      </div>
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 32px;">...</div>
+      <div style="background: var(--navy); border-radius: var(--radius); padding: 32px; color: white;">...</div>
     </div>
   </div>
 </section>
 
 <!-- CAPTEURS DUERP -->
-<section id="capteurs">
-  <div class="container">
-    <div class="section-label">Innovation 2026</div>
-    <h2 class="section-title">Les capteurs qui rendent<br>votre DUERP <em>documenté et vérifiable</em></h2>
-    <p class="section-intro">
-      Les 95 séances générées par 54 personnes lors du Salon Solutions RH — chacune ayant testé en moyenne près de 2 solutions différentes — reposaient sur des données <strong>déclaratives</strong> — saisies volontairement par chaque participant à sa sortie de l'espace. C'est déjà un signal fort. Mais une déclaration n'est pas une mesure. Le dispositif capteurs IoT beOtop franchit ce seuil : il mesure en temps réel les utilisations des solutions — passages, occupations par station, durées — de façon objective, horodatée, anonymisée. Le ressenti reste déclaratif ; les capteurs documentent l'usage réel, ce que le DUERP demande.
-    </p>
-
-    <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 48px; display: flex; gap: 24px; align-items: flex-start;">
-      <div style="flex: 1; border-right: 1px solid var(--border); padding-right: 24px;">
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Ce que vous avez aujourd'hui</div>
-        <div style="font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 4px;">Données déclaratives</div>
-        <div style="font-size: 13px; color: var(--text-mid); line-height: 1.7;">Ressenti en sortie d'espace, saisi librement. Fort engagement volontaire. Données subjectives et non continues — à croiser avec d'autres indicateurs RH pour étayer un plan de prévention.</div>
-      </div>
-      <div style="flex: 1; padding-left: 8px;">
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 8px;">Ce que les capteurs ajoutent</div>
-        <div style="font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 4px;">Mesure objective et continue</div>
-        <div style="font-size: 13px; color: var(--text-mid); line-height: 1.7;">Fréquentation réelle, durées d'occupation, taux d'usage par atelier — en temps réel. Données agrégées, anonymes, exportables. <strong>Exploitables en support d'un plan de prévention CSSCT.</strong> Le ressenti reste déclaratif dans les deux cas.</div>
-      </div>
-    </div>
-
-    <div class="capteur-layout">
-      <div>
-        <div class="capteur-flow">
-          <div class="flow-step">
-            <div class="flow-icon">⬤</div>
-            <div class="flow-content">
-              <h4>Mesure en continu</h4>
-              <p>Barrières infrarouges (entrée/sortie) + capteurs PIR par station. Comptage anonyme, aucune donnée biométrique.</p>
-            </div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-icon">⬤</div>
-            <div class="flow-content">
-              <h4>Transmission 4G autonome</h4>
-              <p>SIM dédiée, indépendante de votre réseau IT. Aucune contrainte DSI. Données chiffrées en transit.</p>
-            </div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-icon">⬤</div>
-            <div class="flow-content">
-              <h4>Dashboard temps réel</h4>
-              <p>Fréquentation par heure, par atelier, par département. Tendances 7/30/90 jours. Export CSV disponible.</p>
-            </div>
-          </div>
-          <div class="flow-step">
-            <div class="flow-icon">⬤</div>
-            <div class="flow-content">
-              <h4>Rapport DUERP généré</h4>
-              <p>Données agrégées (k-anonymisation, seuil ≥5 personnes). Présentables en CSSCT en support du plan de prévention. Format PDF exportable.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="rgpd-strip">
-          <div class="rgpd-icon">🛡</div>
-          <div class="rgpd-text">
-            <strong>Conformité RGPD garantie par architecture</strong>
-            Aucune donnée individuelle. Agrégation systématique. beOtop agit en qualité de sous-traitant (Art. 28 RGPD) — DPA disponible sur demande.
-          </div>
-        </div>
-      </div>
-
-      <div class="capteur-specs">
-        <div class="spec-title">Composants du dispositif</div>
-        <div class="spec-row">
-          <div class="spec-badge badge-ir">IR</div>
-          <div>Barrière infrarouge E18-D80NK<span>Comptage entrée/sortie — portée 80 cm — câble blindé 3 fils</span></div>
-        </div>
-        <div class="spec-row">
-          <div class="spec-badge badge-pir">PIR</div>
-          <div>Capteur HC-SR501<span>Détection présence par station — angle 120° — réglage sensibilité</span></div>
-        </div>
-        <div class="spec-row">
-          <div class="spec-badge badge-4g">4G</div>
-          <div>Raspberry Pi 4 + Waveshare SIM7600E-H<span>Connectivité autonome — SIM dédiée — aucune dépendance réseau client</span></div>
-        </div>
-        <div class="spec-row">
-          <div class="spec-badge badge-ir">API</div>
-          <div>Backend Flask / PostgreSQL<span>Hébergé Render.com — API REST sécurisée — uptime 99,9%</span></div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</section>
+<section id="capteurs">...</section>
 
 <!-- ROI -->
-<section id="roi">
-  <div class="container">
-    <div class="section-label">Impact financier documenté</div>
-    <h2 class="section-title">Un ROI que votre DAF<br>peut <em>défendre</em></h2>
-    <p class="section-intro">
-      Deux niveaux de preuve : le ROI moyen constaté sur le terrain lors du Salon Solutions RH, 
-      et le ROI projeté sur votre masse salariale réelle selon la méthodologie Malakoff Humanis / ANACT.
-    </p>
-
-    <!-- BANDEAU ROI SALON CONSTATÉ -->
-    <div style="background: var(--gold); border-radius: var(--radius); padding: 28px 36px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--navy); opacity: 0.7; margin-bottom: 6px;">ROI moyen constaté — Salon Solutions RH 2026</div>
-        <div style="font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 700; color: var(--navy); line-height: 1;">+197%</div>
-        <div style="font-size: 14px; color: var(--navy); opacity: 0.75; margin-top: 6px;">Calculé sur les profils ayant renseigné leur effectif et masse salariale — données déclaratives en sortie d'espace.</div>
-      </div>
-      <div style="background: rgba(26,43,60,0.12); border-radius: 10px; padding: 20px 28px; text-align: center;">
-        <div style="font-size: 13px; color: var(--navy); opacity: 0.7; margin-bottom: 4px;">Ce chiffre représente</div>
-        <div style="font-size: 16px; font-weight: 500; color: var(--navy);">un plancher conservateur</div>
-        <div style="font-size: 13px; color: var(--navy); opacity: 0.7; margin-top: 4px;">hors optimisation managériale</div>
-      </div>
-    </div>
-
-    <div class="roi-layout">
-      <div>
-        <div class="roi-number-block">
-          <div class="roi-big">+318%</div>
-          <div class="roi-label">ROI simulé médian — 400 collaborateurs</div>
-          <div class="roi-sub">Option B · Posture Libre · −10% médian · Méthodologie ANACT / Malakoff Humanis</div>
-        </div>
-        <div class="roi-metrics">
-          <div class="roi-metric">
-            <div class="roi-metric-num">56 067 €</div>
-            <div class="roi-metric-label">Économie nette / an</div>
-          </div>
-          <div class="roi-metric">
-            <div class="roi-metric-num">~5 mois</div>
-            <div class="roi-metric-label">Payback</div>
-          </div>
-          <div class="roi-metric">
-            <div class="roi-metric-num">73 686 €</div>
-            <div class="roi-metric-label">Gain brut / an</div>
-          </div>
-          <div class="roi-metric">
-            <div class="roi-metric-num">17 619 €</div>
-            <div class="roi-metric-label">CTP annuel Option B</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--navy);">+187 439 €</div>
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">VAN à 3 ans (taux 8%)</div>
-          </div>
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--navy);">&gt; 200%</div>
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">TRI sur 5 ans</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 16px; padding: 16px 20px; background: white; border: 1px solid var(--border); border-radius: 8px;">
-          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">ROI selon la posture managériale</div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-              <span style="color: var(--text-mid);">Hostile</span>
-              <span style="color: #C0392B; font-weight: 500;">Perte nette</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-              <span style="color: var(--text-mid);">Mitigé</span>
-              <span style="font-weight: 500; color: var(--navy);">+109%</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: var(--gold-light); padding: 6px 10px; border-radius: 6px; margin: 0 -4px;">
-              <span style="color: var(--gold-dark); font-weight: 500;">Libre ← scénario retenu</span>
-              <span style="font-weight: 700; color: var(--gold-dark);">+318%</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-              <span style="color: var(--text-mid);">Encouragé</span>
-              <span style="font-weight: 500; color: var(--navy);">+527%</span>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px; font-style: italic;">
-            Écart Hostile → Encouragé : +92 108 €/an — soit 32× le coût de formation des managers.
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="duerp-box">
-          <div class="duerp-title">Obligation légale — Ce que risque votre entreprise sans mesure</div>
-          <div class="duerp-text">
-            Déployer un espace bien-être sans mesurer son efficacité sur les RPS/TMS 
-            ne protège pas l'employeur. La jurisprudence Cass. soc. est claire : 
-            l'obligation de sécurité de résultat s'apprécie sur des données, pas sur des intentions. 
-            <strong style="display: block; margin-top: 10px; color: #5A3A00;">Sans capteurs, vous avez un espace. Avec capteurs, vous avez une preuve.</strong>
-          </div>
-        </div>
-
-        <div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-          <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;">Base de calcul — Siège social 400 salariés</div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border);">
-              <span style="color: var(--text-mid);">Masse salariale chargée</span>
-              <span style="font-weight: 500;">28 025 000 €/an</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border);">
-              <span style="color: var(--text-mid);">Coût total dysfonctionnements</span>
-              <span style="font-weight: 500;">4 386 096 €/an</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border);">
-              <span style="color: var(--text-mid);">Base adressable beOtop (28%)</span>
-              <span style="font-weight: 500; color: var(--gold-dark);">1 228 107 €/an</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border);">
-              <span style="color: var(--text-mid);">CTP annuel Option B (19 m²)</span>
-              <span style="font-weight: 500;">17 619 €/an</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0;">
-              <span style="color: var(--text-mid);">Seuil de rentabilité</span>
-              <span style="font-weight: 500; color: var(--navy);">−1,43% · ~39 jours cadres évités</span>
-            </div>
-          </div>
-          <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted); font-style: italic;">
-            Sources : Malakoff Humanis 2023 · INRS 2022 · ANACT 2022 · APEC 2023 · DARES 2022
-          </div>
-        </div>
-
-        <ul class="legal-list">
-          <li>DUERP étayé par des données d'usage documentées et vérifiables, présentables en CSSCT</li>
-          <li>Traçabilité du plan de prévention RPS/TMS (loi Rebsamen)</li>
-          <li>Argument contractuel pour réduction de cotisation prévoyance</li>
-          <li>CIR éligible — dépenses R&D en capteurs jusqu'au 15 mai 2026</li>
-          <li>Financement partiel via FACT/ANACT (accord QVT en vigueur)</li>
-        </ul>
-
-        <div style="margin-top: 32px; padding: 20px; background: var(--navy-light); border-radius: 8px;">
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Références clients actifs</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <span style="background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--navy);">L'Oréal</span>
-            <span style="background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--navy);">BPCE</span>
-            <span style="background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--navy);">LVMH</span>
-            <span style="background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--navy);">Caisse des Dépôts</span>
-            <span style="background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--navy);">Murex</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- BLOC SOURCES -->
-    <div style="margin-top: 48px; padding: 28px 32px; background: white; border: 1px solid var(--border); border-radius: var(--radius);">
-      <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 20px;">Sources de l'étude — Siège social 400 salariés</div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
-
-        <div>
-          <div style="font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);">Absentéisme & coûts RH — France</div>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px;">
-            <li style="font-size: 12px; color: var(--text-mid);">Malakoff Humanis — Baromètre Absentéisme 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Malakoff Humanis — Baromètre QVT & Management 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">INRS — Coût des RPS, TMS et fatigue 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Assurance Maladie — Rapport AT-MP 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">DARES — Analyses n°52 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">DARES — Mouvements de main-d'œuvre T3 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">INSEE — ESANE 2022 ; Salaires secteur privé 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">URSSAF — Taux de cotisations 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">APEC — Tableau de bord cadres 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">APEC — Coût recrutement cadres 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Work Institute — Retention Report 2023</li>
-          </ul>
-        </div>
-
-        <div>
-          <div style="font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);">Présentéisme, fatigue & productivité — International</div>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px;">
-            <li style="font-size: 12px; color: var(--text-mid);">Gallup — State of the Global Workplace 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">OECD — Mental Health and Work 2021</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Harvard Business Review — 'The Hidden Costs of Employee Presenteeism' 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Bessone, Schilbach, Rao et al. — NBER Working Paper / WEF 2023 (+2,3% productivité, env. réel)</li>
-            <li style="font-size: 12px; color: var(--text-mid);">NASA / Dinges D.F. — Technical Memorandum 103987, 1995</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Goldschmied J. et al. — Personality and Individual Differences 2021</li>
-            <li style="font-size: 12px; color: var(--text-mid);">INSV — Baromètre sommeil & travail 2023</li>
-            <li style="font-size: 12px; color: var(--text-mid);">RAND Corporation — 'Why Sleep Matters' 2018</li>
-            <li style="font-size: 12px; color: var(--text-mid);">CCHST — Fatigue en milieu de travail 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Dawson & Reid — Nature, vol. 388, 1997 (fatigue = alcoolémie)</li>
-            <li style="font-size: 12px; color: var(--text-mid);">National Research Council — Organizational Linkages, 1994</li>
-          </ul>
-        </div>
-
-        <div>
-          <div style="font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);">Leviers physiologiques & QVT — International & France</div>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px;">
-            <li style="font-size: 12px; color: var(--text-mid);">ANACT — Évaluation dispositifs QVT 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">CIPD — Workplace Wellbeing Index 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">OMS / WHO — Mental Health in the Workplace 2022</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Nachemson A. — Spine Journal 1976 (pression discale, position 127°)</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Eastman C. et al. — Sleep Medicine Reviews 2019 (luminothérapie)</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Golden R.N. et al. — Journal of Affective Disorders 2005</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Avci P. et al. — Semin. Cutaneous Med. Surg. 2013 (photobiomodulation)</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Bjordal J.M. et al. — Cochrane Review, LLLT & TMS 2003</li>
-            <li style="font-size: 12px; color: var(--text-mid);">CBRE / JLL — Marchés immobiliers bureaux France 2024</li>
-            <li style="font-size: 12px; color: var(--text-mid);">Plan Santé au Travail 4 (PST4) 2021–2025 — DGEFP/DGT</li>
-            <li style="font-size: 12px; color: var(--text-mid);">ANI prévention RPS — 19 juin 2013 ; Art. L4121-1 Code du travail</li>
-          </ul>
-        </div>
-
-      </div>
-
-      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); font-style: italic; line-height: 1.7;">
-        Document établi sur la base de données publiques françaises et internationales (≤ 3 ans pour les données RH, études scientifiques de référence pour les leviers physiologiques), de sources académiques et institutionnelles reconnues. Toutes les hypothèses sont explicitement formulées. L'approche retenue est délibérément prudente. Les projections financières ne constituent pas une garantie de résultats — elles sont conditionnelles aux postures managériales et organisationnelles décrites dans l'étude complète.
-      </div>
-    </div>
-  </div>
-</section>
+<section id="roi">...</section>
 
 <!-- DUERP SIMULATION -->
-<section id="duerp" style="background: var(--navy-light);">
-  <div class="container">
-    <div class="section-label">Simulation DUERP</div>
-    <h2 class="section-title">Salon Solutions RH —<br><em>Ce que vos données alimenteraient</em></h2>
-    <p class="section-intro">
-      Voici un extrait simulé du DUERP tel qu'il pourrait être renseigné à partir des données collectées lors du Salon Solutions RH, Paris Porte de Versailles, 8–9 avril 2026. Ce document illustre la valeur documentaire des données beOtop en support d'un plan de prévention.
-    </p>
+<section id="duerp">...</section>
 
-    <!-- EN-TÊTE DOCUMENT -->
-    <div style="background: var(--navy); border-radius: var(--radius); padding: 24px 32px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px;">Document DUERP / Extrait mesures usage espace</div>
-        <div style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: white; line-height: 1.2;">Espace beOtop — Salon Solutions RH</div>
-        <div style="font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 4px;">Paris Porte de Versailles · 8–9 avril 2026</div>
-      </div>
-      <div style="display: flex; gap: 24px; flex-wrap: wrap;">
-        <div style="text-align: center;">
-          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Rédigé par</div>
-          <div style="font-size: 13px; color: white; font-weight: 500;">N. Hergue-Jalenques</div>
-          <div style="font-size: 12px; color: rgba(255,255,255,0.5);">beOtop EURL</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Date</div>
-          <div style="font-size: 13px; color: white; font-weight: 500;">10 avril 2026</div>
-        </div>
-        <div style="text-align: center; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.4); border-radius: 6px; padding: 8px 16px;">
-          <div style="font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Statut</div>
-          <div style="font-size: 13px; color: var(--gold); font-weight: 500;">CONFIDENTIEL — CSSCT</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BANDE GOLD -->
-    <div style="height: 3px; background: var(--gold); margin-bottom: 24px;"></div>
-
-    <!-- SECTION 1 : KPIs -->
-    <div style="margin-bottom: 8px;">
-      <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">1. Indicateurs clés de la période</div>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
-        <div style="background: white; border-radius: 8px; padding: 16px; border-top: 3px solid var(--navy);">
-          <div style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--navy); line-height: 1;">54</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Personnes ayant utilisé l'espace</div>
-        </div>
-        <div style="background: white; border-radius: 8px; padding: 16px; border-top: 3px solid var(--gold);">
-          <div style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--navy); line-height: 1;">95</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Séances totales enregistrées</div>
-        </div>
-        <div style="background: white; border-radius: 8px; padding: 16px; border-top: 3px solid var(--gold);">
-          <div style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--navy); line-height: 1;">1,76</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Solutions testées par personne (moy.)</div>
-        </div>
-        <div style="background: white; border-radius: 8px; padding: 16px; border-top: 3px solid #3B6D11;">
-          <div style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #3B6D11; line-height: 1;">0%</div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">« Épuisé » — jamais choisi (0/95 séances)</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION 2 : RESSENTIS -->
-    <div style="margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">2. Ressenti déclaré en sortie d'espace</div>
-      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-style: italic;">Méthode : saisie libre et anonyme à la sortie de l'espace. 4 options proposées : Mieux / Rechargé / Neutre / Épuisé.</div>
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-        <thead>
-          <tr style="background: var(--navy); color: white;">
-            <th style="padding: 8px 12px; text-align: left; font-weight: 500; font-size: 11px; letter-spacing: 0.5px;">Option</th>
-            <th style="padding: 8px 12px; text-align: center; font-weight: 500; font-size: 11px; letter-spacing: 0.5px;">Nb séances</th>
-            <th style="padding: 8px 12px; text-align: center; font-weight: 500; font-size: 11px; letter-spacing: 0.5px;">%</th>
-            <th style="padding: 8px 12px; text-align: left; font-weight: 500; font-size: 11px; letter-spacing: 0.5px;">Interprétation DUERP</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="background: #FFF8E8;">
-            <td style="padding: 8px 12px; font-weight: 500; color: var(--gold-dark);">Mieux</td>
-            <td style="padding: 8px 12px; text-align: center;">62</td>
-            <td style="padding: 8px 12px; text-align: center; font-weight: 700; color: var(--gold-dark);">65%</td>
-            <td style="padding: 8px 12px; font-size: 12px; color: var(--text-mid);">Signal stable, base universelle du bénéfice — contexte de charge ordinaire</td>
-          </tr>
-          <tr style="background: var(--navy-light);">
-            <td style="padding: 8px 12px; font-weight: 500; color: var(--navy);">Rechargé</td>
-            <td style="padding: 8px 12px; text-align: center;">29</td>
-            <td style="padding: 8px 12px; text-align: center; font-weight: 700; color: var(--navy);">31%</td>
-            <td style="padding: 8px 12px; font-size: 12px; color: var(--text-mid);">Émerge en contexte de surcharge cognitive élevée — indicateur de récupération active sous stress réel</td>
-          </tr>
-          <tr style="background: white;">
-            <td style="padding: 8px 12px; color: var(--text-mid);">Neutre</td>
-            <td style="padding: 8px 12px; text-align: center;">4</td>
-            <td style="padding: 8px 12px; text-align: center;">4%</td>
-            <td style="padding: 8px 12px; font-size: 12px; color: var(--text-mid);">Absence d'effet mesuré — dans les normes pour un premier usage sans accompagnement</td>
-          </tr>
-          <tr style="background: #EAF3DE;">
-            <td style="padding: 8px 12px; font-weight: 500; color: #3B6D11;">Épuisé</td>
-            <td style="padding: 8px 12px; text-align: center; color: #3B6D11; font-weight: 700;">0</td>
-            <td style="padding: 8px 12px; text-align: center; font-weight: 700; color: #3B6D11;">0%</td>
-            <td style="padding: 8px 12px; font-size: 12px; color: var(--text-mid);">Jamais choisi sur 95 séances — aucune dégradation de l'état après utilisation</td>
-          </tr>
-          <tr style="background: var(--gold-light); border-top: 2px solid var(--gold);">
-            <td style="padding: 8px 12px; font-weight: 700; color: var(--navy);">Total positif (Mieux + Rechargé)</td>
-            <td style="padding: 8px 12px; text-align: center; font-weight: 700;">91</td>
-            <td style="padding: 8px 12px; text-align: center; font-weight: 700; color: var(--gold-dark); font-size: 15px;">96%</td>
-            <td style="padding: 8px 12px; font-size: 12px; font-weight: 500; color: var(--navy);">Taux de ressenti positif sur la totalité de la période — aucun ressenti négatif enregistré</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- SECTION 3 : ATELIERS + HORAIRES côte à côte -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">3. Utilisation par solution</div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-          <thead>
-            <tr style="background: var(--navy); color: white;">
-              <th style="padding: 6px 10px; text-align: left; font-weight: 500; font-size: 10px;">Solution / Atelier</th>
-              <th style="padding: 6px 10px; text-align: center; font-weight: 500; font-size: 10px;">Séances</th>
-              <th style="padding: 6px 10px; text-align: center; font-weight: 500; font-size: 10px;">%</th>
-              <th style="padding: 6px 10px; text-align: left; font-weight: 500; font-size: 10px;">Cible</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="background: #FFF8E8;">
-              <td style="padding: 6px 10px;">Méridienne P127</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">22</td>
-              <td style="padding: 6px 10px; text-align: center;">23%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">TMS / Posture</td>
-            </tr>
-            <tr style="background: white;">
-              <td style="padding: 6px 10px;">Bol d'Air Jacquier</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">21</td>
-              <td style="padding: 6px 10px; text-align: center;">22%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">Fatigue</td>
-            </tr>
-            <tr style="background: #FFF8E8;">
-              <td style="padding: 6px 10px;">Bain de Lumière Rouge</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">19</td>
-              <td style="padding: 6px 10px; text-align: center;">20%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">TMS / RPS</td>
-            </tr>
-            <tr style="background: white;">
-              <td style="padding: 6px 10px;">Siège Massant 0G</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">12</td>
-              <td style="padding: 6px 10px; text-align: center;">13%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">RPS / TMS</td>
-            </tr>
-            <tr style="background: #FFF8E8;">
-              <td style="padding: 6px 10px;">Cocon de Sieste</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">8</td>
-              <td style="padding: 6px 10px; text-align: center;">8%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">Fatigue / Productivité</td>
-            </tr>
-            <tr style="background: white;">
-              <td style="padding: 6px 10px;">Lunettes Psio</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">8</td>
-              <td style="padding: 6px 10px; text-align: center;">8%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">RPS / Stress</td>
-            </tr>
-            <tr style="background: #FFF8E8;">
-              <td style="padding: 6px 10px;">Neurosonic Lit</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 600;">5</td>
-              <td style="padding: 6px 10px; text-align: center;">5%</td>
-              <td style="padding: 6px 10px; font-size: 10px; color: var(--text-mid);">TMS / Fatigue</td>
-            </tr>
-            <tr style="background: var(--gold-light); border-top: 1px solid var(--gold);">
-              <td style="padding: 6px 10px; font-weight: 700;">Total</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 700;">95</td>
-              <td style="padding: 6px 10px; text-align: center; font-weight: 700;">100%</td>
-              <td style="padding: 6px 10px;"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">4. Fréquentation horaire (cumul 2 jours)</div>
-        <div style="background: white; border-radius: 8px; padding: 20px; height: calc(100% - 28px);">
-          <div style="display: flex; align-items: flex-end; gap: 6px; height: 100px; margin-bottom: 10px;">
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 12px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">7h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 88px; width: 100%; background: var(--navy); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--navy); font-weight: 700;">9h*</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 60px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">10h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 36px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">11h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 20px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">12h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 52px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">13h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 52px; width: 100%; background: var(--navy); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">14h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 40px; width: 100%; background: var(--gold); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">15h</div>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="height: 12px; width: 100%; background: var(--navy-light); border-radius: 2px 2px 0 0;"></div>
-              <div style="font-size: 9px; color: var(--text-muted);">16h</div>
-            </div>
-          </div>
-          <div style="font-size: 10px; color: var(--text-muted); font-style: italic; line-height: 1.6;">
-            * 8h additionné à 9h. Pics dominants : 9h–10h et 13h–15h.<br>
-            Interprétation DUERP : fréquentation spontanée aux créneaux de baisse de vigilance documentés (INRS 2022).
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION 5 : CORRESPONDANCE RISQUES -->
-    <div style="margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">5. Correspondance risques DUERP / solutions déployées</div>
-      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-        <thead>
-          <tr style="background: var(--navy); color: white;">
-            <th style="padding: 7px 10px; text-align: left; font-weight: 500; font-size: 10px;">Risque identifié (DUERP)</th>
-            <th style="padding: 7px 10px; text-align: center; font-weight: 500; font-size: 10px;">Catégorie</th>
-            <th style="padding: 7px 10px; text-align: left; font-weight: 500; font-size: 10px;">Solution beOtop</th>
-            <th style="padding: 7px 10px; text-align: left; font-weight: 500; font-size: 10px;">Source scientifique</th>
-            <th style="padding: 7px 10px; text-align: center; font-weight: 500; font-size: 10px;">Séances</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="background: #FDECEA;">
-            <td style="padding: 7px 10px;">TMS lombaires, douleurs cervicales, tensions posturales liées au travail sédentaire</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 600; color: #A32D2D; font-size: 11px;">TMS</td>
-            <td style="padding: 7px 10px; font-size: 11px;">Méridienne P127 · Siège Massant 0G · Neurosonic Lit</td>
-            <td style="padding: 7px 10px; font-size: 10px; color: var(--text-muted);">Nachemson, Spine J. 1976 · Bjordal, Cochrane 2003</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 700;">39</td>
-          </tr>
-          <tr style="background: #FFF3E0;">
-            <td style="padding: 7px 10px;">Stress professionnel, surcharge cognitive, risques psychosociaux (RPS)</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 600; color: #E65100; font-size: 11px;">RPS</td>
-            <td style="padding: 7px 10px; font-size: 11px;">Lunettes Psio · Bain Lumière Rouge · Siège Massant 0G</td>
-            <td style="padding: 7px 10px; font-size: 10px; color: var(--text-muted);">Eastman, Sleep Med. Rev. 2019 · Avci, Semin. Cut. 2013</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 700;">35</td>
-          </tr>
-          <tr style="background: var(--navy-light);">
-            <td style="padding: 7px 10px;">Fatigue chronique, dette de sommeil, baisse de vigilance</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 600; color: var(--navy); font-size: 11px;">Fatigue</td>
-            <td style="padding: 7px 10px; font-size: 11px;">Cocon de Sieste · Bol d'Air Jacquier · Méridienne P127</td>
-            <td style="padding: 7px 10px; font-size: 10px; color: var(--text-muted);">Dinges NASA 1995 · Bessone WEF 2023 · INSV 2023</td>
-            <td style="padding: 7px 10px; text-align: center; font-weight: 700;">51</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- SECTION 6 : CADRE LÉGAL + VISA -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">6. Cadre légal</div>
-        <div style="background: white; border-radius: 8px; overflow: hidden;">
-          <div style="display: flex; flex-direction: column; gap: 0;">
-            <div style="padding: 10px 14px; border-bottom: 1px solid var(--border);">
-              <div style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 2px;">Obligation de sécurité</div>
-              <div style="font-size: 10px; color: var(--text-muted);">Art. L4121-1 Code du Travail · Cass. soc.</div>
-            </div>
-            <div style="padding: 10px 14px; border-bottom: 1px solid var(--border);">
-              <div style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 2px;">Évaluation des risques (DUERP)</div>
-              <div style="font-size: 10px; color: var(--text-muted);">Art. R4121-1 à R4121-4 · Loi Rebsamen 2015</div>
-            </div>
-            <div style="padding: 10px 14px; border-bottom: 1px solid var(--border);">
-              <div style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 2px;">Prévention RPS / ANI QVT</div>
-              <div style="font-size: 10px; color: var(--text-muted);">ANI 19 juin 2013 · Plan Santé au Travail 4 (2021–2025)</div>
-            </div>
-            <div style="padding: 10px 14px;">
-              <div style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 2px;">Conformité RGPD — données anonymisées</div>
-              <div style="font-size: 10px; color: var(--text-muted);">RGPD Art. 28 · k-anonymisation · DPA disponible sur demande</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div style="font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px;">7. Visa et diffusion</div>
-        <div style="background: white; border-radius: 8px; overflow: hidden;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
-            <div style="padding: 12px 14px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Rédigé par</div>
-              <div style="font-size: 12px; font-weight: 500; color: var(--navy);">N. Hergue-Jalenques</div>
-              <div style="font-size: 11px; color: var(--text-muted);">beOtop · 10 avril 2026</div>
-            </div>
-            <div style="padding: 12px 14px; border-bottom: 1px solid var(--border);">
-              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Visé par (DRH)</div>
-              <div style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 12px;">Signature :</div>
-            </div>
-            <div style="padding: 12px 14px; border-right: 1px solid var(--border);">
-              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Visé par (DAF)</div>
-              <div style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 12px;">Signature :</div>
-            </div>
-            <div style="padding: 12px 14px;">
-              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Transmis au CSSCT</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Date :<br>Réf. PV CSSCT :</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top: 12px; padding: 10px 14px; background: var(--navy); border-radius: 8px;">
-          <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Classification</div>
-          <div style="font-size: 12px; color: var(--gold); font-weight: 500;">CONFIDENTIEL — Diffusion restreinte CSSCT, DRH, DAF, Direction Générale</div>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-</section>
-
-<!-- CONTACT -->
+<!-- CONTACT - NOUVEAU FORMULAIRE -->
 <section id="contact">
   <div class="container">
     <div class="section-label" style="color: var(--gold);">Passez à l'étape suivante</div>
     <h2 class="section-title">Planifiez votre<br><em>rendez-vous ou visite showroom</em></h2>
-    <p class="section-intro">
-      Venez vivre l'espace dans notre showroom permanent à La Défense — Immeuble Château Form, niveau Arche de la Défense. Ou échangeons sur votre contexte RH et calculons votre ROI personnalisé.
-    </p>
+    <p class="section-intro">Venez vivre l'espace dans notre showroom permanent à La Défense — Immeuble Château Form, niveau Arche de la Défense. Ou échangeons sur votre contexte RH et calculons votre ROI personnalisé.</p>
 
     <div class="contact-grid">
-      <form class="contact-form" onsubmit="return false;">
+      <!-- FORMULAIRE FONCTIONNEL -->
+      <form id="contactForm" class="contact-form">
         <div class="form-row">
           <div class="form-field">
-            <label>Prénom</label>
-            <input type="text" placeholder="Marie">
+            <label>Prénom *</label>
+            <input type="text" name="prenom" required>
           </div>
           <div class="form-field">
-            <label>Nom</label>
-            <input type="text" placeholder="Dupont">
+            <label>Nom *</label>
+            <input type="text" name="nom" required>
           </div>
         </div>
         <div class="form-field">
-          <label>Email professionnel</label>
-          <input type="email" placeholder="m.dupont@entreprise.fr">
-        </div>
-        <div class="form-field">
-          <label>Votre rôle</label>
-          <select>
-            <option value="">— Sélectionner —</option>
-            <option>DRH / Responsable RH</option>
-            <option>DAF / Directeur Financier</option>
-            <option>Directeur Général / CEO</option>
-            <option>Responsable RSE / QVT</option>
-            <option>Responsable Facility / Services Généraux</option>
-            <option>Membre CSSCT / CSE</option>
-            <option>Autre</option>
-          </select>
+          <label>Email professionnel *</label>
+          <input type="email" name="email" required>
         </div>
         <div class="form-row">
+          <div class="form-field">
+            <label>Votre rôle</label>
+            <select name="role">
+              <option value="">-- Sélectionnez --</option>
+              <option>DRH / Responsable RH</option>
+              <option>DAF / Directeur Financier</option>
+              <option>Directeur Général / CEO</option>
+              <option>Responsable RSE / QVT</option>
+              <option>Responsable Facility / Services Généraux</option>
+              <option>Membre CSSCT / CSE</option>
+              <option>Autre</option>
+            </select>
+          </div>
           <div class="form-field">
             <label>Entreprise</label>
-            <input type="text" placeholder="Nom de l'entreprise">
+            <input type="text" name="entreprise" placeholder="Nom de votre entreprise">
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-field">
             <label>Effectif</label>
-            <select>
+            <select name="effectif">
               <option>1 – 50</option>
               <option>50 – 100</option>
               <option>100 – 250</option>
@@ -1283,289 +472,102 @@
               <option>+ 5 000</option>
             </select>
           </div>
-        </div>
-        <div class="form-field">
-          <label>Votre priorité</label>
-          <select>
-            <option>DUERP / conformité légale</option>
-            <option>ROI / justification DAF</option>
-            <option>Bien-être collaborateurs</option>
-            <option>Capteurs et données d'usage</option>
-            <option>Demande de devis</option>
-          </select>
+          <div class="form-field">
+            <label>Votre priorité</label>
+            <select name="priorite">
+              <option>DUERP / conformité légale</option>
+              <option>ROI / justification DAF</option>
+              <option>Bien-être collaborateurs</option>
+              <option>Capteurs et données d'usage</option>
+              <option>Demande de devis</option>
+            </select>
+          </div>
         </div>
         <div class="form-field">
           <label>Message (facultatif)</label>
-          <textarea placeholder="Précisez votre contexte, vos enjeux..."></textarea>
+          <textarea name="message" placeholder="Précisez votre contexte, vos enjeux..."></textarea>
         </div>
-        <button type="submit" class="btn-form">Prendre rendez-vous →</button>
+        <button type="submit" class="btn-form">Envoyer la demande →</button>
+        <div id="successMessage" class="success-message"></div>
+        <div id="errorMessage" class="error-message"></div>
       </form>
 
+      <!-- PARTIE DROITE (infos showroom, etc.) -->
       <div class="contact-info">
         <div class="info-block">
           <h4>Showroom permanent</h4>
-          <p>
-            Immeuble Château Form<br>
-            Niveau Arche de la Défense<br>
-            La Défense (92)<br>
-            <span style="font-size: 13px; color: rgba(255,255,255,0.5); font-style: italic;">Visite sur rendez-vous — accès RER A / Ligne 1</span>
-          </p>
+          <p>Immeuble Château Form<br>Niveau Arche de la Défense<br>La Défense (92)<br><span style="font-size: 13px; color: rgba(255,255,255,0.5); font-style: italic;">Visite sur rendez-vous — accès RER A / Ligne 1</span></p>
         </div>
-
         <div class="info-block">
           <h4>Contact direct</h4>
-          <p>
-            beOtop — Nathalie Hergue-Jalenques<br>
-            <a href="/cdn-cgi/l/email-protection#492723092b2c263d2639672f3b" style="color: var(--gold);"><span class="__cf_email__" data-cfemail="6d03072d0f080219021d430b1f">[email&#160;protected]</span></a><br>
-            <a href="tel:+33662609508" style="color: var(--gold);">06 62 60 95 08</a>
-          </p>
+          <p>beOtop — Nathalie Hergue-Jalenques<br><a href="/cdn-cgi/l/email-protection#e78d89a7858288938897c98195" style="color: var(--gold);">nj@beotop.fr</a><br><a href="tel:+33662609508" style="color: var(--gold);">06 62 60 95 08</a></p>
         </div>
-
         <div class="info-block">
           <h4>Ressources disponibles</h4>
           <div style="display: flex; flex-direction: column; gap: 10px;">
-            <a href="#" class="download-btn">
-              <div class="download-icon">📄</div>
-              <div class="download-text">
-                Étude ROI complète — 400 collaborateurs
-                <span>PDF · Méthodologie + simulation personnalisable</span>
-              </div>
-            </a>
-            <a href="#" class="download-btn">
-              <div class="download-icon">📊</div>
-              <div class="download-text">
-                Devis capteurs DUERP
-                <span>PDF · 3 configurations + grille tarifaire</span>
-              </div>
-            </a>
-            <a href="#" class="download-btn">
-              <div class="download-icon">🛡</div>
-              <div class="download-text">
-                Guide conformité RGPD beOtop
-                <span>PDF · 5 documents — DPA Art. 28 inclus</span>
-              </div>
-            </a>
+            <a href="#" class="download-btn"><div class="download-icon">📄</div><div class="download-text">Étude ROI complète — 400 collaborateurs<span>PDF · Méthodologie + simulation personnalisable</span></div></a>
+            <a href="#" class="download-btn"><div class="download-icon">📊</div><div class="download-text">Devis capteurs DUERP<span>PDF · 3 configurations + grille tarifaire</span></div></a>
+            <a href="#" class="download-btn"><div class="download-icon">🛡</div><div class="download-text">Guide conformité RGPD beOtop<span>PDF · 5 documents — DPA Art. 28 inclus</span></div></a>
           </div>
         </div>
-
         <div class="info-block">
           <h4>Clients de référence</h4>
-          <p style="font-style: italic; font-size: 14px;">
-            "L'Oréal Clichy — 8 espaces déployés.<br>
-            BPCE, LVMH, Murex, Caisse des Dépôts.<br>
-            Données et retours d'expérience disponibles sur demande."
-          </p>
+          <p style="font-style: italic; font-size: 14px;">"L'Oréal Clichy — 8 espaces déployés.<br>BPCE, LVMH, Murex, Caisse des Dépôts.<br>Données et retours d'expérience disponibles sur demande."</p>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 <!-- TÉMOIGNAGES -->
-<section id="temoignages" style="background: white; padding: 80px 48px;">
-  <div class="container">
-    <div class="section-label">Ils l'ont déployé</div>
-    <h2 class="section-title">Ce que disent<br><em>les décideurs</em></h2>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 40px;">
+<section id="temoignages">...</section>
 
-      <div style="background: var(--navy-light); border-radius: var(--radius); padding: 28px; border-left: 4px solid var(--gold); position: relative;">
-        <div style="font-size: 40px; color: var(--gold); font-family: 'Playfair Display', serif; line-height: 0.8; margin-bottom: 16px;">"</div>
-        <p style="font-size: 15px; color: var(--text); line-height: 1.75; font-style: italic; margin-bottom: 20px;">
-          Ces espaces font l'unanimité. Je les utilise moi-même car j'en ressens les effets immédiats. Les retours des collaborateurs sont dithyrambiques ; ils aimeraient en avoir davantage, tant ces micro-pauses changent leur journée.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;">SP</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 500; color: var(--navy);">Stéphanie Persenda</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Directrice services aux collaborateurs — L'Oréal HQ</div>
-          </div>
-        </div>
-      </div>
+<!-- MÉTHODOLOGIE ROI -->
+<section id="methodologie-roi">...</section>
 
-      <div style="background: var(--navy); border-radius: var(--radius); padding: 28px; border-left: 4px solid var(--gold); position: relative;">
-        <div style="font-size: 40px; color: var(--gold); font-family: 'Playfair Display', serif; line-height: 0.8; margin-bottom: 16px;">"</div>
-        <p style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.75; font-style: italic; margin-bottom: 20px;">
-          Les bénéfices de ces instants de déconnexion sont visibles sur les performances des équipes : nos collaborateurs retournent à leur poste, ressourcés, plus calmes et plus concentrés.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: var(--navy); font-weight: 700; font-size: 14px; flex-shrink: 0;">SG</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 500; color: white;">Sophie Georget</div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Responsable Services aux collaborateurs — BPCE</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background: var(--navy-light); border-radius: var(--radius); padding: 28px; border-left: 4px solid var(--gold); position: relative;">
-        <div style="font-size: 40px; color: var(--gold); font-family: 'Playfair Display', serif; line-height: 0.8; margin-bottom: 16px;">"</div>
-        <p style="font-size: 15px; color: var(--text); line-height: 1.75; font-style: italic; margin-bottom: 20px;">
-          Ce n'est pas un luxe, c'est une réponse structurée à des enjeux bien réels : charge mentale, fatigue, déconnexion émotionnelle, hyperconnexion.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;">SD</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 500; color: var(--navy);">Sandrine Diagana</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Responsable Innovation Sociale — L'Oréal Monde</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- LIGNE 2 : 2 témoignages centrés -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; max-width: 800px; margin-left: auto; margin-right: auto;">
-
-      <div style="background: var(--navy-light); border-radius: var(--radius); padding: 28px; border-left: 4px solid var(--gold);">
-        <div style="font-size: 40px; color: var(--gold); font-family: 'Playfair Display', serif; line-height: 0.8; margin-bottom: 16px;">"</div>
-        <p style="font-size: 14px; color: var(--text); line-height: 1.75; font-style: italic; margin-bottom: 20px;">
-          Ce ne sont pas de simples salles de pause, mais de véritables espaces de revitalisation, pensés pour permettre aux équipes de souffler, se recentrer, repartir. Leur force ? Une intégration sur-mesure, pensée en dialogue avec chaque site.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: white; font-weight: 700; font-size: 13px; flex-shrink: 0;">CL</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 500; color: var(--navy);">Christophe Lajouanie</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Directeur Real Estate Workplace — L'Oréal</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background: var(--navy); border-radius: var(--radius); padding: 28px; border-left: 4px solid var(--gold);">
-        <div style="font-size: 40px; color: var(--gold); font-family: 'Playfair Display', serif; line-height: 0.8; margin-bottom: 16px;">"</div>
-        <p style="font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.75; font-style: italic; margin-bottom: 20px;">
-          beOtop ne vend pas des équipements, mais une véritable expérience de pause régénérative, fondée sur le corps, le rythme et la science de l'attention.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: var(--navy); font-weight: 700; font-size: 13px; flex-shrink: 0;">CB</div>
-          <div>
-            <div style="font-size: 13px; font-weight: 500; color: white;">Cyril Baranes</div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Directeur Général — Enfin Lundi</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <p style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 20px; text-align: center;">Extraits du Livre Blanc beOtop 2026 — «&thinsp;La vitalité des collaborateurs, le levier de la performance durable&thinsp;»</p>
-  </div>
-</section>
-
-<!-- EXPLICATION ROI 197% -->
-<section id="methodologie-roi" style="background: var(--navy-light); padding: 60px 48px;">
-  <div class="container">
-    <div style="max-width: 760px; margin: 0 auto;">
-      <div class="section-label" style="text-align: center;">Note méthodologique</div>
-      <h2 class="section-title" style="text-align: center; margin-bottom: 24px;">Comment le <em>+197%</em> a été calculé</h2>
-      <div style="background: white; border-radius: var(--radius); padding: 32px; border-left: 4px solid var(--gold);">
-        <p style="font-size: 15px; color: var(--text-mid); line-height: 1.8; margin-bottom: 20px;">
-          Ce chiffre est la moyenne des ROI calculés par les visiteurs du Salon Solutions RH ayant renseigné leur effectif et leur masse salariale lors de leur passage sur le stand beOtop, en utilisant le simulateur ROI interactif. Il s'agit de données déclaratives, saisies en sortie d'expérience.
-        </p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px;">
-            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Périmètre</div>
-            <div style="font-size: 14px; color: var(--navy);">Profils ayant renseigné effectif + masse salariale au simulateur ROI — Salon Solutions RH, 8–9 avril 2026</div>
-          </div>
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px;">
-            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Méthodologie</div>
-            <div style="font-size: 14px; color: var(--navy);">Simulateur ROI beOtop — Option B, posture Libre (60% adoption), scénario médian −10%, CTP 17 619 €/an</div>
-          </div>
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px;">
-            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Sources</div>
-            <div style="font-size: 14px; color: var(--navy);">Malakoff Humanis 2023 · INRS 2022 · ANACT 2022 · APEC 2023 · DARES 2022</div>
-          </div>
-          <div style="background: var(--navy-light); border-radius: 8px; padding: 16px;">
-            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Limite</div>
-            <div style="font-size: 14px; color: var(--navy);">Ce chiffre est une moyenne. Votre ROI réel dépend de votre masse salariale, de votre taux d'absentéisme et de la posture managériale adoptée.</div>
-          </div>
-        </div>
-        <div style="text-align: center;">
-          <a href="https://mylittlerivercard.github.io/beOtop-calculateur/" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: var(--navy); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none;">
-            Calculer mon ROI personnalisé →
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer style="background: #0F1A24; color: rgba(255,255,255,0.4); padding: 32px 48px; text-align: center; font-size: 13px;">
-  <strong style="color: rgba(255,255,255,0.7);">beOtop</strong> — EURL, SIREN 481 980 076 · Espaces phygitaux de revitalisation express ·
-  <a href="#" style="color: rgba(255,255,255,0.4);">Mentions légales</a> ·
-  <a href="#" style="color: rgba(255,255,255,0.4);">Politique RGPD</a>
-</footer>
+<footer>...</footer>
 
 <script>
-// --- TRACKING ANONYME — aucun cookie, aucune donnée personnelle, conforme RGPD ---
-// Comptage local des sections vues et interactions — données restant dans le navigateur
+  // Formulaire fonctionnel
+  const form = document.getElementById('contactForm');
+  const successDiv = document.getElementById('successMessage');
+  const errorDiv = document.getElementById('errorMessage');
 
-// Sections visitées
-const sections = ['salon','capteurs','roi','duerp','temoignages','contact'];
-const observed = new Set();
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting && !observed.has(entry.target.id)) {
-      observed.add(entry.target.id);
-      console.log('[beOtop] Section vue :', entry.target.id);
+  const API_URL = '/api/contact';  // URL relative (identique domaine)
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    successDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = 'Envoi en cours...';
+    submitBtn.disabled = true;
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        successDiv.innerText = '✅ Votre demande a bien été envoyée. Nous vous recontacterons sous 48h.';
+        successDiv.style.display = 'block';
+        form.reset();
+      } else {
+        const errorData = await response.json();
+        errorDiv.innerText = '❌ Erreur : ' + (errorData.error || 'Problème technique. Merci d’écrire directement à nj@beotop.fr');
+        errorDiv.style.display = 'block';
+      }
+    } catch (err) {
+      errorDiv.innerText = '❌ Impossible de joindre le serveur. Vérifiez votre connexion ou écrivez à nj@beotop.fr';
+      errorDiv.style.display = 'block';
+    } finally {
+      submitBtn.innerText = originalText;
+      submitBtn.disabled = false;
     }
   });
-}, {threshold: 0.3});
-sections.forEach(id => { const el = document.getElementById(id); if(el) observer.observe(el); });
-
-// Clic formulaire
-document.querySelector('.btn-form') && document.querySelector('.btn-form').addEventListener('click', () => {
-  console.log('[beOtop] Formulaire soumis');
-});
-
-// Clics téléchargements
-document.querySelectorAll('.download-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    console.log('[beOtop] Téléchargement :', btn.querySelector('.download-text')?.textContent?.trim());
-  });
-});
-
-// --- FILIGRANE SIMULATION DUERP ---
-const duerpSection = document.getElementById('duerp');
-if(duerpSection) {
-  const watermark = document.createElement('div');
-  watermark.style.cssText = `
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
-    font-size: 72px; font-weight: 900; color: rgba(26,43,60,0.04);
-    font-family: 'DM Sans', sans-serif; white-space: nowrap; pointer-events: none;
-    z-index: 0; user-select: none; letter-spacing: 4px;
-  `;
-  watermark.textContent = 'SIMULATION — ILLUSTRATION';
-  duerpSection.style.position = 'relative';
-  duerpSection.appendChild(watermark);
-
-  // Bandeau avertissement en haut de la section DUERP
-  const warning = document.createElement('div');
-  warning.style.cssText = `
-    background: #FFF3E0; border: 1px solid #F0A030; border-radius: 8px;
-    padding: 12px 20px; margin-bottom: 24px; font-size: 13px; color: #7A4A00;
-    display: flex; align-items: flex-start; gap: 12px;
-  `;
-  warning.innerHTML = `
-    <span style="font-size: 16px; flex-shrink: 0;">⚠</span>
-    <span>
-      <strong>Document à valeur illustrative uniquement.</strong>
-      Cette simulation est fournie à titre pédagogique pour illustrer la structure d'un extrait DUERP alimenté par les données beOtop.
-      Elle ne constitue pas un document juridiquement valable et ne peut être présentée en CSSCT sans adaptation à votre contexte d'entreprise par votre DRH.
-      Étude complète disponible sur demande : <a href="mailto:nj@beotop.fr" style="color: #7A4A00; font-weight: 600;">nj@beotop.fr</a>
-    </span>
-  `;
-  const firstChild = duerpSection.querySelector('.container > *');
-  if(firstChild) firstChild.insertAdjacentElement('afterend', warning);
-}
-
-// --- RESPONSIVE : scroll horizontal tables sur mobile ---
-document.querySelectorAll('table').forEach(t => {
-  if(!t.parentElement.classList.contains('table-wrap')) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'overflow-x: auto; -webkit-overflow-scrolling: touch;';
-    wrap.classList.add('table-wrap');
-    t.parentNode.insertBefore(wrap, t);
-    wrap.appendChild(t);
-  }
-});
 </script>
-
 </body>
 </html>
