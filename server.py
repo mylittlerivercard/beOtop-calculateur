@@ -731,7 +731,7 @@ def sensors_passages_list():
             return jsonify({'error': 'Accès refusé'}), 403
 
     if period == 'today':
-        ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
+        ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\' AND EXTRACT(HOUR FROM "timestamp") BETWEEN 8 AND 19'
     elif period == 'week':
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'7 days\''
     elif period == 'month':
