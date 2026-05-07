@@ -705,6 +705,118 @@ def sensors_stats():
     })
 
 
+@app.route('/api/sensors/passages/list', methods=['GET'])
+@login_required
+def sensors_passages_list():
+    """
+    Retourne la liste détaillée des passages avec timestamp exact.
+    Params : site_slug (requis), period (today|week|month|year), limit (défaut 200)
+    Usage DUERP : historique complet consultable par le client.
+    """
+    site_slug = request.args.get('site_slug')
+    period    = request.args.get('period', 'today')
+    limit     = int(request.args.get('limit', 200))
+
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+
+    # Vérification d'accès
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+
+    if period == 'today':
+        ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
+    elif period == 'week':
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'7 days\''
+    elif period == 'month':
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'30 days\''
+    elif period == 'year':
+        ts_clause = '"timestamp" >= NOW() - INTERVAL \'365 days\''
+    else:
+        ts_clause = "1=1"
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""SELECT id, "timestamp", direction
+                    FROM sensor_passages
+                    WHERE site_slug=%s AND {ts_clause}
+                    ORDER BY "timestamp" DESC
+                    LIMIT %s""",
+                [site_slug, limit]
+            )
+            rows = cur.fetchall()
+
+    return jsonify({
+        'site_slug': site_slug,
+        'period': period,
+        'total': len(rows),
+        'passages': [serialize_row(r) for r in rows]
+    })
+
+# ========== HEURES PASSAGES ==========
+
+@app.route('/api/sensors/passages/export', methods=['GET'])
+@login_required
+def sensors_passages_export():
+    """
+    Export CSV des passages pour intégration DUERP.
+    Params : site_slug, from (date), to (date)
+    """
+    site_slug  = request.args.get('site_slug')
+    from_date  = request.args.get('from', date.today().isoformat())
+    to_date    = request.args.get('to', date.today().isoformat())
+
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+
+    # Vérification d'accès
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """SELECT "timestamp", direction
+                   FROM sensor_passages
+                   WHERE site_slug=%s
+                   AND "timestamp"::date BETWEEN %s AND %s
+                   ORDER BY "timestamp" ASC""",
+                [site_slug, from_date, to_date]
+            )
+            rows = cur.fetchall()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['date', 'heure', 'direction', 'site'])
+    for r in rows:
+        sr = serialize_row(r)
+        ts = sr['timestamp']
+        writer.writerow([
+            ts[:10],
+            ts[11:19],
+            sr.get('direction') or 'entree',
+            site_slug
+        ])
+
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=passages_{site_slug}_{from_date}_{to_date}.csv'}
+    )
+
 # ========== STATISTIQUES ==========
 
 def build_date_clause(period, prefix=''):
