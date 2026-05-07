@@ -117,7 +117,6 @@
   .evol-card{background:rgba(255,255,255,0.5);border-radius:8px;padding:.8rem;border:1px solid rgba(0,0,0,.07)}
   .evol-title{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
   .evol-row{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;margin-bottom:.3rem}
-  /* CAPTEURS */
   .sensor-site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
   .sensor-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
   .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
@@ -139,14 +138,12 @@
   .refresh-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .85rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.2);color:var(--gold);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s;margin-left:auto}
   .refresh-btn:hover{background:rgba(176,125,46,.15)}
   .auto-refresh-lbl{font-size:.6rem;color:var(--muted);margin-left:.5rem}
-  /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);backdrop-filter:blur(4px)}
   .modal-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,90vw);background:rgba(255,255,255,.97);border-radius:16px;padding:1.6rem;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:80vh;display:flex;flex-direction:column}
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
   .modal-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:.4rem}
   .modal-footer{font-size:.58rem;color:var(--muted);margin-top:.8rem;text-align:center}
   .modal-passage-item{display:flex;align-items:center;gap:.8rem;padding:.45rem .7rem;background:rgba(0,0,0,.025);border-radius:8px;border:1px solid rgba(0,0,0,.05)}
-  /* QVCT */
   .qvct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
   .qvct-score{background:rgba(255,255,255,0.60);border:1px solid rgba(255,255,255,0.8);border-radius:12px;padding:1.2rem 1.3rem;backdrop-filter:blur(8px);box-shadow:0 2px 16px rgba(0,0,0,0.06);text-align:center}
   .qvct-score-val{font-size:2.5rem;font-weight:200;line-height:1.1;margin:.4rem 0}
@@ -419,9 +416,8 @@
       <div class="passage-timeline" id="s-passages-list"></div>
     </div>
   </div>
-</div>
 
-  <!-- VUE QVCT -->
+  <!-- VUE QVCT (déplacée à l'intérieur de .main) -->
   <div class="view" id="view-qvct">
     <div class="site-bar" id="qvct-site-bar"></div>
 
@@ -504,9 +500,9 @@
       </div>
 
     </div>
-
   </div><!-- /view-qvct -->
-</div>
+
+</div><!-- /.main -->
 
 <!-- MODAL PASSAGES -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
@@ -551,6 +547,7 @@ function switchTab(tab){
   if(tab==='roi'){buildROIControls();calcROI()}
   if(tab==='capteurs'){buildSensorBar();loadSensorStats();startAutoRefresh()}
   else{stopAutoRefresh()}
+  if(tab==='qvct'){buildQvctBar();loadQvct()}
 }
 
 async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login'}
@@ -729,11 +726,11 @@ function applyDAF(){function getVal(id){var v=parseFloat(document.getElementById
 function resetDAF(){DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI()}
 
 function calcROI(){
-  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po});var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var gain,decomposition;var isReal=DRH.source!=='default';
+  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po})||POSTURES[2];var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var gain,decomposition;var isReal=DRH.source!=='default';
   if(isReal){var absReal=DRH.absenteisme!==null?DRH.absenteisme:bases.absenteisme*scale;var presReal=DRH.presenteisme!==null?DRH.presenteisme:bases.presenteisme*scale;var turnReal=DRH.turnover!==null?DRH.turnover:bases.turnover*scale;var accReal=DRH.accidents!==null?DRH.accidents:bases.accidents*scale;var absRef=bases.absenteisme*scale;var presRef=bases.presenteisme*scale;var turnRef=bases.turnover*scale;var accRef=bases.accidents*scale;var ecoAbs=Math.max(0,absRef-absReal)*adoption;var ecoPres=Math.max(0,presRef-presReal)*adoption;var ecoTurn=Math.max(0,turnRef-turnReal)*adoption;var ecoAcc=Math.max(0,accRef-accReal)*adoption;gain=ecoAbs+ecoPres+ecoTurn+ecoAcc;decomposition='<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;padding:.2rem 0 .4rem;font-size:.55rem;color:#9090a8;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid rgba(0,0,0,.1)"><span>Indicateur</span><span style="text-align:right">Référence</span><span></span><span style="text-align:right">Économie</span></div><div class="detail-row"><span>Absentéisme</span><span>'+eur(absRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAbs)+'</span></div><div class="detail-row"><span>Présentéisme</span><span>'+eur(presRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoPres)+'</span></div><div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoTurn)+'</span></div><div class="detail-row"><span>Accidents du travail</span><span>'+eur(accRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAcc)+'</span></div><div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>'}
   else{gain=baseTotale*impact;decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div><div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div><div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>'}
-  var ctpComp=calcCTP();var ctp=ctpComp.total;var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;var seuil=baseTotale>0?(ctp/baseTotale)*100:null;
-  document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isReal)});document.getElementById('adoption-note').style.opacity=isReal?'1':'0.4';
+  var ctpComp=calcCTP();var ctp=ctpComp.total;var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;
+  var seuil=null;if(!isReal && baseTotale>0) seuil=(ctp/baseTotale)*100; else seuil=null;
   var roiEl=document.getElementById('roi-pct');roiEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';roiEl.className='roi-big'+(roi<0?' neg':'');
   document.getElementById('roi-payback').textContent=pb<100?'Retour sur investissement en '+pb.toFixed(1)+' mois':(gain<=0?'Gain insuffisant':'ROI positif insuffisant');
   document.getElementById('roi-seuil').textContent=(!isReal&&seuil!==null)?'Seuil de rentabilité : '+seuil.toFixed(2)+'% d\'impact':'';
@@ -760,7 +757,8 @@ function calcROI(){
 var qvctSite=null, qvctPeriod='month';
 
 function buildQvctBar(){
-  var bar=document.getElementById('qvct-site-bar');bar.innerHTML='';
+  var bar=document.getElementById('qvct-site-bar');if(!bar)return;
+  bar.innerHTML='';
   if(!qvctSite&&sites.length)qvctSite=sites[0].slug;
   sites.forEach(function(s){
     var chip=document.createElement('div');chip.className='site-chip'+(qvctSite===s.slug?' active':'');
@@ -775,13 +773,10 @@ function buildQvctBar(){
 
 async function loadQvct(){
   if(!qvctSite)return;
-
-  // Charger stats kiosque + capteurs en parallèle
   var [dk, dc] = await Promise.all([
     fetch('/api/stats?period='+qvctPeriod+'&site='+qvctSite,{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{}}),
     fetch('/api/sensors/stats?site_slug='+qvctSite+'&period='+qvctPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return{}})
   ]);
-
   var total=dk.total_seances||0;
   var byMood=dk.by_mood||[];
   var byDept=dk.by_departement||[];
@@ -866,7 +861,6 @@ async function loadQvct(){
   if(byDay.length<2){
     evolEl.innerHTML='<div class="sensor-empty">Données insuffisantes — sélectionnez 30 jours ou 12 mois</div>';
   } else {
-    // Divise en 2 moitiés et compare
     var mid=Math.floor(byDay.length/2);
     var periode1=byDay.slice(0,mid).reduce(function(s,d){return s+d.n},0);
     var periode2=byDay.slice(mid).reduce(function(s,d){return s+d.n},0);
@@ -877,7 +871,7 @@ async function loadQvct(){
     evolEl.innerHTML=
       '<div class="trend-row"><div class="trend-label">Première moitié</div><div class="trend-val">'+periode1+' séances</div></div>'+
       '<div class="trend-row"><div class="trend-label">Seconde moitié</div><div class="trend-val">'+periode2+' séances</div><div class="trend-arrow '+cls+'">'+arrow+'</div><div style="font-size:.68rem;color:var(--'+( delta>0?'sage':delta<0?'red':'muted')+')">'+( pct>0?'+':'')+pct+'%</div></div>'+
-      '<div style="margin-top:1rem;font-size:.62rem;color:var(--muted)">Tendance : <strong style="color:var(--'+( delta>0?'sage':delta<0?'red':'muted')+')">'+( delta>0?'Progression de l'usage':'Stabilisation'+(delta<0?' — à surveiller':''))+'</strong></div>';
+      '<div style="margin-top:1rem;font-size:.62rem;color:var(--muted)">Tendance : <strong style="color:var(--'+( delta>0?'sage':delta<0?'red':'muted')+')">'+( delta>0?'Progression de l\'usage':delta<0?'Stabilisation — à surveiller':'Stabilité')+'</strong></div>';
   }
 
   // Synthèse DUERP
@@ -902,13 +896,6 @@ function exportQVCT(){
   var today=new Date().toISOString().slice(0,10);
   window.open('/api/export?from=2025-01-01&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank');
 }
-
-// Patch switchTab pour QVCT
-var _switchTab=switchTab;
-switchTab=function(tab){
-  _switchTab(tab);
-  if(tab==='qvct'){buildQvctBar();loadQvct()}
-};
 
 init();
 </script>
