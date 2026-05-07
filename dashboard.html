@@ -541,7 +541,7 @@ function buildSiteBar(){
   });
   var sel=document.createElement('select');
   sel.className='period-sel';
-sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";  sel.value=currentPeriod;
+sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats()};
   bar.appendChild(sel);
 }
