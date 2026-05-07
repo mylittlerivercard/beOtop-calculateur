@@ -23,8 +23,7 @@
   .tab{padding:.55rem 1.4rem;font-size:.72rem;cursor:pointer;border-bottom:2px solid transparent;color:#6b6070;transition:all .2s;margin-bottom:-1px}
   .tab.active{border-bottom-color:#b07d2e;color:#b07d2e}
   .tab:hover{color:#1a1a2e}
-  .view{display:none}
-  .view.active{display:block}
+  .view{display:none}.view.active{display:block}
   .site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
   .site-chip{padding:.4rem .9rem;border-radius:20px;border:1px solid rgba(0,0,0,.12);color:#4a4560;background:rgba(255,255,255,0.5);font-size:.7rem;cursor:pointer;transition:all .15s}
   .site-chip:hover{border-color:#b07d2e;color:#b07d2e}
@@ -141,6 +140,12 @@
   .modal-footer{font-size:.58rem;color:var(--muted);margin-top:.8rem;text-align:center}
   .modal-passage-item{display:flex;align-items:center;gap:.8rem;padding:.45rem .7rem;background:rgba(0,0,0,.025);border-radius:8px;border:1px solid rgba(0,0,0,.05)}
   /* QVCT */
+  .qvct-effectif-bar{display:flex;align-items:center;gap:.8rem;margin-bottom:1.4rem;flex-wrap:wrap}
+  .qvct-effectif-wrap{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,0.75);border:1px solid rgba(176,125,46,.3);border-radius:10px;padding:.5rem 1rem}
+  .qvct-effectif-wrap label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+  .qvct-effectif-wrap input{width:80px;background:transparent;border:none;color:var(--cream);font-size:.9rem;font-family:'Jost',sans-serif;font-weight:400;outline:none;text-align:center}
+  .qvct-effectif-wrap .unit{font-size:.7rem;color:var(--muted)}
+  .qvct-saved{font-size:.58rem;color:var(--sage);display:none}
   .qvct-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
   .qvct-score{background:rgba(255,255,255,0.60);border:1px solid rgba(255,255,255,0.8);border-radius:12px;padding:1.2rem 1.3rem;backdrop-filter:blur(8px);box-shadow:0 2px 16px rgba(0,0,0,0.06);text-align:center;position:relative;overflow:hidden}
   .qvct-score::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--gold));opacity:.5}
@@ -158,16 +163,26 @@
   .cross-table th{background:rgba(176,125,46,.12);color:var(--cream);font-weight:500;padding:.5rem .7rem;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em}
   .cross-table td{padding:.42rem .7rem;border-bottom:1px solid rgba(0,0,0,.05)}
   .cross-table tr:nth-child(even) td{background:rgba(0,0,0,.02)}
-  .trend-row{display:flex;align-items:center;gap:.8rem;padding:.5rem 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:.7rem}
-  .trend-label{width:150px;color:var(--muted2);flex-shrink:0;font-size:.68rem}
+  .trend-row{display:flex;align-items:center;padding:.42rem 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:.7rem;gap:.5rem}
+  .trend-label{width:185px;color:var(--muted2);flex-shrink:0;font-size:.67rem}
   .trend-val{color:var(--cream);font-weight:400}
+  .mood-dist-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+  .mood-dist-icon{width:20px;text-align:center;flex-shrink:0}
+  .mood-dist-lbl{font-size:.65rem;color:var(--muted2);width:65px;flex-shrink:0}
+  .mood-dist-pct{font-size:.65rem;color:var(--muted);width:32px;text-align:right;flex-shrink:0}
+  .qvct-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+  .week-bars{display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:3px}
+  .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px}
+  .week-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px}
+  .week-lbl{font-size:.5rem;color:var(--muted);text-align:center;width:100%}
+  .week-val{font-size:.52rem;color:var(--muted2)}
+  .dept-mood-cell{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:5px;font-size:.6rem}
+  @media(max-width:900px){.qvct-grid-3{grid-template-columns:1fr 1fr}}
   @media(max-width:800px){
     .kpi-row,.sensor-kpi-row,.qvct-kpi-row{grid-template-columns:repeat(2,1fr)}
-    .grid-2,.sensor-grid{grid-template-columns:1fr}
-    .roi-grid{grid-template-columns:1fr}
-    .roi-kpis{grid-template-columns:repeat(2,1fr)}
-    .drh-grid{grid-template-columns:repeat(2,1fr)}
-    .context-grid{grid-template-columns:1fr 1fr}
+    .grid-2,.sensor-grid,.qvct-grid-3{grid-template-columns:1fr}
+    .roi-grid,.roi-kpis{grid-template-columns:repeat(2,1fr)}
+    .drh-grid,.context-grid{grid-template-columns:1fr 1fr}
     .mf-grid{grid-template-columns:1fr}
   }
 </style>
@@ -180,39 +195,24 @@
     <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
   </div>
 </div>
-
 <div class="main">
   <div class="page-title">Mon <em>espace beOtop</em></div>
   <div class="page-sub" id="page-sub">Chargement...</div>
-
   <div class="tabs">
-    <div class="tab active" id="tab-stats"    onclick="switchTab('stats')">📊 Retours utilisateurs</div>
-    <div class="tab"        id="tab-roi"      onclick="switchTab('roi')">📈 ROI &amp; Impact RH</div>
-    <div class="tab"        id="tab-capteurs" onclick="switchTab('capteurs')">📡 Retours capteurs</div>
-    <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">📋 Analyse QVCT</div>
+    <div class="tab active" id="tab-stats"    onclick="switchTab('stats')">&#128202; Retours utilisateurs</div>
+    <div class="tab"        id="tab-roi"      onclick="switchTab('roi')">&#128200; ROI &amp; Impact RH</div>
+    <div class="tab"        id="tab-capteurs" onclick="switchTab('capteurs')">&#128225; Retours capteurs</div>
+    <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">&#128203; Analyse QVCT</div>
   </div>
 
-  <!-- VUE STATS -->
+  <!-- STATS -->
   <div class="view active" id="view-stats">
     <div class="site-bar" id="site-bar"></div>
     <div class="kpi-row">
-      <div class="kpi" style="--accent:var(--gold)">
-        <div class="kpi-label">Séances totales</div>
-        <div class="kpi-val" id="kpi-total">—</div>
-        <div class="kpi-sub" id="kpi-period-label"></div>
-      </div>
-      <div class="kpi" style="--accent:var(--sage)">
-        <div class="kpi-label">Département le + actif</div>
-        <div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-dept">—</div>
-      </div>
-      <div class="kpi" style="--accent:var(--mist)">
-        <div class="kpi-label">Atelier le + utilisé</div>
-        <div class="kpi-val" style="font-size:.85rem;margin-top:.3rem" id="kpi-top-at">—</div>
-      </div>
-      <div class="kpi" style="--accent:#9b8fc4">
-        <div class="kpi-label">Mood dominant</div>
-        <div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-mood">—</div>
-      </div>
+      <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Séances totales</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub" id="kpi-period-label"></div></div>
+      <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Département le + actif</div><div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-dept">—</div></div>
+      <div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Atelier le + utilisé</div><div class="kpi-val" style="font-size:.85rem;margin-top:.3rem" id="kpi-top-at">—</div></div>
+      <div class="kpi" style="--accent:#9b8fc4"><div class="kpi-label">Mood dominant</div><div class="kpi-val" style="font-size:.95rem;margin-top:.3rem" id="kpi-top-mood">—</div></div>
     </div>
     <div class="grid-2">
       <div class="card"><div class="card-title">Séances par département</div><div id="chart-depts"></div></div>
@@ -231,7 +231,7 @@
     </div>
   </div>
 
-  <!-- VUE ROI -->
+  <!-- ROI -->
   <div class="view" id="view-roi">
     <div class="roi-result-box">
       <div>
@@ -254,21 +254,9 @@
     <div class="context-card">
       <div class="card-title">Contexte de l'entreprise</div>
       <div class="context-grid">
-        <div class="context-field">
-          <label>Type de site</label>
-          <div class="ctx-type-pills">
-            <div class="ctx-type-pill active-siege" id="ctx-siege" onclick="setContext('siege')">🏢 Siège social</div>
-            <div class="ctx-type-pill" id="ctx-industrie" onclick="setContext('industrie')">🏭 Site industriel</div>
-          </div>
-        </div>
-        <div class="context-field">
-          <label>Nombre d'employés</label>
-          <input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400" oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()">
-        </div>
-        <div class="context-field">
-          <label>Option superficie</label>
-          <div class="pills" style="margin-top:.35rem" id="surf-pills"></div>
-        </div>
+        <div class="context-field"><label>Type de site</label><div class="ctx-type-pills"><div class="ctx-type-pill active-siege" id="ctx-siege" onclick="setContext('siege')">&#127970; Siège social</div><div class="ctx-type-pill" id="ctx-industrie" onclick="setContext('industrie')">&#127981; Site industriel</div></div></div>
+        <div class="context-field"><label>Nombre d'employés</label><input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400" oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()"></div>
+        <div class="context-field"><label>Option superficie</label><div class="pills" style="margin-top:.35rem" id="surf-pills"></div></div>
       </div>
       <div class="ctx-note" id="ctx-note">Siège social · bases adressables : absentéisme 511 056 € · présentéisme 235 872 € · turnover 485 376 €</div>
     </div>
@@ -279,14 +267,13 @@
           <div style="font-size:.62rem;color:var(--muted)">Saisissez vos indicateurs <strong>actuels</strong> — le ROI mesure l'écart avec les références sectorielles</div>
         </div>
         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-          <span class="drh-badge default" id="drh-badge">⬦ Valeurs sectorielles (défaut)</span>
+          <span class="drh-badge default" id="drh-badge">⧦ Valeurs sectorielles (défaut)</span>
           <label class="btn-upload" style="cursor:pointer">⬆ Importer CSV<input type="file" id="drh-file" accept=".csv,.txt" onchange="importDRH(this)" style="display:none"></label>
           <button class="btn-saisie" onclick="toggleManualForm()">✎ Saisie manuelle</button>
         </div>
       </div>
       <div class="drh-grid" id="drh-grid"></div>
       <div class="manual-form" id="manual-form">
-        <div style="font-size:.65rem;color:var(--gold);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.1em">Saisie des indicateurs RH</div>
         <div class="mf-grid">
           <div class="mf-field"><label>Absentéisme — base adressable (€)</label><input type="number" id="mf-absent" step="100" min="0" placeholder="Laissez vide = sectoriel"><div class="unit">Laissez vide pour utiliser la valeur sectorielle</div></div>
           <div class="mf-field"><label>Présentéisme — base adressable (€)</label><input type="number" id="mf-pres" step="100" min="0" placeholder="Laissez vide = sectoriel"><div class="unit">Laissez vide pour utiliser la valeur sectorielle</div></div>
@@ -300,23 +287,14 @@
     <div class="roi-grid">
       <div class="card">
         <div class="card-title">Paramètres d'impact</div>
-        <div class="slider-row">
-          <div class="slider-lbl"><span>Scénario d'impact</span></div>
-          <div class="pills" id="sc-pills"></div>
-        </div>
-        <div class="slider-row" style="margin-top:.8rem">
-          <div class="slider-lbl"><span>Posture managériale <span style="font-size:.58rem;color:var(--muted)" id="adoption-note">(s'applique en mode données réelles)</span></span></div>
-          <div class="pills" id="po-pills"></div>
-        </div>
-        <div class="roi-info">💡 Sources : WTW 2025 · INRS 2024 · DARES 2023 · CIPD 2022 · ANACT 2022</div>
+        <div class="slider-row"><div class="slider-lbl"><span>Scénario d'impact</span></div><div class="pills" id="sc-pills"></div></div>
+        <div class="slider-row" style="margin-top:.8rem"><div class="slider-lbl"><span>Posture managériale <span style="font-size:.58rem;color:var(--muted)" id="adoption-note">(s'applique en mode données réelles)</span></span></div><div class="pills" id="po-pills"></div></div>
+        <div class="roi-info">Sources : WTW 2025 · INRS 2024 · DARES 2023 · CIPD 2022 · ANACT 2022</div>
       </div>
       <div class="card">
         <div class="card-title">Décomposition du gain estimé</div>
         <div id="roi-decomposition" style="font-size:.7rem"></div>
-        <div class="card-title" style="margin-top:1.3rem;display:flex;align-items:center;justify-content:space-between">
-          <span>Coûts annuels réels (CTP)</span>
-          <button onclick="toggleDAF()" id="btn-daf" style="font-size:.58rem;padding:.2rem .6rem;border-radius:5px;background:rgba(122,158,181,.08);border:1px solid rgba(122,158,181,.2);color:var(--mist);cursor:pointer;font-family:'Jost',sans-serif">✎ Modifier</button>
-        </div>
+        <div class="card-title" style="margin-top:1.3rem;display:flex;align-items:center;justify-content:space-between"><span>Coûts annuels réels (CTP)</span><button onclick="toggleDAF()" id="btn-daf" style="font-size:.58rem;padding:.2rem .6rem;border-radius:5px;background:rgba(122,158,181,.08);border:1px solid rgba(122,158,181,.2);color:var(--mist);cursor:pointer;font-family:'Jost',sans-serif">✎ Modifier</button></div>
         <div id="roi-detail" style="font-size:.68rem"></div>
         <div class="daf-form-inner" id="daf-form-wrapper">
           <div class="daf-grid">
@@ -337,147 +315,87 @@
         <div id="roi-adoption-compare"></div>
       </div>
     </div>
-    <div id="drh-evolution" style="display:none">
-      <div class="card" style="margin-bottom:1rem">
-        <div class="card-title">Impact beOtop sur vos indicateurs RH</div>
-        <div class="evolution-grid" id="evolution-grid"></div>
-      </div>
-    </div>
-    <div style="font-size:.58rem;color:var(--muted);text-align:center;padding:1rem 0">Sources : WTW 2025 · INRS 2024 · DARES 2023 · Verlingue/Malakoff Humanis 2024 · CIPD 2022 · ANACT 2022 · UIMM 2024 · MEDEF 2024</div>
+    <div id="drh-evolution" style="display:none"><div class="card" style="margin-bottom:1rem"><div class="card-title">Impact beOtop sur vos indicateurs RH</div><div class="evolution-grid" id="evolution-grid"></div></div></div>
+    <div style="font-size:.58rem;color:var(--muted);text-align:center;padding:1rem 0">Sources : WTW 2025 · INRS 2024 · DARES 2023 · CIPD 2022 · ANACT 2022 · UIMM 2024 · MEDEF 2024</div>
   </div>
 
-  <!-- VUE CAPTEURS -->
+  <!-- CAPTEURS -->
   <div class="view" id="view-capteurs">
     <div class="sensor-site-bar" id="sensor-site-bar"></div>
     <div class="sensor-kpi-row">
-      <div class="kpi" style="--accent:var(--sage);cursor:pointer" onclick="openPassagesModal()">
-        <div class="kpi-label"><span class="dot-live"></span>Passages faisceau</div>
-        <div class="kpi-val" id="s-kpi-passages">—</div>
-        <div class="kpi-sub" id="s-kpi-passages-sub"></div>
-        <div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
-      </div>
-      <div class="kpi" style="--accent:var(--mist)">
-        <div class="kpi-label">Taux occupation moyen</div>
-        <div class="kpi-val" id="s-kpi-taux">—</div>
-        <div class="kpi-sub">Tous ateliers · période</div>
-      </div>
-      <div class="kpi" style="--accent:var(--gold)">
-        <div class="kpi-label">Durée session moyenne</div>
-        <div class="kpi-val" id="s-kpi-duree">—</div>
-        <div class="kpi-sub" id="s-kpi-duree-sub"></div>
-      </div>
-      <div class="kpi" style="--accent:#9b8fc4">
-        <div class="kpi-label">Sessions enregistrées</div>
-        <div class="kpi-val" id="s-kpi-sessions">—</div>
-        <div class="kpi-sub">période sélectionnée</div>
-      </div>
+      <div class="kpi" style="--accent:var(--sage);cursor:pointer" onclick="openPassagesModal()"><div class="kpi-label"><span class="dot-live"></span>Passages faisceau</div><div class="kpi-val" id="s-kpi-passages">—</div><div class="kpi-sub" id="s-kpi-passages-sub"></div><div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div></div>
+      <div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Taux occupation moyen</div><div class="kpi-val" id="s-kpi-taux">—</div><div class="kpi-sub">Tous ateliers · période</div></div>
+      <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Durée session moyenne</div><div class="kpi-val" id="s-kpi-duree">—</div><div class="kpi-sub" id="s-kpi-duree-sub"></div></div>
+      <div class="kpi" style="--accent:#9b8fc4"><div class="kpi-label">Sessions enregistrées</div><div class="kpi-val" id="s-kpi-sessions">—</div><div class="kpi-sub">période sélectionnée</div></div>
     </div>
     <div class="sensor-grid">
-      <div class="card">
-        <div class="card-title">Taux d'occupation par atelier</div>
-        <div id="s-ateliers-occ"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Durée de session par atelier</div>
-        <div id="s-ateliers-duree"></div>
-      </div>
+      <div class="card"><div class="card-title">Taux d'occupation par atelier</div><div id="s-ateliers-occ"></div></div>
+      <div class="card"><div class="card-title">Durée de session par atelier</div><div id="s-ateliers-duree"></div></div>
     </div>
+    <div class="card" style="margin-bottom:1rem"><div class="card-title">Visites par heure — faisceau</div><div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div><div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div></div>
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Visites par heure — faisceau</div>
-      <div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div>
-      <div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div>
-    </div>
-    <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;margin-bottom:.8rem">
-        <div class="card-title" style="margin-bottom:0">Passages récents — faisceau</div>
-        <button class="refresh-btn" onclick="loadSensorStats()">↻ Actualiser</button>
-        <span class="auto-refresh-lbl" id="s-last-update"></span>
-      </div>
+      <div style="display:flex;align-items:center;margin-bottom:.8rem"><div class="card-title" style="margin-bottom:0">Passages récents — faisceau</div><button class="refresh-btn" onclick="loadSensorStats()">↻ Actualiser</button><span class="auto-refresh-lbl" id="s-last-update"></span></div>
       <div class="passage-timeline" id="s-passages-list"></div>
     </div>
   </div>
 
-  <!-- VUE QVCT -->
+  <!-- QVCT -->
   <div class="view" id="view-qvct">
     <div class="site-bar" id="qvct-site-bar"></div>
 
-    <!-- Ligne 1 : Indice + Pénétration + Durée totale -->
+    <div class="qvct-effectif-bar">
+      <div class="qvct-effectif-wrap">
+        <label>Effectif du site</label>
+        <input type="number" id="q-nb-sal" min="1" max="50000" step="10" placeholder="—" oninput="onEffectifChange()">
+        <span class="unit">salariés</span>
+      </div>
+      <span class="qvct-saved" id="q-sal-saved">✓ Enregistré</span>
+      <span style="font-size:.6rem;color:var(--muted)">Mémorisé par site dans le navigateur · requis pour le taux de pénétration et la fréquence</span>
+    </div>
+
     <div class="qvct-kpi-row">
-      <div class="qvct-score" style="--accent:var(--sage)">
-        <div class="qvct-score-lbl">Indice de récupération</div>
-        <div class="qvct-big" id="q-indice">—</div>
-        <div class="qvct-sub">Score Rechargé + Mieux (kiosque)</div>
-        <div id="q-indice-badge"></div>
-      </div>
-      <div class="qvct-score" style="--accent:var(--mist)">
-        <div class="qvct-score-lbl">Taux de pénétration RH</div>
-        <div class="qvct-big" id="q-penetration" style="color:var(--mist)">—</div>
-        <div class="qvct-sub" id="q-penetration-sub">séances / collaborateurs</div>
-      </div>
-      <div class="qvct-score" style="--accent:var(--gold)">
-        <div class="qvct-score-lbl">Durée totale de récupération</div>
-        <div class="qvct-big" id="q-duree-totale" style="color:var(--gold)">—</div>
-        <div class="qvct-sub">heures investies en bien-être</div>
-      </div>
+      <div class="qvct-score" style="--accent:var(--sage)"><div class="qvct-score-lbl">Indice de récupération</div><div class="qvct-big" id="q-indice">—</div><div class="qvct-sub">% Rechargé + Mieux (kiosque)</div><div id="q-indice-badge"></div></div>
+      <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Taux de pénétration RH</div><div class="qvct-big" id="q-penetration" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-penetration-sub">séances / collaborateurs</div></div>
+      <div class="qvct-score" style="--accent:var(--gold)"><div class="qvct-score-lbl">Durée totale de récupération</div><div class="qvct-big" id="q-duree-totale" style="color:var(--gold)">—</div><div class="qvct-sub">heures investies en bien-être</div></div>
     </div>
-
-    <!-- Ligne 2 : Projection + Fréquence + Atelier phare -->
     <div class="qvct-kpi-row">
-      <div class="qvct-score" style="--accent:#9b8fc4">
-        <div class="qvct-score-lbl">Projection annuelle</div>
-        <div class="qvct-big" id="q-projection" style="color:#9b8fc4">—</div>
-        <div class="qvct-sub">séances estimées sur 12 mois</div>
-      </div>
-      <div class="qvct-score" style="--accent:var(--mist)">
-        <div class="qvct-score-lbl">Fréquence moyenne</div>
-        <div class="qvct-big" id="q-frequence" style="color:var(--mist)">—</div>
-        <div class="qvct-sub" id="q-frequence-sub">usage par collaborateur</div>
-      </div>
-      <div class="qvct-score" style="--accent:var(--cream)">
-        <div class="qvct-score-lbl">Atelier phare</div>
-        <div class="qvct-big" id="q-pointe" style="font-size:1rem;margin-top:.6rem;color:var(--cream)">—</div>
-        <div class="qvct-sub" id="q-pointe-sub">le plus utilisé sur la période</div>
-      </div>
+      <div class="qvct-score" style="--accent:#9b8fc4"><div class="qvct-score-lbl">Projection annuelle</div><div class="qvct-big" id="q-projection" style="color:#9b8fc4">—</div><div class="qvct-sub">séances estimées sur 12 mois</div></div>
+      <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Fréquence moyenne</div><div class="qvct-big" id="q-frequence" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-frequence-sub">usage par collaborateur</div></div>
+      <div class="qvct-score" style="--accent:var(--cream)"><div class="qvct-score-lbl">Atelier phare</div><div class="qvct-big" id="q-pointe" style="font-size:1rem;margin-top:.6rem;color:var(--cream)">—</div><div class="qvct-sub" id="q-pointe-sub">le plus utilisé sur la période</div></div>
     </div>
 
-    <!-- Croisements -->
-    <div class="grid-2" style="margin-bottom:1rem">
-      <div class="card">
-        <div class="card-title">Ressenti par département — CSSCT</div>
-        <div id="q-cross-dept-mood"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Part des séances par département</div>
-        <div id="q-cross-dept-part"></div>
-      </div>
+    <div class="qvct-grid-3">
+      <div class="card"><div class="card-title">Distribution du ressenti</div><div id="q-mood-dist"></div></div>
+      <div class="card"><div class="card-title">Ateliers — part d'activité</div><div id="q-ateliers-part"></div></div>
+      <div class="card"><div class="card-title">Fréquentation par heure</div><div id="q-heures-chart" style="display:flex;align-items:flex-end;gap:3px;height:70px;margin-bottom:3px"></div><div id="q-heures-labels" style="display:flex;gap:3px"></div></div>
     </div>
 
-    <!-- Évolution + DUERP -->
-    <div class="grid-2" style="margin-bottom:1rem">
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Ressenti par département — CSSCT</div><div id="q-cross-dept-mood"></div></div>
+      <div class="card"><div class="card-title">Part des séances par département</div><div id="q-cross-dept-part"></div></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1rem">
       <div class="card">
-        <div class="card-title">Évolution de l'usage — tendance</div>
-        <div id="q-evolution"></div>
+        <div class="card-title">Évolution de l'usage — tendance hebdomadaire</div>
+        <div class="week-bars" id="q-week-bars"></div>
+        <div style="display:flex;gap:5px" id="q-week-labels"></div>
+        <div id="q-evolution-summary" style="margin-top:.8rem;font-size:.65rem;color:var(--muted)"></div>
       </div>
       <div class="card">
         <div class="card-title">Synthèse DUERP — indicateurs QVCT</div>
         <div id="q-duerp"></div>
-        <div style="margin-top:1rem">
-          <button class="btn-export" onclick="exportQVCT()">⬇ Export CSV DUERP</button>
-        </div>
+        <div style="margin-top:1rem"><button class="btn-export" onclick="exportQVCT()">⬇ Export CSV DUERP</button></div>
       </div>
     </div>
   </div>
+</div>
 
-</div><!-- /main -->
-
-<!-- MODAL PASSAGES -->
+<!-- MODAL -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
   <div class="modal-box">
     <div class="modal-header">
-      <div>
-        <div style="font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em">Détail des passages</div>
-        <div style="font-size:1rem;color:var(--text);margin-top:.2rem" id="modal-title">—</div>
-      </div>
+      <div><div style="font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em">Détail des passages</div><div style="font-size:1rem;color:var(--text);margin-top:.2rem" id="modal-title">—</div></div>
       <div style="display:flex;gap:.5rem;align-items:center">
         <button onclick="exportPassagesCSV()" style="padding:.35rem .8rem;border-radius:7px;background:rgba(176,125,46,.1);border:1px solid rgba(176,125,46,.25);color:var(--gold);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif">⬇ Export CSV DUERP</button>
         <button onclick="closePassagesModal()" style="padding:.35rem .7rem;border-radius:7px;background:transparent;border:1px solid rgba(0,0,0,.12);color:var(--muted);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif">✕</button>
@@ -487,24 +405,35 @@
     <div class="modal-footer">Données conservées en base · utilisables pour le rapport DUERP</div>
   </div>
 </div>
-
 <script>
 var BASE_400={siege:{absenteisme:511056,presenteisme:235872,turnover:485376,accidents:32000},industrie:{absenteisme:369787,presenteisme:493200,turnover:217980,accidents:32000}};
 var CTP_BASE={siege:{am:17500,im:6250,maint:2100,form:1960,com:2970,anim:2000},industrie:{am:17500,im:6500,maint:2100,form:1960,com:2970,anim:1970}};
 var SURF_OPT={A:15,B:25,C:40};
-var SCENARIOS=[{label:'-5% pessimiste',rate:0.05},{label:'-10% médian',rate:0.10},{label:'-15% optimiste',rate:0.15}];
-var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitigé',adopt:30},{id:'l',label:'Libre',adopt:65},{id:'e',label:'Encouragé',adopt:90}];
+var SCENARIOS=[{label:'-5% pessimiste',rate:0.05},{label:'-10% m\u00e9dian',rate:0.10},{label:'-15% optimiste',rate:0.15}];
+var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitig\u00e9',adopt:30},{id:'l',label:'Libre',adopt:65},{id:'e',label:'Encourag\u00e9',adopt:90}];
+var MOOD_ICONS={'\u00c9puis\u00e9':'\ud83d\ude2e\u200d\ud83d\udca8','Neutre':'\ud83d\ude10','Mieux':'\ud83d\ude42','Recharg\u00e9':'\u2728'};
+var MOOD_COLORS={'\u00c9puis\u00e9':'192,57,43','Neutre':'106,96,112','Mieux':'176,125,46','Recharg\u00e9':'45,107,66'};
+var MOODS_ORDER=['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'];
 var currentSite=null,currentPeriod='today',sites=[],realSeancesTotal=0,roiBuilt=false;
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
 var sensorSite=null,sensorPeriod='today',sensorTimer=null;
-var qvctSite=null,qvctPeriod='month';
+var qvctSite=null,qvctPeriod='month',_qD={},_qS={};
 
 function eur(n){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n)}
 function fnum(n){return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(n)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function fmtDuree(s){if(!s||s<0)return '—';if(s<60)return s+'s';var m=Math.floor(s/60),r=s%60;return m+'min'+(r>0?' '+r+'s':'')}
+function fmtD(s){if(!s||s<0)return '\u2014';if(s<60)return s+'s';var m=Math.floor(s/60),r=s%60;return m+'min'+(r>0?' '+r+'s':'')}
+
+// effectif localStorage
+function getEff(){return parseInt(localStorage.getItem('beotop_sal_'+(qvctSite||''))||'0')||0}
+function onEffectifChange(){
+  var v=parseInt(document.getElementById('q-nb-sal').value)||0;
+  if(qvctSite&&v>0){localStorage.setItem('beotop_sal_'+qvctSite,String(v));var s=document.getElementById('q-sal-saved');s.style.display='inline';setTimeout(function(){s.style.display='none'},2000)}
+  renderQvct();
+}
+function loadEffInp(){document.getElementById('q-nb-sal').value=getEff()||''}
 
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
@@ -524,98 +453,85 @@ async function init(){
   if(!me){window.location.href='/login';return}
   document.getElementById('user-name').textContent=me.nom||me.email;
   var data=await fetch('/api/client/sites',{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return[]});
-  sites=data;
-  buildSiteBar();
+  sites=data;buildSiteBar();
   if(sites.length){currentSite=sites[0].slug;sensorSite=sites[0].slug;qvctSite=sites[0].slug;updateActiveChip()}
   loadStats();
-  document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin · tous les sites':sites.length+' site(s)';
+  document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin \u00b7 tous les sites':sites.length+' site(s)';
 }
 
 function buildSiteBar(){
   var bar=document.getElementById('site-bar');bar.innerHTML='';
   if(sites.length>1){var all=document.createElement('div');all.className='site-chip'+(currentSite===null?' active':'');all.textContent='Tous les sites';all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};bar.appendChild(all)}
-  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' · '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats()};bar.appendChild(c)});
+  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats()};bar.appendChild(c)});
   var sel=document.createElement('select');sel.className='period-sel';
   sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats()};bar.appendChild(sel);
 }
-
 function updateActiveChip(){document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll)})}
 
 async function loadStats(){
-  var url='/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:'');
-  var d=await fetch(url,{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
+  var d=await fetch('/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:''),{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
   realSeancesTotal=d.total_seances||0;
   document.getElementById('kpi-total').textContent=fnum(realSeancesTotal);
-  var pLabels={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
-  document.getElementById('kpi-period-label').textContent=pLabels[currentPeriod]||'';
-  document.getElementById('kpi-top-dept').textContent=d.by_departement&&d.by_departement[0]?d.by_departement[0].label:'—';
-  document.getElementById('kpi-top-at').textContent=d.by_atelier&&d.by_atelier[0]?d.by_atelier[0].atelier:'—';
-  document.getElementById('kpi-top-mood').textContent=d.by_mood&&d.by_mood[0]?d.by_mood[0].mood:'—';
+  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
+  document.getElementById('kpi-period-label').textContent=pL[currentPeriod]||'';
+  document.getElementById('kpi-top-dept').textContent=d.by_departement&&d.by_departement[0]?d.by_departement[0].label:'\u2014';
+  document.getElementById('kpi-top-at').textContent=d.by_atelier&&d.by_atelier[0]?d.by_atelier[0].atelier:'\u2014';
+  document.getElementById('kpi-top-mood').textContent=d.by_mood&&d.by_mood[0]?d.by_mood[0].mood:'\u2014';
   renderBars('chart-depts',d.by_departement||[],'label','n','var(--gold)');
   renderBars('chart-ateliers',(d.by_atelier||[]).map(function(x){return{label:x.atelier,n:x.n}}),'label','n','var(--mist)');
   var moodEl=document.getElementById('chart-mood');moodEl.innerHTML='';
   var tot=(d.by_mood||[]).reduce(function(s,m){return s+m.n},0);
-  var icons={'\u00c9puis\u00e9':'😮‍💨','Neutre':'😐','Mieux':'🙂','Recharg\u00e9':'✨'};
-  (d.by_mood||[]).forEach(function(m){var p=tot?Math.round(m.n/tot*100):0;moodEl.innerHTML+='<div class="mood-pill">'+(icons[m.mood]||'')+'&nbsp;'+m.mood+'&nbsp;<span class="mood-pct">'+p+'%</span></div>'});
+  (d.by_mood||[]).forEach(function(m){var p=tot?Math.round(m.n/tot*100):0;moodEl.innerHTML+='<div class="mood-pill">'+(MOOD_ICONS[m.mood]||'')+'&nbsp;'+m.mood+'&nbsp;<span class="mood-pct">'+p+'%</span></div>'});
   var hoursEl=document.getElementById('chart-hours');hoursEl.innerHTML='';
   var maxH=Math.max(1,Math.max.apply(null,(d.by_hour||[]).map(function(h){return h.n}).concat([0])));
-  for(var h=7;h<=20;h++){var found=(d.by_hour||[]).find(function(x){return parseInt(x.h)===h});var n=found?found.n:0;var op=n===0?0.04:0.1+(n/maxH)*0.7;var cell=document.createElement('div');cell.className='hour-cell';cell.title=String(h).padStart(2,'0')+'h · '+n+' séance(s)';cell.style.background='rgba(176,125,46,'+op.toFixed(2)+')';cell.textContent=String(h).padStart(2,'0');hoursEl.appendChild(cell)}
+  for(var h=7;h<=20;h++){var f=(d.by_hour||[]).find(function(x){return parseInt(x.h)===h});var n=f?f.n:0;var op=n===0?0.04:0.1+(n/maxH)*0.7;var cell=document.createElement('div');cell.className='hour-cell';cell.title=String(h).padStart(2,'0')+'h \u00b7 '+n+' s\u00e9ance(s)';cell.style.background='rgba(176,125,46,'+op.toFixed(2)+')';cell.textContent=String(h).padStart(2,'0');hoursEl.appendChild(cell)}
   renderSparkline(d.by_day||[]);
 }
-
-function renderBars(id,data,lk,vk,color){var el=document.getElementById(id);if(!data.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Aucune donnée</div>';return}var max=Math.max.apply(null,data.map(function(d){return d[vk]}).concat([1]));el.innerHTML=data.slice(0,7).map(function(d){var p=Math.round(d[vk]/max*100);return '<div class="bar-item"><div class="bar-label">'+d[lk]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:'+color+'"></div></div><div class="bar-n">'+d[vk]+'</div></div>'}).join('')}
-
+function renderBars(id,data,lk,vk,color){var el=document.getElementById(id);if(!data.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Aucune donn\u00e9e</div>';return}var max=Math.max.apply(null,data.map(function(d){return d[vk]}).concat([1]));el.innerHTML=data.slice(0,7).map(function(d){var p=Math.round(d[vk]/max*100);return '<div class="bar-item"><div class="bar-label">'+d[lk]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:'+color+'"></div></div><div class="bar-n">'+d[vk]+'</div></div>'}).join('')}
 function renderSparkline(byDay){var svg=document.getElementById('sparkline');if(!byDay.length){svg.innerHTML='';return}var max=Math.max.apply(null,byDay.map(function(d){return d.n}).concat([1]));var w=600,h=60,pad=4,n=byDay.length;var pts=byDay.map(function(d,i){return[pad+(i/(n-1||1))*(w-2*pad),h-pad-(d.n/max)*(h-2*pad)]});var path=pts.map(function(p,i){return(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ');var fill=path+' L'+pts[pts.length-1][0]+','+h+' L'+pts[0][0]+','+h+' Z';svg.innerHTML='<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b07d2e" stop-opacity=".3"/><stop offset="100%" stop-color="#b07d2e" stop-opacity="0"/></linearGradient></defs><path d="'+fill+'" fill="url(#sg)"/><path d="'+path+'" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linejoin="round"/>'+pts.map(function(p){return'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.5" fill="#b07d2e" opacity=".8"/>'}).join('')}
-
 function exportCSV(){var today=new Date().toISOString().slice(0,10);window.open('/api/export?from=2025-01-01&to='+today+(currentSite?'&site='+currentSite:''),'_blank')}
 
+// CAPTEURS
 function buildSensorBar(){
   var bar=document.getElementById('sensor-site-bar');bar.innerHTML='';
   if(!sensorSite&&sites.length)sensorSite=sites[0].slug;
-  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(sensorSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' · '+s.ville:'');c.onclick=function(){sensorSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadSensorStats()};bar.appendChild(c)});
-  var sel=document.createElement('select');sel.className='period-sel';
-  sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option>";
+  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(sensorSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){sensorSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadSensorStats()};bar.appendChild(c)});
+  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option>";
   sel.onchange=function(){sensorPeriod=this.value;loadSensorStats()};bar.appendChild(sel);
 }
-
 async function loadSensorStats(){
   if(!sensorSite){showSensorEmpty();return}
   var d=await fetch('/api/sensors/stats?site_slug='+sensorSite+'&period='+sensorPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
   if(!d){showSensorEmpty();return}
   document.getElementById('s-kpi-passages').textContent=fnum(d.total_passages||0);
-  document.getElementById('s-kpi-passages-sub').textContent='~'+Math.round((d.total_passages||0)/2)+' personnes estimées';
-  var occ=d.occupation_par_atelier||[];
-  var tauxMoy=occ.length?Math.round(occ.reduce(function(s,a){return s+a.taux_occupation},0)/occ.length):null;
-  document.getElementById('s-kpi-taux').textContent=tauxMoy!==null?(tauxMoy+'%'):'—';
-  var sess=d.sessions_par_atelier||[];
-  var totalSess=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
-  var allDurees=sess.filter(function(a){return a.duree_moy_sec}).map(function(a){return a.duree_moy_sec});
-  var dureeGlobale=allDurees.length?Math.round(allDurees.reduce(function(a,b){return a+b},0)/allDurees.length):null;
-  document.getElementById('s-kpi-duree').textContent=dureeGlobale?fmtDuree(dureeGlobale):'—';
+  document.getElementById('s-kpi-passages-sub').textContent='~'+Math.round((d.total_passages||0)/2)+' personnes estim\u00e9es';
+  var occ=d.occupation_par_atelier||[];var tauxMoy=occ.length?Math.round(occ.reduce(function(s,a){return s+a.taux_occupation},0)/occ.length):null;
+  document.getElementById('s-kpi-taux').textContent=tauxMoy!==null?(tauxMoy+'%'):'\u2014';
+  var sess=d.sessions_par_atelier||[];var totalSess=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
+  var allD=sess.filter(function(a){return a.duree_moy_sec}).map(function(a){return a.duree_moy_sec});
+  var dureeG=allD.length?Math.round(allD.reduce(function(a,b){return a+b},0)/allD.length):null;
+  document.getElementById('s-kpi-duree').textContent=dureeG?fmtD(dureeG):'\u2014';
   document.getElementById('s-kpi-duree-sub').textContent=sess.length?'sur '+sess.length+' atelier(s)':'aucune session';
   document.getElementById('s-kpi-sessions').textContent=fnum(totalSess);
   var occEl=document.getElementById('s-ateliers-occ');
-  if(!occ.length){occEl.innerHTML='<div class="sensor-empty">Aucune donnée capteur PIR</div>'}
+  if(!occ.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
   else{occEl.innerHTML=occ.map(function(a){var col=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+col+'"></div></div></div><div class="atelier-taux" style="color:'+col+'">'+a.taux_occupation+'%</div></div>'}).join('')}
-  var dureeEl=document.getElementById('s-ateliers-duree');
-  if(!sess.length){dureeEl.innerHTML='<div class="sensor-empty">Aucune session enregistrée</div>'}
-  else{var maxD=Math.max.apply(null,sess.map(function(a){return a.duree_moy_sec||0}).concat([1]));dureeEl.innerHTML=sess.map(function(a){var d2=a.duree_moy_sec||0;var p=Math.round(d2/maxD*100);return '<div class="atelier-row"><div class="atelier-name">'+(a.atelier||'Global')+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtDuree(d2)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">×'+a.nb_sessions+'</div></div>'}).join('')}
-  renderSensorHourChart(d.passages_par_heure||[]);
+  var dEl=document.getElementById('s-ateliers-duree');
+  if(!sess.length){dEl.innerHTML='<div class="sensor-empty">Aucune session enregistr\u00e9e</div>'}
+  else{var mD=Math.max.apply(null,sess.map(function(a){return a.duree_moy_sec||0}).concat([1]));dEl.innerHTML=sess.map(function(a){var d2=a.duree_moy_sec||0;var p=Math.round(d2/mD*100);return '<div class="atelier-row"><div class="atelier-name">'+(a.atelier||'Global')+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtD(d2)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">\u00d7'+a.nb_sessions+'</div></div>'}).join('')}
+  renderSensorHC(d.passages_par_heure||[]);
   await loadRecentPassages();
-  var now=new Date();document.getElementById('s-last-update').textContent='Mis à jour à '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  var now=new Date();document.getElementById('s-last-update').textContent='Mis \u00e0 jour \u00e0 '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
 }
-
 async function loadRecentPassages(){
-  var list=document.getElementById('s-passages-list');
-  list.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Chargement...</div>';
+  var list=document.getElementById('s-passages-list');list.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Chargement...</div>';
   var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=20',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-  if(!d||!d.passages||!d.passages.length){list.innerHTML='<div class="sensor-empty">Aucun passage enregistré</div>';return}
+  if(!d||!d.passages||!d.passages.length){list.innerHTML='<div class="sensor-empty">Aucun passage enregistr\u00e9</div>';return}
   var today=new Date().toISOString().slice(0,10);
-  list.innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var label=date===today?heure:date+' '+heure;return '<div class="passage-item"><div class="passage-heure">'+label+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div></div>'}).join('');
+  list.innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var label=date===today?heure:date+' '+heure;return '<div class="passage-item"><div class="passage-heure">'+label+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'\u2197 Entr\u00e9e':dir==='sortie'?'\u2199 Sortie':'\u2194 Passage')+'</div></div>'}).join('');
 }
-
-function renderSensorHourChart(pph){
+function renderSensorHC(pph){
   var el=document.getElementById('s-chart-heures');var lbl=document.getElementById('s-chart-heures-labels');if(!el)return;
   var heures=[];for(var h=7;h<=20;h++)heures.push(h);
   var data={};(pph||[]).forEach(function(r){data[parseInt(r.h)]=r.n});
@@ -623,202 +539,217 @@ function renderSensorHourChart(pph){
   el.innerHTML=heures.map(function(h){var n=data[h]||0;var p=Math.round(n/max*100);var col=n===0?'rgba(0,0,0,.07)':n>=max*0.7?'var(--sage)':n>=max*0.4?'var(--gold)':'var(--mist)';return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px">'+(n>0?'<div style="font-size:.52rem;color:var(--muted2)">'+n+'</div>':'')+'<div style="width:100%;border-radius:4px 4px 0 0;background:'+col+';height:'+Math.max(p,4)+'%"></div></div>'}).join('');
   lbl.innerHTML=heures.map(function(h){return '<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}).join('');
 }
-
-function showSensorEmpty(){['s-kpi-passages','s-kpi-taux','s-kpi-duree','s-kpi-sessions'].forEach(function(id){document.getElementById(id).textContent='—'});['s-ateliers-occ','s-ateliers-duree','s-passages-list'].forEach(function(id){document.getElementById(id).innerHTML='<div class="sensor-empty">Sélectionnez un site</div>'})}
+function showSensorEmpty(){['s-kpi-passages','s-kpi-taux','s-kpi-duree','s-kpi-sessions'].forEach(function(id){document.getElementById(id).textContent='\u2014'});['s-ateliers-occ','s-ateliers-duree','s-passages-list'].forEach(function(id){document.getElementById(id).innerHTML='<div class="sensor-empty">S\u00e9lectionnez un site</div>'})}
 function startAutoRefresh(){stopAutoRefresh();sensorTimer=setInterval(function(){if(document.getElementById('view-capteurs').classList.contains('active'))loadSensorStats()},30000)}
 function stopAutoRefresh(){if(sensorTimer){clearInterval(sensorTimer);sensorTimer=null}}
-
 async function openPassagesModal(){
   var modal=document.getElementById('passages-modal');modal.style.display='flex';
-  document.getElementById('modal-title').textContent='Chargement...';
-  document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Chargement...</div>';
+  document.getElementById('modal-title').textContent='Chargement...';document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Chargement...</div>';
   var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=200',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-  var pLabels={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
-  document.getElementById('modal-title').textContent=(pLabels[sensorPeriod]||'')+' — '+(d?d.total:0)+' passage(s)';
-  if(!d||!d.passages||!d.passages.length){document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistré</div>';return}
+  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
+  document.getElementById('modal-title').textContent=(pL[sensorPeriod]||'')+' \u2014 '+(d?d.total:0)+' passage(s)';
+  if(!d||!d.passages||!d.passages.length){document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistr\u00e9</div>';return}
   var today=new Date().toISOString().slice(0,10);
-  document.getElementById('modal-passages-list').innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var isToday=date===today;return '<div class="modal-passage-item"><div style="font-size:.68rem;color:var(--muted);width:'+(isToday?'55px':'130px')+';flex-shrink:0">'+(isToday?heure:date+' '+heure)+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div></div>'}).join('');
+  document.getElementById('modal-passages-list').innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var isT=date===today;return '<div class="modal-passage-item"><div style="font-size:.68rem;color:var(--muted);width:'+(isT?'55px':'130px')+';flex-shrink:0">'+(isT?heure:date+' '+heure)+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'\u2197 Entr\u00e9e':dir==='sortie'?'\u2199 Sortie':'\u2194 Passage')+'</div></div>'}).join('');
 }
-
 function closePassagesModal(){document.getElementById('passages-modal').style.display='none'}
 function exportPassagesCSV(){var today=new Date().toISOString().slice(0,10);var from=sensorPeriod==='today'?today:sensorPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):sensorPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/sensors/passages/export?site_slug='+sensorSite+'&from='+from+'&to='+today,'_blank')}
 
+// QVCT
 function buildQvctBar(){
   var bar=document.getElementById('qvct-site-bar');bar.innerHTML='';
   if(!qvctSite&&sites.length)qvctSite=sites[0].slug;
-  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(qvctSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' · '+s.ville:'');c.onclick=function(){qvctSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadQvct()};bar.appendChild(c)});
-  var sel=document.createElement('select');sel.className='period-sel';
-  sel.innerHTML="<option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='year'>12 mois</option>";
-  sel.onchange=function(){qvctPeriod=this.value;loadQvct()};bar.appendChild(sel);
+  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(qvctSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){qvctSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadEffInp();loadQvct()};bar.appendChild(c)});
+  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='year'>12 mois</option>";
+  sel.value=qvctPeriod;sel.onchange=function(){qvctPeriod=this.value;loadQvct()};bar.appendChild(sel);
+  loadEffInp();
 }
-
 async function loadQvct(){
   if(!qvctSite)return;
   var dk=await fetch('/api/stats?period='+qvctPeriod+'&site='+qvctSite,{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{}});
   var dc=await fetch('/api/sensors/stats?site_slug='+qvctSite+'&period='+qvctPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return{}});
-
+  _qD=dk;_qS=dc;renderQvct();
+}
+function renderQvct(){
+  var dk=_qD,dc=_qS,nbSal=getEff();
   var total=dk.total_seances||0;
-  var byMood=dk.by_mood||[];
-  var byDept=dk.by_departement||[];
-  var byAtelier=dk.by_atelier||[];
-  var byDay=dk.by_day||[];
-  var sessions=dc.sessions_par_atelier||[];
+  var byMood=dk.by_mood||[];var byDept=dk.by_departement||[];var byAt=dk.by_atelier||[];
+  var byDay=dk.by_day||[];var byHour=dk.by_hour||[];var byDeptMood=dk.by_departement_mood||[];
+  var sess=dc.sessions_par_atelier||[];
 
-  // Indice de récupération
-  var totMood=byMood.reduce(function(s,m){return s+m.n},0);
-  var positifs=byMood.filter(function(m){return m.mood==='Rechargé'||m.mood==='Mieux'}).reduce(function(s,m){return s+m.n},0);
-  var indice=totMood>0?Math.round(positifs/totMood*100):null;
+  // indice
+  var totM=byMood.reduce(function(s,m){return s+m.n},0);
+  var pos=byMood.filter(function(m){return m.mood==='Recharg\u00e9'||m.mood==='Mieux'}).reduce(function(s,m){return s+m.n},0);
+  var indice=totM>0?Math.round(pos/totM*100):null;
   var indEl=document.getElementById('q-indice');
-  if(indice!==null){
-    indEl.textContent=indice+'%';
-    if(indice>=70){indEl.className='qvct-big good';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge green">✓ Niveau satisfaisant</span>'}
-    else if(indice>=50){indEl.className='qvct-big medium';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge amber">~ À surveiller</span>'}
-    else{indEl.className='qvct-big low';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge red">⚠ Attention requise</span>'}
-  } else {indEl.textContent='—';indEl.className='qvct-big'}
+  if(indice!==null){indEl.textContent=indice+'%';if(indice>=70){indEl.className='qvct-big good';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge green">\u2713 Niveau satisfaisant</span>'}else if(indice>=50){indEl.className='qvct-big medium';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge amber">~ \u00c0 surveiller</span>'}else{indEl.className='qvct-big low';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge red">\u26a0 Attention requise</span>'}}
+  else{indEl.textContent='\u2014';indEl.className='qvct-big';document.getElementById('q-indice-badge').innerHTML=''}
 
-  // Taux de pénétration
-  var siteInfo=sites.find(function(s){return s.slug===qvctSite});
-  var nbSal=siteInfo&&siteInfo.nb_salaries?siteInfo.nb_salaries:0;
-  if(nbSal>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=total+' séances / '+nbSal+' collaborateurs'}
-  else{document.getElementById('q-penetration').textContent=total+' séances';document.getElementById('q-penetration-sub').textContent='Renseignez le nb de salariés dans admin'}
+  // pénétration
+  if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=total+' s\u00e9ances / '+nbSal+' collaborateurs'}
+  else{document.getElementById('q-penetration').textContent=total>0?fnum(total)+' s\u00e9.':'\u2014';document.getElementById('q-penetration-sub').textContent=nbSal===0?'\u2191 Renseignez l\'effectif ci-dessus':'Aucune donn\u00e9e'}
 
-  // Durée totale
-  var dureeTotSec=sessions.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
-  var dureeTotH=Math.round(dureeTotSec/3600*10)/10;
-  document.getElementById('q-duree-totale').textContent=dureeTotH>0?(dureeTotH+'h'):'—';
+  // durée totale
+  var dTotSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
+  if(dTotSec===0&&total>0)dTotSec=total*15*60;
+  var dTotH=Math.round(dTotSec/3600*10)/10;
+  document.getElementById('q-duree-totale').textContent=dTotH>0?(dTotH+'h'):'\u2014';
 
-  // Projection annuelle
-  var facteur={week:52,month:12,year:1}[qvctPeriod]||12;
-  document.getElementById('q-projection').textContent=total>0?fnum(Math.round(total*facteur)):'—';
+  // projection
+  var fac={week:52,month:12,year:1}[qvctPeriod]||12;
+  var proj=total>0?Math.round(total*fac):0;
+  document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
 
-  // Fréquence
-  if(nbSal>0&&total>0){document.getElementById('q-frequence').textContent=Math.round(total/nbSal*10)/10+'×';document.getElementById('q-frequence-sub').textContent='usage moyen par collaborateur'}
-  else{document.getElementById('q-frequence').textContent='—'}
+  // fréquence
+  if(nbSal>0&&total>0){document.getElementById('q-frequence').textContent=(Math.round(total/nbSal*10)/10)+'x';document.getElementById('q-frequence-sub').textContent='usage moyen par collaborateur'}
+  else{document.getElementById('q-frequence').textContent='\u2014';document.getElementById('q-frequence-sub').textContent='effectif non renseign\u00e9'}
 
-  // Atelier phare
-  if(byAtelier.length){document.getElementById('q-pointe').textContent=byAtelier[0].atelier;document.getElementById('q-pointe-sub').textContent=byAtelier[0].n+' séances enregistrées'}
+  // atelier phare
+  if(byAt.length){var pctAt=total>0?Math.round(byAt[0].n/total*100):0;document.getElementById('q-pointe').textContent=byAt[0].atelier;document.getElementById('q-pointe-sub').textContent=byAt[0].n+' s\u00e9ances \u00b7 '+pctAt+'% de l\'activit\u00e9'}
+  else{document.getElementById('q-pointe').textContent='\u2014';document.getElementById('q-pointe-sub').textContent='le plus utilis\u00e9 sur la p\u00e9riode'}
 
-  // Ressenti par département
-  var crossMood=document.getElementById('q-cross-dept-mood');
-  var moodIcons={'Rechargé':'✨','Mieux':'🙂','Neutre':'😐','Épuisé':'😮‍💨'};
-  var topMood=byMood.length?byMood[0].mood:'—';
-  if(!byDept.length){crossMood.innerHTML='<div class="sensor-empty">Données insuffisantes</div>'}
-  else{crossMood.innerHTML='<table class="cross-table"><thead><tr><th>Département</th><th>Séances</th><th>Mood global</th></tr></thead><tbody>'+byDept.slice(0,6).map(function(d){return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td>'+(moodIcons[topMood]||'')+' '+topMood+'</td></tr>'}).join('')+'</tbody></table>'}
+  // mood distribution
+  var mDE=document.getElementById('q-mood-dist');
+  if(!byMood.length){mDE.innerHTML='<div class="sensor-empty">Aucun ressenti enregistr\u00e9</div>'}
+  else{var mMax=Math.max.apply(null,byMood.map(function(m){return m.n}).concat([1]));mDE.innerHTML=MOODS_ORDER.map(function(mood){var f=byMood.find(function(m){return m.mood===mood});var n=f?f.n:0;var pct=totM>0?Math.round(n/totM*100):0;var col=MOOD_COLORS[mood]||'176,125,46';return '<div class="mood-dist-row"><div class="mood-dist-icon">'+(MOOD_ICONS[mood]||'')+'</div><div class="mood-dist-lbl">'+mood+'</div><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:'+Math.round(n/mMax*100)+'%;--bar-color:rgba('+col+',.8)"></div></div><div class="mood-dist-pct">'+pct+'%</div></div>'}).join('')}
 
-  // Part par département
-  var crossPart=document.getElementById('q-cross-dept-part');
-  if(!byDept.length){crossPart.innerHTML='<div class="sensor-empty">Données insuffisantes</div>'}
-  else{crossPart.innerHTML='<table class="cross-table"><thead><tr><th>Département</th><th>Séances</th><th>Part</th></tr></thead><tbody>'+byDept.slice(0,6).map(function(d){var p=total>0?Math.round(d.n/total*100):0;return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td><div class="bar-track" style="width:60px;display:inline-block;vertical-align:middle"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--gold)"></div></div> '+p+'%</td></tr>'}).join('')+'</tbody></table>'}
+  // ateliers part
+  var aPE=document.getElementById('q-ateliers-part');
+  if(!byAt.length){aPE.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>'}
+  else{var mAt=Math.max.apply(null,byAt.map(function(a){return a.n}).concat([1]));aPE.innerHTML=byAt.slice(0,6).map(function(a){var pct=total>0?Math.round(a.n/total*100):0;return '<div class="bar-item"><div class="bar-label">'+a.atelier+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(a.n/mAt*100)+'%;--bar-color:var(--mist)"></div></div><div class="bar-n">'+pct+'%</div></div>'}).join('')}
 
-  // Evolution
-  var evolEl=document.getElementById('q-evolution');
-  if(byDay.length<4){evolEl.innerHTML='<div class="sensor-empty">Sélectionnez 30 jours ou 12 mois</div>'}
-  else{
-    var mid=Math.floor(byDay.length/2);
-    var p1=byDay.slice(0,mid).reduce(function(s,d){return s+d.n},0);
-    var p2=byDay.slice(mid).reduce(function(s,d){return s+d.n},0);
-    var delta=p2-p1;
-    var pct=p1>0?Math.round(delta/p1*100):0;
-    var col=delta>0?'var(--sage)':delta<0?'var(--red)':'var(--muted)';
-    var arrow=delta>0?'↑ ':delta<0?'↓ ':'→ ';
-    evolEl.innerHTML=
-      '<div class="trend-row"><div class="trend-label">Première moitié de période</div><div class="trend-val">'+p1+' séances</div></div>'+
-      '<div class="trend-row"><div class="trend-label">Seconde moitié de période</div><div class="trend-val" style="color:'+col+'">'+arrow+p2+' séances</div></div>'+
-      '<div style="margin-top:.8rem;font-size:.65rem;color:'+col+'">'+arrow+(pct>0?'+':'')+pct+'% — '+(delta>0?'Progression de l\'usage':delta<0?'Baisse à surveiller':'Usage stable')+'</div>'
+  // heatmap horaire
+  var hE=document.getElementById('q-heures-chart');var hL=document.getElementById('q-heures-labels');
+  var hD={};(byHour||[]).forEach(function(r){hD[parseInt(r.h)]=r.n});
+  var hMax=Math.max.apply(null,Object.values(hD).concat([1]));
+  var hH='',lH='';
+  for(var h=7;h<=20;h++){var hn=hD[h]||0;var hp=Math.round(hn/hMax*100);var hc=hn===0?'rgba(0,0,0,.07)':hn>=hMax*0.7?'var(--sage)':hn>=hMax*0.4?'var(--gold)':'var(--mist)';hH+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">'+(hn>0?'<span style="font-size:.48rem;color:var(--muted2)">'+hn+'</span>':'')+'<div style="width:100%;border-radius:3px 3px 0 0;background:'+hc+';height:'+Math.max(hp,4)+'%"></div></div>';lH+='<div style="flex:1;text-align:center;font-size:.48rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}
+  hE.innerHTML=hH;hL.innerHTML=lH;
+
+  // ressenti par département — gestion des deux cas (avec/sans by_departement_mood)
+  var cME=document.getElementById('q-cross-dept-mood');
+  var topMood=byMood.length?byMood[0].mood:'\u2014';
+  var topIcon=MOOD_ICONS[topMood]||'';
+  if(!byDept.length){cME.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes</div>'}
+  else if(byDeptMood.length){
+    // API retourne by_departement_mood : affichage croisé réel
+    var depts=[...new Set(byDeptMood.map(function(r){return r.departement}))].slice(0,7);
+    var html='<table class="cross-table"><thead><tr><th>D\u00e9partement</th>';
+    ['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'].forEach(function(m){html+='<th style="text-align:center">'+m+'</th>'});
+    html+='</tr></thead><tbody>';
+    depts.forEach(function(dept){
+      html+='<tr><td>'+dept+'</td>';
+      ['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'].forEach(function(mood){
+        var r=byDeptMood.find(function(x){return x.departement===dept&&x.mood===mood});
+        var n=r?r.n:0;
+        var col=MOOD_COLORS[mood]||'176,125,46';
+        var op=n===0?0:0.15+Math.min(n/10,0.7);
+        html+='<td style="text-align:center"><span style="background:rgba('+col+','+op+');padding:.1rem .4rem;border-radius:4px;font-size:.65rem">'+(n>0?n:'\u2014')+'</span></td>';
+      });
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    cME.innerHTML=html;
+  } else {
+    // API ne retourne pas encore by_departement_mood : mood global par département
+    cME.innerHTML='<table class="cross-table"><thead><tr><th>D\u00e9partement</th><th>S\u00e9ances</th><th>Mood global site</th></tr></thead><tbody>'+
+      byDept.slice(0,7).map(function(d){return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td>'+topIcon+' '+topMood+'</td></tr>'}).join('')+
+      '</tbody></table>'+
+      '<div style="font-size:.56rem;color:var(--muted);margin-top:.5rem;line-height:1.5">Mood global du site \u00b7 pour un croisement par d\u00e9partement, ajouter <code>by_departement_mood</code> \u00e0 l\'API /stats</div>';
   }
 
-  // Synthèse DUERP
-  var duerp=document.getElementById('q-duerp');
-  duerp.innerHTML=
-    '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal:'Non renseigné')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Séances sur la période</div><div class="trend-val">'+fnum(total)+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Indice de récupération</div><div class="trend-val" style="color:var(--sage)">'+(indice!==null?indice+'%':'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Taux de pénétration</div><div class="trend-val">'+(nbSal>0&&total>0?Math.round(total/nbSal*100)+'%':'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Durée totale récupération</div><div class="trend-val">'+(dureeTotH>0?dureeTotH+'h':'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Atelier phare</div><div class="trend-val">'+(byAtelier.length?byAtelier[0].atelier:'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Département le + actif</div><div class="trend-val">'+(byDept.length?byDept[0].label:'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Mood dominant</div><div class="trend-val">'+(byMood.length?byMood[0].mood:'—')+'</div></div>';
+  // part par département
+  var cPE=document.getElementById('q-cross-dept-part');
+  if(!byDept.length){cPE.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes</div>'}
+  else{cPE.innerHTML='<table class="cross-table"><thead><tr><th>D\u00e9partement</th><th>S\u00e9ances</th><th>Part</th></tr></thead><tbody>'+byDept.slice(0,7).map(function(d){var p=total>0?Math.round(d.n/total*100):0;return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td><div class="bar-track" style="width:65px;display:inline-block;vertical-align:middle"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--gold)"></div></div> <span style="font-size:.65rem">'+p+'%</span></td></tr>'}).join('')+'</tbody></table>'}
+
+  renderQvctWeekBars(byDay);
+
+  // DUERP
+  document.getElementById('q-duerp').innerHTML=
+    '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal+' <span style="font-size:.6rem;color:var(--muted)">salari\u00e9s</span>':'<span style="color:var(--muted)">Non renseign\u00e9</span>')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">S\u00e9ances sur la p\u00e9riode</div><div class="trend-val">'+fnum(total)+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Indice de r\u00e9cup\u00e9ration</div><div class="trend-val" style="color:var(--sage)">'+(indice!==null?(indice+'%'):'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Taux de p\u00e9n\u00e9tration RH</div><div class="trend-val">'+(nbSal>0&&total>0?Math.round(total/nbSal*100)+'%':'Effectif requis')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Dur\u00e9e totale r\u00e9cup\u00e9ration</div><div class="trend-val">'+(dTotH>0?dTotH+'h':'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Projection annuelle</div><div class="trend-val">'+(proj>0?fnum(proj)+' s\u00e9ances':'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Atelier phare</div><div class="trend-val">'+(byAt.length?byAt[0].atelier:'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">D\u00e9partement le + actif</div><div class="trend-val">'+(byDept.length?byDept[0].label:'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Mood dominant</div><div class="trend-val">'+(byMood.length?(MOOD_ICONS[byMood[0].mood]||'')+' '+byMood[0].mood:'\u2014')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Fr\u00e9quence / collaborateur</div><div class="trend-val">'+(nbSal>0&&total>0?(Math.round(total/nbSal*10)/10)+'x par p\u00e9riode':'Effectif requis')+'</div></div>';
 }
 
-function exportQVCT(){var today=new Date().toISOString().slice(0,10);window.open('/api/export?from=2025-01-01&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
-
-function setContext(ctx){
-  ROI.ctx=ctx;
-  document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');
-  document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');
-  var b=BASE_400[ctx];
-  document.getElementById('ctx-note').textContent=(ctx==='siege'?'Siège social':'Site industriel')+' · bases adressables : absentéisme '+eur(b.absenteisme)+' · présentéisme '+eur(b.presenteisme)+' · turnover '+eur(b.turnover);
-  document.getElementById('daf-im-hint').textContent=ctx==='siege'?'Défaut siège : 6 250 €':'Défaut industrie : 6 500 €';
-  if(DRH.source!=='default'){if(window.confirm('Changer le type de site réinitialise les données RH saisies. Continuer ?'))resetDRH();else return}
-  updateDRHGrid();calcROI();
+function renderQvctWeekBars(byDay){
+  var bEl=document.getElementById('q-week-bars'),lEl=document.getElementById('q-week-labels'),sEl=document.getElementById('q-evolution-summary');
+  if(!byDay||byDay.length<4){bEl.innerHTML='';lEl.innerHTML='';sEl.textContent='S\u00e9lectionnez 30 jours ou 12 mois pour voir la tendance';return}
+  var weeks={};
+  byDay.forEach(function(d){var key=d.date||d.day||d.jour||'';if(!key)return;var dt=new Date(key);if(isNaN(dt))return;var dow=dt.getDay();var mon=new Date(dt);mon.setDate(dt.getDate()-(dow===0?6:dow-1));var wk=mon.toISOString().slice(0,10);weeks[wk]=(weeks[wk]||0)+d.n});
+  var wK=Object.keys(weeks).sort(),wV=wK.map(function(k){return weeks[k]});
+  if(!wV.length){bEl.innerHTML='';lEl.innerHTML='';sEl.textContent='';return}
+  var wM=Math.max.apply(null,wV.concat([1]));
+  bEl.innerHTML=wV.map(function(v,i){var pct=Math.round(v/wM*100);var isL=i===wV.length-1;return '<div class="week-bar-wrap"><span class="week-val">'+v+'</span><div class="week-bar" style="height:'+Math.max(pct,4)+'%;background:'+(isL?'var(--sage)':'var(--gold)')+';opacity:'+(isL?'1':'.6')+'"></div></div>'}).join('');
+  lEl.innerHTML=wK.map(function(k,i){var dt=new Date(k);return '<div class="week-lbl">S'+(i+1)+'<br>'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'}).join('');
+  if(wV.length>=2){var first=wV[0],last=wV[wV.length-1],delta=last-first;var pct=first>0?Math.round(delta/first*100):0;var col=delta>0?'var(--sage)':delta<0?'var(--red)':'var(--muted)';sEl.innerHTML='<span style="color:'+col+'">'+(delta>0?'\u2191 ':delta<0?'\u2193 ':'\u2192 ')+(pct>=0?'+':'')+pct+'% sur la p\u00e9riode</span>'+(delta>0?' \u00b7 Progression de l\'usage':delta<0?' \u00b7 Baisse \u00e0 surveiller':' \u00b7 Usage stable')}
+  else{sEl.textContent=''}
 }
 
+function exportQVCT(){var today=new Date().toISOString().slice(0,10);var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
+
+// ROI
+function setContext(ctx){ROI.ctx=ctx;document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');var b=BASE_400[ctx];document.getElementById('ctx-note').textContent=(ctx==='siege'?'Si\u00e8ge social':'Site industriel')+' \u00b7 bases adressables : absent\u00e9isme '+eur(b.absenteisme)+' \u00b7 pr\u00e9sent\u00e9isme '+eur(b.presenteisme)+' \u00b7 turnover '+eur(b.turnover);document.getElementById('daf-im-hint').textContent=ctx==='siege'?'D\u00e9faut si\u00e8ge : 6 250 \u20ac':'D\u00e9faut industrie : 6 500 \u20ac';if(DRH.source!=='default'){if(window.confirm('Changer le type de site r\u00e9initialise les donn\u00e9es RH saisies. Continuer ?'))resetDRH();else return}updateDRHGrid();calcROI()}
 function buildROIControls(){
   if(roiBuilt)return;
-  var surfEl=document.getElementById('surf-pills');
-  ['A','B','C'].forEach(function(opt){var p=document.createElement('div');p.className='pill'+(ROI.surf===opt?' active':'');p.textContent='Option '+opt+' ('+SURF_OPT[opt]+' m²)';p.onclick=function(){ROI.surf=opt;surfEl.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};surfEl.appendChild(p)});
-  var scEl=document.getElementById('sc-pills');
-  SCENARIOS.forEach(function(sc,i){var p=document.createElement('div');p.className='pill'+(ROI.sc===i+1?' active':'');p.textContent=sc.label;p.onclick=function(){ROI.sc=i+1;scEl.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};scEl.appendChild(p)});
-  var poEl=document.getElementById('po-pills');
-  POSTURES.forEach(function(po){var p=document.createElement('div');p.className='pill'+(ROI.po===po.id?' active':'');p.textContent=po.label+' ('+po.adopt+'%)';p.onclick=function(){ROI.po=po.id;poEl.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};poEl.appendChild(p)});
+  var sE=document.getElementById('surf-pills');['A','B','C'].forEach(function(opt){var p=document.createElement('div');p.className='pill'+(ROI.surf===opt?' active':'');p.textContent='Option '+opt+' ('+SURF_OPT[opt]+' m\u00b2)';p.onclick=function(){ROI.surf=opt;sE.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};sE.appendChild(p)});
+  var scE=document.getElementById('sc-pills');SCENARIOS.forEach(function(sc,i){var p=document.createElement('div');p.className='pill'+(ROI.sc===i+1?' active':'');p.textContent=sc.label;p.onclick=function(){ROI.sc=i+1;scE.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};scE.appendChild(p)});
+  var poE=document.getElementById('po-pills');POSTURES.forEach(function(po){var p=document.createElement('div');p.className='pill'+(ROI.po===po.id?' active':'');p.textContent=po.label+' ('+po.adopt+'%)';p.onclick=function(){ROI.po=po.id;poE.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active')});p.classList.add('active');calcROI()};poE.appendChild(p)});
   roiBuilt=true;updateDRHGrid();
 }
-
 function calcCTP(){var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];return{am:DAF.am!==null?DAF.am:base.am,im:(DAF.im!==null?DAF.im:base.im)*(surf/25),maint:DAF.maint!==null?DAF.maint:base.maint,form:DAF.form!==null?DAF.form:base.form,com:DAF.com!==null?DAF.com:base.com,anim:DAF.anim!==null?DAF.anim:base.anim,autres:DAF.autres||0,get total(){return this.am+this.im+this.maint+this.form+this.com+this.anim+this.autres}}}
-
-function updateDRHGrid(){
-  var isReal=DRH.source!=='default';var badge=document.getElementById('drh-badge');badge.className='drh-badge '+(isReal?'real':'default');badge.textContent=isReal?'Données RH réelles':'Valeurs sectorielles (défaut)';
-  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];
-  var inds=[{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}];
-  document.getElementById('drh-grid').innerHTML=inds.map(function(ind){var val=isReal&&DRH[ind.key]!==null?DRH[ind.key]:bases[ind.key]*scale;var cls='';if(isReal&&DRH[ind.key]!==null){var ref=bases[ind.key]*scale;cls=DRH[ind.key]<ref?'improved':DRH[ind.key]>ref?'degraded':''}return '<div class="drh-field '+cls+'"><div class="drh-field-lbl">'+ind.label+'</div><div class="drh-field-val">'+eur(val)+'</div><div class="drh-field-unit">'+(isReal?'Données réelles':'Valeur sectorielle')+'</div></div>'}).join('');
-}
-
-function importDRH(input){var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim()});var data={};lines.forEach(function(line,i){if(i===0)return;var cols=line.split(/[,;|\t]/);if(cols.length<2)return;var key=cols[0].trim().toLowerCase().replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/\s+/g,'_');var val=parseFloat(cols[1].replace(',','.'));if(!isNaN(val))data[key]=val});applyDRHData(data,'import')};reader.readAsText(file);input.value=''}
+function updateDRHGrid(){var isR=DRH.source!=='default';var badge=document.getElementById('drh-badge');badge.className='drh-badge '+(isR?'real':'default');badge.textContent=isR?'Donn\u00e9es RH r\u00e9elles':'Valeurs sectorielles (d\u00e9faut)';var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];document.getElementById('drh-grid').innerHTML=[{key:'absenteisme',label:'Absent\u00e9isme'},{key:'presenteisme',label:'Pr\u00e9sent\u00e9isme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}].map(function(ind){var val=isR&&DRH[ind.key]!==null?DRH[ind.key]:bases[ind.key]*scale;var cls='';if(isR&&DRH[ind.key]!==null){var ref=bases[ind.key]*scale;cls=DRH[ind.key]<ref?'improved':DRH[ind.key]>ref?'degraded':''}return '<div class="drh-field '+cls+'"><div class="drh-field-lbl">'+ind.label+'</div><div class="drh-field-val">'+eur(val)+'</div><div class="drh-field-unit">'+(isR?'Donn\u00e9es r\u00e9elles':'Valeur sectorielle')+'</div></div>'}).join('')}
+function importDRH(input){var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim()});var data={};lines.forEach(function(line,i){if(i===0)return;var cols=line.split(/[,;|\t]/);if(cols.length<2)return;var key=cols[0].trim().toLowerCase().replace(/[\u00e9\u00e8\u00ea]/g,'e').replace(/[\u00e0\u00e2]/g,'a').replace(/\s+/g,'_');var val=parseFloat(cols[1].replace(',','.'));if(!isNaN(val))data[key]=val});applyDRHData(data,'import')};reader.readAsText(file);input.value=''}
 function toggleManualForm(){var f=document.getElementById('manual-form');f.style.display=f.style.display==='block'?'none':'block'}
 function applyManualDRH(){var data={};[['mf-absent','absenteisme'],['mf-pres','presenteisme'],['mf-turn','turnover'],['mf-acc','accidents']].forEach(function(pair){var v=parseFloat(document.getElementById(pair[0]).value);if(!isNaN(v)&&v>=0)data[pair[1]]=v});if(!Object.keys(data).length){alert('Veuillez renseigner au moins un indicateur.');return}applyDRHData(data,'manual');document.getElementById('manual-form').style.display='none'}
 function applyDRHData(data,source){var MAP={'absenteisme':'absenteisme','absentéisme':'absenteisme','presenteisme':'presenteisme','turnover':'turnover','accidents':'accidents','accident_travail':'accidents'};DRH.source=source;Object.keys(data).forEach(function(k){var m=MAP[k];if(m)DRH[m]=data[k]});updateDRHGrid();calcROI()}
 function resetDRH(){DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};['mf-absent','mf-pres','mf-turn','mf-acc'].forEach(function(id){document.getElementById(id).value=''});updateDRHGrid();calcROI()}
-function toggleDAF(){var f=document.getElementById('daf-form-wrapper');var btn=document.getElementById('btn-daf');var open=f.style.display==='block';f.style.display=open?'none':'block';btn.textContent=open?'✎ Modifier':'✕ Fermer';if(!open){var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];document.getElementById('daf-am').value=DAF.am!==null?DAF.am:base.am;document.getElementById('daf-im').value=DAF.im!==null?DAF.im:Math.round(base.im*(surf/25));document.getElementById('daf-maint').value=DAF.maint!==null?DAF.maint:base.maint;document.getElementById('daf-formation').value=DAF.form!==null?DAF.form:base.form;document.getElementById('daf-com').value=DAF.com!==null?DAF.com:base.com;document.getElementById('daf-anim').value=DAF.anim!==null?DAF.anim:base.anim;document.getElementById('daf-autres').value=DAF.autres||0}}
-function applyDAF(){function g(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v}DAF.am=g('daf-am');DAF.im=g('daf-im');DAF.maint=g('daf-maint');DAF.form=g('daf-formation');DAF.com=g('daf-com');DAF.anim=g('daf-anim');DAF.autres=g('daf-autres');document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI()}
-function resetDAF(){DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI()}
+function toggleDAF(){var f=document.getElementById('daf-form-wrapper');var btn=document.getElementById('btn-daf');var open=f.style.display==='block';f.style.display=open?'none':'block';btn.textContent=open?'\u270E Modifier':'\u2715 Fermer';if(!open){var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];document.getElementById('daf-am').value=DAF.am!==null?DAF.am:base.am;document.getElementById('daf-im').value=DAF.im!==null?DAF.im:Math.round(base.im*(surf/25));document.getElementById('daf-maint').value=DAF.maint!==null?DAF.maint:base.maint;document.getElementById('daf-formation').value=DAF.form!==null?DAF.form:base.form;document.getElementById('daf-com').value=DAF.com!==null?DAF.com:base.com;document.getElementById('daf-anim').value=DAF.anim!==null?DAF.anim:base.anim;document.getElementById('daf-autres').value=DAF.autres||0}}
+function applyDAF(){function g(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v}DAF.am=g('daf-am');DAF.im=g('daf-im');DAF.maint=g('daf-maint');DAF.form=g('daf-formation');DAF.com=g('daf-com');DAF.anim=g('daf-anim');DAF.autres=g('daf-autres');document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='\u270E Modifier';calcROI()}
+function resetDAF(){DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='\u270E Modifier';calcROI()}
 
 function calcROI(){
-  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po});var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var isReal=DRH.source!=='default';
+  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po});var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var isR=DRH.source!=='default';
   var gain,decomposition;
-  if(isReal){
+  if(isR){
     var absRef=bases.absenteisme*scale,presRef=bases.presenteisme*scale,turnRef=bases.turnover*scale,accRef=bases.accidents*scale;
     var absReal=DRH.absenteisme!==null?DRH.absenteisme:absRef,presReal=DRH.presenteisme!==null?DRH.presenteisme:presRef,turnReal=DRH.turnover!==null?DRH.turnover:turnRef,accReal=DRH.accidents!==null?DRH.accidents:accRef;
     var eA=Math.max(0,absRef-absReal)*adoption,eP=Math.max(0,presRef-presReal)*adoption,eT=Math.max(0,turnRef-turnReal)*adoption,eAc=Math.max(0,accRef-accReal)*adoption;
     gain=eA+eP+eT+eAc;
-    decomposition='<div class="detail-row"><span>Absentéisme</span><span>'+eur(absRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eA)+'</span></div><div class="detail-row"><span>Présentéisme</span><span>'+eur(presRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eP)+'</span></div><div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eT)+'</span></div><div class="detail-row"><span>Accidents</span><span>'+eur(accRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eAc)+'</span></div><div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>';
+    decomposition='<div class="detail-row"><span>Absent\u00e9isme</span><span>'+eur(absRef)+'</span><span>\u2192</span><span style="color:var(--sage)">'+eur(eA)+'</span></div><div class="detail-row"><span>Pr\u00e9sent\u00e9isme</span><span>'+eur(presRef)+'</span><span>\u2192</span><span style="color:var(--sage)">'+eur(eP)+'</span></div><div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>\u2192</span><span style="color:var(--sage)">'+eur(eT)+'</span></div><div class="detail-row"><span>Accidents</span><span>'+eur(accRef)+'</span><span>\u2192</span><span style="color:var(--sage)">'+eur(eAc)+'</span></div><div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>';
   } else {
     gain=baseTotale*impact;
-    decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div><div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div><div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>';
+    decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div><div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div><div class="detail-row total"><span>Gain estim\u00e9</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>';
   }
   var ctpComp=calcCTP();var ctp=ctpComp.total;var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;
-  document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isReal)});
-  document.getElementById('adoption-note').style.opacity=isReal?'1':'0.4';
-  var roiEl=document.getElementById('roi-pct');roiEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';roiEl.className='roi-big'+(roi<0?' neg':'');
+  document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isR)});
+  document.getElementById('adoption-note').style.opacity=isR?'1':'0.4';
+  var rEl=document.getElementById('roi-pct');rEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';rEl.className='roi-big'+(roi<0?' neg':'');
   document.getElementById('roi-payback').textContent=pb<100?'Retour sur investissement en '+pb.toFixed(1)+' mois':'Gain insuffisant';
-  document.getElementById('roi-seuil').textContent=!isReal?'Seuil de rentabilité : '+(baseTotale>0?(ctp/baseTotale*100).toFixed(2):0)+"% d'impact":'';
-  document.getElementById('roi-source-label').textContent=isReal?'Basé sur vos données RH réelles':'Valeurs sectorielles · '+(ROI.ctx==='siege'?'siège social':'site industriel');
+  document.getElementById('roi-seuil').textContent=!isR?'Seuil de rentabilit\u00e9 : '+(baseTotale>0?(ctp/baseTotale*100).toFixed(2):0)+"% d'impact":'';
+  document.getElementById('roi-source-label').textContent=isR?'Bas\u00e9 sur vos donn\u00e9es RH r\u00e9elles':'Valeurs sectorielles \u00b7 '+(ROI.ctx==='siege'?'si\u00e8ge social':'site industriel');
   document.getElementById('roi-gain').textContent=eur(gain);document.getElementById('roi-ctp').textContent=eur(ctp);document.getElementById('roi-eco').textContent=eur(eco);
-  var ANNUALISE={today:220,week:52,month:12,year:1};var seancesAnnee=realSeancesTotal*(ANNUALISE[currentPeriod]||12);
-  document.getElementById('roi-seances-annee').textContent=fnum(seancesAnnee)+' séances';
+  var AN={today:220,week:52,month:12,year:1};var sA=realSeancesTotal*(AN[currentPeriod]||12);
+  document.getElementById('roi-seances-annee').textContent=fnum(sA)+' s\u00e9ances';
   document.getElementById('roi-decomposition').innerHTML=decomposition;
-  var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div><div class="detail-row"><span>Loyer opportunité ('+SURF_OPT[ROI.surf]+' m²)</span><span>'+eur(ctpComp.im)+'</span></div><div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div><div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div><div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div><div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
+  var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div><div class="detail-row"><span>Loyer opportunit\u00e9 ('+SURF_OPT[ROI.surf]+' m\u00b2)</span><span>'+eur(ctpComp.im)+'</span></div><div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div><div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div><div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div><div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
   if(ctpComp.autres>0)detail+='<div class="detail-row"><span>Autres</span><span>'+eur(ctpComp.autres)+'</span></div>';
   detail+='<div class="detail-row total"><span>Total CTP</span><span>'+eur(ctp)+'</span></div>';
   document.getElementById('roi-detail').innerHTML=detail;
-  var adoReel=ROI.nbs>0?clamp(Math.round(seancesAnnee/(ROI.nbs*2*46)*100),0,100):0;
-  document.getElementById('roi-adoption-compare').innerHTML='<div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption réelle mesurée</span><span style="color:var(--sage)">'+adoReel+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+adoReel+'%;--bar-color:var(--sage)"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption théorique (posture '+po.label+')</span><span style="color:var(--gold)">'+po.adopt+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+po.adopt+'%;--bar-color:var(--gold)"></div></div></div>';
-  document.getElementById('roi-impact-summary').innerHTML='Absentéisme : '+eur(bases.absenteisme*scale)+'<br>Turnover : '+eur(bases.turnover*scale)+'<br>Base adressable : '+eur(baseTotale)+'<br>'+ROI.nbs+' employés';
-  var evoDiv=document.getElementById('drh-evolution');
-  if(isReal){
-    evoDiv.style.display='block';
-    var evGrid=document.getElementById('evolution-grid');
-    evGrid.innerHTML=[{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}].map(function(k){if(DRH[k.key]===null)return '';var cur=DRH[k.key];var proj=cur*(1-impact);var gv=cur-proj;var bp=Math.round(proj/Math.max(cur,1)*100);return '<div class="evol-card"><div class="evol-title">'+k.label+'</div><div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(cur)+'</span></div><div class="evol-row"><span>Projeté</span><span style="color:var(--sage)">'+eur(proj)+' <span style="font-size:.65rem">▼ -'+eur(gv)+'</span></span></div><div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+bp+'%;--bar-color:var(--sage)"></div></div></div></div>'}).filter(Boolean).join('');
-  } else {evoDiv.style.display='none'}
+  var adoR=ROI.nbs>0?clamp(Math.round(sA/(ROI.nbs*2*46)*100),0,100):0;
+  var po2=POSTURES.find(function(p){return p.id===ROI.po});
+  document.getElementById('roi-adoption-compare').innerHTML='<div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption r\u00e9elle mesur\u00e9e</span><span style="color:var(--sage)">'+adoR+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+adoR+'%;--bar-color:var(--sage)"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption th\u00e9orique (posture '+po2.label+')</span><span style="color:var(--gold)">'+po2.adopt+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+po2.adopt+'%;--bar-color:var(--gold)"></div></div></div>';
+  document.getElementById('roi-impact-summary').innerHTML='Absent\u00e9isme : '+eur(bases.absenteisme*scale)+'<br>Turnover : '+eur(bases.turnover*scale)+'<br>Base adressable : '+eur(baseTotale)+'<br>'+ROI.nbs+' employ\u00e9s';
+  var eDiv=document.getElementById('drh-evolution');
+  if(isR){eDiv.style.display='block';document.getElementById('evolution-grid').innerHTML=[{key:'absenteisme',label:'Absent\u00e9isme'},{key:'presenteisme',label:'Pr\u00e9sent\u00e9isme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}].map(function(k){if(DRH[k.key]===null)return '';var cur=DRH[k.key];var proj=cur*(1-impact);var gv=cur-proj;var bp=Math.round(proj/Math.max(cur,1)*100);return '<div class="evol-card"><div class="evol-title">'+k.label+'</div><div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(cur)+'</span></div><div class="evol-row"><span>Projet\u00e9</span><span style="color:var(--sage)">'+eur(proj)+' <span style="font-size:.65rem">\u25bc -'+eur(gv)+'</span></span></div><div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+bp+'%;--bar-color:var(--sage)"></div></div></div></div>'}).filter(Boolean).join('')}
+  else{eDiv.style.display='none'}
 }
 
 init();
