@@ -377,7 +377,7 @@
 
       <!-- KPI passages — cliquable -->
       <div class="kpi" style="--accent:var(--sage);cursor:pointer" onclick="openPassagesModal()">
-        <div class="kpi-label"><span class="dot-live"></span>Passages aujourd'hui</div>
+        <div class="kpi-label"><span class="dot-live"></span>Passages</div>
         <div class="kpi-val" id="s-kpi-passages">—</div>
         <div class="kpi-sub" id="s-kpi-passages-sub"></div>
         <div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
@@ -731,7 +731,7 @@ async function loadRecentPassages(){
     var label=date===today?heure:date+' '+heure;
     return '<div class="passage-item">'+
       '<div class="passage-heure">'+label+'</div>'+
-      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Entrée':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
+      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
       '</div>';
   }).join('');
 }
@@ -810,7 +810,7 @@ async function openPassagesModal(){
     var isToday=date===today;
     return '<div class="modal-passage-item">'+
       '<div style="font-size:.68rem;color:var(--muted);width:'+(isToday?'55px':'130px')+';flex-shrink:0">'+(isToday?heure:date+' '+heure)+'</div>'+
-      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Entrée':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
+      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
       '</div>';
   }).join('');
 }
