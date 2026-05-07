@@ -138,7 +138,7 @@
   .evol-title{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
   .evol-row{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;margin-bottom:.3rem}
 
-  /* ══ CAPTEURS ══ */
+  /* ══  ══ */
   .sensor-site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
   .sensor-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
   .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
@@ -197,7 +197,7 @@
   <div class="tabs">
     <div class="tab active" id="tab-stats"    onclick="switchTab('stats')">📊 Retours utilisateurs</div>
     <div class="tab"        id="tab-roi"      onclick="switchTab('roi')">📈 ROI &amp; Impact RH</div>
-    <div class="tab"        id="tab-capteurs" onclick="switchTab('capteurs')">📡 Retours capteurs</div>
+    <div class="tab"        id="tab-" onclick="switchTab('')">📡 Retours capteurs </div>
   </div>
 
   <!-- ═══ VUE STATS ═══ -->
@@ -367,12 +367,12 @@
     </div>
   </div>
 
-  <!-- ═══ VUE CAPTEURS ═══ -->
-  <div class="view" id="view-capteurs">
+  <!-- ═══ VUE  ═══ -->
+  <div class="view" id="view-">
 
     <div class="sensor-site-bar" id="sensor-site-bar"></div>
 
-    <!-- KPIs capteurs -->
+    <!-- KPIs  -->
     <div class="sensor-kpi-row">
 
       <!-- KPI passages — cliquable -->
@@ -432,7 +432,7 @@
       <div class="passage-timeline" id="s-passages-list"></div>
     </div>
 
-  </div><!-- /view-capteurs -->
+  </div><!-- /view- -->
 </div><!-- /main -->
 
 <!-- ═══ MODAL PASSAGES DÉTAIL ═══ -->
@@ -494,7 +494,7 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('view-'+tab).classList.add('active');
   if(tab==='roi'){buildROIControls();calcROI()}
-  if(tab==='capteurs'){buildSensorBar();loadSensorStats();startAutoRefresh()}
+  if(tab===''){buildSensorBar();loadSensorStats();startAutoRefresh()}
   else{stopAutoRefresh()}
 }
 
@@ -618,7 +618,7 @@ function exportCSV(){
 }
 
 // ════════════════════════════════════════════════════════════
-// CAPTEURS
+// 
 // ════════════════════════════════════════════════════════════
 function buildSensorBar(){
   var bar=document.getElementById('sensor-site-bar');
@@ -772,7 +772,7 @@ function showSensorEmpty(){
 function startAutoRefresh(){
   stopAutoRefresh();
   sensorTimer=setInterval(function(){
-    if(document.getElementById('view-capteurs').classList.contains('active')) loadSensorStats();
+    if(document.getElementById('view-').classList.contains('active')) loadSensorStats();
   },30000);
 }
 
