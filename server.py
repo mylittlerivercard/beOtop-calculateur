@@ -111,28 +111,26 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
 
-        # ========== NOUVELLES TABLES CAPTEURS ==========
+        # ========== TABLES CAPTEURS ==========
 
-        # Passage : chaque franchissement du faisceau (entrée ou sortie)
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_passages (
                 id          SERIAL PRIMARY KEY,
                 created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 site_slug   TEXT NOT NULL,
-                direction   TEXT,          -- 'entree' | 'sortie' | null si inconnu
+                direction   TEXT,
                 timestamp   TIMESTAMP NOT NULL
             )
         ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_site ON sensor_passages(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_ts   ON sensor_passages(timestamp)')
 
-        # Occupation : signal PIR par atelier, toutes les N secondes
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_occupation (
                 id          SERIAL PRIMARY KEY,
                 created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 site_slug   TEXT NOT NULL,
-                atelier     TEXT NOT NULL,  -- ex: 'fauteuil-massage', 'bain-lumiere'
+                atelier     TEXT NOT NULL,
                 occupe      BOOLEAN NOT NULL,
                 timestamp   TIMESTAMP NOT NULL
             )
@@ -141,13 +139,12 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_atelier ON sensor_occupation(atelier)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_ts      ON sensor_occupation(timestamp)')
 
-        # Sessions capteurs : durée calculée par le RPi (début/fin de présence dans l'espace)
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_sessions (
                 id          SERIAL PRIMARY KEY,
                 created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 site_slug   TEXT NOT NULL,
-                atelier     TEXT,           -- null = session globale espace, sinon atelier spécifique
+                atelier     TEXT,
                 debut       TIMESTAMP NOT NULL,
                 fin         TIMESTAMP NOT NULL,
                 duree_sec   INTEGER NOT NULL
@@ -374,6 +371,35 @@ def admin_create_site():
                 return jsonify({'error': 'Ce site existe deja'}), 409
     return jsonify({'ok': True, 'site_id': site_id, 'slug': slug, 'kiosk_url': f'/kiosk/{slug}'}), 201
 
+# ── AJOUT 1 : PUT /api/admin/sites/<id> ──────────────────────────────────────
+@app.route('/api/admin/sites/<int:site_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_site(site_id):
+    """
+    Modifie les informations d'un site.
+    Body JSON : { "nom", "ville", "nb_salaries", "actif" }
+    nb_salaries est utilisé par l'onglet QVCT pour calculer le taux de pénétration.
+    """
+    data = request.get_json()
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """UPDATE sites
+                   SET nom=%s, ville=%s, nb_salaries=%s, actif=%s
+                   WHERE id=%s""",
+                [
+                    data.get('nom'),
+                    data.get('ville'),
+                    int(data.get('nb_salaries') or 0),
+                    int(data.get('actif', 1)),
+                    site_id
+                ]
+            )
+            conn.commit()
+    return jsonify({'ok': True})
+# ─────────────────────────────────────────────────────────────────────────────
+
 # ========== ADMIN - USERS ==========
 
 @app.route('/api/admin/users', methods=['GET'])
@@ -470,28 +496,16 @@ def kiosk_info(site_slug):
 
 @app.route('/api/sensors/passage', methods=['POST'])
 def sensors_passage():
-    """
-    Reçoit un événement de franchissement du faisceau depuis le RPi.
-    Body JSON attendu :
-    {
-        "site_slug": "bpce-paris-19",
-        "direction": "entree",       # optionnel : 'entree' | 'sortie'
-        "timestamp": "2026-03-26T10:30:00"  # optionnel, sinon now()
-    }
-    """
     data = request.get_json()
     if not data or not data.get('site_slug'):
         return jsonify({'error': 'site_slug requis'}), 400
-
     site_slug = data['site_slug']
-    direction = data.get('direction')  # peut être null
+    direction = data.get('direction')
     ts_raw    = data.get('timestamp')
-
     try:
         ts = datetime.fromisoformat(ts_raw) if ts_raw else datetime.now()
     except ValueError:
         ts = datetime.now()
-
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -500,34 +514,15 @@ def sensors_passage():
             )
             new_id = cur.fetchone()['id']
             conn.commit()
-
     return jsonify({'ok': True, 'id': new_id}), 201
 
 
 @app.route('/api/sensors/occupation', methods=['POST'])
 def sensors_occupation():
-    """
-    Reçoit un signal PIR depuis le RPi (toutes les N secondes par atelier).
-    Body JSON attendu :
-    {
-        "site_slug": "bpce-paris-19",
-        "atelier": "fauteuil-massage",
-        "occupe": true,
-        "timestamp": "2026-03-26T10:30:00"  # optionnel
-    }
-    Accepte aussi un tableau d'événements pour envoi groupé :
-    [
-        {"site_slug": "...", "atelier": "...", "occupe": true, "timestamp": "..."},
-        ...
-    ]
-    """
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Body JSON requis'}), 400
-
-    # Normalise : accepte un objet unique ou un tableau
     events = data if isinstance(data, list) else [data]
-
     inserted = 0
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -536,58 +531,39 @@ def sensors_occupation():
                 atelier   = evt.get('atelier')
                 occupe    = evt.get('occupe', True)
                 ts_raw    = evt.get('timestamp')
-
                 if not site_slug or not atelier:
-                    continue  # ignore les lignes invalides, ne bloque pas le batch
-
+                    continue
                 try:
                     ts = datetime.fromisoformat(ts_raw) if ts_raw else datetime.now()
                 except ValueError:
                     ts = datetime.now()
-
                 cur.execute(
                     "INSERT INTO sensor_occupation (site_slug, atelier, occupe, timestamp) VALUES (%s, %s, %s, %s)",
                     [site_slug, atelier, occupe, ts]
                 )
                 inserted += 1
             conn.commit()
-
     return jsonify({'ok': True, 'inserted': inserted}), 201
 
 
 @app.route('/api/sensors/session', methods=['POST'])
 def sensors_session():
-    """
-    Reçoit une session complète calculée par le RPi (début + fin + durée).
-    Body JSON attendu :
-    {
-        "site_slug": "bpce-paris-19",
-        "atelier": "fauteuil-massage",  # optionnel — null = session globale espace
-        "debut": "2026-03-26T10:15:00",
-        "fin":   "2026-03-26T10:33:00",
-        "duree_sec": 1080
-    }
-    """
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Body JSON requis'}), 400
-
     site_slug = data.get('site_slug')
     if not site_slug:
         return jsonify({'error': 'site_slug requis'}), 400
-
     debut_raw = data.get('debut')
     fin_raw   = data.get('fin')
     if not debut_raw or not fin_raw:
         return jsonify({'error': 'debut et fin requis'}), 400
-
     try:
         debut     = datetime.fromisoformat(debut_raw)
         fin       = datetime.fromisoformat(fin_raw)
         duree_sec = data.get('duree_sec') or int((fin - debut).total_seconds())
     except (ValueError, TypeError) as e:
         return jsonify({'error': f'Format de date invalide : {e}'}), 400
-
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -596,7 +572,6 @@ def sensors_session():
             )
             new_id = cur.fetchone()['id']
             conn.commit()
-
     return jsonify({'ok': True, 'id': new_id}), 201
 
 
@@ -605,17 +580,10 @@ def sensors_session():
 @app.route('/api/sensors/stats', methods=['GET'])
 @login_required
 def sensors_stats():
-    """
-    Retourne les métriques capteurs pour un site et une période.
-    Params : site_slug (requis), period (today|week|month|year)
-    """
     site_slug = request.args.get('site_slug')
     period    = request.args.get('period', 'today')
-
     if not site_slug:
         return jsonify({'error': 'site_slug requis'}), 400
-
-    # Vérification d'accès : admin voit tout, client voit son périmètre
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
         with get_db() as conn:
@@ -625,7 +593,6 @@ def sensors_stats():
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
 
-    # Clause de date adaptée aux colonnes timestamp des tables capteurs
     if period == 'today':
         ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
     elif period == 'week':
@@ -639,15 +606,12 @@ def sensors_stats():
 
     with get_db() as conn:
         with conn.cursor() as cur:
-
-            # Nombre total de passages
             cur.execute(
                 f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {ts_clause}",
                 [site_slug]
             )
             total_passages = cur.fetchone()['n']
 
-            # Passages par heure
             cur.execute(
                 f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
                     FROM sensor_passages
@@ -657,7 +621,6 @@ def sensors_stats():
             )
             passages_par_heure = cur.fetchall()
 
-            # Taux d'occupation par atelier (% de signaux PIR actifs sur la période)
             cur.execute(
                 f"""SELECT atelier,
                            COUNT(*) as total_signaux,
@@ -680,7 +643,6 @@ def sensors_stats():
                     'signaux_actifs': actifs
                 })
 
-            # Sessions : sensor_sessions utilise 'debut', pas 'timestamp'
             ts_clause_sessions = ts_clause.replace('"timestamp"', 'debut')
             cur.execute(
                 f"""SELECT atelier,
@@ -708,19 +670,11 @@ def sensors_stats():
 @app.route('/api/sensors/passages/list', methods=['GET'])
 @login_required
 def sensors_passages_list():
-    """
-    Retourne la liste détaillée des passages avec timestamp exact.
-    Params : site_slug (requis), period (today|week|month|year), limit (défaut 200)
-    Usage DUERP : historique complet consultable par le client.
-    """
     site_slug = request.args.get('site_slug')
     period    = request.args.get('period', 'today')
     limit     = int(request.args.get('limit', 200))
-
     if not site_slug:
         return jsonify({'error': 'site_slug requis'}), 400
-
-    # Vérification d'accès
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
         with get_db() as conn:
@@ -760,23 +714,15 @@ def sensors_passages_list():
         'passages': [serialize_row(r) for r in rows]
     })
 
-# ========== HEURES PASSAGES ==========
 
 @app.route('/api/sensors/passages/export', methods=['GET'])
 @login_required
 def sensors_passages_export():
-    """
-    Export CSV des passages pour intégration DUERP.
-    Params : site_slug, from (date), to (date)
-    """
     site_slug  = request.args.get('site_slug')
     from_date  = request.args.get('from', date.today().isoformat())
     to_date    = request.args.get('to', date.today().isoformat())
-
     if not site_slug:
         return jsonify({'error': 'site_slug requis'}), 400
-
-    # Vérification d'accès
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
         with get_db() as conn:
@@ -785,7 +731,6 @@ def sensors_passages_export():
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
-
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -797,23 +742,15 @@ def sensors_passages_export():
                 [site_slug, from_date, to_date]
             )
             rows = cur.fetchall()
-
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['date', 'heure', 'direction', 'site'])
     for r in rows:
         sr = serialize_row(r)
         ts = sr['timestamp']
-        writer.writerow([
-            ts[:10],
-            ts[11:19],
-            sr.get('direction') or 'entree',
-            site_slug
-        ])
-
+        writer.writerow([ts[:10], ts[11:19], sr.get('direction') or 'entree', site_slug])
     return Response(
-        output.getvalue(),
-        mimetype='text/csv',
+        output.getvalue(), mimetype='text/csv',
         headers={'Content-Disposition': f'attachment; filename=passages_{site_slug}_{from_date}_{to_date}.csv'}
     )
 
@@ -847,6 +784,7 @@ def get_site_filter(site_slug=None):
         placeholders = ','.join(['%s'] * len(slugs))
         return f"site_slug IN ({placeholders})", slugs
 
+
 @app.route('/api/stats', methods=['GET'])
 @login_required
 def get_stats():
@@ -856,22 +794,77 @@ def get_stats():
     site_clause, site_params = get_site_filter(site_slug)
     where = f"WHERE {date_clause} AND {site_clause}"
 
+    # ── AJOUT 2 : by_day respecte la période sélectionnée ────────────────────
+    # Fenêtre temporelle pour by_day selon la période (au lieu du hardcodé 30j)
+    if period == 'today':
+        day_interval = "INTERVAL '1 day'"
+    elif period == 'week':
+        day_interval = "INTERVAL '7 days'"
+    elif period == 'year':
+        day_interval = "INTERVAL '365 days'"
+    else:
+        day_interval = "INTERVAL '30 days'"
+    # ─────────────────────────────────────────────────────────────────────────
+
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(f'SELECT COUNT(*) as n FROM sessions {where}', site_params)
             total = cur.fetchone()['n']
-            cur.execute(f'SELECT departement as label, COUNT(*) as n FROM sessions {where} GROUP BY departement ORDER BY n DESC', site_params)
+
+            cur.execute(
+                f'SELECT departement as label, COUNT(*) as n FROM sessions {where} GROUP BY departement ORDER BY n DESC',
+                site_params
+            )
             by_dept = cur.fetchall()
-            cur.execute(f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h", site_params)
+
+            cur.execute(
+                f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h",
+                site_params
+            )
             by_hour = cur.fetchall()
-            cur.execute(f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC", site_params)
+
+            cur.execute(
+                f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC",
+                site_params
+            )
             by_mood = cur.fetchall()
-            cur.execute(f"SELECT date, COUNT(*) as n FROM sessions WHERE date >= CURRENT_DATE - INTERVAL '30 days' AND {site_clause} GROUP BY date ORDER BY date", site_params)
+
+            # ── AJOUT 2 suite : by_day sur la période effective ──────────────
+            cur.execute(
+                f"""SELECT date, COUNT(*) as n
+                    FROM sessions
+                    WHERE date >= CURRENT_DATE - {day_interval} AND {site_clause}
+                    GROUP BY date ORDER BY date""",
+                site_params
+            )
             by_day = cur.fetchall()
-            cur.execute(f"SELECT ateliers FROM sessions {where} AND ateliers != ''", site_params)
+            # ─────────────────────────────────────────────────────────────────
+
+            cur.execute(
+                f"SELECT ateliers FROM sessions {where} AND ateliers != ''",
+                site_params
+            )
             raw_at = cur.fetchall()
+
+            # ── AJOUT 3 : by_departement_mood (croisement pour l'onglet QVCT) ─
+            # Retourne le ressenti par département pour la matrice CSSCT.
+            # Chaque ligne : { departement, mood, n }
+            cur.execute(
+                f"""SELECT departement, mood, COUNT(*) as n
+                    FROM sessions
+                    {where} AND mood != '' AND departement != ''
+                    GROUP BY departement, mood
+                    ORDER BY departement, n DESC""",
+                site_params
+            )
+            by_departement_mood = cur.fetchall()
+            # ─────────────────────────────────────────────────────────────────
+
             if session.get('role') == 'admin':
-                cur.execute(f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC', site_params)
+                cur.execute(
+                    f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC',
+                    site_params
+                )
                 by_site = cur.fetchall()
             else:
                 by_site = []
@@ -882,7 +875,10 @@ def get_stats():
             a = a.strip()
             if a:
                 atelier_count[a] = atelier_count.get(a, 0) + 1
-    by_atelier = sorted([{'atelier': k, 'n': v} for k, v in atelier_count.items()], key=lambda x: -x['n'])
+    by_atelier = sorted(
+        [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
+        key=lambda x: -x['n']
+    )
 
     return jsonify({
         'period': period,
@@ -893,7 +889,11 @@ def get_stats():
         'by_mood':        [serialize_row(r) for r in by_mood],
         'by_day':         [serialize_row(r) for r in by_day],
         'by_site':        [serialize_row(r) for r in by_site],
+        # ── AJOUT 3 ──────────────────────────────────────────────────────────
+        'by_departement_mood': [serialize_row(r) for r in by_departement_mood],
+        # ─────────────────────────────────────────────────────────────────────
     })
+
 
 @app.route('/api/sessions', methods=['GET'])
 @login_required
@@ -913,6 +913,7 @@ def get_sessions():
             cur.execute(f"SELECT * FROM sessions {where} ORDER BY created_at DESC LIMIT %s", params + [limit])
             rows = cur.fetchall()
     return jsonify([serialize_row(r) for r in rows])
+
 
 @app.route('/api/export', methods=['GET'])
 @login_required
@@ -951,11 +952,61 @@ def client_get_sites():
     with get_db() as conn:
         with conn.cursor() as cur:
             if session.get('role') == 'admin':
-                cur.execute("SELECT s.*, c.nom as client_nom FROM sites s JOIN clients c ON s.client_id=c.id ORDER BY c.nom, s.nom")
+                cur.execute(
+                    "SELECT s.*, c.nom as client_nom FROM sites s JOIN clients c ON s.client_id=c.id ORDER BY c.nom, s.nom"
+                )
             else:
-                cur.execute("SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom", [client_id])
+                cur.execute(
+                    "SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom",
+                    [client_id]
+                )
             sites = cur.fetchall()
     return jsonify([serialize_row(s) for s in sites])
+
+
+# ── AJOUT 4 : PATCH /api/client/sites/<slug>/effectif ────────────────────────
+@app.route('/api/client/sites/<site_slug>/effectif', methods=['PATCH'])
+@login_required
+def client_update_effectif(site_slug):
+    """
+    Permet au client (ou à l'admin) de mettre à jour le nombre de salariés
+    d'un site directement depuis l'onglet QVCT du dashboard.
+    Body JSON : { "nb_salaries": 400 }
+
+    Note : le dashboard stocke également la valeur en localStorage pour
+    une réactivité immédiate sans appel réseau. Cette route synchronise
+    la valeur en base pour la persistance multi-navigateurs et l'export DUERP.
+    """
+    data = request.get_json()
+    nb = data.get('nb_salaries')
+    if nb is None or int(nb) < 0:
+        return jsonify({'error': 'nb_salaries requis et doit être >= 0'}), 400
+
+    # Vérification d'accès : admin libre, client limité à ses sites
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT id FROM sites WHERE slug=%s AND client_id=%s AND actif=1",
+                    [site_slug, client_id]
+                )
+                site = cur.fetchone()
+        if not site:
+            return jsonify({'error': 'Site introuvable ou accès refusé'}), 403
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE sites SET nb_salaries=%s WHERE slug=%s",
+                [int(nb), site_slug]
+            )
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Site introuvable'}), 404
+            conn.commit()
+
+    return jsonify({'ok': True, 'site_slug': site_slug, 'nb_salaries': int(nb)})
+# ─────────────────────────────────────────────────────────────────────────────
 
 # ========== HEALTH ==========
 
@@ -969,7 +1020,7 @@ def health():
             nb_clients = cur.fetchone()['n']
             cur.execute('SELECT COUNT(*) as n FROM sites')
             nb_sites = cur.fetchone()['n']
-    return jsonify({'status': 'ok', 'version': '2.1', 'sessions': nb_sessions, 'clients': nb_clients, 'sites': nb_sites})
+    return jsonify({'status': 'ok', 'version': '2.2', 'sessions': nb_sessions, 'clients': nb_clients, 'sites': nb_sites})
 
 # ========== PAGES HTML ==========
 
@@ -1015,29 +1066,20 @@ from email.message import EmailMessage
 
 @app.route('/api/contact', methods=['POST'])
 def contact_form():
-    """
-    Reçoit les données du formulaire de contact (page statique beOtop)
-    et envoie un email à nj@beotop.fr
-    """
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Données JSON requises'}), 400
-
-    # Champs obligatoires
-    prenom = data.get('prenom', '').strip()
-    nom = data.get('nom', '').strip()
-    email = data.get('email', '').strip()
+    prenom    = data.get('prenom', '').strip()
+    nom       = data.get('nom', '').strip()
+    email     = data.get('email', '').strip()
     if not prenom or not nom or not email:
         return jsonify({'error': 'Prénom, nom et email requis'}), 400
-
-    # Champs optionnels
-    role      = data.get('role', '')
+    role       = data.get('role', '')
     entreprise = data.get('entreprise', '')
     effectif   = data.get('effectif', '')
     priorite   = data.get('priorite', '')
     message    = data.get('message', '')
 
-    # Construction de l'email
     msg = EmailMessage()
     msg['Subject'] = f"[beOtop] Nouveau lead - {entreprise or 'non renseigné'}"
     msg['From']    = f"Formulaire beOtop <{os.environ.get('SMTP_USER', 'no-reply@beotop.fr')}>"
@@ -1045,47 +1087,40 @@ def contact_form():
     msg['Reply-To'] = email
 
     body = f"""
-    Nouvelle demande depuis le site beOtop
+Nouvelle demande depuis le site beOtop
 
-    --- Contact ---
-    Prénom : {prenom}
-    Nom    : {nom}
-    Email  : {email}
-    Rôle   : {role}
-    Entreprise : {entreprise}
-    Effectif   : {effectif}
-    Priorité   : {priorite}
+--- Contact ---
+Prénom : {prenom}
+Nom    : {nom}
+Email  : {email}
+Rôle   : {role}
+Entreprise : {entreprise}
+Effectif   : {effectif}
+Priorité   : {priorite}
 
-    --- Message ---
-    {message if message else '(aucun message)'}
+--- Message ---
+{message if message else '(aucun message)'}
 
-    ---
-    Envoyé depuis le formulaire public.
-    """
+---
+Envoyé depuis le formulaire public.
+"""
     msg.set_content(body.strip())
 
-    # Envoi via SMTP (à configurer dans les variables d'environnement Render)
     try:
         smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
         smtp_port = int(os.environ.get('SMTP_PORT', 587))
         smtp_user = os.environ.get('SMTP_USER')
         smtp_pass = os.environ.get('SMTP_PASSWORD')
-
         if smtp_user and smtp_pass:
             with smtplib.SMTP(smtp_host, smtp_port) as server:
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
         else:
-            # Fallback : afficher dans les logs (pour test)
-            print(">>> Formulaire contact (email non envoyé, SMTP non configuré) :", body, file=sys.stderr)
-            # Tu peux aussi stocker en base si tu préfères
+            print(">>> Formulaire contact (SMTP non configuré) :", body, file=sys.stderr)
     except Exception as e:
         print(f"Erreur envoi email : {e}", file=sys.stderr)
-        # On retourne quand même un succès pour ne pas bloquer l'utilisateur
-        # mais tu peux aussi retourner une erreur 500
 
-    # Optionnel : stocker le lead dans une table dédiée
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -1107,6 +1142,7 @@ def contact_form():
         print("Erreur insertion lead en base :", e, file=sys.stderr)
 
     return jsonify({'ok': True, 'message': 'Demande envoyée'}), 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
