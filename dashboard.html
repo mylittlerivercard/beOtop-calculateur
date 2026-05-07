@@ -188,7 +188,9 @@
   .atelier-peak-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.68rem}
   .atelier-peak-name{font-size:.65rem;color:var(--muted2);width:120px;flex-shrink:0}
   .atelier-peak-hours{display:flex;gap:2px;flex:1}
-  .atelier-peak-dot{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.45rem;color:rgba(255,255,255,.9)}
+  .atelier-peak-dot{width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.48rem;color:rgba(255,255,255,.9);flex-shrink:0}
+  .atelier-peak-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+  .atelier-peak-h-lbl{font-size:.42rem;color:var(--muted);text-align:center}
   .dept-at-row{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.9rem;padding:.6rem .7rem;background:rgba(255,255,255,.4);border-radius:8px;border:1px solid rgba(0,0,0,.05)}
   .dept-at-name{font-size:.68rem;color:var(--cream);font-weight:400;width:90px;flex-shrink:0;padding-top:.1rem}
   .dept-at-pills{display:flex;gap:.3rem;flex-wrap:wrap;flex:1}
@@ -826,7 +828,10 @@ function renderAtelierPeak(byAtelierHour){
   var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
   var maxN=Math.max.apply(null,byAtelierHour.map(function(r){return r.n}).concat([1]));
 
-  var html='';
+  // En-tête heures
+  var html='<div class="atelier-peak-row"><div class="atelier-peak-name"></div><div class="atelier-peak-hours">';
+  HEURES.forEach(function(h){html+='<div class="atelier-peak-col"><div style="height:22px"></div><div class="atelier-peak-h-lbl" style="color:var(--muted2);font-size:.5rem">'+String(h).padStart(2,'0')+'</div></div>'});
+  html+='</div></div>';
   topAt.forEach(function(at){
     var hData=ateliers[at]||{};
     // Trouver les 3 heures de pointe
@@ -841,8 +846,11 @@ function renderAtelierPeak(byAtelierHour){
              ratio>=0.7?'rgba(45,107,66,.85)':
              ratio>=0.35?'rgba(176,125,46,.8)':
              'rgba(26,90,122,.6)';
+      html+='<div class="atelier-peak-col">';
       html+='<div class="atelier-peak-dot" style="background:'+bg+'" title="'+at+' \u00b7 '+h+'h \u00b7 '+n+'">';
       if(n>0&&isPeak)html+=n;
+      html+='</div>';
+      html+='<div class="atelier-peak-h-lbl">'+String(h).padStart(2,'0')+'</div>';
       html+='</div>';
     });
     html+='</div></div>';
