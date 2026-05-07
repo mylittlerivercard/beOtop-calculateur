@@ -6,28 +6,9 @@
 <title>beOtop · Mon espace</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --gold:#b07d2e;
-    --gold2:#c8920a;
-    --cream:#2a1f0a;
-    --sage:#2d6b42;
-    --mist:#1a5a7a;
-    --text:#1a1a2e;
-    --muted:#6b6070;
-    --muted2:#4a4560;
-    --border:rgba(0,0,0,0.10);
-    --red:#c0392b;
-    --green:#1a7a42;
-  }
+  :root{--gold:#b07d2e;--gold2:#c8920a;--cream:#2a1f0a;--sage:#2d6b42;--mist:#1a5a7a;--text:#1a1a2e;--muted:#6b6070;--muted2:#4a4560;--border:rgba(0,0,0,0.10);--red:#c0392b;--green:#1a7a42}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:url('/static/fond-beotop.jpg') no-repeat center center fixed;
-    background-size:cover;
-    color:var(--text);
-    font-family:'Jost',sans-serif;
-    font-weight:300;
-    min-height:100vh;
-  }
+  body{background:url('/static/fond-beotop.jpg') no-repeat center center fixed;background-size:cover;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.65);position:sticky;top:0;z-index:10;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
   .logo{font-family:'Playfair Display',serif;font-size:1rem;color:#a06820}
   .topbar-right{display:flex;align-items:center;gap:1rem}
@@ -86,7 +67,6 @@
   .roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
   .slider-row{margin-bottom:.9rem}
   .slider-lbl{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted2);margin-bottom:.35rem}
-  .slider-val{color:var(--cream);font-weight:400}
   input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(0,0,0,.12);outline:none;cursor:pointer}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold)}
   input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);border:none}
@@ -137,8 +117,7 @@
   .evol-card{background:rgba(255,255,255,0.5);border-radius:8px;padding:.8rem;border:1px solid rgba(0,0,0,.07)}
   .evol-title{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
   .evol-row{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;margin-bottom:.3rem}
-
-  /* ══  ══ */
+  /* CAPTEURS */
   .sensor-site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
   .sensor-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
   .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
@@ -160,15 +139,13 @@
   .refresh-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .85rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.2);color:var(--gold);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s;margin-left:auto}
   .refresh-btn:hover{background:rgba(176,125,46,.15)}
   .auto-refresh-lbl{font-size:.6rem;color:var(--muted);margin-left:.5rem}
-
-  /* ══ MODAL ══ */
+  /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);backdrop-filter:blur(4px)}
   .modal-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,90vw);background:rgba(255,255,255,.97);border-radius:16px;padding:1.6rem;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:80vh;display:flex;flex-direction:column}
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
   .modal-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:.4rem}
   .modal-footer{font-size:.58rem;color:var(--muted);margin-top:.8rem;text-align:center}
   .modal-passage-item{display:flex;align-items:center;gap:.8rem;padding:.45rem .7rem;background:rgba(0,0,0,.025);border-radius:8px;border:1px solid rgba(0,0,0,.05)}
-
   @media(max-width:800px){
     .kpi-row,.sensor-kpi-row{grid-template-columns:repeat(2,1fr)}
     .grid-2,.sensor-grid{grid-template-columns:1fr}
@@ -195,12 +172,12 @@
   <div class="page-sub" id="page-sub">Chargement...</div>
 
   <div class="tabs">
-    <div class="tab active" id="tab-stats"    onclick="switchTab('stats')">📊 Retours utilisateurs</div>
-    <div class="tab"        id="tab-roi"      onclick="switchTab('roi')">📈 ROI &amp; Impact RH</div>
-    <div class="tab"        id="tab-" onclick="switchTab('')">📡 Retours capteurs </div>
+    <div class="tab active" id="tab-stats"     onclick="switchTab('stats')">📊 Retours utilisateurs</div>
+    <div class="tab"        id="tab-roi"       onclick="switchTab('roi')">📈 ROI &amp; Impact RH</div>
+    <div class="tab"        id="tab-capteurs"  onclick="switchTab('capteurs')">📡 Retours capteurs</div>
   </div>
 
-  <!-- ═══ VUE STATS ═══ -->
+  <!-- VUE STATS -->
   <div class="view active" id="view-stats">
     <div class="site-bar" id="site-bar"></div>
     <div class="kpi-row">
@@ -239,7 +216,7 @@
     </div>
   </div>
 
-  <!-- ═══ VUE ROI ═══ -->
+  <!-- VUE ROI -->
   <div class="view" id="view-roi">
     <div class="roi-result-box">
       <div>
@@ -271,17 +248,14 @@
         </div>
         <div class="context-field">
           <label>Nombre d'employés</label>
-          <input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400"
-                 oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()">
+          <input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400" oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()">
         </div>
         <div class="context-field">
           <label>Option superficie</label>
           <div class="pills" style="margin-top:.35rem" id="surf-pills"></div>
         </div>
       </div>
-      <div class="ctx-note" id="ctx-note">
-        Siège social · bases adressables : absentéisme 511 056 € · présentéisme 235 872 € · turnover 485 376 €
-      </div>
+      <div class="ctx-note" id="ctx-note">Siège social · bases adressables : absentéisme 511 056 € · présentéisme 235 872 € · turnover 485 376 €</div>
     </div>
     <div class="drh-section">
       <div class="drh-header">
@@ -291,10 +265,7 @@
         </div>
         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
           <span class="drh-badge default" id="drh-badge">⬦ Valeurs sectorielles (défaut)</span>
-          <label class="btn-upload" style="cursor:pointer">
-            ⬆ Importer CSV
-            <input type="file" id="drh-file" accept=".csv,.txt" onchange="importDRH(this)" style="display:none">
-          </label>
+          <label class="btn-upload" style="cursor:pointer">⬆ Importer CSV<input type="file" id="drh-file" accept=".csv,.txt" onchange="importDRH(this)" style="display:none"></label>
           <button class="btn-saisie" onclick="toggleManualForm()">✎ Saisie manuelle</button>
         </div>
       </div>
@@ -310,9 +281,7 @@
         <button class="btn-apply" onclick="applyManualDRH()">✓ Appliquer ces données au calcul ROI</button>
         <button class="btn-apply" style="margin-left:.5rem;background:transparent;border-color:rgba(0,0,0,.15);color:var(--muted)" onclick="resetDRH()">↺ Réinitialiser</button>
       </div>
-      <div style="font-size:.58rem;color:var(--muted);margin-top:.8rem;line-height:1.7">
-        💡 <strong style="color:var(--muted2)">Comment ça marche</strong> : saisissez vos indicateurs <em>actuels</em> mesurés avec beOtop. Le ROI = économie réalisée vs la référence sectorielle. &nbsp;·&nbsp; Format CSV : colonnes <code style="color:#b07d2e">indicateur</code> et <code style="color:#b07d2e">valeur</code>
-      </div>
+      <div style="font-size:.58rem;color:var(--muted);margin-top:.8rem;line-height:1.7">💡 <strong style="color:var(--muted2)">Comment ça marche</strong> : saisissez vos indicateurs <em>actuels</em> mesurés avec beOtop. Le ROI = économie réalisée vs la référence sectorielle.</div>
     </div>
     <div class="roi-grid">
       <div class="card">
@@ -325,7 +294,7 @@
           <div class="slider-lbl"><span>Posture managériale <span style="font-size:.58rem;color:var(--muted)" id="adoption-note">(s'applique en mode données réelles)</span></span></div>
           <div class="pills" id="po-pills"></div>
         </div>
-        <div class="roi-info">💡 En mode sectoriel, l'impact est appliqué à la base adressable complète. En mode données réelles, l'adoption managériale module l'économie mesurée. Sources : WTW 2025 · INRS 2024 · DARES 2023 · CIPD 2022 · ANACT 2022</div>
+        <div class="roi-info">💡 En mode sectoriel, l'impact est appliqué à la base adressable complète. Sources : WTW 2025 · INRS 2024 · DARES 2023 · CIPD 2022 · ANACT 2022</div>
       </div>
       <div class="card">
         <div class="card-title">Décomposition du gain estimé</div>
@@ -362,24 +331,18 @@
         <div class="evolution-grid" id="evolution-grid"></div>
       </div>
     </div>
-    <div style="font-size:.58rem;color:var(--muted);text-align:center;padding:1rem 0">
-      Sources : WTW 2025 · INRS 2024 · DARES 2023 · Verlingue/Malakoff Humanis 2024 · CIPD 2022 · ANACT 2022 · UIMM 2024 · MEDEF 2024
-    </div>
+    <div style="font-size:.58rem;color:var(--muted);text-align:center;padding:1rem 0">Sources : WTW 2025 · INRS 2024 · DARES 2023 · Verlingue/Malakoff Humanis 2024 · CIPD 2022 · ANACT 2022 · UIMM 2024 · MEDEF 2024</div>
   </div>
 
-  <!-- ═══ VUE  ═══ -->
-  <div class="view" id="view-">
-
+  <!-- VUE CAPTEURS -->
+  <div class="view" id="view-capteurs">
     <div class="sensor-site-bar" id="sensor-site-bar"></div>
-
-    <!-- KPIs  -->
     <div class="sensor-kpi-row">
 
-      <!-- KPI passages — cliquable -->
-      <div class="kpi-label"><span class="dot-live"></span>Passages faisceau</div>
-<div class="kpi-val" id="s-kpi-passages">—</div>
-<div class="kpi-sub" id="s-kpi-passages-sub"></div>
-<div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
+      <div class="kpi" style="--accent:var(--sage);cursor:pointer" onclick="openPassagesModal()">
+        <div class="kpi-label"><span class="dot-live"></span>Passages faisceau</div>
+        <div class="kpi-val" id="s-kpi-passages">—</div>
+        <div class="kpi-sub" id="s-kpi-passages-sub"></div>
         <div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
       </div>
 
@@ -403,7 +366,6 @@
 
     </div>
 
-    <!-- Occupation + Durée par atelier -->
     <div class="sensor-grid">
       <div class="card">
         <div class="card-title">Taux d'occupation par atelier</div>
@@ -415,14 +377,12 @@
       </div>
     </div>
 
-    <!-- Diagramme passages par heure -->
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Visites par heure — faisceau</div>
       <div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div>
       <div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div>
     </div>
 
-    <!-- Timeline passages récents -->
     <div class="card" style="margin-bottom:1rem">
       <div style="display:flex;align-items:center;margin-bottom:.8rem">
         <div class="card-title" style="margin-bottom:0">Passages récents — faisceau</div>
@@ -431,11 +391,10 @@
       </div>
       <div class="passage-timeline" id="s-passages-list"></div>
     </div>
+  </div>
+</div>
 
-  </div><!-- /view- -->
-</div><!-- /main -->
-
-<!-- ═══ MODAL PASSAGES DÉTAIL ═══ -->
+<!-- MODAL PASSAGES -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
   <div class="modal-box">
     <div class="modal-header">
@@ -449,62 +408,38 @@
       </div>
     </div>
     <div class="modal-body" id="modal-passages-list"></div>
-    <div class="modal-footer" id="modal-footer">Données conservées en base · utilisables pour le rapport DUERP</div>
+    <div class="modal-footer">Données conservées en base · utilisables pour le rapport DUERP</div>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════════
-// ROI — CONSTANTES
-// ════════════════════════════════════════════════════════════
 var BASE_400={siege:{absenteisme:511056,presenteisme:235872,turnover:485376,accidents:32000},industrie:{absenteisme:369787,presenteisme:493200,turnover:217980,accidents:32000}};
 var CTP_BASE={siege:{am:17500,im:6250,maint:2100,form:1960,com:2970,anim:2000},industrie:{am:17500,im:6500,maint:2100,form:1960,com:2970,anim:1970}};
 var SURF_OPT={A:15,B:25,C:40};
 var SCENARIOS=[{label:'\u22125% pessimiste',rate:0.05},{label:'\u221210% médian',rate:0.10},{label:'\u221215% optimiste',rate:0.15}];
 var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitigé',adopt:30},{id:'l',label:'Libre',adopt:65},{id:'e',label:'Encouragé',adopt:90}];
-
-// ════════════════════════════════════════════════════════════
-// ÉTAT GLOBAL
-// ════════════════════════════════════════════════════════════
-var currentSite=null, currentPeriod='today', sites=[], realSeancesTotal=0, roiBuilt=false;
+var currentSite=null,currentPeriod='today',sites=[],realSeancesTotal=0,roiBuilt=false;
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
-var sensorSite=null, sensorPeriod='today', sensorTimer=null;
+var sensorSite=null,sensorPeriod='today',sensorTimer=null;
 
-// ════════════════════════════════════════════════════════════
-// UTILITAIRES
-// ════════════════════════════════════════════════════════════
 function eur(n){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n)}
 function fnum(n){return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(n)}
 function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v))}
-function fmtDuree(sec){
-  if(!sec||sec<0) return '—';
-  if(sec<60) return sec+'s';
-  var m=Math.floor(sec/60),s=sec%60;
-  return m+'min'+(s>0?' '+s+'s':'');
-}
+function fmtDuree(sec){if(!sec||sec<0)return '—';if(sec<60)return sec+'s';var m=Math.floor(sec/60),s=sec%60;return m+'min'+(s>0?' '+s+'s':'')}
 
-// ════════════════════════════════════════════════════════════
-// NAVIGATION
-// ════════════════════════════════════════════════════════════
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('view-'+tab).classList.add('active');
   if(tab==='roi'){buildROIControls();calcROI()}
-  if(tab===''){buildSensorBar();loadSensorStats();startAutoRefresh()}
+  if(tab==='capteurs'){buildSensorBar();loadSensorStats();startAutoRefresh()}
   else{stopAutoRefresh()}
 }
 
-// ════════════════════════════════════════════════════════════
-// AUTH & INIT
-// ════════════════════════════════════════════════════════════
-async function doLogout(){
-  await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
-  window.location.href='/login';
-}
+async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login'}
 
 async function init(){
   var me=await fetch('/api/auth/me',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
@@ -518,40 +453,16 @@ async function init(){
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin · tous les sites':sites.length+' site(s)';
 }
 
-// ════════════════════════════════════════════════════════════
-// STATS
-// ════════════════════════════════════════════════════════════
 function buildSiteBar(){
-  var bar=document.getElementById('site-bar');
-  bar.innerHTML='';
-  if(sites.length>1){
-    var all=document.createElement('div');
-    all.className='site-chip'+(currentSite===null?' active':'');
-    all.textContent='Tous les sites';
-    all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};
-    bar.appendChild(all);
-  }
-  sites.forEach(function(s){
-    var chip=document.createElement('div');
-    chip.className='site-chip'+(currentSite===s.slug?' active':'');
-    chip.dataset.slug=s.slug;
-    chip.textContent=s.nom+(s.ville?' · '+s.ville:'');
-    chip.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats()};
-    bar.appendChild(chip);
-  });
-  var sel=document.createElement('select');
-  sel.className='period-sel';
-sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
-  sel.onchange=function(){currentPeriod=this.value;loadStats()};
-  bar.appendChild(sel);
+  var bar=document.getElementById('site-bar');bar.innerHTML='';
+  if(sites.length>1){var all=document.createElement('div');all.className='site-chip'+(currentSite===null?' active':'');all.textContent='Tous les sites';all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};bar.appendChild(all)}
+  sites.forEach(function(s){var chip=document.createElement('div');chip.className='site-chip'+(currentSite===s.slug?' active':'');chip.dataset.slug=s.slug;chip.textContent=s.nom+(s.ville?' · '+s.ville:'');chip.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats()};bar.appendChild(chip)});
+  var sel=document.createElement('select');sel.className='period-sel';
+  sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
+  sel.onchange=function(){currentPeriod=this.value;loadStats()};bar.appendChild(sel);
 }
 
-function updateActiveChip(){
-  document.querySelectorAll('#site-bar .site-chip').forEach(function(c){
-    var isAll=(currentSite===null&&c.textContent==='Tous les sites');
-    c.classList.toggle('active',c.dataset.slug===currentSite||isAll);
-  });
-}
+function updateActiveChip(){document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=(currentSite===null&&c.textContent==='Tous les sites');c.classList.toggle('active',c.dataset.slug===currentSite||isAll)})}
 
 async function loadStats(){
   var url='/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:'');
@@ -565,100 +476,40 @@ async function loadStats(){
   document.getElementById('kpi-top-mood').textContent=d.by_mood&&d.by_mood[0]?d.by_mood[0].mood:'—';
   renderBars('chart-depts',d.by_departement||[],'label','n','var(--gold)');
   renderBars('chart-ateliers',(d.by_atelier||[]).map(function(x){return{label:x.atelier,n:x.n}}),'label','n','var(--mist)');
-  var moodEl=document.getElementById('chart-mood');
-  moodEl.innerHTML='';
+  var moodEl=document.getElementById('chart-mood');moodEl.innerHTML='';
   var total=(d.by_mood||[]).reduce(function(s,m){return s+m.n},0);
   var icons={'Épuisé':'😮‍💨','Neutre':'😐','Mieux':'🙂','Rechargé':'✨'};
-  (d.by_mood||[]).forEach(function(m){
-    var p=total?Math.round(m.n/total*100):0;
-    moodEl.innerHTML+='<div class="mood-pill">'+(icons[m.mood]||'')+'&nbsp;'+m.mood+'&nbsp;<span class="mood-pct">'+p+'%</span></div>';
-  });
-  var hoursEl=document.getElementById('chart-hours');
-  hoursEl.innerHTML='';
+  (d.by_mood||[]).forEach(function(m){var p=total?Math.round(m.n/total*100):0;moodEl.innerHTML+='<div class="mood-pill">'+(icons[m.mood]||'')+'&nbsp;'+m.mood+'&nbsp;<span class="mood-pct">'+p+'%</span></div>'});
+  var hoursEl=document.getElementById('chart-hours');hoursEl.innerHTML='';
   var maxH=Math.max(1,Math.max.apply(null,(d.by_hour||[]).map(function(h){return h.n}).concat([0])));
-  for(var h=7;h<=20;h++){
-    var found=(d.by_hour||[]).find(function(x){return parseInt(x.h)===h});
-    var n=found?found.n:0;
-    var op=n===0?0.04:0.1+(n/maxH)*0.7;
-    var cell=document.createElement('div');
-    cell.className='hour-cell';
-    cell.title=String(h).padStart(2,'0')+'h · '+n+' séance(s)';
-    cell.style.background='rgba(176,125,46,'+op.toFixed(2)+')';
-    cell.textContent=String(h).padStart(2,'0');
-    hoursEl.appendChild(cell);
-  }
+  for(var h=7;h<=20;h++){var found=(d.by_hour||[]).find(function(x){return parseInt(x.h)===h});var n=found?found.n:0;var op=n===0?0.04:0.1+(n/maxH)*0.7;var cell=document.createElement('div');cell.className='hour-cell';cell.title=String(h).padStart(2,'0')+'h · '+n+' séance(s)';cell.style.background='rgba(176,125,46,'+op.toFixed(2)+')';cell.textContent=String(h).padStart(2,'0');hoursEl.appendChild(cell)}
   renderSparkline(d.by_day||[]);
 }
 
-function renderBars(id,data,lk,vk,color){
-  var el=document.getElementById(id);
-  if(!data.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Aucune donnée</div>';return}
-  var max=Math.max.apply(null,data.map(function(d){return d[vk]}).concat([1]));
-  el.innerHTML=data.slice(0,7).map(function(d){
-    var p=Math.round(d[vk]/max*100);
-    return '<div class="bar-item"><div class="bar-label">'+d[lk]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:'+color+'"></div></div><div class="bar-n">'+d[vk]+'</div></div>';
-  }).join('');
-}
+function renderBars(id,data,lk,vk,color){var el=document.getElementById(id);if(!data.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Aucune donnée</div>';return}var max=Math.max.apply(null,data.map(function(d){return d[vk]}).concat([1]));el.innerHTML=data.slice(0,7).map(function(d){var p=Math.round(d[vk]/max*100);return '<div class="bar-item"><div class="bar-label">'+d[lk]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:'+color+'"></div></div><div class="bar-n">'+d[vk]+'</div></div>'}).join('')}
 
-function renderSparkline(byDay){
-  var svg=document.getElementById('sparkline');
-  if(!byDay.length){svg.innerHTML='';return}
-  var max=Math.max.apply(null,byDay.map(function(d){return d.n}).concat([1]));
-  var w=600,h=60,pad=4,n=byDay.length;
-  var pts=byDay.map(function(d,i){return[pad+(i/(n-1||1))*(w-2*pad),h-pad-(d.n/max)*(h-2*pad)]});
-  var path=pts.map(function(p,i){return(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ');
-  var fill=path+' L'+pts[pts.length-1][0]+','+h+' L'+pts[0][0]+','+h+' Z';
-  svg.innerHTML='<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b07d2e" stop-opacity=".3"/><stop offset="100%" stop-color="#b07d2e" stop-opacity="0"/></linearGradient></defs><path d="'+fill+'" fill="url(#sg)"/><path d="'+path+'" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linejoin="round"/>'+pts.map(function(p){return'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.5" fill="#b07d2e" opacity=".8"/>'}).join('');
-}
+function renderSparkline(byDay){var svg=document.getElementById('sparkline');if(!byDay.length){svg.innerHTML='';return}var max=Math.max.apply(null,byDay.map(function(d){return d.n}).concat([1]));var w=600,h=60,pad=4,n=byDay.length;var pts=byDay.map(function(d,i){return[pad+(i/(n-1||1))*(w-2*pad),h-pad-(d.n/max)*(h-2*pad)]});var path=pts.map(function(p,i){return(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ');var fill=path+' L'+pts[pts.length-1][0]+','+h+' L'+pts[0][0]+','+h+' Z';svg.innerHTML='<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b07d2e" stop-opacity=".3"/><stop offset="100%" stop-color="#b07d2e" stop-opacity="0"/></linearGradient></defs><path d="'+fill+'" fill="url(#sg)"/><path d="'+path+'" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linejoin="round"/>'+pts.map(function(p){return'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.5" fill="#b07d2e" opacity=".8"/>'}).join('')}
 
-function exportCSV(){
-  var today=new Date().toISOString().slice(0,10);
-  window.open('/api/export?from=2025-01-01&to='+today+(currentSite?'&site='+currentSite:''),'_blank');
-}
+function exportCSV(){var today=new Date().toISOString().slice(0,10);window.open('/api/export?from=2025-01-01&to='+today+(currentSite?'&site='+currentSite:''),'_blank')}
 
-// ════════════════════════════════════════════════════════════
-// 
-// ════════════════════════════════════════════════════════════
 function buildSensorBar(){
-  var bar=document.getElementById('sensor-site-bar');
-  bar.innerHTML='';
-  if(!sensorSite&&sites.length) sensorSite=sites[0].slug;
-  sites.forEach(function(s){
-    var chip=document.createElement('div');
-    chip.className='site-chip'+(sensorSite===s.slug?' active':'');
-    chip.dataset.slug=s.slug;
-    chip.textContent=s.nom+(s.ville?' · '+s.ville:'');
-    chip.onclick=function(){
-      sensorSite=s.slug;
-      bar.querySelectorAll('.site-chip').forEach(function(c){c.classList.remove('active')});
-      chip.classList.add('active');
-      loadSensorStats();
-    };
-    bar.appendChild(chip);
-  });
-  var sel=document.createElement('select');
-  sel.className='period-sel';
+  var bar=document.getElementById('sensor-site-bar');bar.innerHTML='';
+  if(!sensorSite&&sites.length)sensorSite=sites[0].slug;
+  sites.forEach(function(s){var chip=document.createElement('div');chip.className='site-chip'+(sensorSite===s.slug?' active':'');chip.dataset.slug=s.slug;chip.textContent=s.nom+(s.ville?' · '+s.ville:'');chip.onclick=function(){sensorSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(c){c.classList.remove('active')});chip.classList.add('active');loadSensorStats()};bar.appendChild(chip)});
+  var sel=document.createElement('select');sel.className='period-sel';
   sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option>";
-  sel.value=sensorPeriod;
-  sel.onchange=function(){sensorPeriod=this.value;loadSensorStats()};
-  bar.appendChild(sel);
+  sel.onchange=function(){sensorPeriod=this.value;loadSensorStats()};bar.appendChild(sel);
 }
 
 async function loadSensorStats(){
   if(!sensorSite){showSensorEmpty();return}
-  var url='/api/sensors/stats?site_slug='+sensorSite+'&period='+sensorPeriod;
-  var d=await fetch(url,{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+  var d=await fetch('/api/sensors/stats?site_slug='+sensorSite+'&period='+sensorPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
   if(!d){showSensorEmpty();return}
-
-  // KPI passages
   document.getElementById('s-kpi-passages').textContent=fnum(d.total_passages||0);
-document.getElementById('s-kpi-passages-sub').textContent='~' + Math.round((d.total_passages||0)/2) + ' personnes estimées';
-  // KPI taux moyen
+  document.getElementById('s-kpi-passages-sub').textContent='~'+Math.round((d.total_passages||0)/2)+' personnes estimées';
   var occ=d.occupation_par_atelier||[];
   var tauxMoy=occ.length?Math.round(occ.reduce(function(s,a){return s+a.taux_occupation},0)/occ.length):null;
   document.getElementById('s-kpi-taux').textContent=tauxMoy!==null?(tauxMoy+'%'):'—';
-
-  // KPI durée et sessions
   var sess=d.sessions_par_atelier||[];
   var totalSess=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
   var allDurees=sess.filter(function(a){return a.duree_moy_sec}).map(function(a){return a.duree_moy_sec});
@@ -666,413 +517,127 @@ document.getElementById('s-kpi-passages-sub').textContent='~' + Math.round((d.to
   document.getElementById('s-kpi-duree').textContent=dureeGlobale?fmtDuree(dureeGlobale):'—';
   document.getElementById('s-kpi-duree-sub').textContent=sess.length?'sur '+sess.length+' atelier(s)':'aucune session';
   document.getElementById('s-kpi-sessions').textContent=fnum(totalSess);
-
-  // Occupation par atelier
   var occEl=document.getElementById('s-ateliers-occ');
-  if(!occ.length){
-    occEl.innerHTML='<div class="sensor-empty">Aucune donnée capteur PIR<br><span style="font-size:.62rem">En attente du premier signal RPi</span></div>';
-  } else {
-    occEl.innerHTML=occ.map(function(a){
-      var color=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';
-      return '<div class="atelier-row">'+
-        '<div class="atelier-name">'+a.atelier+'</div>'+
-        '<div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+color+'"></div></div></div>'+
-        '<div class="atelier-taux" style="color:'+color+'">'+a.taux_occupation+'%</div>'+
-        '</div>';
-    }).join('');
-  }
-
-  // Durée par atelier
+  if(!occ.length){occEl.innerHTML='<div class="sensor-empty">Aucune donnée capteur PIR</div>'}
+  else{occEl.innerHTML=occ.map(function(a){var color=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+color+'"></div></div></div><div class="atelier-taux" style="color:'+color+'">'+a.taux_occupation+'%</div></div>'}).join('')}
   var dureeEl=document.getElementById('s-ateliers-duree');
-  if(!sess.length){
-    dureeEl.innerHTML='<div class="sensor-empty">Aucune session enregistrée</div>';
-  } else {
-    var maxDuree=Math.max.apply(null,sess.map(function(a){return a.duree_moy_sec||0}).concat([1]));
-    dureeEl.innerHTML=sess.map(function(a){
-      var nom=a.atelier||'Espace global';
-      var dur=a.duree_moy_sec||0;
-      var pct=Math.round(dur/maxDuree*100);
-      return '<div class="atelier-row">'+
-        '<div class="atelier-name">'+nom+'</div>'+
-        '<div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;--bar-color:var(--mist)"></div></div></div>'+
-        '<div class="atelier-duree">'+fmtDuree(dur)+'</div>'+
-        '<div class="atelier-taux" style="color:var(--muted);font-size:.62rem">×'+a.nb_sessions+'</div>'+
-        '</div>';
-    }).join('');
-  }
-
+  if(!sess.length){dureeEl.innerHTML='<div class="sensor-empty">Aucune session enregistrée</div>'}
+  else{var maxDuree=Math.max.apply(null,sess.map(function(a){return a.duree_moy_sec||0}).concat([1]));dureeEl.innerHTML=sess.map(function(a){var nom=a.atelier||'Espace global';var dur=a.duree_moy_sec||0;var pct=Math.round(dur/maxDuree*100);return '<div class="atelier-row"><div class="atelier-name">'+nom+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtDuree(dur)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">×'+a.nb_sessions+'</div></div>'}).join('')}
   renderSensorHourChart(d.passages_par_heure||[]);
   await loadRecentPassages();
-
-  var now=new Date();
-  document.getElementById('s-last-update').textContent='Mis à jour à '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  var now=new Date();document.getElementById('s-last-update').textContent='Mis à jour à '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
 }
 
 async function loadRecentPassages(){
   var list=document.getElementById('s-passages-list');
   list.innerHTML='<div style="font-size:.68rem;color:var(--muted);padding:.5rem 0">Chargement...</div>';
-
-  var url='/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=20';
-  var d=await fetch(url,{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-
-  if(!d||!d.passages||!d.passages.length){
-    list.innerHTML='<div class="sensor-empty">Aucun passage enregistré<br><span style="font-size:.62rem">Le faisceau n\'a pas encore envoyé de données</span></div>';
-    return;
-  }
-
+  var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=20',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+  if(!d||!d.passages||!d.passages.length){list.innerHTML='<div class="sensor-empty">Aucun passage enregistré</div>';return}
   var today=new Date().toISOString().slice(0,10);
-  list.innerHTML=d.passages.map(function(p){
-    var ts=p.timestamp||'';
-    var date=ts.slice(0,10);
-    var heure=ts.slice(11,19);
-    var dir=p.direction||'unknown';
-    var label=date===today?heure:date+' '+heure;
-    return '<div class="passage-item">'+
-      '<div class="passage-heure">'+label+'</div>'+
-      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
-      '</div>';
-  }).join('');
+  list.innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var label=date===today?heure:date+' '+heure;return '<div class="passage-item"><div class="passage-heure">'+label+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div></div>'}).join('');
 }
 
 function renderSensorHourChart(passagesParHeure){
-  var el=document.getElementById('s-chart-heures');
-  var lblEl=document.getElementById('s-chart-heures-labels');
-  if(!el) return;
-  var heures=[];
-  for(var h=7;h<=20;h++) heures.push(h);
-  var data={};
-  (passagesParHeure||[]).forEach(function(r){data[parseInt(r.h)]=r.n});
+  var el=document.getElementById('s-chart-heures');var lblEl=document.getElementById('s-chart-heures-labels');if(!el)return;
+  var heures=[];for(var h=7;h<=20;h++)heures.push(h);
+  var data={};(passagesParHeure||[]).forEach(function(r){data[parseInt(r.h)]=r.n});
   var max=Math.max.apply(null,heures.map(function(h){return data[h]||0}).concat([1]));
-  el.innerHTML=heures.map(function(h){
-    var n=data[h]||0;
-    var pct=Math.round((n/max)*100);
-    var col=n===0?'rgba(0,0,0,.07)':n>=max*0.7?'var(--sage)':n>=max*0.4?'var(--gold)':'var(--mist)';
-    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px">'+
-      (n>0?'<div style="font-size:.52rem;color:var(--muted2)">'+n+'</div>':'')+
-      '<div style="width:100%;border-radius:4px 4px 0 0;background:'+col+';height:'+Math.max(pct,4)+'%;transition:height .4s ease" title="'+h+'h · '+n+' passage(s)"></div>'+
-      '</div>';
-  }).join('');
-  lblEl.innerHTML=heures.map(function(h){
-    return '<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>';
-  }).join('');
+  el.innerHTML=heures.map(function(h){var n=data[h]||0;var pct=Math.round((n/max)*100);var col=n===0?'rgba(0,0,0,.07)':n>=max*0.7?'var(--sage)':n>=max*0.4?'var(--gold)':'var(--mist)';return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px">'+(n>0?'<div style="font-size:.52rem;color:var(--muted2)">'+n+'</div>':'')+'<div style="width:100%;border-radius:4px 4px 0 0;background:'+col+';height:'+Math.max(pct,4)+'%;transition:height .4s ease" title="'+h+'h · '+n+' passage(s)"></div></div>'}).join('');
+  lblEl.innerHTML=heures.map(function(h){return '<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}).join('');
 }
 
 function showSensorEmpty(){
-  document.getElementById('s-kpi-passages').textContent='—';
-  document.getElementById('s-kpi-taux').textContent='—';
-  document.getElementById('s-kpi-duree').textContent='—';
-  document.getElementById('s-kpi-sessions').textContent='—';
-  document.getElementById('s-ateliers-occ').innerHTML='<div class="sensor-empty">Sélectionnez un site</div>';
-  document.getElementById('s-ateliers-duree').innerHTML='<div class="sensor-empty">Sélectionnez un site</div>';
-  document.getElementById('s-passages-list').innerHTML='<div class="sensor-empty">Sélectionnez un site</div>';
+  ['s-kpi-passages','s-kpi-taux','s-kpi-duree','s-kpi-sessions'].forEach(function(id){document.getElementById(id).textContent='—'});
+  ['s-ateliers-occ','s-ateliers-duree','s-passages-list'].forEach(function(id){document.getElementById(id).innerHTML='<div class="sensor-empty">Sélectionnez un site</div>'});
 }
 
-function startAutoRefresh(){
-  stopAutoRefresh();
-  sensorTimer=setInterval(function(){
-    if(document.getElementById('view-').classList.contains('active')) loadSensorStats();
-  },30000);
-}
+function startAutoRefresh(){stopAutoRefresh();sensorTimer=setInterval(function(){if(document.getElementById('view-capteurs').classList.contains('active'))loadSensorStats()},30000)}
+function stopAutoRefresh(){if(sensorTimer){clearInterval(sensorTimer);sensorTimer=null}}
 
-function stopAutoRefresh(){
-  if(sensorTimer){clearInterval(sensorTimer);sensorTimer=null}
-}
-
-// ════════════════════════════════════════════════════════════
-// MODAL PASSAGES DÉTAIL
-// ════════════════════════════════════════════════════════════
 async function openPassagesModal(){
-  var modal=document.getElementById('passages-modal');
-  modal.style.display='flex';
+  var modal=document.getElementById('passages-modal');modal.style.display='flex';
   document.getElementById('modal-title').textContent='Chargement...';
   document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Chargement...</div>';
-
-  var url='/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=200';
-  var d=await fetch(url,{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-
+  var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=200',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
   var periodLabels={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
-  var total=d?d.total:0;
-  document.getElementById('modal-title').textContent=(periodLabels[sensorPeriod]||'')+' — '+total+' passage(s)';
-
-  if(!d||!d.passages||!d.passages.length){
-    document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistré sur cette période</div>';
-    return;
-  }
-
+  document.getElementById('modal-title').textContent=(periodLabels[sensorPeriod]||'')+' — '+(d?d.total:0)+' passage(s)';
+  if(!d||!d.passages||!d.passages.length){document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistré</div>';return}
   var today=new Date().toISOString().slice(0,10);
-  document.getElementById('modal-passages-list').innerHTML=d.passages.map(function(p){
-    var ts=p.timestamp||'';
-    var date=ts.slice(0,10);
-    var heure=ts.slice(11,19);
-    var dir=p.direction||'unknown';
-    var isToday=date===today;
-    return '<div class="modal-passage-item">'+
-      '<div style="font-size:.68rem;color:var(--muted);width:'+(isToday?'55px':'130px')+';flex-shrink:0">'+(isToday?heure:date+' '+heure)+'</div>'+
-      '<div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div>'+
-      '</div>';
-  }).join('');
+  document.getElementById('modal-passages-list').innerHTML=d.passages.map(function(p){var ts=p.timestamp||'';var date=ts.slice(0,10);var heure=ts.slice(11,19);var dir=p.direction||'unknown';var isToday=date===today;return '<div class="modal-passage-item"><div style="font-size:.68rem;color:var(--muted);width:'+(isToday?'55px':'130px')+';flex-shrink:0">'+(isToday?heure:date+' '+heure)+'</div><div class="passage-dir '+dir+'">'+(dir==='entree'?'↗ Passage':dir==='sortie'?'↙ Sortie':'↔ Passage')+'</div></div>'}).join('');
 }
 
-function closePassagesModal(){
-  document.getElementById('passages-modal').style.display='none';
-}
+function closePassagesModal(){document.getElementById('passages-modal').style.display='none'}
 
 function exportPassagesCSV(){
   var today=new Date().toISOString().slice(0,10);
-  var from=sensorPeriod==='today'?today
-    :sensorPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10)
-    :sensorPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10)
-    :new Date(Date.now()-365*86400000).toISOString().slice(0,10);
+  var from=sensorPeriod==='today'?today:sensorPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):sensorPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);
   window.open('/api/sensors/passages/export?site_slug='+sensorSite+'&from='+from+'&to='+today,'_blank');
 }
 
-// ════════════════════════════════════════════════════════════
-// CONTEXTE ENTREPRISE
-// ════════════════════════════════════════════════════════════
 function setContext(ctx){
   ROI.ctx=ctx;
   document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');
   document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');
-  var b=BASE_400[ctx];
-  var ctxLabel=ctx==='siege'?'Siège social':'Site industriel';
+  var b=BASE_400[ctx];var ctxLabel=ctx==='siege'?'Siège social':'Site industriel';
   document.getElementById('ctx-note').textContent=ctxLabel+' · bases adressables : absentéisme '+eur(b.absenteisme)+' · présentéisme '+eur(b.presenteisme)+' · turnover '+eur(b.turnover);
   document.getElementById('daf-im-hint').textContent=ctx==='siege'?'Défaut siège : 6 250 €':'Défaut industrie : 6 500 €';
-  if(DRH.source!=='default'){
-    if(window.confirm('Changer le type de site réinitialise les données RH saisies. Continuer ?')) resetDRH();
-    else return;
-  }
+  if(DRH.source!=='default'){if(window.confirm('Changer le type de site réinitialise les données RH saisies. Continuer ?'))resetDRH();else return}
   updateDRHGrid();calcROI();
 }
 
-// ════════════════════════════════════════════════════════════
-// ROI CONTROLS
-// ════════════════════════════════════════════════════════════
 function buildROIControls(){
-  if(roiBuilt) return;
+  if(roiBuilt)return;
   var surfEl=document.getElementById('surf-pills');
-  ['A','B','C'].forEach(function(opt){
-    var pill=document.createElement('div');
-    pill.className='pill'+(ROI.surf===opt?' active':'');
-    pill.textContent='Option '+opt+' ('+SURF_OPT[opt]+' m²)';
-    pill.onclick=function(){ROI.surf=opt;surfEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};
-    surfEl.appendChild(pill);
-  });
+  ['A','B','C'].forEach(function(opt){var pill=document.createElement('div');pill.className='pill'+(ROI.surf===opt?' active':'');pill.textContent='Option '+opt+' ('+SURF_OPT[opt]+' m²)';pill.onclick=function(){ROI.surf=opt;surfEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};surfEl.appendChild(pill)});
   var scEl=document.getElementById('sc-pills');
-  SCENARIOS.forEach(function(sc,i){
-    var pill=document.createElement('div');
-    pill.className='pill'+(ROI.sc===i+1?' active':'');
-    pill.textContent=sc.label;
-    pill.onclick=function(){ROI.sc=i+1;scEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};
-    scEl.appendChild(pill);
-  });
+  SCENARIOS.forEach(function(sc,i){var pill=document.createElement('div');pill.className='pill'+(ROI.sc===i+1?' active':'');pill.textContent=sc.label;pill.onclick=function(){ROI.sc=i+1;scEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};scEl.appendChild(pill)});
   var poEl=document.getElementById('po-pills');
-  POSTURES.forEach(function(po){
-    var pill=document.createElement('div');
-    pill.className='pill'+(ROI.po===po.id?' active':'');
-    pill.textContent=po.label+' ('+po.adopt+'%)';
-    pill.onclick=function(){ROI.po=po.id;poEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};
-    poEl.appendChild(pill);
-  });
-  roiBuilt=true;
-  updateDRHGrid();
+  POSTURES.forEach(function(po){var pill=document.createElement('div');pill.className='pill'+(ROI.po===po.id?' active':'');pill.textContent=po.label+' ('+po.adopt+'%)';pill.onclick=function(){ROI.po=po.id;poEl.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});pill.classList.add('active');calcROI()};poEl.appendChild(pill)});
+  roiBuilt=true;updateDRHGrid();
 }
 
-function calcCTP(){
-  var base=CTP_BASE[ROI.ctx];
-  var surf=SURF_OPT[ROI.surf];
-  var am=DAF.am!==null?DAF.am:base.am;
-  var im=(DAF.im!==null?DAF.im:base.im)*(surf/25);
-  var maint=DAF.maint!==null?DAF.maint:base.maint;
-  var form=DAF.form!==null?DAF.form:base.form;
-  var com=DAF.com!==null?DAF.com:base.com;
-  var anim=DAF.anim!==null?DAF.anim:base.anim;
-  var autres=DAF.autres!==null?DAF.autres:0;
-  return{am:am,im:im,maint:maint,form:form,com:com,anim:anim,autres:autres,total:am+im+maint+form+com+anim+autres};
-}
+function calcCTP(){var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];var am=DAF.am!==null?DAF.am:base.am;var im=(DAF.im!==null?DAF.im:base.im)*(surf/25);var maint=DAF.maint!==null?DAF.maint:base.maint;var form=DAF.form!==null?DAF.form:base.form;var com=DAF.com!==null?DAF.com:base.com;var anim=DAF.anim!==null?DAF.anim:base.anim;var autres=DAF.autres!==null?DAF.autres:0;return{am:am,im:im,maint:maint,form:form,com:com,anim:anim,autres:autres,total:am+im+maint+form+com+anim+autres}}
 
 function updateDRHGrid(){
-  var isReal=DRH.source!=='default';
-  var badge=document.getElementById('drh-badge');
-  badge.className='drh-badge '+(isReal?'real':'default');
-  badge.textContent=isReal?'⦆ Données RH réelles':'⧦ Valeurs sectorielles (défaut)';
-  var scale=ROI.nbs/400;
-  var bases=BASE_400[ROI.ctx];
-  var indicators=[
-    {key:'absenteisme',label:'Absentéisme',val:isReal&&DRH.absenteisme!==null?DRH.absenteisme:bases.absenteisme*scale},
-    {key:'presenteisme',label:'Présentéisme',val:isReal&&DRH.presenteisme!==null?DRH.presenteisme:bases.presenteisme*scale},
-    {key:'turnover',label:'Turnover',val:isReal&&DRH.turnover!==null?DRH.turnover:bases.turnover*scale},
-    {key:'accidents',label:'Accidents',val:isReal&&DRH.accidents!==null?DRH.accidents:bases.accidents*scale}
-  ];
-  var grid=document.getElementById('drh-grid');
-  grid.innerHTML=indicators.map(function(ind){
-    var cls='';
-    if(isReal&&ind.val!==null){var ref=bases[ind.key]*scale;if(ind.val<ref)cls='improved';else if(ind.val>ref)cls='degraded';}
-    return '<div class="drh-field '+cls+'"><div class="drh-field-lbl">'+ind.label+'</div><div class="drh-field-val">'+eur(ind.val)+'</div><div class="drh-field-unit">'+(isReal?'Données réelles':'Valeur sectorielle')+'</div></div>';
-  }).join('');
+  var isReal=DRH.source!=='default';var badge=document.getElementById('drh-badge');badge.className='drh-badge '+(isReal?'real':'default');badge.textContent=isReal?'⦆ Données RH réelles':'⧦ Valeurs sectorielles (défaut)';
+  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];
+  var indicators=[{key:'absenteisme',label:'Absentéisme',val:isReal&&DRH.absenteisme!==null?DRH.absenteisme:bases.absenteisme*scale},{key:'presenteisme',label:'Présentéisme',val:isReal&&DRH.presenteisme!==null?DRH.presenteisme:bases.presenteisme*scale},{key:'turnover',label:'Turnover',val:isReal&&DRH.turnover!==null?DRH.turnover:bases.turnover*scale},{key:'accidents',label:'Accidents',val:isReal&&DRH.accidents!==null?DRH.accidents:bases.accidents*scale}];
+  document.getElementById('drh-grid').innerHTML=indicators.map(function(ind){var cls='';if(isReal&&ind.val!==null){var ref=bases[ind.key]*scale;if(ind.val<ref)cls='improved';else if(ind.val>ref)cls='degraded'}return '<div class="drh-field '+cls+'"><div class="drh-field-lbl">'+ind.label+'</div><div class="drh-field-val">'+eur(ind.val)+'</div><div class="drh-field-unit">'+(isReal?'Données réelles':'Valeur sectorielle')+'</div></div>'}).join('');
 }
 
-function importDRH(input){
-  var file=input.files[0];
-  if(!file) return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim()});
-    var data={};
-    lines.forEach(function(line,i){
-      if(i===0) return;
-      var cols=line.split(/[,;|\t]/);
-      if(cols.length<2) return;
-      var key=cols[0].trim().toLowerCase().replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/\s+/g,'_');
-      var val=parseFloat(cols[1].replace(',','.'));
-      if(!isNaN(val)) data[key]=val;
-    });
-    applyDRHData(data,'import');
-  };
-  reader.readAsText(file);
-  input.value='';
-}
-
+function importDRH(input){var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var lines=e.target.result.split(/\r?\n/).filter(function(l){return l.trim()});var data={};lines.forEach(function(line,i){if(i===0)return;var cols=line.split(/[,;|\t]/);if(cols.length<2)return;var key=cols[0].trim().toLowerCase().replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/\s+/g,'_');var val=parseFloat(cols[1].replace(',','.'));if(!isNaN(val))data[key]=val});applyDRHData(data,'import')};reader.readAsText(file);input.value=''}
 function toggleManualForm(){var f=document.getElementById('manual-form');f.style.display=f.style.display==='block'?'none':'block'}
+function applyManualDRH(){var data={};[['mf-absent','absenteisme'],['mf-pres','presenteisme'],['mf-turn','turnover'],['mf-acc','accidents']].forEach(function(pair){var v=parseFloat(document.getElementById(pair[0]).value);if(!isNaN(v)&&v>=0)data[pair[1]]=v});if(!Object.keys(data).length){alert('Veuillez renseigner au moins un indicateur.');return}applyDRHData(data,'manual');document.getElementById('manual-form').style.display='none'}
+function applyDRHData(data,source){var MAP={'absenteisme':'absenteisme','absentéisme':'absenteisme','presenteisme':'presenteisme','présentéisme':'presenteisme','turnover':'turnover','accidents':'accidents','accident_travail':'accidents','accidents_travail':'accidents'};DRH.source=source;Object.keys(data).forEach(function(k){var mapped=MAP[k];if(mapped!==undefined)DRH[mapped]=data[k]});updateDRHGrid();calcROI()}
+function resetDRH(){DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};['mf-absent','mf-pres','mf-turn','mf-acc'].forEach(function(id){document.getElementById(id).value=''});updateDRHGrid();calcROI()}
+function toggleDAF(){var f=document.getElementById('daf-form-wrapper');var btn=document.getElementById('btn-daf');var open=f.style.display==='block';f.style.display=open?'none':'block';btn.textContent=open?'✎ Modifier':'✕ Fermer';if(!open){var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];var im_def=Math.round(base.im*(surf/25));document.getElementById('daf-am').value=DAF.am!==null?DAF.am:base.am;document.getElementById('daf-im').value=DAF.im!==null?DAF.im:im_def;document.getElementById('daf-maint').value=DAF.maint!==null?DAF.maint:base.maint;document.getElementById('daf-formation').value=DAF.form!==null?DAF.form:base.form;document.getElementById('daf-com').value=DAF.com!==null?DAF.com:base.com;document.getElementById('daf-anim').value=DAF.anim!==null?DAF.anim:base.anim;document.getElementById('daf-autres').value=DAF.autres!==null?DAF.autres:0}}
+function applyDAF(){function getVal(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v}DAF.am=getVal('daf-am');DAF.im=getVal('daf-im');DAF.maint=getVal('daf-maint');DAF.form=getVal('daf-formation');DAF.com=getVal('daf-com');DAF.anim=getVal('daf-anim');DAF.autres=getVal('daf-autres');document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI()}
+function resetDAF(){DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI()}
 
-function applyManualDRH(){
-  var data={};
-  [['mf-absent','absenteisme'],['mf-pres','presenteisme'],['mf-turn','turnover'],['mf-acc','accidents']].forEach(function(pair){
-    var v=parseFloat(document.getElementById(pair[0]).value);
-    if(!isNaN(v)&&v>=0) data[pair[1]]=v;
-  });
-  if(!Object.keys(data).length){alert('Veuillez renseigner au moins un indicateur.');return}
-  applyDRHData(data,'manual');
-  document.getElementById('manual-form').style.display='none';
-}
-
-function applyDRHData(data,source){
-  var MAP={'absenteisme':'absenteisme','absentéisme':'absenteisme','presenteisme':'presenteisme','présentéisme':'presenteisme','turnover':'turnover','accidents':'accidents','accident_travail':'accidents','accidents_travail':'accidents'};
-  DRH.source=source;
-  Object.keys(data).forEach(function(k){var mapped=MAP[k];if(mapped!==undefined)DRH[mapped]=data[k]});
-  updateDRHGrid();calcROI();
-}
-
-function resetDRH(){
-  DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
-  ['mf-absent','mf-pres','mf-turn','mf-acc'].forEach(function(id){document.getElementById(id).value=''});
-  updateDRHGrid();calcROI();
-}
-
-function toggleDAF(){
-  var f=document.getElementById('daf-form-wrapper');
-  var btn=document.getElementById('btn-daf');
-  var open=f.style.display==='block';
-  f.style.display=open?'none':'block';
-  btn.textContent=open?'✎ Modifier':'✕ Fermer';
-  if(!open){
-    var base=CTP_BASE[ROI.ctx];var surf=SURF_OPT[ROI.surf];var im_def=Math.round(base.im*(surf/25));
-    document.getElementById('daf-am').value=DAF.am!==null?DAF.am:base.am;
-    document.getElementById('daf-im').value=DAF.im!==null?DAF.im:im_def;
-    document.getElementById('daf-maint').value=DAF.maint!==null?DAF.maint:base.maint;
-    document.getElementById('daf-formation').value=DAF.form!==null?DAF.form:base.form;
-    document.getElementById('daf-com').value=DAF.com!==null?DAF.com:base.com;
-    document.getElementById('daf-anim').value=DAF.anim!==null?DAF.anim:base.anim;
-    document.getElementById('daf-autres').value=DAF.autres!==null?DAF.autres:0;
-  }
-}
-
-function applyDAF(){
-  function getVal(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v}
-  DAF.am=getVal('daf-am');DAF.im=getVal('daf-im');DAF.maint=getVal('daf-maint');
-  DAF.form=getVal('daf-formation');DAF.com=getVal('daf-com');DAF.anim=getVal('daf-anim');DAF.autres=getVal('daf-autres');
-  document.getElementById('daf-form-wrapper').style.display='none';
-  document.getElementById('btn-daf').textContent='✎ Modifier';
-  calcROI();
-}
-
-function resetDAF(){
-  DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
-  document.getElementById('daf-form-wrapper').style.display='none';
-  document.getElementById('btn-daf').textContent='✎ Modifier';
-  calcROI();
-}
-
-// ════════════════════════════════════════════════════════════
-// CALCUL ROI
-// ════════════════════════════════════════════════════════════
 function calcROI(){
-  var scale=ROI.nbs/400;
-  var bases=BASE_400[ROI.ctx];
-  var sc=SCENARIOS[ROI.sc-1];
-  var po=POSTURES.find(function(p){return p.id===ROI.po});
-  var impact=sc.rate;
-  var adoption=po.adopt/100;
-  var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;
-  var gain,decomposition;
-  var isReal=DRH.source!=='default';
-  if(isReal){
-    var absReal=DRH.absenteisme!==null?DRH.absenteisme:bases.absenteisme*scale;
-    var presReal=DRH.presenteisme!==null?DRH.presenteisme:bases.presenteisme*scale;
-    var turnReal=DRH.turnover!==null?DRH.turnover:bases.turnover*scale;
-    var accReal=DRH.accidents!==null?DRH.accidents:bases.accidents*scale;
-    var absRef=bases.absenteisme*scale;var presRef=bases.presenteisme*scale;var turnRef=bases.turnover*scale;var accRef=bases.accidents*scale;
-    var ecoAbs=Math.max(0,absRef-absReal)*adoption;
-    var ecoPres=Math.max(0,presRef-presReal)*adoption;
-    var ecoTurn=Math.max(0,turnRef-turnReal)*adoption;
-    var ecoAcc=Math.max(0,accRef-accReal)*adoption;
-    gain=ecoAbs+ecoPres+ecoTurn+ecoAcc;
-    decomposition='<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;padding:.2rem 0 .4rem;font-size:.55rem;color:#9090a8;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid rgba(0,0,0,.1)"><span>Indicateur</span><span style="text-align:right">Référence</span><span></span><span style="text-align:right">Économie</span></div>'+
-      '<div class="detail-row"><span>Absentéisme</span><span>'+eur(absRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAbs)+'</span></div>'+
-      '<div class="detail-row"><span>Présentéisme</span><span>'+eur(presRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoPres)+'</span></div>'+
-      '<div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoTurn)+'</span></div>'+
-      '<div class="detail-row"><span>Accidents du travail</span><span>'+eur(accRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAcc)+'</span></div>'+
-      '<div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>';
-  } else {
-    gain=baseTotale*impact;
-    decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div>'+
-      '<div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div>'+
-      '<div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>';
-  }
-  var ctpComp=calcCTP();var ctp=ctpComp.total;
-  var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;
-  var seuil=baseTotale>0?(ctp/baseTotale)*100:null;
-  document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isReal)});
-  document.getElementById('adoption-note').style.opacity=isReal?'1':'0.4';
-  var roiEl=document.getElementById('roi-pct');
-  roiEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';
-  roiEl.className='roi-big'+(roi<0?' neg':'');
+  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po});var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var gain,decomposition;var isReal=DRH.source!=='default';
+  if(isReal){var absReal=DRH.absenteisme!==null?DRH.absenteisme:bases.absenteisme*scale;var presReal=DRH.presenteisme!==null?DRH.presenteisme:bases.presenteisme*scale;var turnReal=DRH.turnover!==null?DRH.turnover:bases.turnover*scale;var accReal=DRH.accidents!==null?DRH.accidents:bases.accidents*scale;var absRef=bases.absenteisme*scale;var presRef=bases.presenteisme*scale;var turnRef=bases.turnover*scale;var accRef=bases.accidents*scale;var ecoAbs=Math.max(0,absRef-absReal)*adoption;var ecoPres=Math.max(0,presRef-presReal)*adoption;var ecoTurn=Math.max(0,turnRef-turnReal)*adoption;var ecoAcc=Math.max(0,accRef-accReal)*adoption;gain=ecoAbs+ecoPres+ecoTurn+ecoAcc;decomposition='<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;padding:.2rem 0 .4rem;font-size:.55rem;color:#9090a8;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid rgba(0,0,0,.1)"><span>Indicateur</span><span style="text-align:right">Référence</span><span></span><span style="text-align:right">Économie</span></div><div class="detail-row"><span>Absentéisme</span><span>'+eur(absRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAbs)+'</span></div><div class="detail-row"><span>Présentéisme</span><span>'+eur(presRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoPres)+'</span></div><div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoTurn)+'</span></div><div class="detail-row"><span>Accidents du travail</span><span>'+eur(accRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(ecoAcc)+'</span></div><div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>'}
+  else{gain=baseTotale*impact;decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div><div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div><div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>'}
+  var ctpComp=calcCTP();var ctp=ctpComp.total;var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;var seuil=baseTotale>0?(ctp/baseTotale)*100:null;
+  document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isReal)});document.getElementById('adoption-note').style.opacity=isReal?'1':'0.4';
+  var roiEl=document.getElementById('roi-pct');roiEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';roiEl.className='roi-big'+(roi<0?' neg':'');
   document.getElementById('roi-payback').textContent=pb<100?'Retour sur investissement en '+pb.toFixed(1)+' mois':(gain<=0?'Gain insuffisant':'ROI positif insuffisant');
   document.getElementById('roi-seuil').textContent=(!isReal&&seuil!==null)?'Seuil de rentabilité : '+seuil.toFixed(2)+'% d\'impact':'';
   document.getElementById('roi-source-label').textContent=isReal?'⦆ Basé sur vos données RH réelles':'⧦ Valeurs sectorielles · '+(ROI.ctx==='siege'?'siège social':'site industriel');
-  document.getElementById('roi-gain').textContent=eur(gain);
-  document.getElementById('roi-ctp').textContent=eur(ctp);
-  document.getElementById('roi-eco').textContent=eur(eco);
-  var ANNUALISE={today:220,week:52,month:12,year:1};
-  var seancesAnnee=realSeancesTotal*(ANNUALISE[currentPeriod]||12);
+  document.getElementById('roi-gain').textContent=eur(gain);document.getElementById('roi-ctp').textContent=eur(ctp);document.getElementById('roi-eco').textContent=eur(eco);
+  var ANNUALISE={today:220,week:52,month:12,year:1};var seancesAnnee=realSeancesTotal*(ANNUALISE[currentPeriod]||12);
   document.getElementById('roi-seances-annee').textContent=fnum(seancesAnnee)+' séances';
   document.getElementById('roi-decomposition').innerHTML=decomposition;
-  var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div>'+
-    '<div class="detail-row"><span>Loyer d\'opportunité ('+SURF_OPT[ROI.surf]+' m²)</span><span>'+eur(ctpComp.im)+'</span></div>'+
-    '<div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div>'+
-    '<div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div>'+
-    '<div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div>'+
-    '<div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
-  if(ctpComp.autres>0) detail+='<div class="detail-row"><span>Autres</span><span>'+eur(ctpComp.autres)+'</span></div>';
+  var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div><div class="detail-row"><span>Loyer d\'opportunité ('+SURF_OPT[ROI.surf]+' m²)</span><span>'+eur(ctpComp.im)+'</span></div><div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div><div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div><div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div><div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
+  if(ctpComp.autres>0)detail+='<div class="detail-row"><span>Autres</span><span>'+eur(ctpComp.autres)+'</span></div>';
   detail+='<div class="detail-row total"><span>Total CTP</span><span>'+eur(ctp)+'</span></div>';
   document.getElementById('roi-detail').innerHTML=detail;
   var adoReel=ROI.nbs>0?clamp(Math.round(seancesAnnee/(ROI.nbs*2*46)*100),0,100):0;
-  document.getElementById('roi-adoption-compare').innerHTML=
-    '<div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption réelle mesurée</span><span style="color:var(--sage)">'+adoReel+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+adoReel+'%;--bar-color:var(--sage)"></div></div></div>'+
-    '<div><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption théorique (posture '+po.label+')</span><span style="color:var(--gold)">'+po.adopt+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+po.adopt+'%;--bar-color:var(--gold)"></div></div></div>';
+  document.getElementById('roi-adoption-compare').innerHTML='<div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption réelle mesurée</span><span style="color:var(--sage)">'+adoReel+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+adoReel+'%;--bar-color:var(--sage)"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption théorique (posture '+po.label+')</span><span style="color:var(--gold)">'+po.adopt+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+po.adopt+'%;--bar-color:var(--gold)"></div></div></div>';
   document.getElementById('roi-impact-summary').innerHTML='Absentéisme : '+eur(bases.absenteisme*scale)+'<br>Turnover : '+eur(bases.turnover*scale)+'<br>Base adressable : '+eur(baseTotale)+'<br>'+ROI.nbs+' employés';
   var evoDiv=document.getElementById('drh-evolution');
-  if(isReal){
-    evoDiv.style.display='block';
-    var evGrid=document.getElementById('evolution-grid');
-    var keys=[{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}];
-    evGrid.innerHTML=keys.map(function(k){
-      if(DRH[k.key]===null) return '';
-      var current=DRH[k.key];var projected=current*(1-impact);var gainVal=current-projected;var barPct=Math.round(projected/Math.max(current,1)*100);
-      return '<div class="evol-card"><div class="evol-title">'+k.label+'</div><div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(current)+'</span></div><div class="evol-row"><span>Projeté ('+sc.label+')</span><span style="color:var(--sage)">'+eur(projected)+' <span style="font-size:.65rem;color:var(--sage)">▼ −'+eur(gainVal)+'</span></span></div><div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+barPct+'%;--bar-color:var(--sage)"></div></div></div></div>';
-    }).filter(Boolean).join('');
-  } else {
-    evoDiv.style.display='none';
-  }
+  if(isReal){evoDiv.style.display='block';var evGrid=document.getElementById('evolution-grid');var keys=[{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}];evGrid.innerHTML=keys.map(function(k){if(DRH[k.key]===null)return '';var current=DRH[k.key];var projected=current*(1-impact);var gainVal=current-projected;var barPct=Math.round(projected/Math.max(current,1)*100);return '<div class="evol-card"><div class="evol-title">'+k.label+'</div><div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(current)+'</span></div><div class="evol-row"><span>Projeté ('+sc.label+')</span><span style="color:var(--sage)">'+eur(projected)+' <span style="font-size:.65rem;color:var(--sage)">▼ −'+eur(gainVal)+'</span></span></div><div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+barPct+'%;--bar-color:var(--sage)"></div></div></div></div>'}).filter(Boolean).join('')}
+  else{evoDiv.style.display='none'}
 }
 
 init();
