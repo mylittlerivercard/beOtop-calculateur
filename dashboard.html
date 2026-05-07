@@ -376,10 +376,10 @@
     <div class="sensor-kpi-row">
 
       <!-- KPI passages — cliquable -->
-      <div class="kpi" style="--accent:var(--sage);cursor:pointer" onclick="openPassagesModal()">
-        <div class="kpi-label"><span class="dot-live"></span>Passages</div>
-        <div class="kpi-val" id="s-kpi-passages">—</div>
-        <div class="kpi-sub" id="s-kpi-passages-sub"></div>
+      <div class="kpi-label"><span class="dot-live"></span>Passages faisceau</div>
+<div class="kpi-val" id="s-kpi-passages">—</div>
+<div class="kpi-sub" id="s-kpi-passages-sub"></div>
+<div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
         <div style="font-size:.55rem;color:var(--sage);margin-top:.4rem">↗ Voir le détail</div>
       </div>
 
@@ -652,8 +652,7 @@ async function loadSensorStats(){
 
   // KPI passages
   document.getElementById('s-kpi-passages').textContent=fnum(d.total_passages||0);
-  document.getElementById('s-kpi-passages-sub').textContent=sensorPeriod==='today'?"aujourd'hui":sensorPeriod==='week'?'7 jours':'30 jours';
-
+document.getElementById('s-kpi-passages-sub').textContent='~' + Math.round((d.total_passages||0)/2) + ' personnes estimées';
   // KPI taux moyen
   var occ=d.occupation_par_atelier||[];
   var tauxMoy=occ.length?Math.round(occ.reduce(function(s,a){return s+a.taux_occupation},0)/occ.length):null;
