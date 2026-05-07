@@ -880,17 +880,113 @@ def get_stats():
         key=lambda x: -x['n']
     )
 
+    # ── AJOUT 5 : fréquences horaires par département ─────────────────────────
+    # Permet la heatmap département × heure dans l'onglet QVCT
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""SELECT departement,
+                           EXTRACT(HOUR FROM heure)::int as h,
+                           COUNT(*) as n
+                    FROM sessions {where}
+                    AND departement != ''
+                    GROUP BY departement, h
+                    ORDER BY departement, h""",
+                site_params
+            )
+            by_departement_hour = cur.fetchall()
+    # ─────────────────────────────────────────────────────────────────────────
+
+    # ── AJOUT 6 : fréquences horaires par atelier ─────────────────────────────
+    # Permet d'identifier les créneaux de pointe par atelier
+    atelier_hour_count = {}
+    for row in raw_at:
+        # Récupérer l'heure depuis la session parente n'est pas possible ici
+        # On utilisera une sous-requête dédiée
+        pass
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""SELECT EXTRACT(HOUR FROM heure)::int as h,
+                           ateliers as atelier_raw,
+                           COUNT(*) as n
+                    FROM sessions {where}
+                    AND ateliers != ''
+                    GROUP BY h, ateliers
+                    ORDER BY h""",
+                site_params
+            )
+            raw_at_hour = cur.fetchall()
+
+    # Éclater les ateliers multiples par session
+    atelier_hour = {}
+    for row in raw_at_hour:
+        h = row['h']
+        n = row['n']
+        for a in (row['atelier_raw'] or '').split(', '):
+            a = a.strip()
+            if not a:
+                continue
+            key = (a, h)
+            atelier_hour[key] = atelier_hour.get(key, 0) + n
+
+    by_atelier_hour = sorted(
+        [{'atelier': k[0], 'h': k[1], 'n': v} for k, v in atelier_hour.items()],
+        key=lambda x: (x['atelier'], x['h'])
+    )
+    # ─────────────────────────────────────────────────────────────────────────
+
+    # ── AJOUT 7 : ateliers préférés par département ───────────────────────────
+    # Pour chaque département, quels ateliers sont utilisés et combien de fois
+    dept_atelier_count = {}
+    for row in raw_at:
+        pass  # raw_at n'a pas le département — requête dédiée
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""SELECT departement, ateliers as atelier_raw, COUNT(*) as n
+                    FROM sessions {where}
+                    AND ateliers != '' AND departement != ''
+                    GROUP BY departement, ateliers
+                    ORDER BY departement, n DESC""",
+                site_params
+            )
+            raw_dept_at = cur.fetchall()
+
+    dept_atelier = {}
+    for row in raw_dept_at:
+        dept = row['departement']
+        n = row['n']
+        for a in (row['atelier_raw'] or '').split(', '):
+            a = a.strip()
+            if not a:
+                continue
+            if dept not in dept_atelier:
+                dept_atelier[dept] = {}
+            dept_atelier[dept][a] = dept_atelier[dept].get(a, 0) + n
+
+    by_departement_atelier = []
+    for dept, ateliers in dept_atelier.items():
+        for atelier, n in sorted(ateliers.items(), key=lambda x: -x[1]):
+            by_departement_atelier.append({'departement': dept, 'atelier': atelier, 'n': n})
+    # ─────────────────────────────────────────────────────────────────────────
+
     return jsonify({
         'period': period,
         'total_seances': total,
-        'by_departement': [serialize_row(r) for r in by_dept],
-        'by_hour':        [serialize_row(r) for r in by_hour],
-        'by_atelier':     by_atelier,
-        'by_mood':        [serialize_row(r) for r in by_mood],
-        'by_day':         [serialize_row(r) for r in by_day],
-        'by_site':        [serialize_row(r) for r in by_site],
-        # ── AJOUT 3 ──────────────────────────────────────────────────────────
-        'by_departement_mood': [serialize_row(r) for r in by_departement_mood],
+        'by_departement':         [serialize_row(r) for r in by_dept],
+        'by_hour':                [serialize_row(r) for r in by_hour],
+        'by_atelier':             by_atelier,
+        'by_mood':                [serialize_row(r) for r in by_mood],
+        'by_day':                 [serialize_row(r) for r in by_day],
+        'by_site':                [serialize_row(r) for r in by_site],
+        'by_departement_mood':    [serialize_row(r) for r in by_departement_mood],
+        # ── AJOUTS 5, 6, 7 ───────────────────────────────────────────────────
+        'by_departement_hour':    [serialize_row(r) for r in by_departement_hour],
+        'by_atelier_hour':        by_atelier_hour,
+        'by_departement_atelier': by_departement_atelier,
         # ─────────────────────────────────────────────────────────────────────
     })
 
