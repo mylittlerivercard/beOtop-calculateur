@@ -177,6 +177,22 @@
   .week-lbl{font-size:.5rem;color:var(--muted);text-align:center;width:100%}
   .week-val{font-size:.52rem;color:var(--muted2)}
   .dept-mood-cell{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:5px;font-size:.6rem}
+  /* STATS AVANCÉES QVCT */
+  .dept-hour-grid{display:grid;gap:3px}
+  .dept-hour-row{display:flex;align-items:center;gap:3px}
+  .dept-hour-lbl{font-size:.58rem;color:var(--muted2);width:90px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dept-hour-cell{flex:1;height:20px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.48rem;color:rgba(255,255,255,.85);font-weight:500;cursor:default;transition:opacity .2s}
+  .dept-hour-header{display:flex;gap:3px;margin-bottom:3px}
+  .dept-hour-header-lbl{width:90px;flex-shrink:0}
+  .dept-hour-header-cell{flex:1;text-align:center;font-size:.48rem;color:var(--muted)}
+  .atelier-peak-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.68rem}
+  .atelier-peak-name{font-size:.65rem;color:var(--muted2);width:120px;flex-shrink:0}
+  .atelier-peak-hours{display:flex;gap:2px;flex:1}
+  .atelier-peak-dot{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.45rem;color:rgba(255,255,255,.9)}
+  .dept-at-row{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.9rem;padding:.6rem .7rem;background:rgba(255,255,255,.4);border-radius:8px;border:1px solid rgba(0,0,0,.05)}
+  .dept-at-name{font-size:.68rem;color:var(--cream);font-weight:400;width:90px;flex-shrink:0;padding-top:.1rem}
+  .dept-at-pills{display:flex;gap:.3rem;flex-wrap:wrap;flex:1}
+  .dept-at-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:10px;font-size:.58rem;background:rgba(176,125,46,.1);border:1px solid rgba(176,125,46,.18);color:var(--gold)}
   @media(max-width:900px){.qvct-grid-3{grid-template-columns:1fr 1fr}}
   @media(max-width:800px){
     .kpi-row,.sensor-kpi-row,.qvct-kpi-row{grid-template-columns:repeat(2,1fr)}
@@ -373,6 +389,29 @@
     <div class="grid-2">
       <div class="card"><div class="card-title">Ressenti par département — CSSCT</div><div id="q-cross-dept-mood"></div></div>
       <div class="card"><div class="card-title">Part des séances par département</div><div id="q-cross-dept-part"></div></div>
+    </div>
+
+    <!-- NOUVELLES STATS QVCT -->
+
+    <!-- Heatmap fréquence horaire par département -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Fréquence horaire par département</div>
+      <div style="font-size:.58rem;color:var(--muted);margin-bottom:.8rem">Intensité d'utilisation par tranche horaire et département · CSSCT</div>
+      <div id="q-dept-hour-heatmap"></div>
+    </div>
+
+    <!-- Horaires de pointe par atelier -->
+    <div class="grid-2" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="card-title">Créneaux de pointe par atelier</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-bottom:.8rem">Heures les plus actives par équipement</div>
+        <div id="q-atelier-peak"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ateliers utilisés par département</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-bottom:.8rem">Préférences d'usage par service</div>
+        <div id="q-dept-atelier"></div>
+      </div>
     </div>
 
     <div class="grid-2" style="margin-top:1rem">
@@ -575,6 +614,9 @@ function renderQvct(){
   var total=dk.total_seances||0;
   var byMood=dk.by_mood||[];var byDept=dk.by_departement||[];var byAt=dk.by_atelier||[];
   var byDay=dk.by_day||[];var byHour=dk.by_hour||[];var byDeptMood=dk.by_departement_mood||[];
+  var byDeptHour=dk.by_departement_hour||[];
+  var byAtelierHour=dk.by_atelier_hour||[];
+  var byDeptAtelier=dk.by_departement_atelier||[];
   var sess=dc.sessions_par_atelier||[];
 
   // indice
@@ -665,6 +707,11 @@ function renderQvct(){
 
   renderQvctWeekBars(byDay);
 
+  // Nouvelles stats avancées
+  renderDeptHourHeatmap(byDeptHour, byDept);
+  renderAtelierPeak(byAtelierHour);
+  renderDeptAtelier(byDeptAtelier);
+
   // DUERP
   document.getElementById('q-duerp').innerHTML=
     '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal+' <span style="font-size:.6rem;color:var(--muted)">salari\u00e9s</span>':'<span style="color:var(--muted)">Non renseign\u00e9</span>')+'</div></div>'+
@@ -681,9 +728,19 @@ function renderQvct(){
 
 function renderQvctWeekBars(byDay){
   var bEl=document.getElementById('q-week-bars'),lEl=document.getElementById('q-week-labels'),sEl=document.getElementById('q-evolution-summary');
-  if(!byDay||byDay.length<4){bEl.innerHTML='';lEl.innerHTML='';sEl.textContent='S\u00e9lectionnez 30 jours ou 12 mois pour voir la tendance';return}
+  if(!byDay||!byDay.length){bEl.innerHTML='';lEl.innerHTML='';sEl.innerHTML='Aucune donn\u00e9e sur la p\u00e9riode s\u00e9lectionn\u00e9e \u00b7 <span style="color:var(--muted2)">les sessions kiosque alimenteront ce graphique automatiquement</span>';return}
   var weeks={};
-  byDay.forEach(function(d){var key=d.date||d.day||d.jour||'';if(!key)return;var dt=new Date(key);if(isNaN(dt))return;var dow=dt.getDay();var mon=new Date(dt);mon.setDate(dt.getDate()-(dow===0?6:dow-1));var wk=mon.toISOString().slice(0,10);weeks[wk]=(weeks[wk]||0)+d.n});
+  byDay.forEach(function(d){
+    var key=d.date||d.day||d.jour||'';if(!key)return;
+    // Fix timezone : parser manuellement pour \u00e9viter le d\u00e9calage UTC->locale
+    var parts=key.slice(0,10).split('-');
+    if(parts.length<3)return;
+    var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+    if(isNaN(dt))return;
+    var dow=dt.getDay();var mon=new Date(dt);mon.setDate(dt.getDate()-(dow===0?6:dow-1));
+    var wk=mon.getFullYear()+'-'+String(mon.getMonth()+1).padStart(2,'0')+'-'+String(mon.getDate()).padStart(2,'0');
+    weeks[wk]=(weeks[wk]||0)+d.n;
+  });
   var wK=Object.keys(weeks).sort(),wV=wK.map(function(k){return weeks[k]});
   if(!wV.length){bEl.innerHTML='';lEl.innerHTML='';sEl.textContent='';return}
   var wM=Math.max.apply(null,wV.concat([1]));
@@ -692,6 +749,147 @@ function renderQvctWeekBars(byDay){
   if(wV.length>=2){var first=wV[0],last=wV[wV.length-1],delta=last-first;var pct=first>0?Math.round(delta/first*100):0;var col=delta>0?'var(--sage)':delta<0?'var(--red)':'var(--muted)';sEl.innerHTML='<span style="color:'+col+'">'+(delta>0?'\u2191 ':delta<0?'\u2193 ':'\u2192 ')+(pct>=0?'+':'')+pct+'% sur la p\u00e9riode</span>'+(delta>0?' \u00b7 Progression de l\'usage':delta<0?' \u00b7 Baisse \u00e0 surveiller':' \u00b7 Usage stable')}
   else{sEl.textContent=''}
 }
+
+// ── NOUVELLES STATS QVCT ─────────────────────────────────────────────────────
+
+function renderDeptHourHeatmap(byDeptHour, byDept){
+  var el=document.getElementById('q-dept-hour-heatmap');
+  if(!el) return;
+  if(!byDeptHour||!byDeptHour.length){
+    el.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes \u00b7 les sessions kiosque alimenteront cette matrice</div>';
+    return;
+  }
+  // Heures affich\u00e9es : 7h \u00e0 20h
+  var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
+  // D\u00e9partements : ceux pr\u00e9sents dans byDeptHour, tri\u00e9s par volume total
+  var deptTotals={};
+  byDeptHour.forEach(function(r){deptTotals[r.departement]=(deptTotals[r.departement]||0)+r.n});
+  var depts=Object.keys(deptTotals).sort(function(a,b){return deptTotals[b]-deptTotals[a]}).slice(0,8);
+  // Index des donn\u00e9es
+  var idx={};
+  byDeptHour.forEach(function(r){idx[r.departement+'_'+r.h]=r.n});
+  // Max global pour normalisation de couleur
+  var maxN=Math.max.apply(null,byDeptHour.map(function(r){return r.n}).concat([1]));
+
+  // En-t\u00eate heures
+  var html='<div class="dept-hour-header"><div class="dept-hour-header-lbl"></div>';
+  HEURES.forEach(function(h){html+='<div class="dept-hour-header-cell">'+String(h).padStart(2,'0')+'</div>'});
+  html+='</div><div class="dept-hour-grid">';
+
+  depts.forEach(function(dept){
+    html+='<div class="dept-hour-row"><div class="dept-hour-lbl" title="'+dept+'">'+dept+'</div>';
+    HEURES.forEach(function(h){
+      var n=idx[dept+'_'+h]||0;
+      var ratio=n/maxN;
+      // Couleur : bleu clair (peu) -> or (moyen) -> vert (fort)
+      var bg=n===0?'rgba(0,0,0,.06)':
+             ratio>=0.7?'rgba(45,107,66,'+Math.round(ratio*100)/100+')':
+             ratio>=0.35?'rgba(176,125,46,'+Math.round(ratio*100)/100+')':
+             'rgba(26,90,122,'+Math.round(ratio*100)/100+')';
+      var title=dept+' \u00b7 '+String(h).padStart(2,'0')+'h \u00b7 '+n+' s\u00e9ance(s)';
+      html+='<div class="dept-hour-cell" style="background:'+bg+'" title="'+title+'">'+(n>0?n:'')+'</div>';
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+
+  // L\u00e9gende
+  html+='<div style="display:flex;align-items:center;gap:.5rem;margin-top:.7rem;font-size:.55rem;color:var(--muted)">';
+  html+='<span>Intensit\u00e9 :</span>';
+  html+='<div style="display:flex;gap:2px">';
+  [0.1,0.25,0.45,0.65,0.85].forEach(function(r){
+    var bg=r>=0.7?'rgba(45,107,66,'+r+')':r>=0.35?'rgba(176,125,46,'+r+')':'rgba(26,90,122,'+r+')';
+    html+='<div style="width:14px;height:14px;border-radius:2px;background:'+bg+'"></div>';
+  });
+  html+='</div><span>Faible \u2192 Fort</span></div>';
+
+  el.innerHTML=html;
+}
+
+function renderAtelierPeak(byAtelierHour){
+  var el=document.getElementById('q-atelier-peak');
+  if(!el) return;
+  if(!byAtelierHour||!byAtelierHour.length){
+    el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';
+    return;
+  }
+  // Grouper par atelier
+  var ateliers={};
+  byAtelierHour.forEach(function(r){
+    if(!ateliers[r.atelier])ateliers[r.atelier]={};
+    ateliers[r.atelier][r.h]=r.n;
+  });
+  // Total par atelier pour tri
+  var atTotals={};
+  byAtelierHour.forEach(function(r){atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n});
+  var topAt=Object.keys(atTotals).sort(function(a,b){return atTotals[b]-atTotals[a]}).slice(0,6);
+  var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
+  var maxN=Math.max.apply(null,byAtelierHour.map(function(r){return r.n}).concat([1]));
+
+  var html='';
+  topAt.forEach(function(at){
+    var hData=ateliers[at]||{};
+    // Trouver les 3 heures de pointe
+    var peaks=HEURES.map(function(h){return{h:h,n:hData[h]||0}}).sort(function(a,b){return b.n-a.n}).slice(0,3);
+    html+='<div class="atelier-peak-row"><div class="atelier-peak-name" title="'+at+'">'+at+'</div>';
+    html+='<div class="atelier-peak-hours">';
+    HEURES.forEach(function(h){
+      var n=hData[h]||0;
+      var ratio=n/maxN;
+      var isPeak=peaks.find(function(p){return p.h===h&&p.n>0});
+      var bg=n===0?'rgba(0,0,0,.05)':
+             ratio>=0.7?'rgba(45,107,66,.85)':
+             ratio>=0.35?'rgba(176,125,46,.8)':
+             'rgba(26,90,122,.6)';
+      html+='<div class="atelier-peak-dot" style="background:'+bg+'" title="'+at+' \u00b7 '+h+'h \u00b7 '+n+'">';
+      if(n>0&&isPeak)html+=n;
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+
+  el.innerHTML=html||'<div class="sensor-empty">Aucune donn\u00e9e</div>';
+}
+
+function renderDeptAtelier(byDeptAtelier){
+  var el=document.getElementById('q-dept-atelier');
+  if(!el) return;
+  if(!byDeptAtelier||!byDeptAtelier.length){
+    el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';
+    return;
+  }
+  // Grouper par département
+  var depts={};
+  byDeptAtelier.forEach(function(r){
+    if(!depts[r.departement])depts[r.departement]=[];
+    depts[r.departement].push({atelier:r.atelier,n:r.n});
+  });
+  // Tri\u00e9 par volume total département
+  var deptTotals={};
+  byDeptAtelier.forEach(function(r){deptTotals[r.departement]=(deptTotals[r.departement]||0)+r.n});
+  var sortedDepts=Object.keys(depts).sort(function(a,b){return deptTotals[b]-deptTotals[a]}).slice(0,7);
+
+  var html='';
+  sortedDepts.forEach(function(dept){
+    var ats=depts[dept].slice(0,4); // max 4 ateliers par département
+    var total=deptTotals[dept];
+    html+='<div class="dept-at-row">';
+    html+='<div class="dept-at-name">'+dept+'</div>';
+    html+='<div class="dept-at-pills">';
+    ats.forEach(function(a){
+      var pct=total>0?Math.round(a.n/total*100):0;
+      // Couleur selon rang
+      var rank=ats.indexOf(a);
+      var opacity=rank===0?'1':rank===1?'.8':'.6';
+      html+='<span class="dept-at-pill" style="opacity:'+opacity+'">'+a.atelier+' <span style="font-size:.55rem;color:var(--muted)">'+pct+'%</span></span>';
+    });
+    html+='</div></div>';
+  });
+
+  el.innerHTML=html||'<div class="sensor-empty">Aucune donn\u00e9e</div>';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function exportQVCT(){var today=new Date().toISOString().slice(0,10);var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
 
