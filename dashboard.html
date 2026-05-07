@@ -466,7 +466,7 @@ var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitigé',adopt:30
 // ════════════════════════════════════════════════════════════
 // ÉTAT GLOBAL
 // ════════════════════════════════════════════════════════════
-var currentSite=null, currentPeriod='month', sites=[], realSeancesTotal=0, roiBuilt=false;
+var currentSite=null, currentPeriod='today', sites=[], realSeancesTotal=0, roiBuilt=false;
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
@@ -541,8 +541,7 @@ function buildSiteBar(){
   });
   var sel=document.createElement('select');
   sel.className='period-sel';
-  sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='year'>12 mois</option>";
-  sel.value=currentPeriod;
+sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";  sel.value=currentPeriod;
   sel.onchange=function(){currentPeriod=this.value;loadStats()};
   bar.appendChild(sel);
 }
