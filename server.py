@@ -817,11 +817,46 @@ def get_stats():
             )
             by_dept = cur.fetchall()
 
+            # by_hour : depuis sensor_passages (faisceau réel), pas le kiosque
+            if period == 'today':
+                ts_h = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
+            elif period == 'week':
+                ts_h = '"timestamp" >= NOW() - INTERVAL \'7 days\''
+            elif period == 'month':
+                ts_h = '"timestamp" >= NOW() - INTERVAL \'30 days\''
+            elif period == 'year':
+                ts_h = '"timestamp" >= NOW() - INTERVAL \'365 days\''
+            else:
+                ts_h = '1=1'
+
+            # Construire le filtre site pour sensor_passages
+            if session.get('role') == 'admin':
+                if site_slug:
+                    sp_clause = 'site_slug = %s'
+                    sp_params = [site_slug]
+                else:
+                    sp_clause = '1=1'
+                    sp_params = []
+            else:
+                sp_clause = f"site_slug IN ({','.join(['%s']*len(site_params))})" if site_params else '1=0'
+                sp_params = list(site_params)
+
             cur.execute(
-                f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h",
-                site_params
+                f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
+                    FROM sensor_passages
+                    WHERE {ts_h} AND {sp_clause}
+                    GROUP BY h ORDER BY h""",
+                sp_params
             )
-            by_hour = cur.fetchall()
+            by_hour_raw = cur.fetchall()
+            # Fallback sur kiosque si pas de données capteurs
+            if not by_hour_raw:
+                cur.execute(
+                    f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h",
+                    site_params
+                )
+                by_hour_raw = cur.fetchall()
+            by_hour = by_hour_raw
 
             cur.execute(
                 f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC",
@@ -840,6 +875,18 @@ def get_stats():
             by_day = cur.fetchall()
             # ─────────────────────────────────────────────────────────────────
 
+            # by_atelier : depuis sensor_sessions (PIR réel)
+            cur.execute(
+                f"""SELECT atelier, COUNT(*) as nb_sessions,
+                           ROUND(AVG(duree_sec))::int as duree_moy_sec
+                    FROM sensor_sessions
+                    WHERE {ts_h} AND {sp_clause} AND atelier IS NOT NULL
+                    GROUP BY atelier ORDER BY nb_sessions DESC""",
+                sp_params
+            )
+            raw_sensor_at = cur.fetchall()
+
+            # Fallback : si pas de données capteurs, utiliser les déclarations kiosque
             cur.execute(
                 f"SELECT ateliers FROM sessions {where} AND ateliers != ''",
                 site_params
@@ -869,19 +916,28 @@ def get_stats():
             else:
                 by_site = []
 
-    atelier_count = {}
-    for row in raw_at:
-        for a in (row['ateliers'] or '').split(', '):
-            a = a.strip()
-            if a:
-                atelier_count[a] = atelier_count.get(a, 0) + 1
-    by_atelier = sorted(
-        [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
-        key=lambda x: -x['n']
-    )
+    # by_atelier : priorité sensor_sessions (PIR), fallback kiosque
+    if raw_sensor_at:
+        by_atelier = [
+            {'atelier': r['atelier'], 'n': r['nb_sessions'], 'duree_moy_sec': r['duree_moy_sec']}
+            for r in raw_sensor_at
+        ]
+    else:
+        # Fallback : déclarations kiosque
+        atelier_count = {}
+        for row in raw_at:
+            for a in (row['ateliers'] or '').split(', '):
+                a = a.strip()
+                if a:
+                    atelier_count[a] = atelier_count.get(a, 0) + 1
+        by_atelier = sorted(
+            [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
+            key=lambda x: -x['n']
+        )
 
     # ── AJOUT 5 : fréquences horaires par département ─────────────────────────
-    # Permet la heatmap département × heure dans l'onglet QVCT
+    # SOURCE : sessions kiosque (seule source avec département + heure)
+    # Département = déclaratif kiosque / Heure = heure de la séance kiosque
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -897,52 +953,61 @@ def get_stats():
             by_departement_hour = cur.fetchall()
     # ─────────────────────────────────────────────────────────────────────────
 
-    # ── AJOUT 6 : fréquences horaires par atelier ─────────────────────────────
-    # Permet d'identifier les créneaux de pointe par atelier
-    atelier_hour_count = {}
-    for row in raw_at:
-        # Récupérer l'heure depuis la session parente n'est pas possible ici
-        # On utilisera une sous-requête dédiée
-        pass
-
+    # ── AJOUT 6 : fréquences horaires par atelier — depuis sensor_sessions ──────
+    # SOURCE : sensor_sessions (heure de début de session PIR)
+    # Fallback : sessions kiosque si pas de données capteurs
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                f"""SELECT EXTRACT(HOUR FROM heure)::int as h,
-                           ateliers as atelier_raw,
+                f"""SELECT atelier,
+                           EXTRACT(HOUR FROM debut)::int as h,
                            COUNT(*) as n
-                    FROM sessions {where}
-                    AND ateliers != ''
-                    GROUP BY h, ateliers
-                    ORDER BY h""",
-                site_params
+                    FROM sensor_sessions
+                    WHERE {ts_h} AND {sp_clause} AND atelier IS NOT NULL
+                    GROUP BY atelier, h
+                    ORDER BY atelier, h""",
+                sp_params
             )
-            raw_at_hour = cur.fetchall()
+            raw_at_hour_sensor = cur.fetchall()
 
-    # Éclater les ateliers multiples par session
-    atelier_hour = {}
-    for row in raw_at_hour:
-        h = row['h']
-        n = row['n']
-        for a in (row['atelier_raw'] or '').split(', '):
-            a = a.strip()
-            if not a:
-                continue
-            key = (a, h)
-            atelier_hour[key] = atelier_hour.get(key, 0) + n
-
-    by_atelier_hour = sorted(
-        [{'atelier': k[0], 'h': k[1], 'n': v} for k, v in atelier_hour.items()],
-        key=lambda x: (x['atelier'], x['h'])
-    )
+    if raw_at_hour_sensor:
+        by_atelier_hour = [serialize_row(r) for r in raw_at_hour_sensor]
+    else:
+        # Fallback kiosque
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"""SELECT EXTRACT(HOUR FROM heure)::int as h,
+                               ateliers as atelier_raw,
+                               COUNT(*) as n
+                        FROM sessions {where}
+                        AND ateliers != ''
+                        GROUP BY h, ateliers
+                        ORDER BY h""",
+                    site_params
+                )
+                raw_at_hour = cur.fetchall()
+        atelier_hour = {}
+        for row in raw_at_hour:
+            h = row['h']
+            n = row['n']
+            for a in (row['atelier_raw'] or '').split(', '):
+                a = a.strip()
+                if not a:
+                    continue
+                key = (a, h)
+                atelier_hour[key] = atelier_hour.get(key, 0) + n
+        by_atelier_hour = sorted(
+            [{'atelier': k[0], 'h': k[1], 'n': v} for k, v in atelier_hour.items()],
+            key=lambda x: (x['atelier'], x['h'])
+        )
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── AJOUT 7 : ateliers préférés par département ───────────────────────────
-    # Pour chaque département, quels ateliers sont utilisés et combien de fois
-    dept_atelier_count = {}
-    for row in raw_at:
-        pass  # raw_at n'a pas le département — requête dédiée
-
+    # SOURCE : sessions kiosque (seule table croisant département + atelier déclaré)
+    # Le département et l'atelier sont tous deux déclaratifs (saisis par l'utilisateur)
+    # Note : les slugs capteurs (meridienne-p127) et noms kiosque (Méridienne P127)
+    # sont deux référentiels distincts — ce croisement utilise les noms kiosque.
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
