@@ -757,7 +757,7 @@ function renderQvct(){
     seancesAnnualiseesROI=proj;
     if(roiBuilt)calcROI();
   }
-  document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursOuvresPeriode+' jours ouvrés → '+Math.round(tauxJournalier*10)/10+' séances/jour × 228';
+  document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursReels+' j.o. mesur\u00e9s → '+Math.round(tauxJournalier*10)/10+' s\u00e9ances/jour × 228';
 
   // fréquence — basée sur sessions PIR réelles
   var freqTotal=total>0?total:(seancesAnnualiseesROI>0?Math.round(seancesAnnualiseesROI/228*joursReels):0);
