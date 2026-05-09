@@ -844,7 +844,7 @@ function renderQvct(){
 
   // Nouvelles stats avancées
   renderDeptHourHeatmap(byDeptHour, byDept);
-  renderAtelierPeak(byAtelierHour);
+  renderAtelierPeak(byAtelierHour, dk.by_atelier_hour||[]);
   renderDeptAtelier(byDeptAtelier);
 
   // DUERP
@@ -941,7 +941,7 @@ function renderDeptHourHeatmap(byDeptHour, byDept){
   el.innerHTML=html;
 }
 
-function renderAtelierPeak(byAtelierHour){
+function renderAtelierPeak(byAtelierHour, byAtelierHourKiosk){
   var el=document.getElementById('q-atelier-peak');
   if(!el) return;
   if(!byAtelierHour||!byAtelierHour.length){
@@ -958,8 +958,25 @@ function renderAtelierPeak(byAtelierHour){
   var atTotals={};
   byAtelierHour.forEach(function(r){atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n});
   var topAt=Object.keys(atTotals).sort(function(a,b){return atTotals[b]-atTotals[a]}).slice(0,6);
+
+  // Ajouter les accessoires depuis le kiosque (déclaratif) avec tag
+  var kioskAteliers={};
+  var ACCESSOIRES_QVCT=['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+  if(byAtelierHourKiosk&&byAtelierHourKiosk.length){
+    byAtelierHourKiosk.forEach(function(r){
+      if(ACCESSOIRES_QVCT.indexOf(r.atelier)>=0){
+        if(!kioskAteliers[r.atelier])kioskAteliers[r.atelier]={};
+        kioskAteliers[r.atelier][r.h]=(kioskAteliers[r.atelier][r.h]||0)+r.n;
+        atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n;
+        if(!ateliers[r.atelier])ateliers[r.atelier]={};
+        ateliers[r.atelier][r.h]=(ateliers[r.atelier][r.h]||0)+r.n;
+      }
+    });
+    ACCESSOIRES_QVCT.forEach(function(a){if(atTotals[a])topAt.push(a);});
+  }
+
   var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
-  var maxN=Math.max.apply(null,byAtelierHour.map(function(r){return r.n}).concat([1]));
+  var maxN=Math.max.apply(null,Object.values(atTotals).concat([1]));
 
   // En-tête heures
   var html='<div class="atelier-peak-row"><div class="atelier-peak-name"></div><div class="atelier-peak-hours">';
@@ -967,15 +984,18 @@ function renderAtelierPeak(byAtelierHour){
   html+='</div></div>';
   topAt.forEach(function(at){
     var hData=ateliers[at]||{};
+    var isKiosk=ACCESSOIRES_QVCT.indexOf(at)>=0;
+    var atLabel=at+(isKiosk?' <span style="font-size:.42rem;color:var(--muted);font-style:italic">kiosque</span>':'');
     // Trouver les 3 heures de pointe
     var peaks=HEURES.map(function(h){return{h:h,n:hData[h]||0}}).sort(function(a,b){return b.n-a.n}).slice(0,3);
-    html+='<div class="atelier-peak-row"><div class="atelier-peak-name" title="'+at+'">'+at+'</div>';
+    html+='<div class="atelier-peak-row"><div class="atelier-peak-name" title="'+at+'">'+atLabel+'</div>';
     html+='<div class="atelier-peak-hours">';
     HEURES.forEach(function(h){
       var n=hData[h]||0;
       var ratio=n/maxN;
       var isPeak=peaks.find(function(p){return p.h===h&&p.n>0});
       var bg=n===0?'rgba(0,0,0,.05)':
+             isKiosk?(ratio>=0.5?'rgba(100,90,130,.7)':'rgba(100,90,130,.4)'):
              ratio>=0.7?'rgba(45,107,66,.85)':
              ratio>=0.35?'rgba(176,125,46,.8)':
              'rgba(26,90,122,.6)';
