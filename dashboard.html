@@ -277,7 +277,7 @@
       <div class="roi-kpi"><div class="roi-kpi-val" id="roi-gain">—</div><div class="roi-kpi-lbl">Gain annuel estimé</div></div>
       <div class="roi-kpi"><div class="roi-kpi-val" id="roi-ctp">—</div><div class="roi-kpi-lbl">Coût total annuel</div></div>
       <div class="roi-kpi"><div class="roi-kpi-val" id="roi-eco">—</div><div class="roi-kpi-lbl">Économie nette</div></div>
-      <div class="roi-kpi"><div class="roi-kpi-val" id="roi-seances-annee">—</div><div class="roi-kpi-lbl">Séances réelles / an</div></div>
+      <div class="roi-kpi"><div class="roi-kpi-val" id="roi-seances-annee">—</div><div class="roi-kpi-lbl">Séances extrapolées / an</div></div>
     </div>
     <div class="context-card">
       <div class="card-title">Contexte de l'entreprise</div>
@@ -363,7 +363,7 @@
     </div>
     <div class="card" style="margin-bottom:1rem"><div class="card-title">Visites par heure — faisceau</div><div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div><div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div></div>
     <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;margin-bottom:.8rem"><div class="card-title" style="margin-bottom:0">Passages récents — faisceau</div><button class="refresh-btn" onclick="loadSensorStats()">↻ Actualiser</button><span class="auto-refresh-lbl" id="s-last-update"></span></div>
+      <div style="display:flex;align-items:center;margin-bottom:.8rem"><div class="card-title" style="margin-bottom:0">Passages récents — faisceau</div><button class="refresh-btn" onclick="loadSensorStats()">↻ Actualiser</button><span style="font-size:.55rem;color:var(--sage);padding:.15rem .5rem;background:rgba(45,107,66,.08);border-radius:10px;border:1px solid rgba(45,107,66,.2);margin-left:.5rem">🔒 k≥5</span><span class="auto-refresh-lbl" id="s-last-update"></span></div>
       <div class="passage-timeline" id="s-passages-list"></div>
     </div>
   </div>
@@ -400,7 +400,7 @@
     </div>
 
     <div class="grid-2">
-      <div class="card"><div class="card-title">Ressenti par département — CSSCT</div><div id="q-cross-dept-mood"></div></div>
+      <div class="card"><div class="card-title">Ressenti par département — CSSCT</div><div style="font-size:.55rem;color:var(--sage);margin-bottom:.5rem">🔒 Données agrégées · k-anonymat k≥5 · RGPD Art. 89</div><div id="q-cross-dept-mood"></div></div>
       <div class="card"><div class="card-title">Part des séances par département</div><div id="q-cross-dept-part"></div></div>
     </div>
 
@@ -409,6 +409,7 @@
     <!-- Heatmap fréquence horaire par département -->
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Fréquence horaire par département</div>
+      <div style="font-size:.55rem;color:var(--sage);margin-bottom:.3rem">🔒 Données agrégées · k-anonymat k≥5 · RGPD Art. 89</div>
       <div style="font-size:.58rem;color:var(--muted);margin-bottom:.8rem">Intensité d'utilisation par tranche horaire et département · CSSCT</div>
       <div id="q-dept-hour-heatmap"></div>
     </div>
@@ -572,7 +573,7 @@ async function loadStats(){
   var d=await fetch('/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:''),{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
   realSeancesTotal=d.total_seances||0;
   document.getElementById('kpi-total').textContent=fnum(realSeancesTotal);
-  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',ytd:'Depuis le 1er janvier',q1:'1er trimestre',q2:'2e trimestre',q3:'3e trimestre',q4:'4e trimestre'};
+  var pL={today:'Aujourd\'hui',week:'sur les 7 derniers jours',month:'sur les 30 derniers jours',ytd:'depuis le 1er janvier',q1:'1er trimestre '+new Date().getFullYear(),q2:'2e trimestre '+new Date().getFullYear(),q3:'3e trimestre '+new Date().getFullYear(),q4:'4e trimestre '+new Date().getFullYear()};
   document.getElementById('kpi-period-label').textContent=pL[currentPeriod]||'';
   document.getElementById('kpi-top-dept').textContent=d.by_departement&&d.by_departement[0]?d.by_departement[0].label:'\u2014';
   document.getElementById('kpi-top-at').textContent=d.by_atelier&&d.by_atelier[0]?d.by_atelier[0].atelier:'\u2014';
@@ -663,7 +664,7 @@ async function openPassagesModal(){
   var modal=document.getElementById('passages-modal');modal.style.display='flex';
   document.getElementById('modal-title').textContent='Chargement...';document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Chargement...</div>';
   var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=200',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',ytd:'Depuis le 1er janvier',q1:'1er trimestre',q2:'2e trimestre',q3:'3e trimestre',q4:'4e trimestre'};
+  var pL={today:'Aujourd\'hui',week:'sur les 7 derniers jours',month:'sur les 30 derniers jours',ytd:'depuis le 1er janvier',q1:'1er trimestre '+new Date().getFullYear(),q2:'2e trimestre '+new Date().getFullYear(),q3:'3e trimestre '+new Date().getFullYear(),q4:'4e trimestre '+new Date().getFullYear()};
   document.getElementById('modal-title').textContent=(pL[sensorPeriod]||'')+' \u2014 '+(d?d.total:0)+' passage(s)';
   if(!d||!d.passages||!d.passages.length){document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistr\u00e9</div>';return}
   var today=new Date().toISOString().slice(0,10);
@@ -1020,7 +1021,10 @@ function renderDeptAtelier(byDeptAtelier){
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function exportQVCT(){var today=new Date().toISOString().slice(0,10);var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
+function exportQVCT(){
+  // Mention RGPD obligatoire dans l'export
+  var rgpdNote='# Export DUERP beOtop — Données agrégées et anonymisées (k-anonymat k≥5)\n# Aucune donnée individuelle — Conformité RGPD Art. 89 — ' + new Date().toLocaleDateString('fr-FR') + '\n';
+  var today=new Date().toISOString().slice(0,10);var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
 
 // ROI
 function setContext(ctx){ROI.ctx=ctx;document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');var b=BASE_400[ctx];document.getElementById('ctx-note').textContent=(ctx==='siege'?'Si\u00e8ge social':'Site industriel')+' \u00b7 bases adressables : absent\u00e9isme '+eur(b.absenteisme)+' \u00b7 pr\u00e9sent\u00e9isme '+eur(b.presenteisme)+' \u00b7 turnover '+eur(b.turnover);document.getElementById('daf-im-hint').textContent=ctx==='siege'?'D\u00e9faut si\u00e8ge : 6 250 \u20ac':'D\u00e9faut industrie : 6 500 \u20ac';if(DRH.source!=='default'){if(window.confirm('Changer le type de site r\u00e9initialise les donn\u00e9es RH saisies. Continuer ?'))resetDRH();else return}updateDRHGrid();calcROI()}
