@@ -47,6 +47,30 @@ def get_db():
         print("Erreur de connexion a la base :", e, file=sys.stderr)
         raise e
 
+# ── Normalisation noms d'ateliers ────────────────────────────────────────────
+ATELIER_CANON = {
+    'meridienne-p127':    'Méridienne P127',
+    'cocon-sieste':       'Cocon de Sieste',
+    'lit-neurosonic':     'Neurosonic Lit',
+    'siege-massant-127':  'Siège Massant 0 Gravité',
+    'siege-shiatsu':      'Siège Massant Shiatsu',
+    'transat-127':        'Transat 127',
+    'siege-lecture':      'Siège Lecture',
+    'bol-air':            "Bol d'Air Jacquier",
+    'bain-lumiere':       'Bain de Lumière Rouge',
+    'photobiomodulation': 'Photobiomodulation',
+    'sensosphere':        'Sensosphère',
+    'lunettes-psio':      'Lunettes Psio',
+    'P127':               'Méridienne P127',
+    'Neurosonic lit':     'Neurosonic Lit',
+    "Bol d'Air":          "Bol d'Air Jacquier",
+    'Siège massant':      'Siège Massant 0 Gravité',
+}
+
+def normalize_atelier(name):
+    return ATELIER_CANON.get(name, name) if name else name
+# ─────────────────────────────────────────────────────────────────────────────
+
 def serialize_row(row):
     d = dict(row)
     for k, v in d.items():
@@ -528,7 +552,7 @@ def sensors_occupation():
         with conn.cursor() as cur:
             for evt in events:
                 site_slug = evt.get('site_slug')
-                atelier   = evt.get('atelier')
+                atelier   = normalize_atelier(evt.get('atelier'))
                 occupe    = evt.get('occupe', True)
                 ts_raw    = evt.get('timestamp')
                 if not site_slug or not atelier:
@@ -568,7 +592,7 @@ def sensors_session():
         with conn.cursor() as cur:
             cur.execute(
                 "INSERT INTO sensor_sessions (site_slug, atelier, debut, fin, duree_sec) VALUES (%s,%s,%s,%s,%s) RETURNING id",
-                [site_slug, data.get('atelier'), debut, fin, duree_sec]
+                [site_slug, normalize_atelier(data.get('atelier')), debut, fin, duree_sec]
             )
             new_id = cur.fetchone()['id']
             conn.commit()
