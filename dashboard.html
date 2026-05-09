@@ -387,7 +387,7 @@
       <div class="qvct-score" style="--accent:var(--gold)"><div class="qvct-score-lbl">Durée totale de récupération</div><div class="qvct-big" id="q-duree-totale" style="color:var(--gold)">—</div><div class="qvct-sub">heures investies en bien-être</div></div>
     </div>
     <div class="qvct-kpi-row">
-      <div class="qvct-score" style="--accent:#9b8fc4"><div class="qvct-score-lbl">Projection annuelle</div><div class="qvct-big" id="q-projection" style="color:#9b8fc4">—</div><div class="qvct-sub">séances estimées sur 12 mois</div></div>
+      <div class="qvct-score" style="--accent:#9b8fc4"><div class="qvct-score-lbl">Projection annuelle</div><div class="qvct-big" id="q-projection" style="color:#9b8fc4">—</div><div class="qvct-sub" id="q-projection-sub">séances estimées sur 12 mois</div></div>
       <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Fréquence moyenne</div><div class="qvct-big" id="q-frequence" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-frequence-sub">usage par collaborateur</div></div>
       <div class="qvct-score" style="--accent:var(--cream)"><div class="qvct-score-lbl">Atelier phare</div><div class="qvct-big" id="q-pointe" style="font-size:1rem;margin-top:.6rem;color:var(--cream)">—</div><div class="qvct-sub" id="q-pointe-sub">le plus utilisé sur la période</div></div>
     </div>
@@ -553,7 +553,7 @@ function buildSiteBar(){
   if(sites.length>1){var all=document.createElement('div');all.className='site-chip'+(currentSite===null?' active':'');all.textContent='Tous les sites';all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};bar.appendChild(all)}
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats();loadSeancesROI();};bar.appendChild(c)});
   var sel=document.createElement('select');sel.className='period-sel';
-  sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
+  sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats()};bar.appendChild(sel);
 }
 function updateActiveChip(){document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll)})}
@@ -562,7 +562,7 @@ async function loadStats(){
   var d=await fetch('/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:''),{credentials:'include'}).then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
   realSeancesTotal=d.total_seances||0;
   document.getElementById('kpi-total').textContent=fnum(realSeancesTotal);
-  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
+  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',ytd:'Depuis le 1er janvier',q1:'1er trimestre',q2:'2e trimestre',q3:'3e trimestre',q4:'4e trimestre'};
   document.getElementById('kpi-period-label').textContent=pL[currentPeriod]||'';
   document.getElementById('kpi-top-dept').textContent=d.by_departement&&d.by_departement[0]?d.by_departement[0].label:'\u2014';
   document.getElementById('kpi-top-at').textContent=d.by_atelier&&d.by_atelier[0]?d.by_atelier[0].atelier:'\u2014';
@@ -586,7 +586,7 @@ function buildSensorBar(){
   var bar=document.getElementById('sensor-site-bar');bar.innerHTML='';
   if(!sensorSite&&sites.length)sensorSite=sites[0].slug;
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(sensorSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){sensorSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadSensorStats()};bar.appendChild(c)});
-  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option>";
+  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){sensorPeriod=this.value;loadSensorStats()};bar.appendChild(sel);
 }
 async function loadSensorStats(){
@@ -635,7 +635,7 @@ async function openPassagesModal(){
   var modal=document.getElementById('passages-modal');modal.style.display='flex';
   document.getElementById('modal-title').textContent='Chargement...';document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Chargement...</div>';
   var d=await fetch('/api/sensors/passages/list?site_slug='+sensorSite+'&period='+sensorPeriod+'&limit=200',{credentials:'include'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
-  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois'};
+  var pL={today:"Aujourd'hui",week:'7 derniers jours',month:'30 derniers jours',ytd:'Depuis le 1er janvier',q1:'1er trimestre',q2:'2e trimestre',q3:'3e trimestre',q4:'4e trimestre'};
   document.getElementById('modal-title').textContent=(pL[sensorPeriod]||'')+' \u2014 '+(d?d.total:0)+' passage(s)';
   if(!d||!d.passages||!d.passages.length){document.getElementById('modal-passages-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.7rem">Aucun passage enregistr\u00e9</div>';return}
   var today=new Date().toISOString().slice(0,10);
@@ -649,7 +649,7 @@ function buildQvctBar(){
   var bar=document.getElementById('qvct-site-bar');bar.innerHTML='';
   if(!qvctSite&&sites.length)qvctSite=sites[0].slug;
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(qvctSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){qvctSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active')});c.classList.add('active');loadEffInp();loadQvct()};bar.appendChild(c)});
-  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='year'>12 mois</option>";
+  var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.value=qvctPeriod;sel.onchange=function(){qvctPeriod=this.value;loadQvct()};bar.appendChild(sel);
   loadEffInp();
 }
@@ -697,11 +697,15 @@ function renderQvct(){
 
   // projection
   // Projection annuelle : taux journalier × 228 jours ouvrés/an
-  // Jours ouvrés de la période sélectionnée (approximation sans fériés)
-  var joursOuvresPeriode={week:5,month:21,year:228}[qvctPeriod]||21;
+  // Sur 12 mois : on affiche le total mesuré directement (pas d'extrapolation)
+  var joursOuvresPeriode={week:5,month:21,ytd:joursOuvresEcoules(),year:228,q1:65,q2:65,q3:65,q4:65}[qvctPeriod]||21;
   var tauxJournalier=total>0?(total/joursOuvresPeriode):0;
   var proj=tauxJournalier>0?Math.round(tauxJournalier*228):0;
+  var projLabel=qvctPeriod==='ytd'||qvctPeriod==='year'?'séances mesurées sur la période':'séances projetées sur 12 mois (×228 j.o.)';
   document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
+  // Mettre à jour le sous-titre selon la période
+  var projSubEl=document.getElementById('q-projection-sub');
+  if(projSubEl)projSubEl.textContent=projLabel;
   // Synchroniser avec le ROI — une seule source de vérité
   if(proj>0){
     seancesAnnualiseesROI=proj;
