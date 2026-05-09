@@ -626,7 +626,7 @@ async function loadSensorStats(){
       var tempsTotalMin=Math.round(tempsTotalSec/60);
       tempsEl.textContent=tempsTotalMin+'min';
     }
-    if(tempsSub)tempsSub.textContent=fnum(Math.round(tempsTotalSec/60))+' min au total · moy. '+fmtD(dureeGlobale)+'/séance';
+    if(tempsSub)tempsSub.textContent=fnum(Math.round(tempsTotalSec/60))+' min au total'+(dureeG?' · moy. '+fmtD(dureeG)+'/séance':'');
   } else {
     tempsEl.textContent='—';
     if(tempsSub)tempsSub.textContent='heures mesurées (PIR)';
