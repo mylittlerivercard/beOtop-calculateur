@@ -938,10 +938,12 @@ def get_stats():
             by_mood = cur.fetchall()
 
             # ── AJOUT 2 suite : by_day sur la période effective ──────────────
+            # by_day : utilise build_date_clause pour cohérence avec toutes les périodes
+            day_clause = build_date_clause(period)
             cur.execute(
                 f"""SELECT date, COUNT(*) as n
                     FROM sessions
-                    WHERE date >= CURRENT_DATE - {day_interval} AND {site_clause}
+                    WHERE {day_clause} AND {site_clause}
                     GROUP BY date ORDER BY date""",
                 site_params
             )
