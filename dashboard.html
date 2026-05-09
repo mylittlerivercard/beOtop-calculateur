@@ -634,7 +634,7 @@ async function loadSensorStats(){
   }
   // Ateliers avec capteur PIR physique réel
   // Les accessoires (Lunettes Psio, Sensosphère, Photobiomodulation, Bol d'Air, Bain de Lumière) sont déclaratifs
-  var PIR_REELS=['Méridienne P127','Cocon de Sieste','Neurosonic Lit','Siège Massant 0 Gravité','Siège Massant Shiatsu','Transat 127','Siège Lecture'];
+  var PIR_REELS=['Méridienne P127','Cocon de Sieste','Neurosonic Lit','Siège Massant 0 Gravité','Siège Massant Shiatsu','Transat 127','Siège Lecture',"Bol d'Air Jacquier"];
   var occPIR=occ.filter(function(a){return PIR_REELS.indexOf(a.atelier||'')>=0});
   var occEl=document.getElementById('s-ateliers-occ');
   if(!occPIR.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
@@ -788,7 +788,12 @@ function renderQvct(){
   // ateliers part
   var aPE=document.getElementById('q-ateliers-part');
   if(!byAt.length){aPE.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>'}
-  else{var mAt=Math.max.apply(null,byAt.map(function(a){return a.n}).concat([1]));aPE.innerHTML=byAt.slice(0,6).map(function(a){var pct=total>0?Math.round(a.n/total*100):0;return '<div class="bar-item"><div class="bar-label">'+a.atelier+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(a.n/mAt*100)+'%;--bar-color:var(--mist)"></div></div><div class="bar-n">'+pct+'%</div></div>'}).join('')}
+  else{var mAt=Math.max.apply(null,byAt.map(function(a){return a.n}).concat([1]));var ACCESSOIRES=['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+  aPE.innerHTML=byAt.slice(0,8).map(function(a){
+    var pct=total>0?Math.round(a.n/total*100):0;
+    var isAcc=ACCESSOIRES.indexOf(a.atelier)>=0;
+    var srcBadge=isAcc?'<span style="font-size:.48rem;color:var(--muted);margin-left:.3rem;opacity:.8">kiosque</span>':'';
+    return '<div class="bar-item"><div class="bar-label">'+a.atelier+srcBadge+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(a.n/mAt*100)+'%;--bar-color:'+(isAcc?'var(--muted)':'var(--mist)')+'" ></div></div><div class="bar-n">'+pct+'%</div></div>'}).join('')}
 
   // heatmap horaire
   var hE=document.getElementById('q-heures-chart');var hL=document.getElementById('q-heures-labels');
