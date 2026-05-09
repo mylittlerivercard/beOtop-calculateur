@@ -358,8 +358,8 @@
       <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Temps d’utilisation</div><div class="kpi-val" id="s-kpi-temps">—</div><div class="kpi-sub" id="s-kpi-temps-sub">heures mesurées (PIR)</div></div>
     </div>
     <div class="sensor-grid">
-      <div class="card"><div class="card-title">Taux d'occupation par atelier</div><div id="s-ateliers-occ"></div></div>
-      <div class="card"><div class="card-title">Durée de session par atelier</div><div id="s-ateliers-duree"></div></div>
+      <div class="card"><div class="card-title">Taux d'occupation par atelier</div><div style="font-size:.58rem;color:var(--muted);margin-bottom:.6rem">Équipements avec capteur PIR uniquement</div><div id="s-ateliers-occ"></div></div>
+      <div class="card"><div class="card-title">Durée de session par atelier</div><div style="font-size:.58rem;color:var(--muted);margin-bottom:.6rem">Équipements avec capteur PIR uniquement · les accessoires (Lunettes Psio, Photobiomodulation…) sont déclaratifs</div><div id="s-ateliers-duree"></div></div>
     </div>
     <div class="card" style="margin-bottom:1rem"><div class="card-title">Visites par heure — faisceau</div><div id="s-chart-heures" style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:.5rem"></div><div id="s-chart-heures-labels" style="display:flex;gap:6px;margin-top:4px"></div></div>
     <div class="card" style="margin-bottom:1rem">
@@ -632,12 +632,18 @@ async function loadSensorStats(){
     tempsEl.textContent='—';
     if(tempsSub)tempsSub.textContent='heures mesurées (PIR)';
   }
+  // Ateliers avec capteur PIR physique réel
+  // Les accessoires (Lunettes Psio, Sensosphère, Photobiomodulation, Bol d'Air, Bain de Lumière) sont déclaratifs
+  var PIR_REELS=['Méridienne P127','Cocon de Sieste','Neurosonic Lit','Siège Massant 0 Gravité','Siège Massant Shiatsu','Transat 127','Siège Lecture'];
+  var occPIR=occ.filter(function(a){return PIR_REELS.indexOf(a.atelier||'')>=0});
   var occEl=document.getElementById('s-ateliers-occ');
-  if(!occ.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
-  else{occEl.innerHTML=occ.map(function(a){var col=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+col+'"></div></div></div><div class="atelier-taux" style="color:'+col+'">'+a.taux_occupation+'%</div></div>'}).join('')}
+  if(!occPIR.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
+  else{occEl.innerHTML=occPIR.map(function(a){var col=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+col+'"></div></div></div><div class="atelier-taux" style="color:'+col+'">'+a.taux_occupation+'%</div></div>'}).join('')}
+  var sessPIR=sess.filter(function(a){return PIR_REELS.indexOf(a.atelier||'')>=0});
+
   var dEl=document.getElementById('s-ateliers-duree');
-  if(!sess.length){dEl.innerHTML='<div class="sensor-empty">Aucune session enregistr\u00e9e</div>'}
-  else{var mD=Math.max.apply(null,sess.map(function(a){return a.duree_moy_sec||0}).concat([1]));dEl.innerHTML=sess.map(function(a){var d2=a.duree_moy_sec||0;var p=Math.round(d2/mD*100);return '<div class="atelier-row"><div class="atelier-name">'+(a.atelier||'Global')+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtD(d2)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">\u00d7'+a.nb_sessions+'</div></div>'}).join('')}
+  if(!sessPIR.length){dEl.innerHTML='<div class="sensor-empty">Aucune session enregistr\u00e9e</div>'}
+  else{var mD=Math.max.apply(null,sessPIR.map(function(a){return a.duree_moy_sec||0}).concat([1]));dEl.innerHTML=sessPIR.map(function(a){var d2=a.duree_moy_sec||0;var p=Math.round(d2/mD*100);return '<div class="atelier-row"><div class="atelier-name">'+(a.atelier||'Global')+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtD(d2)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">\u00d7'+a.nb_sessions+'</div></div>'}).join('')}
   renderSensorHC(d.passages_par_heure||[]);
   await loadRecentPassages();
   var now=new Date();document.getElementById('s-last-update').textContent='Mis \u00e0 jour \u00e0 '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
