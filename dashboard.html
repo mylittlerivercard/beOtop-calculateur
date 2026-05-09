@@ -123,7 +123,7 @@
   .evol-row{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;margin-bottom:.3rem}
   /* CAPTEURS */
   .sensor-site-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
-  .sensor-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+  .sensor-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem}
   .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
   .atelier-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;padding:.7rem .8rem;background:rgba(255,255,255,0.85);border-radius:9px;border:1px solid rgba(0,0,0,.12)}
   .atelier-name{font-size:.72rem;color:var(--muted2);width:140px;flex-shrink:0;font-weight:500}
@@ -207,7 +207,7 @@
   .dept-at-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .6rem;border-radius:10px;font-size:.6rem;background:rgba(154,106,31,.12);border:1px solid rgba(154,106,31,.30);color:var(--gold);font-weight:600}
   @media(max-width:900px){.qvct-grid-3{grid-template-columns:1fr 1fr}}
   @media(max-width:800px){
-    .kpi-row,.sensor-kpi-row,.qvct-kpi-row{grid-template-columns:repeat(2,1fr)}
+    .kpi-row,.qvct-kpi-row{grid-template-columns:repeat(2,1fr)}.sensor-kpi-row{grid-template-columns:repeat(3,1fr)}
     .grid-2,.sensor-grid,.qvct-grid-3{grid-template-columns:1fr}
     .roi-grid,.roi-kpis{grid-template-columns:repeat(2,1fr)}
     .drh-grid,.context-grid{grid-template-columns:1fr 1fr}
@@ -355,6 +355,7 @@
       <div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Taux occupation moyen</div><div class="kpi-val" id="s-kpi-taux">—</div><div class="kpi-sub">Tous ateliers · période</div></div>
       <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Durée session moyenne</div><div class="kpi-val" id="s-kpi-duree">—</div><div class="kpi-sub" id="s-kpi-duree-sub"></div></div>
       <div class="kpi" style="--accent:#9b8fc4"><div class="kpi-label">Sessions enregistrées</div><div class="kpi-val" id="s-kpi-sessions">—</div><div class="kpi-sub">période sélectionnée</div></div>
+      <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Temps d’utilisation</div><div class="kpi-val" id="s-kpi-temps">—</div><div class="kpi-sub" id="s-kpi-temps-sub">heures mesurées (PIR)</div></div>
     </div>
     <div class="sensor-grid">
       <div class="card"><div class="card-title">Taux d'occupation par atelier</div><div id="s-ateliers-occ"></div></div>
@@ -612,6 +613,24 @@ async function loadSensorStats(){
   document.getElementById('s-kpi-duree').textContent=dureeG?fmtD(dureeG):'\u2014';
   document.getElementById('s-kpi-duree-sub').textContent=sess.length?'sur '+sess.length+' atelier(s)':'aucune session';
   document.getElementById('s-kpi-sessions').textContent=fnum(totalSess);
+
+  // Temps total d'utilisation = somme duree_moy_sec × nb_sessions par atelier
+  var tempsTotalSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
+  var tempsTotalH=Math.round(tempsTotalSec/3600*10)/10;
+  var tempsEl=document.getElementById('s-kpi-temps');
+  var tempsSub=document.getElementById('s-kpi-temps-sub');
+  if(tempsTotalH>0){
+    tempsEl.textContent=tempsTotalH+'h';
+    // Détail en minutes si < 1h
+    if(tempsTotalH<1){
+      var tempsTotalMin=Math.round(tempsTotalSec/60);
+      tempsEl.textContent=tempsTotalMin+'min';
+    }
+    if(tempsSub)tempsSub.textContent=fnum(Math.round(tempsTotalSec/60))+' min au total · moy. '+fmtD(dureeGlobale)+'/séance';
+  } else {
+    tempsEl.textContent='—';
+    if(tempsSub)tempsSub.textContent='heures mesurées (PIR)';
+  }
   var occEl=document.getElementById('s-ateliers-occ');
   if(!occ.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
   else{occEl.innerHTML=occ.map(function(a){var col=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+col+'"></div></div></div><div class="atelier-taux" style="color:'+col+'">'+a.taux_occupation+'%</div></div>'}).join('')}
@@ -637,7 +656,7 @@ function renderSensorHC(pph){
   el.innerHTML=heures.map(function(h){var n=data[h]||0;var p=Math.round(n/max*100);var col=n===0?'rgba(0,0,0,.07)':n>=max*0.7?'var(--sage)':n>=max*0.4?'var(--gold)':'var(--mist)';return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px">'+(n>0?'<div style="font-size:.52rem;color:var(--muted2)">'+n+'</div>':'')+'<div style="width:100%;border-radius:4px 4px 0 0;background:'+col+';height:'+Math.max(p,4)+'%"></div></div>'}).join('');
   lbl.innerHTML=heures.map(function(h){return '<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}).join('');
 }
-function showSensorEmpty(){['s-kpi-passages','s-kpi-taux','s-kpi-duree','s-kpi-sessions'].forEach(function(id){document.getElementById(id).textContent='\u2014'});['s-ateliers-occ','s-ateliers-duree','s-passages-list'].forEach(function(id){document.getElementById(id).innerHTML='<div class="sensor-empty">S\u00e9lectionnez un site</div>'})}
+function showSensorEmpty(){['s-kpi-passages','s-kpi-taux','s-kpi-duree','s-kpi-sessions','s-kpi-temps'].forEach(function(id){document.getElementById(id).textContent='\u2014'});['s-ateliers-occ','s-ateliers-duree','s-passages-list'].forEach(function(id){document.getElementById(id).innerHTML='<div class="sensor-empty">S\u00e9lectionnez un site</div>'})}
 function startAutoRefresh(){stopAutoRefresh();sensorTimer=setInterval(function(){if(document.getElementById('view-capteurs').classList.contains('active'))loadSensorStats()},30000)}
 function stopAutoRefresh(){if(sensorTimer){clearInterval(sensorTimer);sensorTimer=null}}
 async function openPassagesModal(){
