@@ -508,7 +508,7 @@ async function loadSeancesROI(){
   var site=currentSite;
   if(!site&&sites.length)site=sites[0].slug;
   if(!site)return;
-  var dc=await fetch('/api/sensors/stats?site_slug='+site+'&period=year',{credentials:'include'})
+  var dc=await fetch('/api/sensors/stats?site_slug='+site+'&period=ytd',{credentials:'include'})
     .then(function(r){return r.ok?r.json():{}}).catch(function(){return{}});
   var sess=dc.sessions_par_atelier||[];
   var totalPIR=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
@@ -697,11 +697,27 @@ function renderQvct(){
 
   // projection
   // Projection annuelle : taux journalier × 228 jours ouvrés/an
-  // Sur 12 mois : on affiche le total mesuré directement (pas d'extrapolation)
-  var joursOuvresPeriode={week:5,month:21,ytd:joursOuvresEcoules(),year:228,q1:65,q2:65,q3:65,q4:65}[qvctPeriod]||21;
-  var tauxJournalier=total>0?(total/joursOuvresPeriode):0;
+  // Calcul des jours ouvrés réels couverts par les données (by_day)
+  function joursOuvresDansPlage(days){
+    if(!days||!days.length)return 1;
+    // Compter les jours ouvrés entre premier et dernier jour de données
+    var dates=days.map(function(d){
+      var k=d.date||d.day||d.jour||'';
+      if(!k)return null;
+      var p=k.slice(0,10).split('-');
+      return p.length===3?new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])):null;
+    }).filter(Boolean).sort(function(a,b){return a-b});
+    if(!dates.length)return 1;
+    var debut=dates[0],fin=dates[dates.length-1];
+    var count=0,d=new Date(debut);
+    while(d<=fin){var dow=d.getDay();if(dow!==0&&dow!==6)count++;d.setDate(d.getDate()+1)}
+    return Math.max(count,1);
+  }
+
+  var joursReels=joursOuvresDansPlage(byDay);
+  var tauxJournalier=total>0&&joursReels>0?(total/joursReels):0;
   var proj=tauxJournalier>0?Math.round(tauxJournalier*228):0;
-  var projLabel=qvctPeriod==='ytd'||qvctPeriod==='year'?'séances mesurées sur la période':'séances projetées sur 12 mois (×228 j.o.)';
+  var projLabel=(qvctPeriod==='year'&&joursReels>=200)?'séances mesurées sur la période':'séances projetées sur 12 mois ('+joursReels+' j.o. mesurés × 228)';
   document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
   // Mettre à jour le sous-titre selon la période
   var projSubEl=document.getElementById('q-projection-sub');
