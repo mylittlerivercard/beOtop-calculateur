@@ -545,6 +545,15 @@ async function init(){
   if(sites.length){currentSite=sites[0].slug;sensorSite=sites[0].slug;qvctSite=sites[0].slug;updateActiveChip()}
   loadStats();
   loadSeancesROI();
+  // Précharger les données QVCT silencieusement pour que la fréquence soit disponible
+  setTimeout(function(){
+    if(qvctSite){
+      fetch('/api/sensors/stats?site_slug='+qvctSite+'&period=month',{credentials:'include'})
+        .then(function(r){return r.ok?r.json():{}})
+        .then(function(dc){_qS=dc;})
+        .catch(function(){});
+    }
+  },500);
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin \u00b7 tous les sites':sites.length+' site(s)';
 }
 
@@ -729,9 +738,15 @@ function renderQvct(){
   }
   document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursOuvresPeriode+' jours ouvrés → '+Math.round(tauxJournalier*10)/10+' séances/jour × 228';
 
-  // fréquence
-  if(nbSal>0&&total>0){document.getElementById('q-frequence').textContent=(Math.round(total/nbSal*10)/10)+'x';document.getElementById('q-frequence-sub').textContent='usage moyen par collaborateur'}
-  else{document.getElementById('q-frequence').textContent='\u2014';document.getElementById('q-frequence-sub').textContent='effectif non renseign\u00e9'}
+  // fréquence — basée sur sessions PIR réelles
+  var freqTotal=total>0?total:(seancesAnnualiseesROI>0?Math.round(seancesAnnualiseesROI/228*joursReels):0);
+  if(nbSal>0&&freqTotal>0){
+    document.getElementById('q-frequence').textContent=(Math.round(freqTotal/nbSal*10)/10)+'x';
+    document.getElementById('q-frequence-sub').textContent='usage moyen par collaborateur';
+  } else {
+    document.getElementById('q-frequence').textContent='\u2014';
+    document.getElementById('q-frequence-sub').textContent=nbSal===0?'effectif non renseign\u00e9':'aucune donn\u00e9e';
+  }
 
   // atelier phare
   if(byAt.length){var pctAt=total>0?Math.round(byAt[0].n/total*100):0;document.getElementById('q-pointe').textContent=byAt[0].atelier;document.getElementById('q-pointe-sub').textContent=byAt[0].n+' s\u00e9ances \u00b7 '+pctAt+'% de l\'activit\u00e9'}
