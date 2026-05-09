@@ -466,7 +466,7 @@ var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitig\u00e9',adop
 var MOOD_ICONS={'\u00c9puis\u00e9':'\ud83d\ude2e\u200d\ud83d\udca8','Neutre':'\ud83d\ude10','Mieux':'\ud83d\ude42','Recharg\u00e9':'\u2728'};
 var MOOD_COLORS={'\u00c9puis\u00e9':'192,57,43','Neutre':'106,96,112','Mieux':'176,125,46','Recharg\u00e9':'45,107,66'};
 var MOODS_ORDER=['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'];
-var currentSite=null,currentPeriod='today',sites=[],realSeancesTotal=0,roiBuilt=false;
+var currentSite=null,currentPeriod='month',sites=[],realSeancesTotal=0,roiBuilt=false;
 var seancesAnnualiseesROI=0; // séances extrapolées sur 365 jours ouvrés — chargé depuis le 1er janvier
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
@@ -563,7 +563,7 @@ function buildSiteBar(){
   if(sites.length>1){var all=document.createElement('div');all.className='site-chip'+(currentSite===null?' active':'');all.textContent='Tous les sites';all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};bar.appendChild(all)}
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats();loadSeancesROI();};bar.appendChild(c)});
   var sel=document.createElement('select');sel.className='period-sel';
-  sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
+  sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats()};bar.appendChild(sel);
 }
 function updateActiveChip(){document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll)})}
@@ -689,6 +689,8 @@ async function loadQvct(){
 }
 function renderQvct(){
   var dk=_qD,dc=_qS,nbSal=getEff();
+  // Guard : ne pas rendre si loadQvct n'a pas encore été appelé
+  if(!dk||typeof dk!=='object'){return;}
 
   // SOURCE SÉANCES : sensor_sessions (PIR) — somme des nb_sessions par atelier
   // Fallback sur kiosque déclaratif si pas de données capteurs
