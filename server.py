@@ -71,6 +71,48 @@ def normalize_atelier(name):
     return ATELIER_CANON.get(name, name) if name else name
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── K-anonymisation (k=5) ─────────────────────────────────────────────────────
+# Tout groupe de moins de 5 individus est supprimé ou fusionné dans "Autres"
+# Conformité RGPD : aucun indicateur ne peut être rattaché à < 5 personnes
+K_ANONYMAT = 5
+
+def kanon_filter(rows, key_field, count_field='n', label_autres='Autres'):
+    """
+    Filtre une liste de dicts :
+    - Supprime les lignes dont count_field < K_ANONYMAT
+    - Si des lignes sont supprimées, ajoute une ligne 'Autres' avec le total agrégé
+    Retourne (liste_filtrée, suppression_appliquée)
+    """
+    kept   = [r for r in rows if (r.get(count_field) or 0) >= K_ANONYMAT]
+    others = [r for r in rows if (r.get(count_field) or 0) < K_ANONYMAT]
+    if others:
+        total_others = sum(r.get(count_field, 0) for r in others)
+        if total_others >= K_ANONYMAT:
+            # Assez de personnes dans le groupe agrégé pour l'afficher
+            kept.append({key_field: label_autres, count_field: total_others, '_aggregated': True})
+        # Si même le groupe "Autres" < 5, on ne l'affiche pas (évite la déduction par soustraction)
+    return kept, bool(others)
+
+def kanon_filter_cross(rows, key1, key2, count_field='n'):
+    """
+    Pour les tableaux croisés (ex: département × mood) :
+    supprime les lignes où le groupe (key1, key2) < K_ANONYMAT.
+    Supprime aussi les key1 dont le total < K_ANONYMAT.
+    """
+    # Calculer les totaux par key1
+    totaux = {}
+    for r in rows:
+        k = r.get(key1, '')
+        totaux[k] = totaux.get(k, 0) + (r.get(count_field) or 0)
+    # Filtrer : garder uniquement les key1 avec total >= K et les lignes avec n >= K
+    kept = [
+        r for r in rows
+        if totaux.get(r.get(key1, ''), 0) >= K_ANONYMAT
+        and (r.get(count_field) or 0) >= K_ANONYMAT
+    ]
+    return kept
+# ─────────────────────────────────────────────────────────────────────────────
+
 def serialize_row(row):
     d = dict(row)
     for k, v in d.items():
@@ -176,6 +218,42 @@ def init_db():
         ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_site ON sensor_sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_ts   ON sensor_sessions(debut)')
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS devis (
+                id              SERIAL PRIMARY KEY,
+                numero          TEXT NOT NULL,
+                created_at      TIMESTAMP DEFAULT NOW(),
+                valid_until     TEXT,
+                prospect        TEXT,
+                contact         TEXT,
+                commercial      TEXT,
+                nb_employes     INTEGER,
+                salaire_moyen   NUMERIC,
+                mode_travail    TEXT,
+                jours_hybride   INTEGER,
+                posture         TEXT,
+                scenario        TEXT,
+                option_espace   TEXT,
+                surface_m2      NUMERIC,
+                nb_postes       INTEGER,
+                equipements     JSONB,
+                capex_total     NUMERIC,
+                cout_annuel     NUMERIC,
+                gain_annuel     NUMERIC,
+                economie_nette  NUMERIC,
+                roi_pct         NUMERIC,
+                payback_mois    NUMERIC,
+                taux_dysf       NUMERIC,
+                part_adressable NUMERIC,
+                deco_pm2        NUMERIC,
+                im_pm2          NUMERIC,
+                formation       NUMERIC,
+                animation       NUMERIC,
+                site_slug       TEXT,
+                client_id       INTEGER REFERENCES clients(id)
+            )
+        """)
 
         conn.commit()
 
@@ -834,6 +912,127 @@ def get_site_filter(site_slug=None):
         return f"site_slug IN ({placeholders})", slugs
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# DEVIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.route('/api/devis/save', methods=['POST'])
+@login_required
+def save_devis():
+    """Enregistre un devis généré depuis le calculateur ROI."""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+
+    import json as _json
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO devis (
+                    numero, valid_until,
+                    prospect, contact, commercial,
+                    nb_employes, salaire_moyen, mode_travail, jours_hybride,
+                    posture, scenario, option_espace, surface_m2, nb_postes,
+                    equipements, capex_total, cout_annuel, gain_annuel,
+                    economie_nette, roi_pct, payback_mois,
+                    taux_dysf, part_adressable, deco_pm2, im_pm2,
+                    formation, animation, site_slug, client_id
+                ) VALUES (
+                    %(numero)s, %(valid_until)s,
+                    %(prospect)s, %(contact)s, %(commercial)s,
+                    %(nb_employes)s, %(salaire_moyen)s, %(mode_travail)s, %(jours_hybride)s,
+                    %(posture)s, %(scenario)s, %(option_espace)s, %(surface_m2)s, %(nb_postes)s,
+                    %(equipements)s, %(capex_total)s, %(cout_annuel)s, %(gain_annuel)s,
+                    %(economie_nette)s, %(roi_pct)s, %(payback_mois)s,
+                    %(taux_dysf)s, %(part_adressable)s, %(deco_pm2)s, %(im_pm2)s,
+                    %(formation)s, %(animation)s, %(site_slug)s, %(client_id)s
+                ) RETURNING id
+            """, {
+                'numero':          data.get('numero'),
+                'valid_until':     data.get('valid_until'),
+                'prospect':        data.get('prospect'),
+                'contact':         data.get('contact'),
+                'commercial':      data.get('commercial'),
+                'nb_employes':     data.get('nb_employes'),
+                'salaire_moyen':   data.get('salaire_moyen'),
+                'mode_travail':    data.get('mode_travail'),
+                'jours_hybride':   data.get('jours_hybride'),
+                'posture':         data.get('posture'),
+                'scenario':        data.get('scenario'),
+                'option_espace':   data.get('option_espace'),
+                'surface_m2':      data.get('surface_m2'),
+                'nb_postes':       data.get('nb_postes'),
+                'equipements':     _json.dumps(data.get('equipements', [])),
+                'capex_total':     data.get('capex_total'),
+                'cout_annuel':     data.get('cout_annuel'),
+                'gain_annuel':     data.get('gain_annuel'),
+                'economie_nette':  data.get('economie_nette'),
+                'roi_pct':         data.get('roi_pct'),
+                'payback_mois':    data.get('payback_mois'),
+                'taux_dysf':       data.get('taux_dysf'),
+                'part_adressable': data.get('part_adressable'),
+                'deco_pm2':        data.get('deco_pm2'),
+                'im_pm2':          data.get('im_pm2'),
+                'formation':       data.get('formation'),
+                'animation':       data.get('animation'),
+                'site_slug':       data.get('site_slug'),
+                'client_id':       session.get('client_id'),
+            })
+            devis_id = cur.fetchone()['id']
+        conn.commit()
+
+    return jsonify({'ok': True, 'id': devis_id, 'numero': data.get('numero')}), 201
+
+
+@app.route('/api/devis', methods=['GET'])
+@login_required
+def list_devis():
+    """Liste les devis du client connecté, triés par date décroissante."""
+    role      = session.get('role')
+    client_id = session.get('client_id')
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if role == 'admin':
+                cur.execute("""
+                    SELECT id, numero, created_at, valid_until,
+                           prospect, commercial, nb_employes,
+                           capex_total, roi_pct, economie_nette, site_slug
+                    FROM devis ORDER BY created_at DESC LIMIT 200
+                """)
+            else:
+                cur.execute("""
+                    SELECT id, numero, created_at, valid_until,
+                           prospect, commercial, nb_employes,
+                           capex_total, roi_pct, economie_nette, site_slug
+                    FROM devis WHERE client_id=%s ORDER BY created_at DESC LIMIT 100
+                """, [client_id])
+            rows = cur.fetchall()
+
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/devis/<int:devis_id>', methods=['GET'])
+@login_required
+def get_devis(devis_id):
+    """Détail complet d'un devis."""
+    role      = session.get('role')
+    client_id = session.get('client_id')
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if role == 'admin':
+                cur.execute("SELECT * FROM devis WHERE id=%s", [devis_id])
+            else:
+                cur.execute("SELECT * FROM devis WHERE id=%s AND client_id=%s", [devis_id, client_id])
+            row = cur.fetchone()
+
+    if not row:
+        return jsonify({'error': 'Devis introuvable'}), 404
+    return jsonify(serialize_row(row))
+
+# ─────────────────────────────────────────────────────────────────────────────
+
 @app.route('/api/stats', methods=['GET'])
 @login_required
 def get_stats():
@@ -1113,21 +1312,28 @@ def get_stats():
             by_departement_atelier.append({'departement': dept, 'atelier': atelier, 'n': n})
     # ─────────────────────────────────────────────────────────────────────────
 
+        # ── K-anonymisation (k=5) avant retour ──────────────────────────────────
+    by_dept_k,  _ = kanon_filter([serialize_row(r) for r in by_dept],    'label')
+    by_mood_k,  _ = kanon_filter([serialize_row(r) for r in by_mood],    'mood')
+    by_dept_mood_k = kanon_filter_cross([serialize_row(r) for r in by_departement_mood], 'departement', 'mood')
+    by_dept_hour_k = kanon_filter_cross([serialize_row(r) for r in by_departement_hour], 'departement', 'h')
+    by_dept_at_k   = kanon_filter_cross(by_departement_atelier, 'departement', 'atelier')
+    # ─────────────────────────────────────────────────────────────────────────
+
     return jsonify({
-        'period': period,
-        'total_seances': total,
-        'by_departement':         [serialize_row(r) for r in by_dept],
+        'period':                 period,
+        'total_seances':          total,
+        'by_departement':         by_dept_k,
         'by_hour':                [serialize_row(r) for r in by_hour],
         'by_atelier':             by_atelier,
-        'by_mood':                [serialize_row(r) for r in by_mood],
+        'by_mood':                by_mood_k,
         'by_day':                 [serialize_row(r) for r in by_day],
         'by_site':                [serialize_row(r) for r in by_site],
-        'by_departement_mood':    [serialize_row(r) for r in by_departement_mood],
-        # ── AJOUTS 5, 6, 7 ───────────────────────────────────────────────────
-        'by_departement_hour':    [serialize_row(r) for r in by_departement_hour],
+        'by_departement_mood':    by_dept_mood_k,
+        'by_departement_hour':    by_dept_hour_k,
         'by_atelier_hour':        by_atelier_hour,
-        'by_departement_atelier': by_departement_atelier,
-        # ─────────────────────────────────────────────────────────────────────
+        'by_departement_atelier': by_dept_at_k,
+        '_kanon_k':               K_ANONYMAT,
     })
 
 
@@ -1166,10 +1372,22 @@ def export_csv():
                 [from_date, to_date] + params
             )
             rows = cur.fetchall()
+    # K-anonymisation : filtrer les groupes < 5 avant export
+    from collections import Counter
+    dept_counts = Counter(serialize_row(r)['departement'] for r in rows)
+    rows_kanon  = [r for r in rows if dept_counts.get(serialize_row(r)['departement'], 0) >= K_ANONYMAT]
+    filtered    = len(rows) - len(rows_kanon)
+
     output = io.StringIO()
     writer = csv.writer(output)
+    # En-tête RGPD
+    writer.writerow(['# Export DUERP beOtop — Données agrégées et anonymisées'])
+    writer.writerow([f'# K-anonymat k≥{K_ANONYMAT} appliqué — {filtered} enregistrements filtrés'])
+    writer.writerow([f'# Période : {from_date} → {to_date} — Généré le {date.today().isoformat()}'])
+    writer.writerow(["# Conformité RGPD Art. 89 — Finalité : mesure d'impact QVCT (DUERP)"])
+    writer.writerow([])
     writer.writerow(['date', 'heure', 'departement', 'ateliers', 'mood', 'site'])
-    for r in rows:
+    for r in rows_kanon:
         sr = serialize_row(r)
         writer.writerow([sr['date'], sr['heure'], sr['departement'], sr['ateliers'], sr['mood'], sr['site_slug']])
     return Response(
