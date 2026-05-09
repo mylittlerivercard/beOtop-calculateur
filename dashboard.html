@@ -504,41 +504,24 @@ function joursOuvresEcoules(){
 }
 
 async function loadSeancesROI(){
+  // Estimation initiale — sera affinée par renderQvct() quand l'onglet QVCT est ouvert
   var site=currentSite;
   if(!site&&sites.length)site=sites[0].slug;
   if(!site)return;
-
-  // Charger les séances capteurs depuis le 1er janvier
-  var annee=new Date().getFullYear();
-  var debut=annee+'-01-01';
-  var fin=new Date().toISOString().slice(0,10);
-
-  // Utiliser /api/sensors/stats sur la période year pour avoir le total PIR
   var dc=await fetch('/api/sensors/stats?site_slug='+site+'&period=year',{credentials:'include'})
     .then(function(r){return r.ok?r.json():{}}).catch(function(){return{}});
-
   var sess=dc.sessions_par_atelier||[];
   var totalPIR=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
-
   if(totalPIR>0){
-    var joursEcoules=joursOuvresEcoules();
-    var tauxJournalier=totalPIR/joursEcoules;
-    seancesAnnualiseesROI=Math.round(tauxJournalier*228); // 228 jours ouvrés/an (52×5 − 11 fériés)
+    seancesAnnualiseesROI=Math.round((totalPIR/joursOuvresEcoules())*228);
   } else {
-    // Fallback kiosque : charger depuis le 1er janvier
     var dk=await fetch('/api/stats?period=year&site='+site,{credentials:'include'})
       .then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
-    var totalKiosk=dk.total_seances||0;
-    if(totalKiosk>0){
-      var joursEcoules=joursOuvresEcoules();
-      seancesAnnualiseesROI=Math.round((totalKiosk/joursEcoules)*228); // 228 jours ouvrés/an
-    }
+    var tk=dk.total_seances||0;
+    if(tk>0) seancesAnnualiseesROI=Math.round((tk/joursOuvresEcoules())*228);
   }
-
-  // Recalculer le ROI si déjà affiché
   if(roiBuilt)calcROI();
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
@@ -719,6 +702,11 @@ function renderQvct(){
   var tauxJournalier=total>0?(total/joursOuvresPeriode):0;
   var proj=tauxJournalier>0?Math.round(tauxJournalier*228):0;
   document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
+  // Synchroniser avec le ROI — une seule source de vérité
+  if(proj>0){
+    seancesAnnualiseesROI=proj;
+    if(roiBuilt)calcROI();
+  }
   document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursOuvresPeriode+' jours ouvrés → '+Math.round(tauxJournalier*10)/10+' séances/jour × 228';
 
   // fréquence
