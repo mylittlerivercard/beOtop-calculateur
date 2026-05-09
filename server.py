@@ -601,8 +601,18 @@ def sensors_stats():
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'30 days\''
     elif period == 'year':
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'365 days\''
+    elif period == 'ytd':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+    elif period == 'q1':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+    elif period == 'q2':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+    elif period == 'q3':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+    elif period == 'q4':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
     else:
-        ts_clause = "1=1"
+        ts_clause = "1=1" 
 
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -692,6 +702,16 @@ def sensors_passages_list():
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'30 days\''
     elif period == 'year':
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'365 days\''
+    elif period == 'ytd':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+    elif period == 'q1':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+    elif period == 'q2':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+    elif period == 'q3':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+    elif period == 'q4':
+        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
     else:
         ts_clause = "1=1"
 
@@ -762,7 +782,12 @@ def build_date_clause(period, prefix=''):
     if period == 'week':   return f"{p}date >= CURRENT_DATE - INTERVAL '7 days'"
     if period == 'month':  return f"{p}date >= CURRENT_DATE - INTERVAL '30 days'"
     if period == 'year':   return f"{p}date >= CURRENT_DATE - INTERVAL '365 days'"
-    return "1=1"
+    if period == 'ytd':    return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE)"
+    if period == 'q1':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) AND {p}date < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'"
+    if period == 'q2':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months' AND {p}date < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months'"
+    if period == 'q3':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months' AND {p}date < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
+    if period == 'q4':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
+    return "1=1" 
 
 def get_site_filter(site_slug=None):
     role = session.get('role')
@@ -802,6 +827,10 @@ def get_stats():
         day_interval = "INTERVAL '7 days'"
     elif period == 'year':
         day_interval = "INTERVAL '365 days'"
+    elif period == 'ytd':
+        day_interval = "INTERVAL '365 days'"
+    elif period in ('q1', 'q2', 'q3', 'q4'):
+        day_interval = "INTERVAL '365 days'"
     else:
         day_interval = "INTERVAL '30 days'"
     # ─────────────────────────────────────────────────────────────────────────
@@ -830,6 +859,21 @@ def get_stats():
             elif period == 'year':
                 ts_h     = '"timestamp" >= NOW() - INTERVAL \'365 days\''
                 ts_debut = 'debut >= NOW() - INTERVAL \'365 days\''
+            elif period == 'ytd':
+                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+            elif period == 'q1':
+                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+            elif period == 'q2':
+                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+            elif period == 'q3':
+                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+            elif period == 'q4':
+                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
             else:
                 ts_h     = '1=1'
                 ts_debut = '1=1'
