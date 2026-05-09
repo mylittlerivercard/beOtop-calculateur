@@ -466,6 +466,7 @@ var MOOD_ICONS={'\u00c9puis\u00e9':'\ud83d\ude2e\u200d\ud83d\udca8','Neutre':'\u
 var MOOD_COLORS={'\u00c9puis\u00e9':'192,57,43','Neutre':'106,96,112','Mieux':'176,125,46','Recharg\u00e9':'45,107,66'};
 var MOODS_ORDER=['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'];
 var currentSite=null,currentPeriod='today',sites=[],realSeancesTotal=0,roiBuilt=false;
+var seancesAnnualiseesROI=0; // séances extrapolées sur 365 jours ouvrés — chargé depuis le 1er janvier
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
@@ -485,6 +486,59 @@ function onEffectifChange(){
   renderQvct();
 }
 function loadEffInp(){document.getElementById('q-nb-sal').value=getEff()||''}
+
+// ── Calcul séances annualisées pour le ROI ───────────────────────────────────
+// SOURCE : sensor_sessions PIR depuis le 1er janvier
+// Logique : séances réelles / jours ouvrés écoulés × 365 jours ouvrés/an
+function joursOuvresEcoules(){
+  var debut=new Date(new Date().getFullYear(),0,1); // 1er janvier
+  var today=new Date();
+  var count=0;
+  var d=new Date(debut);
+  while(d<=today){
+    var dow=d.getDay();
+    if(dow!==0&&dow!==6)count++;
+    d.setDate(d.getDate()+1);
+  }
+  return Math.max(count,1);
+}
+
+async function loadSeancesROI(){
+  var site=currentSite;
+  if(!site&&sites.length)site=sites[0].slug;
+  if(!site)return;
+
+  // Charger les séances capteurs depuis le 1er janvier
+  var annee=new Date().getFullYear();
+  var debut=annee+'-01-01';
+  var fin=new Date().toISOString().slice(0,10);
+
+  // Utiliser /api/sensors/stats sur la période year pour avoir le total PIR
+  var dc=await fetch('/api/sensors/stats?site_slug='+site+'&period=year',{credentials:'include'})
+    .then(function(r){return r.ok?r.json():{}}).catch(function(){return{}});
+
+  var sess=dc.sessions_par_atelier||[];
+  var totalPIR=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
+
+  if(totalPIR>0){
+    var joursEcoules=joursOuvresEcoules();
+    var tauxJournalier=totalPIR/joursEcoules;
+    seancesAnnualiseesROI=Math.round(tauxJournalier*228); // 228 jours ouvrés/an (52×5 − 11 fériés)
+  } else {
+    // Fallback kiosque : charger depuis le 1er janvier
+    var dk=await fetch('/api/stats?period=year&site='+site,{credentials:'include'})
+      .then(function(r){return r.json()}).catch(function(){return{total_seances:0}});
+    var totalKiosk=dk.total_seances||0;
+    if(totalKiosk>0){
+      var joursEcoules=joursOuvresEcoules();
+      seancesAnnualiseesROI=Math.round((totalKiosk/joursEcoules)*228); // 228 jours ouvrés/an
+    }
+  }
+
+  // Recalculer le ROI si déjà affiché
+  if(roiBuilt)calcROI();
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
@@ -507,13 +561,14 @@ async function init(){
   sites=data;buildSiteBar();
   if(sites.length){currentSite=sites[0].slug;sensorSite=sites[0].slug;qvctSite=sites[0].slug;updateActiveChip()}
   loadStats();
+  loadSeancesROI();
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin \u00b7 tous les sites':sites.length+' site(s)';
 }
 
 function buildSiteBar(){
   var bar=document.getElementById('site-bar');bar.innerHTML='';
   if(sites.length>1){var all=document.createElement('div');all.className='site-chip'+(currentSite===null?' active':'');all.textContent='Tous les sites';all.onclick=function(){currentSite=null;updateActiveChip();loadStats()};bar.appendChild(all)}
-  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats()};bar.appendChild(c)});
+  sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(currentSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' \u00b7 '+s.ville:'');c.onclick=function(){currentSite=s.slug;updateActiveChip();loadStats();loadSeancesROI();};bar.appendChild(c)});
   var sel=document.createElement('select');sel.className='period-sel';
   sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='year'>12 mois</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats()};bar.appendChild(sel);
@@ -623,13 +678,20 @@ async function loadQvct(){
 }
 function renderQvct(){
   var dk=_qD,dc=_qS,nbSal=getEff();
-  var total=dk.total_seances||0;
+
+  // SOURCE SÉANCES : sensor_sessions (PIR) — somme des nb_sessions par atelier
+  // Fallback sur kiosque déclaratif si pas de données capteurs
+  var sess=dc.sessions_par_atelier||[];
+  var totalCapteurs=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
+  var totalKiosque=dk.total_seances||0;
+  var total=totalCapteurs>0?totalCapteurs:totalKiosque;
+  var sourceLabel=totalCapteurs>0?'séances mesurées (capteurs PIR)':'séances déclarées (kiosque)';
+
   var byMood=dk.by_mood||[];var byDept=dk.by_departement||[];var byAt=dk.by_atelier||[];
   var byDay=dk.by_day||[];var byHour=dk.by_hour||[];var byDeptMood=dk.by_departement_mood||[];
   var byDeptHour=dk.by_departement_hour||[];
   var byAtelierHour=dk.by_atelier_hour||[];
   var byDeptAtelier=dk.by_departement_atelier||[];
-  var sess=dc.sessions_par_atelier||[];
 
   // indice
   var totM=byMood.reduce(function(s,m){return s+m.n},0);
@@ -640,19 +702,24 @@ function renderQvct(){
   else{indEl.textContent='\u2014';indEl.className='qvct-big';document.getElementById('q-indice-badge').innerHTML=''}
 
   // pénétration
-  if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=total+' s\u00e9ances / '+nbSal+' collaborateurs'}
+  if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=fnum(total)+' s\u00e9ances '+(totalCapteurs>0?'(PIR)':'(kiosque)')+' / '+nbSal+' salari\u00e9s'}
   else{document.getElementById('q-penetration').textContent=total>0?fnum(total)+' s\u00e9.':'\u2014';document.getElementById('q-penetration-sub').textContent=nbSal===0?'\u2191 Renseignez l\'effectif ci-dessus':'Aucune donn\u00e9e'}
 
   // durée totale
   var dTotSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
-  if(dTotSec===0&&total>0)dTotSec=total*15*60;
-  var dTotH=Math.round(dTotSec/3600*10)/10;
+  // Durée basée uniquement sur sensor_sessions (PIR) — pas d'estimation
+  var dTotH=dTotSec>0?Math.round(dTotSec/3600*10)/10:0;
   document.getElementById('q-duree-totale').textContent=dTotH>0?(dTotH+'h'):'\u2014';
+  // Durée = somme des durées réelles mesurées par les PIR (sensor_sessions)
 
   // projection
-  var fac={week:52,month:12,year:1}[qvctPeriod]||12;
-  var proj=total>0?Math.round(total*fac):0;
+  // Projection annuelle : taux journalier × 228 jours ouvrés/an
+  // Jours ouvrés de la période sélectionnée (approximation sans fériés)
+  var joursOuvresPeriode={week:5,month:21,year:228}[qvctPeriod]||21;
+  var tauxJournalier=total>0?(total/joursOuvresPeriode):0;
+  var proj=tauxJournalier>0?Math.round(tauxJournalier*228):0;
   document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
+  document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursOuvresPeriode+' jours ouvrés → '+Math.round(tauxJournalier*10)/10+' séances/jour × 228';
 
   // fréquence
   if(nbSal>0&&total>0){document.getElementById('q-frequence').textContent=(Math.round(total/nbSal*10)/10)+'x';document.getElementById('q-frequence-sub').textContent='usage moyen par collaborateur'}
@@ -727,7 +794,7 @@ function renderQvct(){
   // DUERP
   document.getElementById('q-duerp').innerHTML=
     '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal+' <span style="font-size:.6rem;color:var(--muted)">salari\u00e9s</span>':'<span style="color:var(--muted)">Non renseign\u00e9</span>')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">S\u00e9ances sur la p\u00e9riode</div><div class="trend-val">'+fnum(total)+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">S\u00e9ances sur la p\u00e9riode</div><div class="trend-val">'+fnum(total)+'<span style="font-size:.6rem;color:var(--muted);margin-left:.4rem">'+sourceLabel+'</span></div></div>'+
     '<div class="trend-row"><div class="trend-label">Indice de r\u00e9cup\u00e9ration</div><div class="trend-val" style="color:var(--sage)">'+(indice!==null?(indice+'%'):'\u2014')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Taux de p\u00e9n\u00e9tration RH</div><div class="trend-val">'+(nbSal>0&&total>0?Math.round(total/nbSal*100)+'%':'Effectif requis')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Dur\u00e9e totale r\u00e9cup\u00e9ration</div><div class="trend-val">'+(dTotH>0?dTotH+'h':'\u2014')+'</div></div>'+
@@ -952,7 +1019,8 @@ function calcROI(){
   document.getElementById('roi-seuil').textContent=!isR?'Seuil de rentabilit\u00e9 : '+(baseTotale>0?(ctp/baseTotale*100).toFixed(2):0)+"% d'impact":'';
   document.getElementById('roi-source-label').textContent=isR?'Bas\u00e9 sur vos donn\u00e9es RH r\u00e9elles':'Valeurs sectorielles \u00b7 '+(ROI.ctx==='siege'?'si\u00e8ge social':'site industriel');
   document.getElementById('roi-gain').textContent=eur(gain);document.getElementById('roi-ctp').textContent=eur(ctp);document.getElementById('roi-eco').textContent=eur(eco);
-  var AN={today:220,week:52,month:12,year:1};var sA=realSeancesTotal*(AN[currentPeriod]||12);
+  // Séances annuelles : extrapolation jours ouvrés depuis le 1er janvier (capteurs PIR ou kiosque)
+  var sA=seancesAnnualiseesROI>0?seancesAnnualiseesROI:realSeancesTotal*12;
   document.getElementById('roi-seances-annee').textContent=fnum(sA)+' s\u00e9ances';
   document.getElementById('roi-decomposition').innerHTML=decomposition;
   var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div><div class="detail-row"><span>Loyer opportunit\u00e9 ('+SURF_OPT[ROI.surf]+' m\u00b2)</span><span>'+eur(ctpComp.im)+'</span></div><div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div><div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div><div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div><div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
