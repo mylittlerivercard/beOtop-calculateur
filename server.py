@@ -72,39 +72,22 @@ def normalize_atelier(name):
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── K-anonymisation (k=5) ─────────────────────────────────────────────────────
-# Tout groupe de moins de 5 individus est supprimé ou fusionné dans "Autres"
-# Conformité RGPD : aucun indicateur ne peut être rattaché à < 5 personnes
 K_ANONYMAT = 5
 
 def kanon_filter(rows, key_field, count_field='n', label_autres='Autres'):
-    """
-    Filtre une liste de dicts :
-    - Supprime les lignes dont count_field < K_ANONYMAT
-    - Si des lignes sont supprimées, ajoute une ligne 'Autres' avec le total agrégé
-    Retourne (liste_filtrée, suppression_appliquée)
-    """
     kept   = [r for r in rows if (r.get(count_field) or 0) >= K_ANONYMAT]
     others = [r for r in rows if (r.get(count_field) or 0) < K_ANONYMAT]
     if others:
         total_others = sum(r.get(count_field, 0) for r in others)
         if total_others >= K_ANONYMAT:
-            # Assez de personnes dans le groupe agrégé pour l'afficher
             kept.append({key_field: label_autres, count_field: total_others, '_aggregated': True})
-        # Si même le groupe "Autres" < 5, on ne l'affiche pas (évite la déduction par soustraction)
     return kept, bool(others)
 
 def kanon_filter_cross(rows, key1, key2, count_field='n'):
-    """
-    Pour les tableaux croisés (ex: département × mood) :
-    supprime les lignes où le groupe (key1, key2) < K_ANONYMAT.
-    Supprime aussi les key1 dont le total < K_ANONYMAT.
-    """
-    # Calculer les totaux par key1
     totaux = {}
     for r in rows:
         k = r.get(key1, '')
         totaux[k] = totaux.get(k, 0) + (r.get(count_field) or 0)
-    # Filtrer : garder uniquement les key1 avec total >= K et les lignes avec n >= K
     kept = [
         r for r in rows
         if totaux.get(r.get(key1, ''), 0) >= K_ANONYMAT
@@ -176,8 +159,6 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
-
-        # ========== TABLES CAPTEURS ==========
 
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_passages (
@@ -473,16 +454,10 @@ def admin_create_site():
                 return jsonify({'error': 'Ce site existe deja'}), 409
     return jsonify({'ok': True, 'site_id': site_id, 'slug': slug, 'kiosk_url': f'/kiosk/{slug}'}), 201
 
-# ── AJOUT 1 : PUT /api/admin/sites/<id> ──────────────────────────────────────
 @app.route('/api/admin/sites/<int:site_id>', methods=['PUT'])
 @login_required
 @admin_required
 def admin_update_site(site_id):
-    """
-    Modifie les informations d'un site.
-    Body JSON : { "nom", "ville", "nb_salaries", "actif" }
-    nb_salaries est utilisé par l'onglet QVCT pour calculer le taux de pénétration.
-    """
     data = request.get_json()
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -500,7 +475,6 @@ def admin_update_site(site_id):
             )
             conn.commit()
     return jsonify({'ok': True})
-# ─────────────────────────────────────────────────────────────────────────────
 
 # ========== ADMIN - USERS ==========
 
@@ -714,7 +688,7 @@ def sensors_stats():
     elif period == 'q4':
         ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
     else:
-        ts_clause = "1=1" 
+        ts_clause = "1=1"
 
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -889,7 +863,7 @@ def build_date_clause(period, prefix=''):
     if period == 'q2':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months' AND {p}date < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months'"
     if period == 'q3':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months' AND {p}date < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
     if period == 'q4':     return f"{p}date >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
-    return "1=1" 
+    return "1=1"
 
 def get_site_filter(site_slug=None):
     role = session.get('role')
@@ -919,7 +893,6 @@ def get_site_filter(site_slug=None):
 @app.route('/api/devis/save', methods=['POST'])
 @login_required
 def save_devis():
-    """Enregistre un devis généré depuis le calculateur ROI."""
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Body JSON requis'}), 400
@@ -987,7 +960,6 @@ def save_devis():
 @app.route('/api/devis', methods=['GET'])
 @login_required
 def list_devis():
-    """Liste les devis du client connecté, triés par date décroissante."""
     role      = session.get('role')
     client_id = session.get('client_id')
 
@@ -1015,7 +987,6 @@ def list_devis():
 @app.route('/api/devis/<int:devis_id>', methods=['GET'])
 @login_required
 def get_devis(devis_id):
-    """Détail complet d'un devis."""
     role      = session.get('role')
     client_id = session.get('client_id')
 
@@ -1042,8 +1013,6 @@ def get_stats():
     site_clause, site_params = get_site_filter(site_slug)
     where = f"WHERE {date_clause} AND {site_clause}"
 
-    # ── AJOUT 2 : by_day respecte la période sélectionnée ────────────────────
-    # Fenêtre temporelle pour by_day selon la période (au lieu du hardcodé 30j)
     if period == 'today':
         day_interval = "INTERVAL '1 day'"
     elif period == 'week':
@@ -1056,7 +1025,6 @@ def get_stats():
         day_interval = "INTERVAL '365 days'"
     else:
         day_interval = "INTERVAL '30 days'"
-    # ─────────────────────────────────────────────────────────────────────────
 
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -1069,7 +1037,6 @@ def get_stats():
             )
             by_dept = cur.fetchall()
 
-            # by_hour : depuis sensor_passages (faisceau réel), pas le kiosque
             if period == 'today':
                 ts_h     = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
                 ts_debut = 'debut >= CURRENT_DATE AND debut < CURRENT_DATE + INTERVAL \'1 day\''
@@ -1101,7 +1068,6 @@ def get_stats():
                 ts_h     = '1=1'
                 ts_debut = '1=1'
 
-            # Construire le filtre site pour sensor_passages
             if session.get('role') == 'admin':
                 if site_slug:
                     sp_clause = 'site_slug = %s'
@@ -1121,7 +1087,6 @@ def get_stats():
                 sp_params
             )
             by_hour_raw = cur.fetchall()
-            # Fallback sur kiosque si pas de données capteurs
             if not by_hour_raw:
                 cur.execute(
                     f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h",
@@ -1136,8 +1101,6 @@ def get_stats():
             )
             by_mood = cur.fetchall()
 
-            # ── AJOUT 2 suite : by_day sur la période effective ──────────────
-            # by_day : utilise build_date_clause pour cohérence avec toutes les périodes
             day_clause = build_date_clause(period)
             cur.execute(
                 f"""SELECT date, COUNT(*) as n
@@ -1147,9 +1110,7 @@ def get_stats():
                 site_params
             )
             by_day = cur.fetchall()
-            # ─────────────────────────────────────────────────────────────────
 
-            # by_atelier : depuis sensor_sessions (PIR réel)
             cur.execute(
                 f"""SELECT atelier, COUNT(*) as nb_sessions,
                            ROUND(AVG(duree_sec))::int as duree_moy_sec
@@ -1160,16 +1121,13 @@ def get_stats():
             )
             raw_sensor_at = cur.fetchall()
 
-            # Fallback : si pas de données capteurs, utiliser les déclarations kiosque
             cur.execute(
                 f"SELECT ateliers FROM sessions {where} AND ateliers != ''",
                 site_params
             )
             raw_at = cur.fetchall()
 
-            # ── AJOUT 3 : by_departement_mood (croisement pour l'onglet QVCT) ─
-            # Retourne le ressenti par département pour la matrice CSSCT.
-            # Chaque ligne : { departement, mood, n }
+            # ── AJOUT 3 : by_departement_mood ────────────────────────────────
             cur.execute(
                 f"""SELECT departement, mood, COUNT(*) as n
                     FROM sessions
@@ -1181,6 +1139,21 @@ def get_stats():
             by_departement_mood = cur.fetchall()
             # ─────────────────────────────────────────────────────────────────
 
+            # ── AJOUT 8 : by_atelier_mood (corrélation mood × atelier) ───────
+            # SOURCE : sessions kiosque (seule table croisant atelier déclaré + mood)
+            # Chaque ligne : { atelier_raw (texte brut kiosque), mood, n }
+            # L'éclatement des multi-ateliers est effectué côté JS.
+            cur.execute(
+                f"""SELECT ateliers as atelier_raw, mood, COUNT(*) as n
+                    FROM sessions
+                    {where} AND mood != '' AND ateliers != ''
+                    GROUP BY ateliers, mood
+                    ORDER BY ateliers, n DESC""",
+                site_params
+            )
+            by_atelier_mood_raw = cur.fetchall()
+            # ─────────────────────────────────────────────────────────────────
+
             if session.get('role') == 'admin':
                 cur.execute(
                     f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC',
@@ -1190,14 +1163,12 @@ def get_stats():
             else:
                 by_site = []
 
-    # by_atelier : priorité sensor_sessions (PIR), fallback kiosque
     if raw_sensor_at:
         by_atelier = [
             {'atelier': r['atelier'], 'n': r['nb_sessions'], 'duree_moy_sec': r['duree_moy_sec']}
             for r in raw_sensor_at
         ]
     else:
-        # Fallback : déclarations kiosque
         atelier_count = {}
         for row in raw_at:
             for a in (row['ateliers'] or '').split(', '):
@@ -1210,8 +1181,6 @@ def get_stats():
         )
 
     # ── AJOUT 5 : fréquences horaires par département ─────────────────────────
-    # SOURCE : sessions kiosque (seule source avec département + heure)
-    # Département = déclaratif kiosque / Heure = heure de la séance kiosque
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -1227,9 +1196,7 @@ def get_stats():
             by_departement_hour = cur.fetchall()
     # ─────────────────────────────────────────────────────────────────────────
 
-    # ── AJOUT 6 : fréquences horaires par atelier — depuis sensor_sessions ──────
-    # SOURCE : sensor_sessions (heure de début de session PIR)
-    # Fallback : sessions kiosque si pas de données capteurs
+    # ── AJOUT 6 : fréquences horaires par atelier ─────────────────────────────
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -1247,7 +1214,6 @@ def get_stats():
     if raw_at_hour_sensor:
         by_atelier_hour = [serialize_row(r) for r in raw_at_hour_sensor]
     else:
-        # Fallback kiosque
         with get_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -1278,10 +1244,6 @@ def get_stats():
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── AJOUT 7 : ateliers préférés par département ───────────────────────────
-    # SOURCE : sessions kiosque (seule table croisant département + atelier déclaré)
-    # Le département et l'atelier sont tous deux déclaratifs (saisis par l'utilisateur)
-    # Note : les slugs capteurs (meridienne-p127) et noms kiosque (Méridienne P127)
-    # sont deux référentiels distincts — ce croisement utilise les noms kiosque.
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -1312,12 +1274,16 @@ def get_stats():
             by_departement_atelier.append({'departement': dept, 'atelier': atelier, 'n': n})
     # ─────────────────────────────────────────────────────────────────────────
 
-        # ── K-anonymisation (k=5) avant retour ──────────────────────────────────
+    # ── K-anonymisation (k=5) avant retour ───────────────────────────────────
     by_dept_k,  _ = kanon_filter([serialize_row(r) for r in by_dept],    'label')
     by_mood_k,  _ = kanon_filter([serialize_row(r) for r in by_mood],    'mood')
     by_dept_mood_k = kanon_filter_cross([serialize_row(r) for r in by_departement_mood], 'departement', 'mood')
     by_dept_hour_k = kanon_filter_cross([serialize_row(r) for r in by_departement_hour], 'departement', 'h')
     by_dept_at_k   = kanon_filter_cross(by_departement_atelier, 'departement', 'atelier')
+    # by_atelier_mood : k-anonymisation sur le groupe (atelier_raw, mood)
+    by_atelier_mood_k = kanon_filter_cross(
+        [serialize_row(r) for r in by_atelier_mood_raw], 'atelier_raw', 'mood'
+    )
     # ─────────────────────────────────────────────────────────────────────────
 
     return jsonify({
@@ -1333,6 +1299,7 @@ def get_stats():
         'by_departement_hour':    by_dept_hour_k,
         'by_atelier_hour':        by_atelier_hour,
         'by_departement_atelier': by_dept_at_k,
+        'by_atelier_mood':        by_atelier_mood_k,
         '_kanon_k':               K_ANONYMAT,
     })
 
@@ -1372,7 +1339,6 @@ def export_csv():
                 [from_date, to_date] + params
             )
             rows = cur.fetchall()
-    # K-anonymisation : filtrer les groupes < 5 avant export
     from collections import Counter
     dept_counts = Counter(serialize_row(r)['departement'] for r in rows)
     rows_kanon  = [r for r in rows if dept_counts.get(serialize_row(r)['departement'], 0) >= K_ANONYMAT]
@@ -1380,7 +1346,6 @@ def export_csv():
 
     output = io.StringIO()
     writer = csv.writer(output)
-    # En-tête RGPD
     writer.writerow(['# Export DUERP beOtop — Données agrégées et anonymisées'])
     writer.writerow([f'# K-anonymat k≥{K_ANONYMAT} appliqué — {filtered} enregistrements filtrés'])
     writer.writerow([f'# Période : {from_date} → {to_date} — Généré le {date.today().isoformat()}'])
@@ -1418,25 +1383,14 @@ def client_get_sites():
     return jsonify([serialize_row(s) for s in sites])
 
 
-# ── AJOUT 4 : PATCH /api/client/sites/<slug>/effectif ────────────────────────
 @app.route('/api/client/sites/<site_slug>/effectif', methods=['PATCH'])
 @login_required
 def client_update_effectif(site_slug):
-    """
-    Permet au client (ou à l'admin) de mettre à jour le nombre de salariés
-    d'un site directement depuis l'onglet QVCT du dashboard.
-    Body JSON : { "nb_salaries": 400 }
-
-    Note : le dashboard stocke également la valeur en localStorage pour
-    une réactivité immédiate sans appel réseau. Cette route synchronise
-    la valeur en base pour la persistance multi-navigateurs et l'export DUERP.
-    """
     data = request.get_json()
     nb = data.get('nb_salaries')
     if nb is None or int(nb) < 0:
         return jsonify({'error': 'nb_salaries requis et doit être >= 0'}), 400
 
-    # Vérification d'accès : admin libre, client limité à ses sites
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
         with get_db() as conn:
@@ -1460,7 +1414,6 @@ def client_update_effectif(site_slug):
             conn.commit()
 
     return jsonify({'ok': True, 'site_slug': site_slug, 'nb_salaries': int(nb)})
-# ─────────────────────────────────────────────────────────────────────────────
 
 # ========== HEALTH ==========
 
