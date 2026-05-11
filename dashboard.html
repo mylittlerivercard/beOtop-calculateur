@@ -205,6 +205,17 @@
   .dept-at-name{font-size:.68rem;color:var(--cream);font-weight:600;width:90px;flex-shrink:0;padding-top:.1rem}
   .dept-at-pills{display:flex;gap:.3rem;flex-wrap:wrap;flex:1}
   .dept-at-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .6rem;border-radius:10px;font-size:.6rem;background:rgba(154,106,31,.12);border:1px solid rgba(154,106,31,.30);color:var(--gold);font-weight:600}
+  /* HEATMAP ATELIER × MOOD */
+  .am-heatmap-wrap{overflow-x:auto}
+  .am-table{border-collapse:collapse;width:100%;min-width:420px}
+  .am-table th{padding:.45rem .6rem;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:center;background:rgba(154,106,31,.08);white-space:nowrap}
+  .am-table th.at-col{text-align:left;min-width:130px}
+  .am-table td{padding:.35rem .5rem;border-bottom:1px solid rgba(0,0,0,.05);font-size:.68rem;color:#1e1a30}
+  .am-table td.at-name{font-weight:600;font-size:.65rem;color:var(--cream);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+  .am-cell{display:inline-flex;align-items:center;justify-content:center;width:100%;border-radius:5px;padding:.25rem .2rem;font-size:.62rem;font-weight:600;min-height:26px;transition:opacity .2s}
+  .am-cell.empty{background:rgba(0,0,0,.04);color:rgba(0,0,0,.2);font-weight:300}
+  .am-legend{display:flex;align-items:center;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;font-size:.55rem;color:var(--muted)}
+  .am-legend-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:10px;font-size:.6rem;font-weight:600}
   @media(max-width:900px){.qvct-grid-3{grid-template-columns:1fr 1fr}}
   @media(max-width:800px){
     .kpi-row,.qvct-kpi-row{grid-template-columns:repeat(2,1fr)}.sensor-kpi-row{grid-template-columns:repeat(3,1fr)}
@@ -355,7 +366,7 @@
       <div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Taux occupation moyen</div><div class="kpi-val" id="s-kpi-taux">—</div><div class="kpi-sub">Tous ateliers · période</div></div>
       <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Durée session moyenne</div><div class="kpi-val" id="s-kpi-duree">—</div><div class="kpi-sub" id="s-kpi-duree-sub"></div></div>
       <div class="kpi" style="--accent:#9b8fc4"><div class="kpi-label">Sessions enregistrées</div><div class="kpi-val" id="s-kpi-sessions">—</div><div class="kpi-sub">période sélectionnée</div></div>
-      <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Temps d’utilisation</div><div class="kpi-val" id="s-kpi-temps">—</div><div class="kpi-sub" id="s-kpi-temps-sub">heures mesurées (PIR)</div></div>
+      <div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Temps d'utilisation</div><div class="kpi-val" id="s-kpi-temps">—</div><div class="kpi-sub" id="s-kpi-temps-sub">heures mesurées (PIR)</div></div>
     </div>
     <div class="sensor-grid">
       <div class="card"><div class="card-title">Taux d'occupation par atelier</div><div style="font-size:.58rem;color:var(--muted);margin-bottom:.6rem">Équipements avec capteur PIR uniquement</div><div id="s-ateliers-occ"></div></div>
@@ -404,8 +415,6 @@
       <div class="card"><div class="card-title">Part des séances par département</div><div id="q-cross-dept-part"></div></div>
     </div>
 
-    <!-- NOUVELLES STATS QVCT -->
-
     <!-- Heatmap fréquence horaire par département -->
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Fréquence horaire par département</div>
@@ -441,6 +450,15 @@
         <div style="margin-top:1rem"><button class="btn-export" onclick="exportQVCT()">⬇ Export CSV DUERP</button></div>
       </div>
     </div>
+
+    <!-- Heatmap corrélation mood × atelier -->
+    <div class="card" style="margin-top:1rem;margin-bottom:1rem">
+      <div class="card-title">Corrélation Ressenti × Atelier</div>
+      <div style="font-size:.55rem;color:var(--sage);margin-bottom:.3rem">🔒 Données agrégées · k-anonymat k≥5 · RGPD Art. 89</div>
+      <div style="font-size:.58rem;color:var(--muted);margin-bottom:.9rem">Quel atelier génère quel ressenti · base : sessions kiosque déclaratives</div>
+      <div class="am-heatmap-wrap" id="q-atelier-mood-heatmap"></div>
+    </div>
+
   </div>
 </div>
 
@@ -468,7 +486,7 @@ var MOOD_ICONS={'\u00c9puis\u00e9':'\ud83d\ude2e\u200d\ud83d\udca8','Neutre':'\u
 var MOOD_COLORS={'\u00c9puis\u00e9':'192,57,43','Neutre':'106,96,112','Mieux':'176,125,46','Recharg\u00e9':'45,107,66'};
 var MOODS_ORDER=['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'];
 var currentSite=null,currentPeriod='month',sites=[],realSeancesTotal=0,roiBuilt=false;
-var seancesAnnualiseesROI=0; // séances extrapolées sur 365 jours ouvrés — chargé depuis le 1er janvier
+var seancesAnnualiseesROI=0;
 var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
@@ -480,7 +498,6 @@ function fnum(n){return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0})
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function fmtD(s){if(!s||s<0)return '\u2014';if(s<60)return s+'s';var m=Math.floor(s/60),r=s%60;return m+'min'+(r>0?' '+r+'s':'')}
 
-// effectif localStorage
 function getEff(){return parseInt(localStorage.getItem('beotop_sal_'+(qvctSite||''))||'0')||0}
 function onEffectifChange(){
   var v=parseInt(document.getElementById('q-nb-sal').value)||0;
@@ -489,11 +506,8 @@ function onEffectifChange(){
 }
 function loadEffInp(){document.getElementById('q-nb-sal').value=getEff()||''}
 
-// ── Calcul séances annualisées pour le ROI ───────────────────────────────────
-// SOURCE : sensor_sessions PIR depuis le 1er janvier
-// Logique : séances réelles / jours ouvrés écoulés × 365 jours ouvrés/an
 function joursOuvresEcoules(){
-  var debut=new Date(new Date().getFullYear(),0,1); // 1er janvier
+  var debut=new Date(new Date().getFullYear(),0,1);
   var today=new Date();
   var count=0;
   var d=new Date(debut);
@@ -506,7 +520,6 @@ function joursOuvresEcoules(){
 }
 
 async function loadSeancesROI(){
-  // Estimation initiale — sera affinée par renderQvct() quand l'onglet QVCT est ouvert
   var site=currentSite;
   if(!site&&sites.length)site=sites[0].slug;
   if(!site)return;
@@ -547,7 +560,6 @@ async function init(){
   if(sites.length){currentSite=sites[0].slug;sensorSite=sites[0].slug;qvctSite=sites[0].slug;updateActiveChip()}
   loadStats();
   loadSeancesROI();
-  // Précharger les données QVCT silencieusement pour que la fréquence soit disponible
   setTimeout(function(){
     if(qvctSite){
       fetch('/api/sensors/stats?site_slug='+qvctSite+'&period=month',{credentials:'include'})
@@ -614,33 +626,24 @@ async function loadSensorStats(){
   document.getElementById('s-kpi-duree').textContent=dureeG?fmtD(dureeG):'\u2014';
   document.getElementById('s-kpi-duree-sub').textContent=sess.length?'sur '+sess.length+' atelier(s)':'aucune session';
   document.getElementById('s-kpi-sessions').textContent=fnum(totalSess);
-
-  // Temps total d'utilisation = somme duree_moy_sec × nb_sessions par atelier
   var tempsTotalSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
   var tempsTotalH=Math.round(tempsTotalSec/3600*10)/10;
   var tempsEl=document.getElementById('s-kpi-temps');
   var tempsSub=document.getElementById('s-kpi-temps-sub');
   if(tempsTotalH>0){
     tempsEl.textContent=tempsTotalH+'h';
-    // Détail en minutes si < 1h
-    if(tempsTotalH<1){
-      var tempsTotalMin=Math.round(tempsTotalSec/60);
-      tempsEl.textContent=tempsTotalMin+'min';
-    }
+    if(tempsTotalH<1){var tempsTotalMin=Math.round(tempsTotalSec/60);tempsEl.textContent=tempsTotalMin+'min';}
     if(tempsSub)tempsSub.textContent=fnum(Math.round(tempsTotalSec/60))+' min au total'+(dureeG?' · moy. '+fmtD(dureeG)+'/séance':'');
   } else {
     tempsEl.textContent='—';
     if(tempsSub)tempsSub.textContent='heures mesurées (PIR)';
   }
-  // Ateliers avec capteur PIR physique réel
-  // Les accessoires (Lunettes Psio, Sensosphère, Photobiomodulation, Bol d'Air, Bain de Lumière) sont déclaratifs
   var PIR_REELS=['Méridienne P127','Cocon de Sieste','Neurosonic Lit','Siège Massant 0 Gravité','Siège Massant Shiatsu','Transat 127','Siège Lecture',"Bol d'Air Jacquier"];
   var occPIR=occ.filter(function(a){return PIR_REELS.indexOf(a.atelier||'')>=0});
   var occEl=document.getElementById('s-ateliers-occ');
   if(!occPIR.length){occEl.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e capteur PIR</div>'}
   else{occEl.innerHTML=occPIR.map(function(a){var col=a.taux_occupation>60?'var(--sage)':a.taux_occupation>30?'var(--gold)':'var(--muted)';return '<div class="atelier-row"><div class="atelier-name">'+a.atelier+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+a.taux_occupation+'%;--bar-color:'+col+'"></div></div></div><div class="atelier-taux" style="color:'+col+'">'+a.taux_occupation+'%</div></div>'}).join('')}
   var sessPIR=sess.filter(function(a){return PIR_REELS.indexOf(a.atelier||'')>=0});
-
   var dEl=document.getElementById('s-ateliers-duree');
   if(!sessPIR.length){dEl.innerHTML='<div class="sensor-empty">Aucune session enregistr\u00e9e</div>'}
   else{var mD=Math.max.apply(null,sessPIR.map(function(a){return a.duree_moy_sec||0}).concat([1]));dEl.innerHTML=sessPIR.map(function(a){var d2=a.duree_moy_sec||0;var p=Math.round(d2/mD*100);return '<div class="atelier-row"><div class="atelier-name">'+(a.atelier||'Global')+'</div><div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--mist)"></div></div></div><div class="atelier-duree">'+fmtD(d2)+'</div><div class="atelier-taux" style="color:var(--muted);font-size:.62rem">\u00d7'+a.nb_sessions+'</div></div>'}).join('')}
@@ -696,24 +699,30 @@ async function loadQvct(){
 }
 function renderQvct(){
   var dk=_qD,dc=_qS,nbSal=getEff();
-  // Guard : ne pas rendre si loadQvct n'a pas encore été appelé
   if(!dk||typeof dk!=='object'){return;}
 
-  // SOURCE SÉANCES : sensor_sessions (PIR) — somme des nb_sessions par atelier
-  // Fallback sur kiosque déclaratif si pas de données capteurs
   var sess=dc.sessions_par_atelier||[];
   var totalCapteurs=sess.reduce(function(s,a){return s+(a.nb_sessions||0)},0);
   var totalKiosque=dk.total_seances||0;
   var total=totalCapteurs>0?totalCapteurs:totalKiosque;
   var sourceLabel=totalCapteurs>0?'séances mesurées (capteurs PIR)':'séances déclarées (kiosque)';
 
-  var byMood=dk.by_mood||[];var byDept=dk.by_departement||[];var byAt=dk.by_atelier||[];
-  var byDay=dk.by_day||[];var byHour=dk.by_hour||[];var byDeptMood=dk.by_departement_mood||[];
+  var byMood=dk.by_mood||[];var byDept=dk.by_departement||[];
+  // byAt : capteurs PIR en priorité, fallback kiosque
+  var ACCESSOIRES=['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+  var byAtPIR=sess.map(function(a){return{atelier:a.atelier,n:a.nb_sessions,duree_moy_sec:a.duree_moy_sec,src:'pir'}}).filter(function(a){return a.atelier&&ACCESSOIRES.indexOf(a.atelier)<0});
+  var byAtAcc=(dk.by_atelier||[]).filter(function(a){return ACCESSOIRES.indexOf(a.atelier)>=0}).map(function(a){return{atelier:a.atelier,n:a.n,src:'kiosk'}});
+  var byAt=byAtPIR.length?byAtPIR.concat(byAtAcc).sort(function(a,b){return b.n-a.n}):dk.by_atelier||[];
+  var hasPIRAtelier=byAtPIR.length>0;
+  // byHour : passages faisceau en priorité, fallback kiosque
+  var byHourFaisceau=dc.passages_par_heure||[];
+  var byHour=byHourFaisceau.length?byHourFaisceau:dk.by_hour||[];
+  var hasFaisceauHour=byHourFaisceau.length>0;
+  var byDay=dk.by_day||[];var byDeptMood=dk.by_departement_mood||[];
   var byDeptHour=dk.by_departement_hour||[];
   var byAtelierHour=dk.by_atelier_hour||[];
   var byDeptAtelier=dk.by_departement_atelier||[];
 
-  // indice
   var totM=byMood.reduce(function(s,m){return s+m.n},0);
   var pos=byMood.filter(function(m){return m.mood==='Recharg\u00e9'||m.mood==='Mieux'}).reduce(function(s,m){return s+m.n},0);
   var indice=totM>0?Math.round(pos/totM*100):null;
@@ -721,23 +730,15 @@ function renderQvct(){
   if(indice!==null){indEl.textContent=indice+'%';if(indice>=70){indEl.className='qvct-big good';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge green">\u2713 Niveau satisfaisant</span>'}else if(indice>=50){indEl.className='qvct-big medium';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge amber">~ \u00c0 surveiller</span>'}else{indEl.className='qvct-big low';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge red">\u26a0 Attention requise</span>'}}
   else{indEl.textContent='\u2014';indEl.className='qvct-big';document.getElementById('q-indice-badge').innerHTML=''}
 
-  // pénétration
   if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=fnum(total)+' s\u00e9ances '+(totalCapteurs>0?'(PIR)':'(kiosque)')+' / '+nbSal+' salari\u00e9s'}
   else{document.getElementById('q-penetration').textContent=total>0?fnum(total)+' s\u00e9.':'\u2014';document.getElementById('q-penetration-sub').textContent=nbSal===0?'\u2191 Renseignez l\'effectif ci-dessus':'Aucune donn\u00e9e'}
 
-  // durée totale
   var dTotSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0)},0);
-  // Durée basée uniquement sur sensor_sessions (PIR) — pas d'estimation
   var dTotH=dTotSec>0?Math.round(dTotSec/3600*10)/10:0;
   document.getElementById('q-duree-totale').textContent=dTotH>0?(dTotH+'h'):'\u2014';
-  // Durée = somme des durées réelles mesurées par les PIR (sensor_sessions)
 
-  // projection
-  // Projection annuelle : taux journalier × 228 jours ouvrés/an
-  // Calcul des jours ouvrés réels couverts par les données (by_day)
   function joursOuvresDansPlage(days){
     if(!days||!days.length)return 1;
-    // Compter les jours ouvrés entre premier et dernier jour de données
     var dates=days.map(function(d){
       var k=d.date||d.day||d.jour||'';
       if(!k)return null;
@@ -756,17 +757,11 @@ function renderQvct(){
   var proj=tauxJournalier>0?Math.round(tauxJournalier*228):0;
   var projLabel=(qvctPeriod==='year'&&joursReels>=200)?'séances mesurées sur la période':'séances projetées sur 12 mois ('+joursReels+' j.o. mesurés × 228)';
   document.getElementById('q-projection').textContent=proj>0?fnum(proj):'\u2014';
-  // Mettre à jour le sous-titre selon la période
   var projSubEl=document.getElementById('q-projection-sub');
   if(projSubEl)projSubEl.textContent=projLabel;
-  // Synchroniser avec le ROI — une seule source de vérité
-  if(proj>0){
-    seancesAnnualiseesROI=proj;
-    if(roiBuilt)calcROI();
-  }
+  if(proj>0){seancesAnnualiseesROI=proj;if(roiBuilt)calcROI();}
   document.getElementById('q-projection').title=(totalCapteurs>0?'PIR : ':'Kiosque : ')+fnum(total)+' s\u00e9ances / '+joursReels+' j.o. mesur\u00e9s → '+Math.round(tauxJournalier*10)/10+' s\u00e9ances/jour × 228';
 
-  // fréquence — basée sur sessions PIR réelles
   var freqTotal=total>0?total:(seancesAnnualiseesROI>0?Math.round(seancesAnnualiseesROI/228*joursReels):0);
   if(nbSal>0&&freqTotal>0){
     document.getElementById('q-frequence').textContent=(Math.round(freqTotal/nbSal*10)/10)+'x';
@@ -776,40 +771,40 @@ function renderQvct(){
     document.getElementById('q-frequence-sub').textContent=nbSal===0?'effectif non renseign\u00e9':'aucune donn\u00e9e';
   }
 
-  // atelier phare
-  if(byAt.length){var pctAt=total>0?Math.round(byAt[0].n/total*100):0;document.getElementById('q-pointe').textContent=byAt[0].atelier;document.getElementById('q-pointe-sub').textContent=byAt[0].n+' s\u00e9ances \u00b7 '+pctAt+'% de l\'activit\u00e9'}
+  if(byAt.length){var pctAt=total>0?Math.round(byAt[0].n/total*100):0;document.getElementById('q-pointe').textContent=byAt[0].atelier;var _srcPt=byAt[0].src==='pir'?'\u2699\ufe0f PIR':'kiosque';document.getElementById('q-pointe-sub').textContent=byAt[0].n+' s\u00e9ances \u00b7 '+pctAt+'% \u00b7 '+_srcPt}
   else{document.getElementById('q-pointe').textContent='\u2014';document.getElementById('q-pointe-sub').textContent='le plus utilis\u00e9 sur la p\u00e9riode'}
 
-  // mood distribution
   var mDE=document.getElementById('q-mood-dist');
   if(!byMood.length){mDE.innerHTML='<div class="sensor-empty">Aucun ressenti enregistr\u00e9</div>'}
   else{var mMax=Math.max.apply(null,byMood.map(function(m){return m.n}).concat([1]));mDE.innerHTML=MOODS_ORDER.map(function(mood){var f=byMood.find(function(m){return m.mood===mood});var n=f?f.n:0;var pct=totM>0?Math.round(n/totM*100):0;var col=MOOD_COLORS[mood]||'176,125,46';return '<div class="mood-dist-row"><div class="mood-dist-icon">'+(MOOD_ICONS[mood]||'')+'</div><div class="mood-dist-lbl">'+mood+'</div><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:'+Math.round(n/mMax*100)+'%;--bar-color:rgba('+col+',.8)"></div></div><div class="mood-dist-pct">'+pct+'%</div></div>'}).join('')}
 
-  // ateliers part
   var aPE=document.getElementById('q-ateliers-part');
   if(!byAt.length){aPE.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>'}
-  else{var mAt=Math.max.apply(null,byAt.map(function(a){return a.n}).concat([1]));var ACCESSOIRES=['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
-  aPE.innerHTML=byAt.slice(0,8).map(function(a){
+  else{var mAt=Math.max.apply(null,byAt.map(function(a){return a.n}).concat([1]));
+  var srcHeader=hasPIRAtelier?'<div style="font-size:.55rem;color:var(--sage);margin-bottom:.5rem">\u2699\ufe0f Capteurs PIR · accessoires kiosque</div>':'<div style="font-size:.55rem;color:var(--muted);margin-bottom:.5rem">Source : kiosque d\u00e9claratif</div>';
+  aPE.innerHTML=srcHeader+byAt.slice(0,8).map(function(a){
     var pct=total>0?Math.round(a.n/total*100):0;
     var isAcc=ACCESSOIRES.indexOf(a.atelier)>=0;
-    var srcBadge=isAcc?'<span style="font-size:.48rem;color:var(--muted);margin-left:.3rem;opacity:.8">kiosque</span>':'';
-    return '<div class="bar-item"><div class="bar-label">'+a.atelier+srcBadge+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(a.n/mAt*100)+'%;--bar-color:'+(isAcc?'var(--muted)':'var(--mist)')+'" ></div></div><div class="bar-n">'+pct+'%</div></div>'}).join('')}
+    var isPIR=a.src==='pir';
+    var badgeCol=isPIR?'var(--sage)':isAcc?'var(--muted)':'var(--muted)';
+    var badgeTxt=isPIR?'PIR':isAcc?'kiosque':'kiosque';
+    var srcBadge='<span style="font-size:.45rem;color:'+badgeCol+';margin-left:.3rem;opacity:.85">'+badgeTxt+'</span>';
+    var barCol=isPIR?'var(--mist)':isAcc?'rgba(100,90,130,.5)':'var(--mist)';
+    return '<div class="bar-item"><div class="bar-label">'+a.atelier+srcBadge+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(a.n/mAt*100)+'%;--bar-color:'+barCol+'"></div></div><div class="bar-n">'+pct+'%</div></div>'}).join('')}
 
-  // heatmap horaire
   var hE=document.getElementById('q-heures-chart');var hL=document.getElementById('q-heures-labels');
+  var hSrcBadge=hasFaisceauHour?'<div style="font-size:.55rem;color:var(--sage);margin-bottom:.4rem">\u2699\ufe0f Faisceau IR · passages r\u00e9els</div>':'<div style="font-size:.55rem;color:var(--muted);margin-bottom:.4rem">Source : heure kiosque d\u00e9claratif</div>';
   var hD={};(byHour||[]).forEach(function(r){hD[parseInt(r.h)]=r.n});
   var hMax=Math.max.apply(null,Object.values(hD).concat([1]));
-  var hH='',lH='';
+  var hH=hSrcBadge,lH='';
   for(var h=7;h<=20;h++){var hn=hD[h]||0;var hp=Math.round(hn/hMax*100);var hc=hn===0?'rgba(0,0,0,.07)':hn>=hMax*0.7?'var(--sage)':hn>=hMax*0.4?'var(--gold)':'var(--mist)';hH+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">'+(hn>0?'<span style="font-size:.48rem;color:var(--muted2)">'+hn+'</span>':'')+'<div style="width:100%;border-radius:3px 3px 0 0;background:'+hc+';height:'+Math.max(hp,4)+'%"></div></div>';lH+='<div style="flex:1;text-align:center;font-size:.48rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}
   hE.innerHTML=hH;hL.innerHTML=lH;
 
-  // ressenti par département — gestion des deux cas (avec/sans by_departement_mood)
   var cME=document.getElementById('q-cross-dept-mood');
   var topMood=byMood.length?byMood[0].mood:'\u2014';
   var topIcon=MOOD_ICONS[topMood]||'';
   if(!byDept.length){cME.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes</div>'}
   else if(byDeptMood.length){
-    // API retourne by_departement_mood : affichage croisé réel
     var depts=[...new Set(byDeptMood.map(function(r){return r.departement}))].slice(0,7);
     var html='<table class="cross-table"><thead><tr><th>D\u00e9partement</th>';
     ['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'].forEach(function(m){html+='<th style="text-align:center">'+m+'</th>'});
@@ -828,26 +823,23 @@ function renderQvct(){
     html+='</tbody></table>';
     cME.innerHTML=html;
   } else {
-    // API ne retourne pas encore by_departement_mood : mood global par département
     cME.innerHTML='<table class="cross-table"><thead><tr><th>D\u00e9partement</th><th>S\u00e9ances</th><th>Mood global site</th></tr></thead><tbody>'+
       byDept.slice(0,7).map(function(d){return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td>'+topIcon+' '+topMood+'</td></tr>'}).join('')+
       '</tbody></table>'+
       '<div style="font-size:.56rem;color:var(--muted);margin-top:.5rem;line-height:1.5">Mood global du site \u00b7 pour un croisement par d\u00e9partement, ajouter <code>by_departement_mood</code> \u00e0 l\'API /stats</div>';
   }
 
-  // part par département
   var cPE=document.getElementById('q-cross-dept-part');
   if(!byDept.length){cPE.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes</div>'}
   else{cPE.innerHTML='<table class="cross-table"><thead><tr><th>D\u00e9partement</th><th>S\u00e9ances</th><th>Part</th></tr></thead><tbody>'+byDept.slice(0,7).map(function(d){var p=total>0?Math.round(d.n/total*100):0;return '<tr><td>'+d.label+'</td><td>'+d.n+'</td><td><div class="bar-track" style="width:65px;display:inline-block;vertical-align:middle"><div class="bar-fill" style="width:'+p+'%;--bar-color:var(--gold)"></div></div> <span style="font-size:.65rem">'+p+'%</span></td></tr>'}).join('')+'</tbody></table>'}
 
   renderQvctWeekBars(byDay);
-
-  // Nouvelles stats avancées
   renderDeptHourHeatmap(byDeptHour, byDept);
   renderAtelierPeak(byAtelierHour, dk.by_atelier_hour||[]);
   renderDeptAtelier(byDeptAtelier);
+  // Heatmap corrélation mood × atelier
+  renderAtelierMoodHeatmap(dk.by_atelier_mood||[]);
 
-  // DUERP
   document.getElementById('q-duerp').innerHTML=
     '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal+' <span style="font-size:.6rem;color:var(--muted)">salari\u00e9s</span>':'<span style="color:var(--muted)">Non renseign\u00e9</span>')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">S\u00e9ances sur la p\u00e9riode</div><div class="trend-val">'+fnum(total)+'<span style="font-size:.6rem;color:var(--muted);margin-left:.4rem">'+sourceLabel+'</span></div></div>'+
@@ -867,7 +859,6 @@ function renderQvctWeekBars(byDay){
   var weeks={};
   byDay.forEach(function(d){
     var key=d.date||d.day||d.jour||'';if(!key)return;
-    // Fix timezone : parser manuellement pour \u00e9viter le d\u00e9calage UTC->locale
     var parts=key.slice(0,10).split('-');
     if(parts.length<3)return;
     var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
@@ -885,100 +876,60 @@ function renderQvctWeekBars(byDay){
   else{sEl.textContent=''}
 }
 
-// ── NOUVELLES STATS QVCT ─────────────────────────────────────────────────────
-
 function renderDeptHourHeatmap(byDeptHour, byDept){
   var el=document.getElementById('q-dept-hour-heatmap');
   if(!el) return;
-  if(!byDeptHour||!byDeptHour.length){
-    el.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes \u00b7 les sessions kiosque alimenteront cette matrice</div>';
-    return;
-  }
-  // Heures affich\u00e9es : 7h \u00e0 20h
+  if(!byDeptHour||!byDeptHour.length){el.innerHTML='<div class="sensor-empty">Donn\u00e9es insuffisantes \u00b7 les sessions kiosque alimenteront cette matrice</div>';return;}
   var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
-  // D\u00e9partements : ceux pr\u00e9sents dans byDeptHour, tri\u00e9s par volume total
   var deptTotals={};
   byDeptHour.forEach(function(r){deptTotals[r.departement]=(deptTotals[r.departement]||0)+r.n});
   var depts=Object.keys(deptTotals).sort(function(a,b){return deptTotals[b]-deptTotals[a]}).slice(0,8);
-  // Index des donn\u00e9es
   var idx={};
   byDeptHour.forEach(function(r){idx[r.departement+'_'+r.h]=r.n});
-  // Max global pour normalisation de couleur
   var maxN=Math.max.apply(null,byDeptHour.map(function(r){return r.n}).concat([1]));
-
-  // En-t\u00eate heures
   var html='<div class="dept-hour-header"><div class="dept-hour-header-lbl"></div>';
   HEURES.forEach(function(h){html+='<div class="dept-hour-header-cell">'+String(h).padStart(2,'0')+'</div>'});
   html+='</div><div class="dept-hour-grid">';
-
   depts.forEach(function(dept){
     html+='<div class="dept-hour-row"><div class="dept-hour-lbl" title="'+dept+'">'+dept+'</div>';
     HEURES.forEach(function(h){
       var n=idx[dept+'_'+h]||0;
       var ratio=n/maxN;
-      // Couleur : bleu clair (peu) -> or (moyen) -> vert (fort)
-      var bg=n===0?'rgba(0,0,0,.06)':
-             ratio>=0.7?'rgba(45,107,66,'+Math.round(ratio*100)/100+')':
-             ratio>=0.35?'rgba(176,125,46,'+Math.round(ratio*100)/100+')':
-             'rgba(26,90,122,'+Math.round(ratio*100)/100+')';
+      var bg=n===0?'rgba(0,0,0,.06)':ratio>=0.7?'rgba(45,107,66,'+Math.round(ratio*100)/100+')':ratio>=0.35?'rgba(176,125,46,'+Math.round(ratio*100)/100+')':'rgba(26,90,122,'+Math.round(ratio*100)/100+')';
       var title=dept+' \u00b7 '+String(h).padStart(2,'0')+'h \u00b7 '+n+' s\u00e9ance(s)';
       html+='<div class="dept-hour-cell" style="background:'+bg+'" title="'+title+'">'+(n>0?n:'')+'</div>';
     });
     html+='</div>';
   });
   html+='</div>';
-
-  // L\u00e9gende
-  html+='<div style="display:flex;align-items:center;gap:.5rem;margin-top:.7rem;font-size:.55rem;color:var(--muted)">';
-  html+='<span>Intensit\u00e9 :</span>';
-  html+='<div style="display:flex;gap:2px">';
-  [0.1,0.25,0.45,0.65,0.85].forEach(function(r){
-    var bg=r>=0.7?'rgba(45,107,66,'+r+')':r>=0.35?'rgba(176,125,46,'+r+')':'rgba(26,90,122,'+r+')';
-    html+='<div style="width:14px;height:14px;border-radius:2px;background:'+bg+'"></div>';
-  });
+  html+='<div style="display:flex;align-items:center;gap:.5rem;margin-top:.7rem;font-size:.55rem;color:var(--muted)"><span>Intensit\u00e9 :</span><div style="display:flex;gap:2px">';
+  [0.1,0.25,0.45,0.65,0.85].forEach(function(r){var bg=r>=0.7?'rgba(45,107,66,'+r+')':r>=0.35?'rgba(176,125,46,'+r+')':'rgba(26,90,122,'+r+')';html+='<div style="width:14px;height:14px;border-radius:2px;background:'+bg+'"></div>';});
   html+='</div><span>Faible \u2192 Fort</span></div>';
-
   el.innerHTML=html;
 }
 
 function renderAtelierPeak(byAtelierHour, byAtelierHourKiosk){
   var el=document.getElementById('q-atelier-peak');
   if(!el) return;
-  if(!byAtelierHour||!byAtelierHour.length){
-    el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';
-    return;
-  }
-  // Grouper par atelier
+  if(!byAtelierHour||!byAtelierHour.length){el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';return;}
   var ateliers={};
-  byAtelierHour.forEach(function(r){
-    if(!ateliers[r.atelier])ateliers[r.atelier]={};
-    ateliers[r.atelier][r.h]=r.n;
-  });
-  // Total par atelier pour tri
+  byAtelierHour.forEach(function(r){if(!ateliers[r.atelier])ateliers[r.atelier]={};ateliers[r.atelier][r.h]=r.n;});
   var atTotals={};
   byAtelierHour.forEach(function(r){atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n});
   var topAt=Object.keys(atTotals).sort(function(a,b){return atTotals[b]-atTotals[a]}).slice(0,6);
-
-  // Ajouter les accessoires depuis le kiosque (déclaratif) avec tag
-  var kioskAteliers={};
   var ACCESSOIRES_QVCT=['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
   if(byAtelierHourKiosk&&byAtelierHourKiosk.length){
     byAtelierHourKiosk.forEach(function(r){
       if(ACCESSOIRES_QVCT.indexOf(r.atelier)>=0){
-        if(!kioskAteliers[r.atelier])kioskAteliers[r.atelier]={};
-        kioskAteliers[r.atelier][r.h]=(kioskAteliers[r.atelier][r.h]||0)+r.n;
-        atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n;
         if(!ateliers[r.atelier])ateliers[r.atelier]={};
         ateliers[r.atelier][r.h]=(ateliers[r.atelier][r.h]||0)+r.n;
+        atTotals[r.atelier]=(atTotals[r.atelier]||0)+r.n;
       }
     });
     ACCESSOIRES_QVCT.forEach(function(a){if(atTotals[a])topAt.push(a);});
   }
-
   var HEURES=[];for(var h=7;h<=20;h++)HEURES.push(h);
   var maxN=Math.max.apply(null,Object.values(atTotals).concat([1]));
-
-  // En-tête heures
   var html='<div class="atelier-peak-row"><div class="atelier-peak-name"></div><div class="atelier-peak-hours">';
   HEURES.forEach(function(h){html+='<div class="atelier-peak-col"><div style="height:22px"></div><div class="atelier-peak-h-lbl" style="color:var(--muted2);font-size:.5rem">'+String(h).padStart(2,'0')+'</div></div>'});
   html+='</div></div>';
@@ -986,76 +937,126 @@ function renderAtelierPeak(byAtelierHour, byAtelierHourKiosk){
     var hData=ateliers[at]||{};
     var isKiosk=ACCESSOIRES_QVCT.indexOf(at)>=0;
     var atLabel=at+(isKiosk?' <span style="font-size:.42rem;color:var(--muted);font-style:italic">kiosque</span>':'');
-    // Trouver les 3 heures de pointe
     var peaks=HEURES.map(function(h){return{h:h,n:hData[h]||0}}).sort(function(a,b){return b.n-a.n}).slice(0,3);
-    html+='<div class="atelier-peak-row"><div class="atelier-peak-name" title="'+at+'">'+atLabel+'</div>';
-    html+='<div class="atelier-peak-hours">';
+    html+='<div class="atelier-peak-row"><div class="atelier-peak-name" title="'+at+'">'+atLabel+'</div><div class="atelier-peak-hours">';
     HEURES.forEach(function(h){
-      var n=hData[h]||0;
-      var ratio=n/maxN;
+      var n=hData[h]||0;var ratio=n/maxN;
       var isPeak=peaks.find(function(p){return p.h===h&&p.n>0});
-      var bg=n===0?'rgba(0,0,0,.05)':
-             isKiosk?(ratio>=0.5?'rgba(100,90,130,.7)':'rgba(100,90,130,.4)'):
-             ratio>=0.7?'rgba(45,107,66,.85)':
-             ratio>=0.35?'rgba(176,125,46,.8)':
-             'rgba(26,90,122,.6)';
-      html+='<div class="atelier-peak-col">';
-      html+='<div class="atelier-peak-dot" style="background:'+bg+'" title="'+at+' \u00b7 '+h+'h \u00b7 '+n+'">';
-      if(n>0&&isPeak)html+=n;
-      html+='</div>';
-      html+='<div class="atelier-peak-h-lbl">'+String(h).padStart(2,'0')+'</div>';
-      html+='</div>';
+      var bg=n===0?'rgba(0,0,0,.05)':isKiosk?(ratio>=0.5?'rgba(100,90,130,.7)':'rgba(100,90,130,.4)'):ratio>=0.7?'rgba(45,107,66,.85)':ratio>=0.35?'rgba(176,125,46,.8)':'rgba(26,90,122,.6)';
+      html+='<div class="atelier-peak-col"><div class="atelier-peak-dot" style="background:'+bg+'" title="'+at+' \u00b7 '+h+'h \u00b7 '+n+'">'+(n>0&&isPeak?n:'')+'</div><div class="atelier-peak-h-lbl">'+String(h).padStart(2,'0')+'</div></div>';
     });
     html+='</div></div>';
   });
-
   el.innerHTML=html||'<div class="sensor-empty">Aucune donn\u00e9e</div>';
 }
 
 function renderDeptAtelier(byDeptAtelier){
   var el=document.getElementById('q-dept-atelier');
   if(!el) return;
-  if(!byDeptAtelier||!byDeptAtelier.length){
-    el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';
-    return;
-  }
-  // Grouper par département
+  if(!byDeptAtelier||!byDeptAtelier.length){el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e</div>';return;}
   var depts={};
-  byDeptAtelier.forEach(function(r){
-    if(!depts[r.departement])depts[r.departement]=[];
-    depts[r.departement].push({atelier:r.atelier,n:r.n});
-  });
-  // Tri\u00e9 par volume total département
+  byDeptAtelier.forEach(function(r){if(!depts[r.departement])depts[r.departement]=[];depts[r.departement].push({atelier:r.atelier,n:r.n});});
   var deptTotals={};
   byDeptAtelier.forEach(function(r){deptTotals[r.departement]=(deptTotals[r.departement]||0)+r.n});
   var sortedDepts=Object.keys(depts).sort(function(a,b){return deptTotals[b]-deptTotals[a]}).slice(0,7);
-
   var html='';
   sortedDepts.forEach(function(dept){
-    var ats=depts[dept].slice(0,4); // max 4 ateliers par département
+    var ats=depts[dept].slice(0,4);
     var total=deptTotals[dept];
-    html+='<div class="dept-at-row">';
-    html+='<div class="dept-at-name">'+dept+'</div>';
-    html+='<div class="dept-at-pills">';
+    html+='<div class="dept-at-row"><div class="dept-at-name">'+dept+'</div><div class="dept-at-pills">';
     ats.forEach(function(a){
       var pct=total>0?Math.round(a.n/total*100):0;
-      // Couleur selon rang
       var rank=ats.indexOf(a);
       var opacity=rank===0?'1':rank===1?'.8':'.6';
       html+='<span class="dept-at-pill" style="opacity:'+opacity+'">'+a.atelier+' <span style="font-size:.55rem;color:var(--muted)">'+pct+'%</span></span>';
     });
     html+='</div></div>';
   });
-
   el.innerHTML=html||'<div class="sensor-empty">Aucune donn\u00e9e</div>';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+function renderAtelierMoodHeatmap(byAtelierMood){
+  var el=document.getElementById('q-atelier-mood-heatmap');
+  if(!el) return;
+  if(!byAtelierMood||!byAtelierMood.length){
+    el.innerHTML='<div class="sensor-empty">Aucune donn\u00e9e \u00b7 les sessions kiosque alimenteront cette matrice</div>';
+    return;
+  }
+
+  // Éclater les lignes atelier_raw multi-ateliers ("A, B") et agréger
+  var idx={};
+  byAtelierMood.forEach(function(r){
+    var mood=r.mood, n=r.n;
+    var raw=r.atelier_raw||'';
+    raw.split(',').forEach(function(a){
+      a=a.trim();if(!a)return;
+      var k=a+'|||'+mood;
+      idx[k]=(idx[k]||0)+n;
+    });
+  });
+
+  // Totaux par atelier pour tri et calcul des %
+  var atTotals={};
+  Object.keys(idx).forEach(function(k){
+    var at=k.split('|||')[0];
+    atTotals[at]=(atTotals[at]||0)+idx[k];
+  });
+  var ateliers=Object.keys(atTotals).sort(function(a,b){return atTotals[b]-atTotals[a]}).slice(0,10);
+
+  var MOODS=['Recharg\u00e9','Mieux','Neutre','\u00c9puis\u00e9'];
+  var MC={
+    'Recharg\u00e9':  {bg:'45,107,66',  icon:'\u2728'},
+    'Mieux':         {bg:'176,125,46', icon:'\ud83d\ude42'},
+    'Neutre':        {bg:'106,96,112', icon:'\ud83d\ude10'},
+    '\u00c9puis\u00e9':{bg:'192,57,43', icon:'\ud83d\ude2e\u200d\ud83d\udca8'}
+  };
+
+  var allVals=Object.values(idx).concat([1]);
+  var maxN=Math.max.apply(null,allVals);
+
+  var html='<div class="am-heatmap-wrap"><table class="am-table"><thead><tr>';
+  html+='<th class="at-col">Atelier</th>';
+  MOODS.forEach(function(m){var mc=MC[m]||{icon:''};html+='<th>'+mc.icon+' '+m+'</th>';});
+  html+='<th>Total</th></tr></thead><tbody>';
+
+  ateliers.forEach(function(at){
+    var total=atTotals[at]||0;
+    html+='<tr><td class="at-name" title="'+at+'">'+at+'</td>';
+    MOODS.forEach(function(m){
+      var n=idx[at+'|||'+m]||0;
+      var pct=total>0?Math.round(n/total*100):0;
+      var mc=MC[m]||{bg:'176,125,46'};
+      if(n===0){
+        html+='<td><div class="am-cell empty">\u2014</div></td>';
+      } else {
+        var opacity=Math.max(0.18, n/maxN*0.82+0.18).toFixed(2);
+        var bg='rgba('+mc.bg+','+opacity+')';
+        var col=parseFloat(opacity)>=0.5?'#fff':('rgb('+mc.bg+')');
+        html+='<td><div class="am-cell" style="background:'+bg+';color:'+col+'" title="'+at+' \u00b7 '+m+' \u00b7 '+n+' s\u00e9ances ('+pct+'%)">'+n+' <span style="font-size:.5rem;opacity:.85">'+pct+'%</span></div></td>';
+      }
+    });
+    html+='<td style="text-align:center;font-weight:600;font-size:.65rem;color:var(--muted2)">'+total+'</td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+
+  // Légende
+  html+='<div class="am-legend">';
+  MOODS.forEach(function(m){
+    var mc=MC[m]||{bg:'176,125,46',icon:''};
+    html+='<span class="am-legend-pill" style="background:rgba('+mc.bg+',.15);color:rgb('+mc.bg+')">'+mc.icon+' '+m+'</span>';
+  });
+  html+='<span style="margin-left:auto">Valeur = nb séances · % = part du ressenti pour cet atelier</span>';
+  html+='</div>';
+
+  el.innerHTML=html;
+}
 
 function exportQVCT(){
-  // Mention RGPD obligatoire dans l'export
-  var rgpdNote='# Export DUERP beOtop — Données agrégées et anonymisées (k-anonymat k≥5)\n# Aucune donnée individuelle — Conformité RGPD Art. 89 — ' + new Date().toLocaleDateString('fr-FR') + '\n';
-  var today=new Date().toISOString().slice(0,10);var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank')}
+  var today=new Date().toISOString().slice(0,10);
+  var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);
+  window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank');
+}
 
 // ROI
 function setContext(ctx){ROI.ctx=ctx;document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');var b=BASE_400[ctx];document.getElementById('ctx-note').textContent=(ctx==='siege'?'Si\u00e8ge social':'Site industriel')+' \u00b7 bases adressables : absent\u00e9isme '+eur(b.absenteisme)+' \u00b7 pr\u00e9sent\u00e9isme '+eur(b.presenteisme)+' \u00b7 turnover '+eur(b.turnover);document.getElementById('daf-im-hint').textContent=ctx==='siege'?'D\u00e9faut si\u00e8ge : 6 250 \u20ac':'D\u00e9faut industrie : 6 500 \u20ac';if(DRH.source!=='default'){if(window.confirm('Changer le type de site r\u00e9initialise les donn\u00e9es RH saisies. Continuer ?'))resetDRH();else return}updateDRHGrid();calcROI()}
@@ -1098,7 +1099,6 @@ function calcROI(){
   document.getElementById('roi-seuil').textContent=!isR?'Seuil de rentabilit\u00e9 : '+(baseTotale>0?(ctp/baseTotale*100).toFixed(2):0)+"% d'impact":'';
   document.getElementById('roi-source-label').textContent=isR?'Bas\u00e9 sur vos donn\u00e9es RH r\u00e9elles':'Valeurs sectorielles \u00b7 '+(ROI.ctx==='siege'?'si\u00e8ge social':'site industriel');
   document.getElementById('roi-gain').textContent=eur(gain);document.getElementById('roi-ctp').textContent=eur(ctp);document.getElementById('roi-eco').textContent=eur(eco);
-  // Séances annuelles : extrapolation jours ouvrés depuis le 1er janvier (capteurs PIR ou kiosque)
   var sA=seancesAnnualiseesROI>0?seancesAnnualiseesROI:realSeancesTotal*12;
   document.getElementById('roi-seances-annee').textContent=fnum(sA)+' s\u00e9ances';
   document.getElementById('roi-decomposition').innerHTML=decomposition;
