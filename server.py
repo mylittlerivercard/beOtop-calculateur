@@ -1163,16 +1163,16 @@ def get_stats():
             else:
                 by_site = []
 
-   atelier_count = {}
-for row in raw_at:
-    for a in (row['ateliers'] or '').split(', '):
-        a = a.strip()
-        if a:
-            atelier_count[a] = atelier_count.get(a, 0) + 1
-by_atelier = sorted(
-    [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
-    key=lambda x: -x['n']
-)
+    atelier_count = {}
+    for row in raw_at:
+        for a in (row['ateliers'] or '').split(', '):
+            a = a.strip()
+            if a:
+                atelier_count[a] = atelier_count.get(a, 0) + 1
+    by_atelier = sorted(
+        [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
+        key=lambda x: -x['n']
+    )
 
     # ── AJOUT 5 : fréquences horaires par département ─────────────────────────
     with get_db() as conn:
