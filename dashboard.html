@@ -407,8 +407,7 @@
     <div class="qvct-grid-3">
       <div class="card"><div class="card-title">Distribution du ressenti</div><div id="q-mood-dist"></div></div>
       <div class="card"><div class="card-title">Ateliers — part d'activité</div><div id="q-ateliers-part"></div></div>
-      <div class="card"><div class="card-title">Fréquentation par heure</div><div id="q-heures-chart" style="display:flex;align-items:flex-end;gap:3px;height:70px;margin-bottom:3px"></div><div id="q-heures-labels" style="display:flex;gap:3px"></div></div>
-    </div>
+      <div class="card"><div class="card-title">Fréquentation par heure</div><div id="q-heures-chart" style="display:flex;align-items:flex-end;gap:3px;height:70px;margin-bottom:3px;position:relative"></div>
 
     <div class="grid-2">
       <div class="card"><div class="card-title">Ressenti par département — CSSCT</div><div style="font-size:.55rem;color:var(--sage);margin-bottom:.5rem">🔒 Données agrégées · k-anonymat k≥5 · RGPD Art. 89</div><div id="q-cross-dept-mood"></div></div>
@@ -797,7 +796,7 @@ function renderQvct(){
   var hD={};(byHour||[]).forEach(function(r){hD[parseInt(r.h)]=r.n});
   var hMax=Math.max.apply(null,Object.values(hD).concat([1]));
   var hH=hSrcBadge,lH='';
-  for(var h=7;h<=20;h++){var hn=hD[h]||0;var hp=Math.round(hn/hMax*100);var hc=hn===0?'rgba(0,0,0,.07)':hn>=hMax*0.7?'var(--sage)':hn>=hMax*0.4?'var(--gold)':'var(--mist)';hH+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">'+(hn>0?'<span style="font-size:.48rem;color:var(--muted2)">'+hn+'</span>':'')+'<div style="width:100%;border-radius:3px 3px 0 0;background:'+hc+';height:'+Math.max(hp,4)+'%"></div></div>';lH+='<div style="flex:1;text-align:center;font-size:.48rem;color:var(--muted)">'+String(h).padStart(2,'0')+'</div>'}
+  for(var h=7;h<=20;h++){var hn=hD[h]||0;var hp=Math.round(hn/hMax*100);var hc=hn===0?'rgba(0,0,0,.07)':hn>=hMax*0.7?'var(--sage)':hn>=hMax*0.4?'var(--gold)':'var(--mist)';hH+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">'+(hn>0?'<span style="font-size:.48rem;color:var(--muted2)">'+hn+'</span>':'')+'<div style="width:100%;border-radius:3px 3px 0 0;background:'+hc+';height:'+Math.max(hp,4)+'px"></div></div>';
   hE.innerHTML=hH;hL.innerHTML=lH;
 
   var cME=document.getElementById('q-cross-dept-mood');
@@ -1032,8 +1031,7 @@ function renderAtelierMoodHeatmap(byAtelierMood){
         var opacity=Math.max(0.18, n/maxN*0.82+0.18).toFixed(2);
         var bg='rgba('+mc.bg+','+opacity+')';
         var col=parseFloat(opacity)>=0.5?'#fff':('rgb('+mc.bg+')');
-        html+='<td><div class="am-cell" style="background:'+bg+';color:'+col+'" title="'+at+' \u00b7 '+m+' \u00b7 '+n+' s\u00e9ances ('+pct+'%)">'+n+' <span style="font-size:.5rem;opacity:.85">'+pct+'%</span></div></td>';
-      }
+html+='<td><div class="am-cell" style="background:'+bg+';color:'+col+';flex-direction:column;gap:1px" title="'+at+' \u00b7 '+m+' \u00b7 '+n+' s\u00e9ances ('+pct+'%)"><span>'+n+'</span><span style="font-size:.45rem;opacity:.8">'+pct+'%</span></div></td>';      }
     });
     html+='<td style="text-align:center;font-weight:600;font-size:.65rem;color:var(--muted2)">'+total+'</td>';
     html+='</tr>';
