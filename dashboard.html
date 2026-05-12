@@ -413,6 +413,7 @@
       <div class="card"><div class="card-title">Ateliers — part d'activité</div><div id="q-ateliers-part"></div></div>
       <div class="card">
         <div class="card-title">Fréquentation par heure</div>
+        <div id="q-heures-source" style="font-size:.55rem;margin-bottom:.4rem"></div>
         <div id="q-heures-chart" style="display:flex;align-items:flex-end;gap:3px;height:110px;margin-bottom:3px"></div>
         <div id="q-heures-labels" style="display:flex;gap:3px"></div>
       </div>
@@ -811,10 +812,10 @@ function renderQvct(){
   // Heures QVCT — CORRECTION : hauteur en px
   var hE=document.getElementById('q-heures-chart');
   var hL=document.getElementById('q-heures-labels');
-  var hSrcBadge=hasFaisceauHour?'<div style="font-size:.55rem;color:var(--sage);margin-bottom:.4rem">⚙️ Faisceau IR · passages réels</div>':'<div style="font-size:.55rem;color:var(--muted);margin-bottom:.4rem">Source : heure kiosque déclaratif</div>';
+  var hSrcEl=document.getElementById('q-heures-source');if(hSrcEl){hSrcEl.style.color=hasFaisceauHour?'var(--sage)':'var(--muted)';hSrcEl.textContent=hasFaisceauHour?'⚙️ Faisceau IR · passages réels':'Source : heure kiosque déclaratif';}
   var hD={};(byHour||[]).forEach(function(r){hD[parseInt(r.h)]=r.n;});
   var hMax=Math.max.apply(null,Object.values(hD).concat([1]));
-  var hH=hSrcBadge,lH='';
+  var hH='',lH='';
   for(var h=7;h<=20;h++){
     var hn=hD[h]||0;
     var hp=Math.round(hn/hMax*100);
