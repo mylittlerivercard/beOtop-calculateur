@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop — Disponibilité en temps réel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #9A6A1F;
+    --gold-light: #C4913A;
+    --gold-pale: #F5EDD8;
+    --navy: #0D3350;
+    --sage: #1A4A2A;
+    --green: #2E7D4F;
+    --green-glow: rgba(46,125,79,0.15);
+    --red: #8B2A1A;
+    --red-glow: rgba(139,42,26,0.12);
+    --bg: #FAF8F4;
+    --bg2: #F2EDE4;
+    --text: #1A1610;
+    --muted: #7A6E62;
+    --border: rgba(154,106,31,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── FOND DÉCORATIF ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(154,106,31,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 10% 80%, rgba(13,51,80,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 2.5rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .logo span {
+    font-weight: 600;
+  }
+
+  .site-label {
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--green-glow);
+    border: 1px solid rgba(46,125,79,0.25);
+    border-radius: 100px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .last-update {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-weight: 300;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0;
+    padding: 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    padding: 1.2rem 2rem 1.2rem 0;
+    margin-right: 2rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+    font-weight: 300;
+  }
+
+  /* ── GRILLE ATELIERS ── */
+  main {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 2.5rem;
+  }
+
+  .section-title {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  /* ── CARTE ATELIER ── */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    border-radius: 12px 0 0 12px;
+    transition: background 0.4s ease;
+  }
+
+  .card.libre::before { background: var(--green); }
+  .card.occupe::before { background: var(--red); }
+  .card.inconnu::before { background: var(--border); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.9rem;
+  }
+
+  .card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1.2;
+    max-width: 180px;
+  }
+
+  .card-indication {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    font-weight: 300;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 100px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: all 0.4s ease;
+  }
+
+  .status-pill.libre {
+    background: var(--green-glow);
+    color: var(--green);
+    border: 1px solid rgba(46,125,79,0.2);
+  }
+
+  .status-pill.occupe {
+    background: var(--red-glow);
+    color: var(--red);
+    border: 1px solid rgba(139,42,26,0.2);
+  }
+
+  .status-pill.inconnu {
+    background: rgba(122,110,98,0.08);
+    color: var(--muted);
+    border: 1px solid rgba(122,110,98,0.15);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-dot.libre {
+    background: var(--green);
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  .status-dot.occupe {
+    background: var(--red);
+    animation: pulse-red 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .status-dot.inconnu {
+    background: var(--muted);
+  }
+
+  /* Barre de progression durée session */
+  .session-bar {
+    margin-top: 0.8rem;
+    height: 3px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .session-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease;
+  }
+
+  .libre .session-bar-fill { background: var(--green); }
+  .occupe .session-bar-fill { background: var(--red); }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.7rem;
+  }
+
+  .session-time {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .session-time strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .passages-today {
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ── FAISCEAU BAR ── */
+  .faisceau-bar {
+    position: relative;
+    z-index: 1;
+    margin: 0 2.5rem 2rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .faisceau-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .faisceau-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--gold-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .faisceau-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .faisceau-sub {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+    font-weight: 300;
+  }
+
+  .faisceau-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .faisceau-count-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-top: 0.1rem;
+    text-align: center;
+  }
+
+  /* ── LOADING / ERROR ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.5s ease;
+  }
+
+  .loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+
+  .loading-dots {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .loading-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: dot-bounce 1.2s ease-in-out infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot-bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    header { padding: 1.5rem; }
+    .stats-bar { padding: 0 1.5rem; overflow-x: auto; }
+    main { padding: 1.5rem; }
+    .faisceau-bar { margin: 0 1.5rem 1.5rem; }
+    .grid { grid-template-columns: 1fr; }
+    .logo { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">be<span style="font-weight:600">Otop</span></div>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div>
+    <div class="logo">be<span>Otop</span></div>
+    <div class="site-label" id="site-label">Chargement...</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      Temps réel
+    </div>
+    <div class="last-update" id="last-update">—</div>
+  </div>
+</header>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-value" id="stat-libres">—</div>
+    <div class="stat-label">Ateliers libres</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-occupes">—</div>
+    <div class="stat-label">En cours</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-total">—</div>
+    <div class="stat-label">Ateliers total</div>
+  </div>
+</div>
+
+<!-- Faisceau -->
+<div class="faisceau-bar">
+  <div class="faisceau-left">
+    <div class="faisceau-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M2 9h14M9 2v14" stroke="#9A6A1F" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="9" cy="9" r="3" stroke="#9A6A1F" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="faisceau-label">Faisceau infrarouge</div>
+      <div class="faisceau-sub">Passages détectés aujourd'hui</div>
+    </div>
+  </div>
+  <div style="text-align:center">
+    <div class="faisceau-count" id="passages-today">—</div>
+    <div class="faisceau-count-label">passages</div>
+  </div>
+</div>
+
+<!-- Grille ateliers -->
+<main>
+  <div class="section-title">Disponibilité des ateliers</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+const API = 'https://beotop-api.onrender.com';
+const SITE = 'dmmf-agde';
+const REFRESH = 30000; // 30s
+
+const ATELIERS_CONFIG = {
+  'Méridienne P127':         { indication: 'TMS · Position 127° · Lombaires' },
+  'Cocon de Sieste':         { indication: 'Fatigue · Récupération profonde' },
+  'Neurosonic Lit':          { indication: 'Relaxation · Vibrations sonores' },
+  "Bol d'Air Jacquier":      { indication: 'Fatigue cognitive · Oxygénation' },
+  'Transat 127':             { indication: 'Détente · Anti-gravité' },
+  'Siège Massant 0 Gravité': { indication: 'TMS · Stress · Massage' },
+  'Siège Massant Shiatsu':   { indication: 'TMS · Stress · Shiatsu' },
+  'Siège Lecture':           { indication: 'Détente · Posture assise' },
+  'Sensosphère':             { indication: 'Luminothérapie · Chronobiologie' },
+  'Bain de Lumière Rouge':   { indication: 'Régénération · Photobiomodulation' },
+  'Photobiomodulation':      { indication: 'TMS · Régénération cellulaire' },
+  'Lunettes Psio':           { indication: 'Déconnexion · Relaxation visuelle' },
+};
+
+function fmt(date) {
+  return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function fmtDuration(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}min ${s > 0 ? s + 's' : ''}`.trim();
+}
+
+let sessionTimers = {}; // atelier -> {start, interval}
+
+function startTimer(atelier, startTime) {
+  if (sessionTimers[atelier]) {
+    clearInterval(sessionTimers[atelier].interval);
+  }
+  sessionTimers[atelier] = {
+    start: startTime,
+    interval: setInterval(() => {
+      const el = document.querySelector(`[data-atelier="${CSS.escape(atelier)}"] .session-time`);
+      const barEl = document.querySelector(`[data-atelier="${CSS.escape(atelier)}"] .session-bar-fill`);
+      if (el) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        el.innerHTML = `En cours depuis <strong>${fmtDuration(elapsed)}</strong>`;
+        // barre : 30 min = 100%
+        if (barEl) {
+          const pct = Math.min(elapsed / 1800 * 100, 100);
+          barEl.style.width = pct + '%';
+        }
+      }
+    }, 1000)
+  };
+}
+
+function stopTimer(atelier) {
+  if (sessionTimers[atelier]) {
+    clearInterval(sessionTimers[atelier].interval);
+    delete sessionTimers[atelier];
+  }
+}
+
+async function fetchOccupation() {
+  const r = await fetch(`${API}/api/sensors/occupation?site_slug=${SITE}`);
+  if (!r.ok) throw new Error('API occupation');
+  return r.json();
+}
+
+async function fetchStats() {
+  const r = await fetch(`${API}/api/sensors/stats?site_slug=${SITE}&period=today`);
+  if (!r.ok) throw new Error('API stats');
+  return r.json();
+}
+
+async function fetchSessions() {
+  const r = await fetch(`${API}/api/sensors/stats?site_slug=${SITE}&period=today`);
+  if (!r.ok) throw new Error('API sessions');
+  return r.json();
+}
+
+function renderGrid(occupation) {
+  const grid = document.getElementById('grid');
+  
+  // Récupérer ou créer les cartes
+  const ateliers = [...new Set([
+    ...Object.keys(ATELIERS_CONFIG),
+    ...Object.keys(occupation)
+  ])];
+
+  let libres = 0, occupes = 0;
+
+  ateliers.forEach(nom => {
+    const occ = occupation[nom];
+    const status = occ === undefined ? 'inconnu' : occ ? 'occupe' : 'libre';
+    const config = ATELIERS_CONFIG[nom] || { indication: '' };
+
+    if (status === 'libre') libres++;
+    if (status === 'occupe') occupes++;
+
+    let card = document.querySelector(`[data-atelier="${CSS.escape(nom)}"]`);
+    
+    if (!card) {
+      card = document.createElement('div');
+      card.className = `card ${status}`;
+      card.setAttribute('data-atelier', nom);
+      card.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div class="card-name">${nom}</div>
+            <div class="card-indication">${config.indication}</div>
+          </div>
+          <div class="status-pill ${status}">
+            <span class="status-dot ${status}"></span>
+            <span class="status-text">${status === 'libre' ? 'Libre' : status === 'occupe' ? 'Occupé' : '—'}</span>
+          </div>
+        </div>
+        <div class="session-bar"><div class="session-bar-fill" style="width:0%"></div></div>
+        <div class="card-footer">
+          <div class="session-time">${status === 'occupe' ? 'En cours...' : 'Disponible'}</div>
+          <div class="passages-today"></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    } else {
+      // Mise à jour statut
+      const prevStatus = card.className.includes('occupe') ? 'occupe' : card.className.includes('libre') ? 'libre' : 'inconnu';
+      
+      if (prevStatus !== status) {
+        card.className = `card ${status}`;
+        card.querySelector('.status-pill').className = `status-pill ${status}`;
+        card.querySelector('.status-dot').className = `status-dot ${status}`;
+        card.querySelector('.status-text').textContent = status === 'libre' ? 'Libre' : status === 'occupe' ? 'Occupé' : '—';
+        
+        if (status === 'occupe') {
+          startTimer(nom, Date.now());
+        } else {
+          stopTimer(nom);
+          card.querySelector('.session-time').textContent = 'Disponible';
+          card.querySelector('.session-bar-fill').style.width = '0%';
+        }
+      }
+    }
+
+    // Démarrer timer si occupé et pas encore démarré
+    if (status === 'occupe' && !sessionTimers[nom]) {
+      startTimer(nom, Date.now());
+    }
+  });
+
+  document.getElementById('stat-libres').textContent = libres;
+  document.getElementById('stat-occupes').textContent = occupes;
+  document.getElementById('stat-total').textContent = ateliers.length;
+}
+
+async function refresh() {
+  try {
+    const [occData, statsData] = await Promise.all([fetchOccupation(), fetchStats()]);
+
+    // Occupation
+    const occ = {};
+    if (occData.ateliers) {
+      occData.ateliers.forEach(a => { occ[a.atelier] = a.occupe; });
+    } else if (typeof occData === 'object') {
+      Object.assign(occ, occData);
+    }
+
+    renderGrid(occ);
+
+    // Passages aujourd'hui
+    const passages = statsData.passages_today ?? statsData.passages ?? '—';
+    document.getElementById('passages-today').textContent = passages;
+
+    // Site label
+    document.getElementById('site-label').textContent = 'DMMF · Agde';
+
+    // Last update
+    document.getElementById('last-update').textContent = `Mis à jour à ${fmt(new Date())}`;
+
+    // Cacher loading
+    document.getElementById('loading').classList.add('hidden');
+
+  } catch (e) {
+    console.error('Erreur refresh:', e);
+    document.getElementById('last-update').textContent = `Erreur — nouvelle tentative dans 30s`;
+  }
+}
+
+// Lancement
+refresh();
+setInterval(refresh, REFRESH);
+</script>
+</body>
+</html>
