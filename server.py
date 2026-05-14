@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-beOtop - Serveur complet
+beOtop - Serveur complet v2.2
 Auth + Multi-clients + Roles (admin / client / kiosque)
 Version PostgreSQL
 """
@@ -25,7 +25,6 @@ CORS(app, supports_credentials=True)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def serve_html(filename):
-    """Lit et retourne un fichier HTML avec le bon Content-Type."""
     path = os.path.join(BASE_DIR, filename)
     try:
         with open(path, encoding='utf-8') as f:
@@ -47,7 +46,7 @@ def get_db():
         print("Erreur de connexion a la base :", e, file=sys.stderr)
         raise e
 
-# ── Normalisation noms d'ateliers ────────────────────────────────────────────
+# ── Normalisation noms d'ateliers ─────────────────────────────────────────────
 ATELIER_CANON = {
     'meridienne-p127':    'Méridienne P127',
     'cocon-sieste':       'Cocon de Sieste',
@@ -69,9 +68,8 @@ ATELIER_CANON = {
 
 def normalize_atelier(name):
     return ATELIER_CANON.get(name, name) if name else name
-# ─────────────────────────────────────────────────────────────────────────────
 
-# ── K-anonymisation (k=5) ─────────────────────────────────────────────────────
+# ── K-anonymisation (k=5) ──────────────────────────────────────────────────────
 K_ANONYMAT = 5
 
 def kanon_filter(rows, key_field, count_field='n', label_autres='Autres'):
@@ -94,7 +92,6 @@ def kanon_filter_cross(rows, key1, key2, count_field='n'):
         and (r.get(count_field) or 0) >= K_ANONYMAT
     ]
     return kept
-# ─────────────────────────────────────────────────────────────────────────────
 
 def serialize_row(row):
     d = dict(row)
@@ -159,7 +156,6 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_site ON sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sessions_dept ON sessions(departement)')
-
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_passages (
                 id          SERIAL PRIMARY KEY,
@@ -171,7 +167,6 @@ def init_db():
         ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_site ON sensor_passages(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_passages_ts   ON sensor_passages(timestamp)')
-
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_occupation (
                 id          SERIAL PRIMARY KEY,
@@ -185,7 +180,6 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_site    ON sensor_occupation(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_atelier ON sensor_occupation(atelier)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_occupation_ts      ON sensor_occupation(timestamp)')
-
         cur.execute('''
             CREATE TABLE IF NOT EXISTS sensor_sessions (
                 id          SERIAL PRIMARY KEY,
@@ -199,7 +193,6 @@ def init_db():
         ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_site ON sensor_sessions(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sensor_sessions_ts   ON sensor_sessions(debut)')
-
         cur.execute("""
             CREATE TABLE IF NOT EXISTS devis (
                 id              SERIAL PRIMARY KEY,
@@ -235,9 +228,7 @@ def init_db():
                 client_id       INTEGER REFERENCES clients(id)
             )
         """)
-
         conn.commit()
-
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
         if count == 0:
@@ -247,7 +238,6 @@ def init_db():
             )
             conn.commit()
             print(">>> Admin créé : admin@beotop.fr / beotop2026", file=sys.stderr)
-
         print(">>> Base initialisée avec succès", file=sys.stderr)
     except Exception as e:
         print(">>> ERREUR init_db :", e, file=sys.stderr)
@@ -305,9 +295,7 @@ def auth_login():
     session['client_id'] = user['client_id']
     session['nom']       = user['nom']
     return jsonify({
-        'ok': True,
-        'role': user['role'],
-        'nom': user['nom'],
+        'ok': True, 'role': user['role'], 'nom': user['nom'],
         'redirect': '/admin' if user['role'] == 'admin' else '/dashboard'
     })
 
@@ -339,10 +327,8 @@ def change_password():
         return jsonify({'error': 'Ancien mot de passe incorrect'}), 401
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE users SET password=%s WHERE id=%s",
-                [generate_password_hash(new_pw), user['id']]
-            )
+            cur.execute("UPDATE users SET password=%s WHERE id=%s",
+                        [generate_password_hash(new_pw), user['id']])
             conn.commit()
     return jsonify({'ok': True})
 
@@ -357,8 +343,7 @@ def admin_get_clients():
             cur.execute('''
                 SELECT c.*, COUNT(DISTINCT s.id) as nb_sites,
                        (SELECT COUNT(*) FROM sessions se JOIN sites si ON se.site_id=si.id WHERE si.client_id=c.id) as nb_sessions
-                FROM clients c
-                LEFT JOIN sites s ON s.client_id=c.id
+                FROM clients c LEFT JOIN sites s ON s.client_id=c.id
                 GROUP BY c.id ORDER BY c.created_at DESC
             ''')
             clients = cur.fetchall()
@@ -462,16 +447,9 @@ def admin_update_site(site_id):
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """UPDATE sites
-                   SET nom=%s, ville=%s, nb_salaries=%s, actif=%s
-                   WHERE id=%s""",
-                [
-                    data.get('nom'),
-                    data.get('ville'),
-                    int(data.get('nb_salaries') or 0),
-                    int(data.get('actif', 1)),
-                    site_id
-                ]
+                "UPDATE sites SET nom=%s, ville=%s, nb_salaries=%s, actif=%s WHERE id=%s",
+                [data.get('nom'), data.get('ville'), int(data.get('nb_salaries') or 0),
+                 int(data.get('actif', 1)), site_id]
             )
             conn.commit()
     return jsonify({'ok': True})
@@ -507,7 +485,8 @@ def admin_create_user():
             try:
                 cur.execute(
                     "INSERT INTO users (email, password, nom, role, client_id) VALUES (%s,%s,%s,%s,%s)",
-                    [email, generate_password_hash(tmp_pw), data.get('nom',''), data.get('role','client'), data.get('client_id')]
+                    [email, generate_password_hash(tmp_pw), data.get('nom',''),
+                     data.get('role','client'), data.get('client_id')]
                 )
                 conn.commit()
             except psycopg2.IntegrityError:
@@ -521,7 +500,8 @@ def admin_reset_password(user_id):
     new_pw = secrets.token_urlsafe(8)
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute("UPDATE users SET password=%s WHERE id=%s", [generate_password_hash(new_pw), user_id])
+            cur.execute("UPDATE users SET password=%s WHERE id=%s",
+                        [generate_password_hash(new_pw), user_id])
             conn.commit()
     return jsonify({'ok': True, 'new_password': new_pw})
 
@@ -592,7 +572,6 @@ def sensors_passage():
             conn.commit()
     return jsonify({'ok': True, 'id': new_id}), 201
 
-
 @app.route('/api/sensors/occupation', methods=['POST'])
 def sensors_occupation():
     data = request.get_json()
@@ -621,6 +600,54 @@ def sensors_occupation():
             conn.commit()
     return jsonify({'ok': True, 'inserted': inserted}), 201
 
+# ── NOUVELLE ROUTE PUBLIQUE — état actuel occupation (temps réel) ─────────────
+@app.route('/api/sensors/occupation/current', methods=['GET'])
+def sensors_occupation_current():
+    """
+    Retourne l'état d'occupation actuel de chaque atelier (dernière valeur connue).
+    Route publique — pas d'authentification requise.
+    Utilisée par la page temps réel realtime.html
+    """
+    site_slug = request.args.get('site_slug')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DISTINCT ON (atelier) atelier, occupe, timestamp
+                FROM sensor_occupation
+                WHERE site_slug=%s
+                ORDER BY atelier, timestamp DESC
+            """, [site_slug])
+            rows = cur.fetchall()
+    result = {r['atelier']: r['occupe'] for r in rows}
+    return jsonify({
+        'site_slug': site_slug,
+        'ateliers': result,
+        'updated_at': datetime.now().isoformat()
+    })
+
+# ── NOUVELLE ROUTE PUBLIQUE — passages du jour ────────────────────────────────
+@app.route('/api/sensors/passages/today', methods=['GET'])
+def sensors_passages_today():
+    """
+    Retourne le nombre de passages du jour.
+    Route publique — pas d'authentification requise.
+    Utilisée par la page temps réel realtime.html
+    """
+    site_slug = request.args.get('site_slug')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) as n FROM sensor_passages
+                WHERE site_slug=%s
+                AND "timestamp" >= CURRENT_DATE
+                AND "timestamp" < CURRENT_DATE + INTERVAL '1 day'
+            """, [site_slug])
+            n = cur.fetchone()['n']
+    return jsonify({'site_slug': site_slug, 'passages_today': n})
 
 @app.route('/api/sensors/session', methods=['POST'])
 def sensors_session():
@@ -650,8 +677,7 @@ def sensors_session():
             conn.commit()
     return jsonify({'ok': True, 'id': new_id}), 201
 
-
-# ========== CAPTEURS — STATISTIQUES ==========
+# ========== CAPTEURS — STATISTIQUES (authentifié) ==========
 
 @app.route('/api/sensors/stats', methods=['GET'])
 @login_required
@@ -692,30 +718,19 @@ def sensors_stats():
 
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {ts_clause}",
-                [site_slug]
-            )
+            cur.execute(f"SELECT COUNT(*) as n FROM sensor_passages WHERE site_slug=%s AND {ts_clause}", [site_slug])
             total_passages = cur.fetchone()['n']
-
             cur.execute(
                 f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
-                    FROM sensor_passages
-                    WHERE site_slug=%s AND {ts_clause}
-                    GROUP BY h ORDER BY h""",
-                [site_slug]
-            )
+                    FROM sensor_passages WHERE site_slug=%s AND {ts_clause}
+                    GROUP BY h ORDER BY h""", [site_slug])
             passages_par_heure = cur.fetchall()
-
             cur.execute(
                 f"""SELECT atelier,
                            COUNT(*) as total_signaux,
                            SUM(CASE WHEN occupe THEN 1 ELSE 0 END) as signaux_actifs
-                    FROM sensor_occupation
-                    WHERE site_slug=%s AND {ts_clause}
-                    GROUP BY atelier ORDER BY atelier""",
-                [site_slug]
-            )
+                    FROM sensor_occupation WHERE site_slug=%s AND {ts_clause}
+                    GROUP BY atelier ORDER BY atelier""", [site_slug])
             raw_occ = cur.fetchall()
             occupation_par_atelier = []
             for row in raw_occ:
@@ -728,21 +743,15 @@ def sensors_stats():
                     'total_signaux': total,
                     'signaux_actifs': actifs
                 })
-
             ts_clause_sessions = ts_clause.replace('"timestamp"', 'debut')
             cur.execute(
-                f"""SELECT atelier,
-                           COUNT(*) as nb_sessions,
+                f"""SELECT atelier, COUNT(*) as nb_sessions,
                            ROUND(AVG(duree_sec))::int as duree_moy_sec,
                            MIN(duree_sec) as duree_min_sec,
                            MAX(duree_sec) as duree_max_sec
-                    FROM sensor_sessions
-                    WHERE site_slug=%s AND {ts_clause_sessions}
-                    GROUP BY atelier ORDER BY nb_sessions DESC""",
-                [site_slug]
-            )
+                    FROM sensor_sessions WHERE site_slug=%s AND {ts_clause_sessions}
+                    GROUP BY atelier ORDER BY nb_sessions DESC""", [site_slug])
             sessions_par_atelier = cur.fetchall()
-
     return jsonify({
         'site_slug': site_slug,
         'period': period,
@@ -751,7 +760,6 @@ def sensors_stats():
         'occupation_par_atelier': occupation_par_atelier,
         'sessions_par_atelier': [serialize_row(r) for r in sessions_par_atelier],
     })
-
 
 @app.route('/api/sensors/passages/list', methods=['GET'])
 @login_required
@@ -769,7 +777,6 @@ def sensors_passages_list():
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
-
     if period == 'today':
         ts_clause = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\' AND EXTRACT(HOUR FROM "timestamp") BETWEEN 8 AND 19'
     elif period == 'week':
@@ -780,43 +787,25 @@ def sensors_passages_list():
         ts_clause = '"timestamp" >= NOW() - INTERVAL \'365 days\''
     elif period == 'ytd':
         ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
-    elif period == 'q1':
-        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
-    elif period == 'q2':
-        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
-    elif period == 'q3':
-        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
-    elif period == 'q4':
-        ts_clause = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
     else:
         ts_clause = "1=1"
-
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                f"""SELECT id, "timestamp", direction
-                    FROM sensor_passages
+                f"""SELECT id, "timestamp", direction FROM sensor_passages
                     WHERE site_slug=%s AND {ts_clause}
-                    ORDER BY "timestamp" DESC
-                    LIMIT %s""",
-                [site_slug, limit]
-            )
+                    ORDER BY "timestamp" DESC LIMIT %s""",
+                [site_slug, limit])
             rows = cur.fetchall()
-
-    return jsonify({
-        'site_slug': site_slug,
-        'period': period,
-        'total': len(rows),
-        'passages': [serialize_row(r) for r in rows]
-    })
-
+    return jsonify({'site_slug': site_slug, 'period': period, 'total': len(rows),
+                    'passages': [serialize_row(r) for r in rows]})
 
 @app.route('/api/sensors/passages/export', methods=['GET'])
 @login_required
 def sensors_passages_export():
-    site_slug  = request.args.get('site_slug')
-    from_date  = request.args.get('from', date.today().isoformat())
-    to_date    = request.args.get('to', date.today().isoformat())
+    site_slug = request.args.get('site_slug')
+    from_date = request.args.get('from', date.today().isoformat())
+    to_date   = request.args.get('to', date.today().isoformat())
     if not site_slug:
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
@@ -830,13 +819,10 @@ def sensors_passages_export():
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """SELECT "timestamp", direction
-                   FROM sensor_passages
-                   WHERE site_slug=%s
-                   AND "timestamp"::date BETWEEN %s AND %s
+                """SELECT "timestamp", direction FROM sensor_passages
+                   WHERE site_slug=%s AND "timestamp"::date BETWEEN %s AND %s
                    ORDER BY "timestamp" ASC""",
-                [site_slug, from_date, to_date]
-            )
+                [site_slug, from_date, to_date])
             rows = cur.fetchall()
     output = io.StringIO()
     writer = csv.writer(output)
@@ -845,10 +831,8 @@ def sensors_passages_export():
         sr = serialize_row(r)
         ts = sr['timestamp']
         writer.writerow([ts[:10], ts[11:19], sr.get('direction') or 'entree', site_slug])
-    return Response(
-        output.getvalue(), mimetype='text/csv',
-        headers={'Content-Disposition': f'attachment; filename=passages_{site_slug}_{from_date}_{to_date}.csv'}
-    )
+    return Response(output.getvalue(), mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=passages_{site_slug}_{from_date}_{to_date}.csv'})
 
 # ========== STATISTIQUES ==========
 
@@ -885,10 +869,7 @@ def get_site_filter(site_slug=None):
         placeholders = ','.join(['%s'] * len(slugs))
         return f"site_slug IN ({placeholders})", slugs
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# DEVIS
-# ══════════════════════════════════════════════════════════════════════════════
+# ========== DEVIS ==========
 
 @app.route('/api/devis/save', methods=['POST'])
 @login_required
@@ -896,14 +877,12 @@ def save_devis():
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Body JSON requis'}), 400
-
     import json as _json
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO devis (
-                    numero, valid_until,
-                    prospect, contact, commercial,
+                    numero, valid_until, prospect, contact, commercial,
                     nb_employes, salaire_moyen, mode_travail, jours_hybride,
                     posture, scenario, option_espace, surface_m2, nb_postes,
                     equipements, capex_total, cout_annuel, gain_annuel,
@@ -911,8 +890,7 @@ def save_devis():
                     taux_dysf, part_adressable, deco_pm2, im_pm2,
                     formation, animation, site_slug, client_id
                 ) VALUES (
-                    %(numero)s, %(valid_until)s,
-                    %(prospect)s, %(contact)s, %(commercial)s,
+                    %(numero)s, %(valid_until)s, %(prospect)s, %(contact)s, %(commercial)s,
                     %(nb_employes)s, %(salaire_moyen)s, %(mode_travail)s, %(jours_hybride)s,
                     %(posture)s, %(scenario)s, %(option_espace)s, %(surface_m2)s, %(nb_postes)s,
                     %(equipements)s, %(capex_total)s, %(cout_annuel)s, %(gain_annuel)s,
@@ -921,75 +899,53 @@ def save_devis():
                     %(formation)s, %(animation)s, %(site_slug)s, %(client_id)s
                 ) RETURNING id
             """, {
-                'numero':          data.get('numero'),
-                'valid_until':     data.get('valid_until'),
-                'prospect':        data.get('prospect'),
-                'contact':         data.get('contact'),
-                'commercial':      data.get('commercial'),
-                'nb_employes':     data.get('nb_employes'),
-                'salaire_moyen':   data.get('salaire_moyen'),
-                'mode_travail':    data.get('mode_travail'),
-                'jours_hybride':   data.get('jours_hybride'),
-                'posture':         data.get('posture'),
-                'scenario':        data.get('scenario'),
-                'option_espace':   data.get('option_espace'),
-                'surface_m2':      data.get('surface_m2'),
-                'nb_postes':       data.get('nb_postes'),
-                'equipements':     _json.dumps(data.get('equipements', [])),
-                'capex_total':     data.get('capex_total'),
-                'cout_annuel':     data.get('cout_annuel'),
-                'gain_annuel':     data.get('gain_annuel'),
-                'economie_nette':  data.get('economie_nette'),
-                'roi_pct':         data.get('roi_pct'),
-                'payback_mois':    data.get('payback_mois'),
-                'taux_dysf':       data.get('taux_dysf'),
-                'part_adressable': data.get('part_adressable'),
-                'deco_pm2':        data.get('deco_pm2'),
-                'im_pm2':          data.get('im_pm2'),
-                'formation':       data.get('formation'),
-                'animation':       data.get('animation'),
-                'site_slug':       data.get('site_slug'),
-                'client_id':       session.get('client_id'),
+                'numero': data.get('numero'), 'valid_until': data.get('valid_until'),
+                'prospect': data.get('prospect'), 'contact': data.get('contact'),
+                'commercial': data.get('commercial'), 'nb_employes': data.get('nb_employes'),
+                'salaire_moyen': data.get('salaire_moyen'), 'mode_travail': data.get('mode_travail'),
+                'jours_hybride': data.get('jours_hybride'), 'posture': data.get('posture'),
+                'scenario': data.get('scenario'), 'option_espace': data.get('option_espace'),
+                'surface_m2': data.get('surface_m2'), 'nb_postes': data.get('nb_postes'),
+                'equipements': _json.dumps(data.get('equipements', [])),
+                'capex_total': data.get('capex_total'), 'cout_annuel': data.get('cout_annuel'),
+                'gain_annuel': data.get('gain_annuel'), 'economie_nette': data.get('economie_nette'),
+                'roi_pct': data.get('roi_pct'), 'payback_mois': data.get('payback_mois'),
+                'taux_dysf': data.get('taux_dysf'), 'part_adressable': data.get('part_adressable'),
+                'deco_pm2': data.get('deco_pm2'), 'im_pm2': data.get('im_pm2'),
+                'formation': data.get('formation'), 'animation': data.get('animation'),
+                'site_slug': data.get('site_slug'), 'client_id': session.get('client_id'),
             })
             devis_id = cur.fetchone()['id']
         conn.commit()
-
     return jsonify({'ok': True, 'id': devis_id, 'numero': data.get('numero')}), 201
-
 
 @app.route('/api/devis', methods=['GET'])
 @login_required
 def list_devis():
-    role      = session.get('role')
+    role = session.get('role')
     client_id = session.get('client_id')
-
     with get_db() as conn:
         with conn.cursor() as cur:
             if role == 'admin':
                 cur.execute("""
-                    SELECT id, numero, created_at, valid_until,
-                           prospect, commercial, nb_employes,
-                           capex_total, roi_pct, economie_nette, site_slug
+                    SELECT id, numero, created_at, valid_until, prospect, commercial,
+                           nb_employes, capex_total, roi_pct, economie_nette, site_slug
                     FROM devis ORDER BY created_at DESC LIMIT 200
                 """)
             else:
                 cur.execute("""
-                    SELECT id, numero, created_at, valid_until,
-                           prospect, commercial, nb_employes,
-                           capex_total, roi_pct, economie_nette, site_slug
+                    SELECT id, numero, created_at, valid_until, prospect, commercial,
+                           nb_employes, capex_total, roi_pct, economie_nette, site_slug
                     FROM devis WHERE client_id=%s ORDER BY created_at DESC LIMIT 100
                 """, [client_id])
             rows = cur.fetchall()
-
     return jsonify([serialize_row(r) for r in rows])
-
 
 @app.route('/api/devis/<int:devis_id>', methods=['GET'])
 @login_required
 def get_devis(devis_id):
-    role      = session.get('role')
+    role = session.get('role')
     client_id = session.get('client_id')
-
     with get_db() as conn:
         with conn.cursor() as cur:
             if role == 'admin':
@@ -997,12 +953,11 @@ def get_devis(devis_id):
             else:
                 cur.execute("SELECT * FROM devis WHERE id=%s AND client_id=%s", [devis_id, client_id])
             row = cur.fetchone()
-
     if not row:
         return jsonify({'error': 'Devis introuvable'}), 404
     return jsonify(serialize_row(row))
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ========== STATS KIOSQUE ==========
 
 @app.route('/api/stats', methods=['GET'])
 @login_required
@@ -1014,195 +969,88 @@ def get_stats():
     where = f"WHERE {date_clause} AND {site_clause}"
 
     if period == 'today':
-        day_interval = "INTERVAL '1 day'"
+        ts_h     = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
+        ts_debut = 'debut >= CURRENT_DATE AND debut < CURRENT_DATE + INTERVAL \'1 day\''
     elif period == 'week':
-        day_interval = "INTERVAL '7 days'"
+        ts_h     = '"timestamp" >= NOW() - INTERVAL \'7 days\''
+        ts_debut = 'debut >= NOW() - INTERVAL \'7 days\''
+    elif period == 'month':
+        ts_h     = '"timestamp" >= NOW() - INTERVAL \'30 days\''
+        ts_debut = 'debut >= NOW() - INTERVAL \'30 days\''
     elif period == 'year':
-        day_interval = "INTERVAL '365 days'"
+        ts_h     = '"timestamp" >= NOW() - INTERVAL \'365 days\''
+        ts_debut = 'debut >= NOW() - INTERVAL \'365 days\''
     elif period == 'ytd':
-        day_interval = "INTERVAL '365 days'"
-    elif period in ('q1', 'q2', 'q3', 'q4'):
-        day_interval = "INTERVAL '365 days'"
+        ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+        ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE)'
+    elif period == 'q1':
+        ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+        ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
+    elif period == 'q2':
+        ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+        ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
+    elif period == 'q3':
+        ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+        ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+    elif period == 'q4':
+        ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
+        ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
     else:
-        day_interval = "INTERVAL '30 days'"
+        ts_h     = '1=1'
+        ts_debut = '1=1'
+
+    if session.get('role') == 'admin':
+        sp_clause = 'site_slug = %s' if site_slug else '1=1'
+        sp_params = [site_slug] if site_slug else []
+    else:
+        sp_clause = f"site_slug IN ({','.join(['%s']*len(site_params))})" if site_params else '1=0'
+        sp_params = list(site_params)
 
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(f'SELECT COUNT(*) as n FROM sessions {where}', site_params)
             total = cur.fetchone()['n']
-
-            cur.execute(
-                f'SELECT departement as label, COUNT(*) as n FROM sessions {where} GROUP BY departement ORDER BY n DESC',
-                site_params
-            )
+            cur.execute(f'SELECT departement as label, COUNT(*) as n FROM sessions {where} GROUP BY departement ORDER BY n DESC', site_params)
             by_dept = cur.fetchall()
-
-            if period == 'today':
-                ts_h     = '"timestamp" >= CURRENT_DATE AND "timestamp" < CURRENT_DATE + INTERVAL \'1 day\''
-                ts_debut = 'debut >= CURRENT_DATE AND debut < CURRENT_DATE + INTERVAL \'1 day\''
-            elif period == 'week':
-                ts_h     = '"timestamp" >= NOW() - INTERVAL \'7 days\''
-                ts_debut = 'debut >= NOW() - INTERVAL \'7 days\''
-            elif period == 'month':
-                ts_h     = '"timestamp" >= NOW() - INTERVAL \'30 days\''
-                ts_debut = 'debut >= NOW() - INTERVAL \'30 days\''
-            elif period == 'year':
-                ts_h     = '"timestamp" >= NOW() - INTERVAL \'365 days\''
-                ts_debut = 'debut >= NOW() - INTERVAL \'365 days\''
-            elif period == 'ytd':
-                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE)'
-                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE)'
-            elif period == 'q1':
-                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
-                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\''
-            elif period == 'q2':
-                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
-                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'3 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\''
-            elif period == 'q3':
-                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND "timestamp" < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
-                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'6 months\' AND debut < DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
-            elif period == 'q4':
-                ts_h     = '"timestamp" >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
-                ts_debut = 'debut >= DATE_TRUNC(\'year\', CURRENT_DATE) + INTERVAL \'9 months\''
-            else:
-                ts_h     = '1=1'
-                ts_debut = '1=1'
-
-            if session.get('role') == 'admin':
-                if site_slug:
-                    sp_clause = 'site_slug = %s'
-                    sp_params = [site_slug]
-                else:
-                    sp_clause = '1=1'
-                    sp_params = []
-            else:
-                sp_clause = f"site_slug IN ({','.join(['%s']*len(site_params))})" if site_params else '1=0'
-                sp_params = list(site_params)
-
-            cur.execute(
-                f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
-                    FROM sensor_passages
-                    WHERE {ts_h} AND {sp_clause}
-                    GROUP BY h ORDER BY h""",
-                sp_params
-            )
+            cur.execute(f"""SELECT EXTRACT(HOUR FROM timestamp)::int as h, COUNT(*) as n
+                FROM sensor_passages WHERE {ts_h} AND {sp_clause} GROUP BY h ORDER BY h""", sp_params)
             by_hour_raw = cur.fetchall()
             if not by_hour_raw:
-                cur.execute(
-                    f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h",
-                    site_params
-                )
+                cur.execute(f"SELECT EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n FROM sessions {where} GROUP BY h ORDER BY h", site_params)
                 by_hour_raw = cur.fetchall()
-            by_hour = by_hour_raw
-
-            cur.execute(
-                f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC",
-                site_params
-            )
+            cur.execute(f"SELECT mood, COUNT(*) as n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC", site_params)
             by_mood = cur.fetchall()
-
-            day_clause = build_date_clause(period)
-            cur.execute(
-                f"""SELECT date, COUNT(*) as n
-                    FROM sessions
-                    WHERE {day_clause} AND {site_clause}
-                    GROUP BY date ORDER BY date""",
-                site_params
-            )
+            cur.execute(f"SELECT date, COUNT(*) as n FROM sessions WHERE {build_date_clause(period)} AND {site_clause} GROUP BY date ORDER BY date", site_params)
             by_day = cur.fetchall()
-
-            cur.execute(
-                f"""SELECT atelier, COUNT(*) as nb_sessions,
-                           ROUND(AVG(duree_sec))::int as duree_moy_sec
-                    FROM sensor_sessions
-                    WHERE {ts_debut} AND {sp_clause} AND atelier IS NOT NULL
-                    GROUP BY atelier ORDER BY nb_sessions DESC""",
-                sp_params
-            )
+            cur.execute(f"""SELECT atelier, COUNT(*) as nb_sessions, ROUND(AVG(duree_sec))::int as duree_moy_sec
+                FROM sensor_sessions WHERE {ts_debut} AND {sp_clause} AND atelier IS NOT NULL
+                GROUP BY atelier ORDER BY nb_sessions DESC""", sp_params)
             raw_sensor_at = cur.fetchall()
-
-            cur.execute(
-                f"SELECT ateliers FROM sessions {where} AND ateliers != ''",
-                site_params
-            )
+            cur.execute(f"SELECT ateliers FROM sessions {where} AND ateliers != ''", site_params)
             raw_at = cur.fetchall()
-
-            # ── AJOUT 3 : by_departement_mood ────────────────────────────────
-            cur.execute(
-                f"""SELECT departement, mood, COUNT(*) as n
-                    FROM sessions
-                    {where} AND mood != '' AND departement != ''
-                    GROUP BY departement, mood
-                    ORDER BY departement, n DESC""",
-                site_params
-            )
+            cur.execute(f"""SELECT departement, mood, COUNT(*) as n FROM sessions {where} AND mood != '' AND departement != ''
+                GROUP BY departement, mood ORDER BY departement, n DESC""", site_params)
             by_departement_mood = cur.fetchall()
-            # ─────────────────────────────────────────────────────────────────
-
-            # ── AJOUT 8 : by_atelier_mood (corrélation mood × atelier) ───────
-            # SOURCE : sessions kiosque (seule table croisant atelier déclaré + mood)
-            # Chaque ligne : { atelier_raw (texte brut kiosque), mood, n }
-            # L'éclatement des multi-ateliers est effectué côté JS.
-            cur.execute(
-                f"""SELECT ateliers as atelier_raw, mood, COUNT(*) as n
-                    FROM sessions
-                    {where} AND mood != '' AND ateliers != ''
-                    GROUP BY ateliers, mood
-                    ORDER BY ateliers, n DESC""",
-                site_params
-            )
+            cur.execute(f"""SELECT ateliers as atelier_raw, mood, COUNT(*) as n FROM sessions {where} AND mood != '' AND ateliers != ''
+                GROUP BY ateliers, mood ORDER BY ateliers, n DESC""", site_params)
             by_atelier_mood_raw = cur.fetchall()
-            # ─────────────────────────────────────────────────────────────────
-
             if session.get('role') == 'admin':
-                cur.execute(
-                    f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC',
-                    site_params
-                )
+                cur.execute(f'SELECT site_slug, COUNT(*) as n FROM sessions {where} GROUP BY site_slug ORDER BY n DESC', site_params)
                 by_site = cur.fetchall()
             else:
                 by_site = []
 
-    atelier_count = {}
-    for row in raw_at:
-        for a in (row['ateliers'] or '').split(', '):
-            a = a.strip()
-            if a:
-                atelier_count[a] = atelier_count.get(a, 0) + 1
-    by_atelier = sorted(
-        [{'atelier': k, 'n': v} for k, v in atelier_count.items()],
-        key=lambda x: -x['n']
-    )
-
-    # ── AJOUT 5 : fréquences horaires par département ─────────────────────────
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                f"""SELECT departement,
-                           EXTRACT(HOUR FROM heure)::int as h,
-                           COUNT(*) as n
-                    FROM sessions {where}
-                    AND departement != ''
-                    GROUP BY departement, h
-                    ORDER BY departement, h""",
-                site_params
-            )
+            cur.execute(f"""SELECT departement, EXTRACT(HOUR FROM heure)::int as h, COUNT(*) as n
+                FROM sessions {where} AND departement != '' GROUP BY departement, h ORDER BY departement, h""", site_params)
             by_departement_hour = cur.fetchall()
-    # ─────────────────────────────────────────────────────────────────────────
 
-    # ── AJOUT 6 : fréquences horaires par atelier ─────────────────────────────
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                f"""SELECT atelier,
-                           EXTRACT(HOUR FROM debut)::int as h,
-                           COUNT(*) as n
-                    FROM sensor_sessions
-                    WHERE {ts_debut} AND {sp_clause} AND atelier IS NOT NULL
-                    GROUP BY atelier, h
-                    ORDER BY atelier, h""",
-                sp_params
-            )
+            cur.execute(f"""SELECT atelier, EXTRACT(HOUR FROM debut)::int as h, COUNT(*) as n
+                FROM sensor_sessions WHERE {ts_debut} AND {sp_clause} AND atelier IS NOT NULL
+                GROUP BY atelier, h ORDER BY atelier, h""", sp_params)
             raw_at_hour_sensor = cur.fetchall()
 
     if raw_at_hour_sensor:
@@ -1210,93 +1058,71 @@ def get_stats():
     else:
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    f"""SELECT EXTRACT(HOUR FROM heure)::int as h,
-                               ateliers as atelier_raw,
-                               COUNT(*) as n
-                        FROM sessions {where}
-                        AND ateliers != ''
-                        GROUP BY h, ateliers
-                        ORDER BY h""",
-                    site_params
-                )
+                cur.execute(f"""SELECT EXTRACT(HOUR FROM heure)::int as h, ateliers as atelier_raw, COUNT(*) as n
+                    FROM sessions {where} AND ateliers != '' GROUP BY h, ateliers ORDER BY h""", site_params)
                 raw_at_hour = cur.fetchall()
         atelier_hour = {}
         for row in raw_at_hour:
-            h = row['h']
-            n = row['n']
+            h = row['h']; n = row['n']
             for a in (row['atelier_raw'] or '').split(', '):
                 a = a.strip()
-                if not a:
-                    continue
-                key = (a, h)
-                atelier_hour[key] = atelier_hour.get(key, 0) + n
+                if a:
+                    atelier_hour[(a, h)] = atelier_hour.get((a, h), 0) + n
         by_atelier_hour = sorted(
             [{'atelier': k[0], 'h': k[1], 'n': v} for k, v in atelier_hour.items()],
             key=lambda x: (x['atelier'], x['h'])
         )
-    # ─────────────────────────────────────────────────────────────────────────
 
-    # ── AJOUT 7 : ateliers préférés par département ───────────────────────────
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                f"""SELECT departement, ateliers as atelier_raw, COUNT(*) as n
-                    FROM sessions {where}
-                    AND ateliers != '' AND departement != ''
-                    GROUP BY departement, ateliers
-                    ORDER BY departement, n DESC""",
-                site_params
-            )
+            cur.execute(f"""SELECT departement, ateliers as atelier_raw, COUNT(*) as n
+                FROM sessions {where} AND ateliers != '' AND departement != ''
+                GROUP BY departement, ateliers ORDER BY departement, n DESC""", site_params)
             raw_dept_at = cur.fetchall()
 
     dept_atelier = {}
     for row in raw_dept_at:
-        dept = row['departement']
-        n = row['n']
+        dept = row['departement']; n = row['n']
         for a in (row['atelier_raw'] or '').split(', '):
             a = a.strip()
-            if not a:
-                continue
-            if dept not in dept_atelier:
-                dept_atelier[dept] = {}
-            dept_atelier[dept][a] = dept_atelier[dept].get(a, 0) + n
+            if a:
+                if dept not in dept_atelier: dept_atelier[dept] = {}
+                dept_atelier[dept][a] = dept_atelier[dept].get(a, 0) + n
+    by_departement_atelier = [
+        {'departement': dept, 'atelier': atelier, 'n': n}
+        for dept, ateliers in dept_atelier.items()
+        for atelier, n in sorted(ateliers.items(), key=lambda x: -x[1])
+    ]
 
-    by_departement_atelier = []
-    for dept, ateliers in dept_atelier.items():
-        for atelier, n in sorted(ateliers.items(), key=lambda x: -x[1]):
-            by_departement_atelier.append({'departement': dept, 'atelier': atelier, 'n': n})
-    # ─────────────────────────────────────────────────────────────────────────
+    atelier_count = {}
+    for row in raw_at:
+        for a in (row['ateliers'] or '').split(', '):
+            a = a.strip()
+            if a: atelier_count[a] = atelier_count.get(a, 0) + 1
+    by_atelier = sorted([{'atelier': k, 'n': v} for k, v in atelier_count.items()], key=lambda x: -x['n'])
 
-    # ── K-anonymisation (k=5) avant retour ───────────────────────────────────
-    by_dept_k,  _ = kanon_filter([serialize_row(r) for r in by_dept],    'label')
-    by_mood_k,  _ = kanon_filter([serialize_row(r) for r in by_mood],    'mood')
+    by_dept_k,  _ = kanon_filter([serialize_row(r) for r in by_dept], 'label')
+    by_mood_k,  _ = kanon_filter([serialize_row(r) for r in by_mood], 'mood')
     by_dept_mood_k = kanon_filter_cross([serialize_row(r) for r in by_departement_mood], 'departement', 'mood')
     by_dept_hour_k = kanon_filter_cross([serialize_row(r) for r in by_departement_hour], 'departement', 'h')
     by_dept_at_k   = kanon_filter_cross(by_departement_atelier, 'departement', 'atelier')
-    # by_atelier_mood : k-anonymisation sur le groupe (atelier_raw, mood)
-    by_atelier_mood_k = kanon_filter_cross(
-        [serialize_row(r) for r in by_atelier_mood_raw], 'atelier_raw', 'mood'
-    )
-    # ─────────────────────────────────────────────────────────────────────────
+    by_atelier_mood_k = kanon_filter_cross([serialize_row(r) for r in by_atelier_mood_raw], 'atelier_raw', 'mood')
 
     return jsonify({
-        'period':                 period,
-        'total_seances':          total,
-        'by_departement':         by_dept_k,
-        'by_hour':                [serialize_row(r) for r in by_hour],
-        'by_atelier':             by_atelier,
-        'by_mood':                by_mood_k,
-        'by_day':                 [serialize_row(r) for r in by_day],
-        'by_site':                [serialize_row(r) for r in by_site],
-        'by_departement_mood':    by_dept_mood_k,
-        'by_departement_hour':    by_dept_hour_k,
-        'by_atelier_hour':        by_atelier_hour,
+        'period': period, 'total_seances': total,
+        'by_departement': by_dept_k,
+        'by_hour': [serialize_row(r) for r in by_hour_raw],
+        'by_atelier': by_atelier,
+        'by_mood': by_mood_k,
+        'by_day': [serialize_row(r) for r in by_day],
+        'by_site': [serialize_row(r) for r in by_site],
+        'by_departement_mood': by_dept_mood_k,
+        'by_departement_hour': by_dept_hour_k,
+        'by_atelier_hour': by_atelier_hour,
         'by_departement_atelier': by_dept_at_k,
-        'by_atelier_mood':        by_atelier_mood_k,
-        '_kanon_k':               K_ANONYMAT,
+        'by_atelier_mood': by_atelier_mood_k,
+        '_kanon_k': K_ANONYMAT,
     })
-
 
 @app.route('/api/sessions', methods=['GET'])
 @login_required
@@ -1317,7 +1143,6 @@ def get_sessions():
             rows = cur.fetchall()
     return jsonify([serialize_row(r) for r in rows])
 
-
 @app.route('/api/export', methods=['GET'])
 @login_required
 def export_csv():
@@ -1330,14 +1155,12 @@ def export_csv():
         with conn.cursor() as cur:
             cur.execute(
                 f"SELECT date, heure, departement, ateliers, mood, site_slug FROM sessions {where} ORDER BY date, heure",
-                [from_date, to_date] + params
-            )
+                [from_date, to_date] + params)
             rows = cur.fetchall()
     from collections import Counter
     dept_counts = Counter(serialize_row(r)['departement'] for r in rows)
     rows_kanon  = [r for r in rows if dept_counts.get(serialize_row(r)['departement'], 0) >= K_ANONYMAT]
     filtered    = len(rows) - len(rows_kanon)
-
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['# Export DUERP beOtop — Données agrégées et anonymisées'])
@@ -1349,10 +1172,8 @@ def export_csv():
     for r in rows_kanon:
         sr = serialize_row(r)
         writer.writerow([sr['date'], sr['heure'], sr['departement'], sr['ateliers'], sr['mood'], sr['site_slug']])
-    return Response(
-        output.getvalue(), mimetype='text/csv',
-        headers={'Content-Disposition': f'attachment; filename=beotop_{from_date}_{to_date}.csv'}
-    )
+    return Response(output.getvalue(), mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=beotop_{from_date}_{to_date}.csv'})
 
 # ========== CLIENT - SES SITES ==========
 
@@ -1365,17 +1186,11 @@ def client_get_sites():
     with get_db() as conn:
         with conn.cursor() as cur:
             if session.get('role') == 'admin':
-                cur.execute(
-                    "SELECT s.*, c.nom as client_nom FROM sites s JOIN clients c ON s.client_id=c.id ORDER BY c.nom, s.nom"
-                )
+                cur.execute("SELECT s.*, c.nom as client_nom FROM sites s JOIN clients c ON s.client_id=c.id ORDER BY c.nom, s.nom")
             else:
-                cur.execute(
-                    "SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom",
-                    [client_id]
-                )
+                cur.execute("SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom", [client_id])
             sites = cur.fetchall()
     return jsonify([serialize_row(s) for s in sites])
-
 
 @app.route('/api/client/sites/<site_slug>/effectif', methods=['PATCH'])
 @login_required
@@ -1384,29 +1199,20 @@ def client_update_effectif(site_slug):
     nb = data.get('nb_salaries')
     if nb is None or int(nb) < 0:
         return jsonify({'error': 'nb_salaries requis et doit être >= 0'}), 400
-
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT id FROM sites WHERE slug=%s AND client_id=%s AND actif=1",
-                    [site_slug, client_id]
-                )
+                cur.execute("SELECT id FROM sites WHERE slug=%s AND client_id=%s AND actif=1", [site_slug, client_id])
                 site = cur.fetchone()
         if not site:
             return jsonify({'error': 'Site introuvable ou accès refusé'}), 403
-
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE sites SET nb_salaries=%s WHERE slug=%s",
-                [int(nb), site_slug]
-            )
+            cur.execute("UPDATE sites SET nb_salaries=%s WHERE slug=%s", [int(nb), site_slug])
             if cur.rowcount == 0:
                 return jsonify({'error': 'Site introuvable'}), 404
             conn.commit()
-
     return jsonify({'ok': True, 'site_slug': site_slug, 'nb_salaries': int(nb)})
 
 # ========== HEALTH ==========
@@ -1421,7 +1227,82 @@ def health():
             nb_clients = cur.fetchone()['n']
             cur.execute('SELECT COUNT(*) as n FROM sites')
             nb_sites = cur.fetchone()['n']
-    return jsonify({'status': 'ok', 'version': '2.2', 'sessions': nb_sessions, 'clients': nb_clients, 'sites': nb_sites})
+    return jsonify({'status': 'ok', 'version': '2.2', 'sessions': nb_sessions,
+                    'clients': nb_clients, 'sites': nb_sites})
+
+# ========== CONTACT FORMULAIRE ==========
+
+import smtplib
+from email.message import EmailMessage
+
+@app.route('/api/contact', methods=['POST'])
+def contact_form():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Données JSON requises'}), 400
+    prenom    = data.get('prenom', '').strip()
+    nom       = data.get('nom', '').strip()
+    email     = data.get('email', '').strip()
+    if not prenom or not nom or not email:
+        return jsonify({'error': 'Prénom, nom et email requis'}), 400
+    role       = data.get('role', '')
+    entreprise = data.get('entreprise', '')
+    effectif   = data.get('effectif', '')
+    priorite   = data.get('priorite', '')
+    message    = data.get('message', '')
+    msg = EmailMessage()
+    msg['Subject'] = f"[beOtop] Nouveau lead - {entreprise or 'non renseigné'}"
+    msg['From']    = f"Formulaire beOtop <{os.environ.get('SMTP_USER', 'no-reply@beotop.fr')}>"
+    msg['To']      = 'nj@beotop.fr'
+    msg['Reply-To'] = email
+    body = f"""
+Nouvelle demande depuis le site beOtop
+
+--- Contact ---
+Prénom : {prenom}
+Nom    : {nom}
+Email  : {email}
+Rôle   : {role}
+Entreprise : {entreprise}
+Effectif   : {effectif}
+Priorité   : {priorite}
+
+--- Message ---
+{message if message else '(aucun message)'}
+"""
+    msg.set_content(body.strip())
+    try:
+        smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+        smtp_user = os.environ.get('SMTP_USER')
+        smtp_pass = os.environ.get('SMTP_PASSWORD')
+        if smtp_user and smtp_pass:
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+        else:
+            print(">>> Formulaire contact (SMTP non configuré) :", body, file=sys.stderr)
+    except Exception as e:
+        print(f"Erreur envoi email : {e}", file=sys.stderr)
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS leads (
+                        id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        prenom TEXT, nom TEXT, email TEXT, role TEXT,
+                        entreprise TEXT, effectif TEXT, priorite TEXT, message TEXT
+                    )
+                """)
+                cur.execute("""
+                    INSERT INTO leads (prenom, nom, email, role, entreprise, effectif, priorite, message)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (prenom, nom, email, role, entreprise, effectif, priorite, message))
+                conn.commit()
+    except Exception as e:
+        print("Erreur insertion lead en base :", e, file=sys.stderr)
+    return jsonify({'ok': True, 'message': 'Demande envoyée'}), 200
 
 # ========== PAGES HTML ==========
 
@@ -1460,90 +1341,6 @@ def kiosk_page(site_slug):
         html = f.read()
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
     return Response(html, mimetype='text/html; charset=utf-8')
-
-# ========== CONTACT FORMULAIRE ==========
-import smtplib
-from email.message import EmailMessage
-
-@app.route('/api/contact', methods=['POST'])
-def contact_form():
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': 'Données JSON requises'}), 400
-    prenom    = data.get('prenom', '').strip()
-    nom       = data.get('nom', '').strip()
-    email     = data.get('email', '').strip()
-    if not prenom or not nom or not email:
-        return jsonify({'error': 'Prénom, nom et email requis'}), 400
-    role       = data.get('role', '')
-    entreprise = data.get('entreprise', '')
-    effectif   = data.get('effectif', '')
-    priorite   = data.get('priorite', '')
-    message    = data.get('message', '')
-
-    msg = EmailMessage()
-    msg['Subject'] = f"[beOtop] Nouveau lead - {entreprise or 'non renseigné'}"
-    msg['From']    = f"Formulaire beOtop <{os.environ.get('SMTP_USER', 'no-reply@beotop.fr')}>"
-    msg['To']      = 'nj@beotop.fr'
-    msg['Reply-To'] = email
-
-    body = f"""
-Nouvelle demande depuis le site beOtop
-
---- Contact ---
-Prénom : {prenom}
-Nom    : {nom}
-Email  : {email}
-Rôle   : {role}
-Entreprise : {entreprise}
-Effectif   : {effectif}
-Priorité   : {priorite}
-
---- Message ---
-{message if message else '(aucun message)'}
-
----
-Envoyé depuis le formulaire public.
-"""
-    msg.set_content(body.strip())
-
-    try:
-        smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-        smtp_user = os.environ.get('SMTP_USER')
-        smtp_pass = os.environ.get('SMTP_PASSWORD')
-        if smtp_user and smtp_pass:
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_pass)
-                server.send_message(msg)
-        else:
-            print(">>> Formulaire contact (SMTP non configuré) :", body, file=sys.stderr)
-    except Exception as e:
-        print(f"Erreur envoi email : {e}", file=sys.stderr)
-
-    try:
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS leads (
-                        id SERIAL PRIMARY KEY,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        prenom TEXT, nom TEXT, email TEXT,
-                        role TEXT, entreprise TEXT, effectif TEXT,
-                        priorite TEXT, message TEXT
-                    )
-                """)
-                cur.execute("""
-                    INSERT INTO leads (prenom, nom, email, role, entreprise, effectif, priorite, message)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """, (prenom, nom, email, role, entreprise, effectif, priorite, message))
-                conn.commit()
-    except Exception as e:
-        print("Erreur insertion lead en base :", e, file=sys.stderr)
-
-    return jsonify({'ok': True, 'message': 'Demande envoyée'}), 200
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
