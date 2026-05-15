@@ -3,465 +3,1651 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v5.0 - 6/04/2026)</title>
+<title>beOtop™ — Calculateur ROI Espace de Revitalisation v5.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
 <style>
-/* TOUS LES STYLES SONT IDENTIQUES À LA VERSION PRÉCÉDENTE */
-*{box-sizing:border-box;margin:0;padding:0}body{background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%);color:#e8e0d5;font-family:Georgia,serif;min-height:100vh}button{font-family:inherit;cursor:pointer;transition:all .15s}input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#c8a96e}input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#c8a96e;border:none}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px}input[type=text]{font-family:sans-serif;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#e8e0d5;padding:.55rem .75rem;font-size:.82rem;width:100%;outline:none}input[type=text]:focus{border-color:#c8a96e}input[type=text]::placeholder{color:#4a4a6a}
-#hdr{border-bottom:1px solid rgba(255,200,100,.2);padding:1.2rem 2rem;background:rgba(255,200,100,.03);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}#hdr h1{margin:0;font-size:clamp(1rem,2.5vw,1.7rem);font-weight:400;color:#f5efe6}.brand{font-size:.67rem;letter-spacing:.35em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif}#mode-lbl{margin-left:auto;font-size:.7rem;color:#5a5a7a;font-family:sans-serif}
-#grid{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 62px)}#left{padding:1.7rem 2rem;overflow-y:auto;border-right:1px solid rgba(255,200,100,.1)}#right{padding:1.5rem 1.35rem;background:rgba(0,0,0,.28);position:sticky;top:0;height:100vh;overflow-y:auto}@media(max-width:860px){#grid{grid-template-columns:1fr}#right{position:static;height:auto;border-top:1px solid rgba(255,200,100,.1)}}
-.sec{margin-bottom:2rem}.sec-ttl{font-size:.67rem;letter-spacing:.22em;text-transform:uppercase;padding-bottom:.4rem;margin-bottom:1rem;font-family:sans-serif;border-bottom-width:1px;border-bottom-style:solid}.srow{display:flex;justify-content:space-between;font-size:.73rem;font-family:sans-serif;margin-bottom:.35rem}.slbl{color:#9090b0}.sval{color:#e8e0d5;font-weight:700}
-.rcard{padding:1.1rem;border-radius:12px;margin-top:.75rem}.rttl{font-size:.66rem;letter-spacing:.1em;font-family:sans-serif;margin-bottom:.5rem}.big{font-size:2.7rem;font-weight:300;color:#e8e0d5;line-height:1}.bunit{font-size:1.1rem;margin-left:.2rem}.rsub{font-size:.7rem;color:#9090b0;font-family:sans-serif;margin-top:.28rem}
-.rli{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}.rl{color:#8080a0;font-size:.75rem;font-family:sans-serif}.rv{color:#c8c0b8;font-size:.75rem;font-family:sans-serif;white-space:nowrap}.rli.tot{border-top:1px solid rgba(200,169,110,.3);border-bottom:none;margin-top:4px;padding-top:5px}.rli.tot .rl{color:#c8a96e;font-weight:700;font-size:.78rem}.rli.tot .rv{color:#f5efe6;font-weight:700;font-size:.78rem}
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:.38rem;margin-top:.5rem}.sb{background:rgba(255,255,255,.05);border-radius:8px;padding:.5rem .7rem}.sv{font-size:.95rem;font-weight:700;color:#e8e0d5}.sl{font-size:.61rem;color:#7a7a9a;font-family:sans-serif;margin-top:.1rem}
-.sat-bg{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-bottom:.7rem;overflow:hidden;position:relative}.sat-f{height:100%;border-radius:3px;transition:width .35s}
-.tbtn{flex:1;padding:.72rem .85rem;border-radius:10px;text-align:left;color:inherit}.dbtn{flex:1;padding:.48rem 0;border-radius:8px;text-align:center;font-family:sans-serif;font-weight:700}.acard{padding:.78rem;border-radius:10px;transition:all .2s}.qbtn{width:28px;height:28px;border-radius:7px;border:1px solid rgba(184,150,232,.3);background:rgba(184,150,232,.12);color:#b896e8;font-size:1.15rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.qbtn.off{background:transparent;color:#3a3a5a}.pbtn{padding:.75rem .85rem;border-radius:10px;text-align:left;width:100%;color:inherit}.scbtn{flex:1;padding:.43rem .05rem;border-radius:7px;text-align:center;color:inherit}
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;align-items:center;justify-content:center}#modal.on{display:flex}#mbox{background:#1a1a2e;border:1px solid rgba(200,169,110,.35);border-radius:16px;padding:2rem;width:440px;max-width:94vw}.mflbl{font-size:.67rem;color:#9090b0;font-family:sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}.vbtn{flex:1;padding:.45rem;border-radius:8px;font-family:sans-serif;font-size:.75rem}
-#btn-devis{width:100%;margin-top:1rem;padding:.9rem 1rem;border-radius:12px;background:linear-gradient(135deg,rgba(200,169,110,.3),rgba(200,169,110,.12));border:1px solid rgba(200,169,110,.6);color:#c8a96e;font-size:.85rem;font-weight:700;font-family:sans-serif;display:flex;align-items:center;justify-content:center;gap:.6rem}
-#dov{display:none;position:fixed;inset:0;z-index:1000;background:#dde;overflow-y:auto}#dov.on{display:block}#dbar{position:sticky;top:0;z-index:10;background:#1a1a2e;border-bottom:1px solid rgba(200,169,110,.3);padding:.7rem 1.5rem;display:flex;align-items:center;gap:.75rem}#dbar .brand{font-size:.65rem}#dbar .inf{color:#9090b0;font-family:sans-serif;font-size:.8rem;flex:1}#bprint{padding:.55rem 1.2rem;border-radius:8px;font-family:sans-serif;font-weight:700;font-size:.82rem;background:linear-gradient(135deg,rgba(200,169,110,.35),rgba(200,169,110,.15));border:1px solid rgba(200,169,110,.6);color:#c8a96e}#bback{padding:.55rem 1rem;border-radius:8px;font-family:sans-serif;font-size:.82rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9090b0}#dhint{background:rgba(96,192,96,.1);border:1px solid rgba(96,192,96,.25);margin:1rem auto;max-width:860px;border-radius:8px;padding:.6rem 1rem;font-family:sans-serif;font-size:.75rem;color:#60c060}#dpaper{max-width:860px;margin:0 auto 3rem;background:#fff;box-shadow:0 4px 40px rgba(0,0,0,.25);overflow:hidden}
-.dv{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1a1a2e;font-size:9pt;line-height:1.5}.dstrip{height:4pt;background:linear-gradient(90deg,#c8a96e,#7eb8c9,#b896e8)}.dhdr{background:linear-gradient(135deg,#0f0f1a,#1a1a2e);color:#e8e0d5;padding:22pt 28pt 18pt;display:flex;justify-content:space-between;align-items:flex-start}.dlogo{font-size:7pt;letter-spacing:4pt;color:#c8a96e;text-transform:uppercase;font-weight:700;margin-bottom:4pt}.dtitle{font-size:16pt;font-weight:300;color:#f5efe6;margin:0}.dsub{font-size:8pt;color:#9090b0;margin-top:3pt}.dmeta{text-align:right;font-size:8pt;color:#9090b0;line-height:2}.dmeta strong{color:#c8a96e;font-size:9.5pt;display:block}.dbody{padding:18pt 28pt}.dsttl{font-size:7pt;letter-spacing:3pt;text-transform:uppercase;color:#c8a96e;font-weight:700;border-bottom:.5pt solid rgba(200,169,110,.4);padding-bottom:3pt;margin-bottom:8pt;margin-top:14pt}.dpros{background:#f8f6f2;border-left:3pt solid #c8a96e;padding:10pt 14pt;border-radius:0 6pt 6pt 0;margin-bottom:14pt;display:flex;gap:20pt;flex-wrap:wrap}.dpb{flex:1;min-width:120pt}.dplbl{font-size:7pt;color:#9090b0;text-transform:uppercase;letter-spacing:1pt;margin-bottom:2pt}.dpval{font-size:10pt;font-weight:700}.dpsub{font-size:8pt;color:#6a6a8a;margin-top:1pt}.dtbl{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:6pt}.dtbl th{background:#f0f0f8;color:#5a5a8a;font-size:7pt;letter-spacing:1pt;text-transform:uppercase;padding:5pt 8pt;text-align:left;font-weight:600}.dtbl td{padding:5pt 8pt;border-bottom:.5pt solid #eee;vertical-align:middle}.dtbl .num{text-align:right;font-weight:600}.dtbl .st{background:#f4f4fb;font-weight:700}.dli{display:flex;justify-content:space-between;padding:4pt 0;border-bottom:.5pt solid #f0f0f0;font-size:8.5pt}.dli .ll{color:#6a6a8a}.dli .lv{font-weight:600}.dli.tl{background:#f8f6f2;padding:6pt 8pt;border-radius:4pt;margin-top:6pt;font-size:9.5pt;font-weight:700;border:none}.dli.tl .ll{color:#c8a96e}.droi{display:flex;gap:8pt;margin:8pt 0}.drbox{flex:1;border-radius:6pt;padding:9pt;text-align:center}.drbox.pos{background:#f0faf4;border:.5pt solid rgba(16,185,129,.3)}.drbox.neg{background:#fff5f5;border:.5pt solid rgba(239,68,68,.3)}.drbox.neu{background:#f8f8ff;border:.5pt solid #dde}.drbig{font-size:18pt;font-weight:700;line-height:1}.drbig.pos{color:#10b981}.drbig.neg{color:#ef4444}.drbig.neu{color:#1a1a2e;font-size:12pt}.drlbl{font-size:6.5pt;color:#9090b0;margin-top:2pt;text-transform:uppercase;letter-spacing:.8pt}.dcond{background:#fff8f0;border:.5pt solid rgba(200,169,110,.35);border-radius:6pt;padding:10pt 14pt}.dcond ul{padding-left:12pt}.dcond li{font-size:8pt;color:#4a4a6a;line-height:2}.dbadge{display:inline-block;font-size:5.5pt;font-weight:700;padding:1pt 3pt;border-radius:2pt;margin-left:3pt;vertical-align:middle}.dbadge.cr{background:#fde8e8;color:#c0392b}.dbadge.si{background:#fef3e2;color:#b7791f}.dbadge.mo{background:#f0f0f0;color:#6a6a8a}.dctx{background:#f5f8ff;border-radius:5pt;padding:8pt 12pt;font-size:7.5pt;color:#5a5a8a;line-height:1.7;margin-top:6pt}.dftr{background:#f0f0f8;padding:10pt 28pt;display:flex;justify-content:space-between;align-items:center;border-top:.5pt solid #dde;margin-top:8pt}.dfl{font-size:7.5pt;color:#6a6a8a;line-height:1.7}.dfr{font-size:7pt;color:#9090b0;text-align:right;line-height:1.7}
-@media print{#hdr,#grid,#modal{display:none!important}#dov{position:static!important;overflow:visible!important;background:#fff!important;display:block!important}#dbar,#dhint{display:none!important}#dpaper{box-shadow:none!important;margin:0!important;max-width:100%!important}@page{margin:0;size:A4}}
-.adv-panel{margin-top:1rem;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.2);overflow:hidden}.adv-header{padding:.6rem 1rem;background:rgba(200,169,110,.1);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:sans-serif;font-size:.7rem;font-weight:700;color:#c8a96e}.adv-header span:first-child{letter-spacing:.1em}.adv-body{padding:1rem;display:none;grid-template-columns:1fr 1fr;gap:.8rem}.adv-body.open{display:grid}.adv-body .srow{margin-bottom:.2rem}.warning-box{background:rgba(239,68,68,.1);border-left:3px solid #ef4444;padding:.6rem .8rem;margin-bottom:1rem;font-size:.65rem;font-family:sans-serif;color:#e0b0b0;border-radius:4px}.warning-box strong{color:#ef4444}.sat-alert{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);padding:.5rem;border-radius:6px;margin-top:.5rem;font-size:.65rem;font-family:sans-serif;color:#fca5a5;display:none;line-height:1.4}.section-sub{font-size:7pt;letter-spacing:1pt;text-transform:uppercase;color:#8a8a9a;font-weight:600;margin-top:12pt;margin-bottom:4pt;padding-bottom:2pt;border-bottom:.5pt solid #f0f0f0}
-.tooltip{font-size:.58rem;color:#7a7a9a;margin-left:.2rem;cursor:help}
+/* ═══════════════════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════════════════ */
+:root {
+  --gold:       #c8a96e;
+  --gold-dim:   rgba(200,169,110,.18);
+  --gold-border:rgba(200,169,110,.35);
+  --teal:       #7eb8c9;
+  --teal-dim:   rgba(126,184,201,.13);
+  --teal-border:rgba(126,184,201,.35);
+  --violet:     #b896e8;
+  --violet-dim: rgba(184,150,232,.1);
+  --violet-border:rgba(184,150,232,.35);
+  --orange:     #f0a060;
+  --orange-dim: rgba(240,160,96,.09);
+  --green:      #10b981;
+  --green-dim:  rgba(16,185,129,.09);
+  --green-border:rgba(16,185,129,.35);
+  --red:        #ef4444;
+  --amber:      #f59e0b;
+  --sage:       #60c060;
+  --bg:         #0f0f1a;
+  --bg2:        #1a1a2e;
+  --bg3:        #16213e;
+  --surface:    rgba(255,255,255,.04);
+  --border:     rgba(255,255,255,.08);
+  --text:       #e8e0d5;
+  --text-dim:   #9090b0;
+  --text-muted: #5a5a7a;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%);
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; transition: all .15s; border: none; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+/* ═══ RANGE INPUTS ═══ */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.12);
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--bg2);
+}
+input[type=range]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--bg2);
+}
+
+/* ═══ TEXT INPUTS ═══ */
+input[type=text] {
+  font-family: 'DM Sans', sans-serif;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: .55rem .75rem;
+  font-size: .82rem;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s;
+}
+input[type=text]:focus { border-color: var(--gold); }
+input[type=text]::placeholder { color: var(--text-muted); }
+
+/* ═══ HEADER ═══ */
+#hdr {
+  border-bottom: 1px solid var(--gold-border);
+  padding: 1rem 2rem;
+  background: rgba(200,169,110,.03);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+}
+.brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: .05em;
+}
+#hdr h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem;
+  font-weight: 300;
+  color: var(--text-dim);
+  letter-spacing: .05em;
+}
+#mode-lbl {
+  margin-left: auto;
+  font-size: .68rem;
+  color: var(--text-muted);
+  letter-spacing: .1em;
+}
+
+/* ═══ LAYOUT ═══ */
+#grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  min-height: calc(100vh - 56px);
+}
+#left {
+  padding: 1.7rem 2rem;
+  overflow-y: auto;
+  border-right: 1px solid rgba(200,169,110,.1);
+}
+#right {
+  padding: 1.4rem 1.3rem;
+  background: rgba(0,0,0,.28);
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+@media (max-width: 860px) {
+  #grid { grid-template-columns: 1fr; }
+  #right { position: static; height: auto; border-top: 1px solid rgba(200,169,110,.1); }
+}
+
+/* ═══ SECTIONS ═══ */
+.sec { margin-bottom: 2rem; }
+.sec-ttl {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  padding-bottom: .4rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border-bottom: 1px solid;
+}
+.srow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: .72rem;
+  margin-bottom: .35rem;
+}
+.slbl { color: var(--text-dim); }
+.sval { color: var(--text); font-weight: 600; }
+.hint-txt {
+  margin-top: .3rem;
+  font-size: .6rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ═══ STAT BOXES ═══ */
+.sb-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .4rem; margin-bottom: .8rem; }
+.sb {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .5rem .65rem;
+}
+.sv { font-size: .95rem; font-weight: 600; line-height: 1.2; }
+.sl { font-size: .6rem; color: var(--text-muted); margin-top: .1rem; }
+
+/* ═══ MODE BUTTONS ═══ */
+.mode-btn {
+  flex: 1;
+  padding: .65rem .8rem;
+  border-radius: 10px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.mode-btn.active { border-width: 2px; }
+.mode-btn .btn-title { font-size: .78rem; font-weight: 600; }
+.mode-btn .btn-sub { font-size: .6rem; color: var(--text-muted); margin-top: .15rem; }
+
+/* ═══ DAY BUTTONS ═══ */
+.day-btn {
+  flex: 1;
+  padding: .45rem 0;
+  border-radius: 8px;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.day-btn.active {
+  border: 2px solid var(--teal);
+  background: var(--teal-dim);
+  color: var(--teal);
+}
+
+/* ═══ OPTION BUTTONS ═══ */
+.opt-btn {
+  flex: 1;
+  padding: .48rem;
+  border-radius: 8px;
+  font-size: .72rem;
+  font-weight: 500;
+  background: var(--violet-dim);
+  border: 1px solid var(--violet-border);
+  color: var(--violet);
+}
+.opt-btn.active { border-width: 2px; font-weight: 700; }
+
+/* ═══ EQUIPMENT CARDS ═══ */
+#agrid { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+.acard {
+  padding: .72rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: border-color .2s, background .2s;
+}
+.acard.on { border-color: var(--violet-border); background: var(--violet-dim); }
+.acard-top { display: flex; align-items: flex-start; gap: .35rem; margin-bottom: .25rem; }
+.acard-label { font-size: .7rem; color: var(--text-dim); flex: 1; line-height: 1.25; }
+.acard.on .acard-label { color: #d4b8f0; }
+.acard-meta { font-size: .58rem; color: var(--text-muted); margin-bottom: .5rem; line-height: 1.4; }
+.acard-ctrl { display: flex; align-items: center; gap: .3rem; }
+.qbtn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(184,150,232,.3);
+  background: rgba(184,150,232,.1);
+  color: var(--violet);
+  font-size: 1.1rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.qbtn.off { background: transparent; color: var(--text-muted); border-color: var(--border); }
+.qty-val { flex: 1; text-align: center; font-weight: 700; font-size: 1rem; color: var(--text-muted); }
+.acard.on .qty-val { color: #d4b8f0; }
+.qty-m2 { font-size: .57rem; color: #8a7aaa; white-space: nowrap; }
+.addon-badge { font-size: .5rem; background: rgba(255,255,255,.08); padding: 1px 3px; border-radius: 3px; margin-left: 2px; vertical-align: middle; }
+
+/* ═══ POSTURE BUTTONS ═══ */
+#pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.pos-btn {
+  padding: .7rem .8rem;
+  border-radius: 10px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+.pos-btn.active { border-width: 2px; }
+.pos-btn .pb-title { font-size: .75rem; font-weight: 700; }
+.pos-btn .pb-sub { font-size: .6rem; color: var(--text-muted); margin-top: .15rem; }
+
+/* ═══ SCENARIO BUTTONS ═══ */
+#scgrid { display: flex; gap: .3rem; }
+.sc-btn {
+  flex: 1;
+  padding: .42rem .05rem;
+  border-radius: 7px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.sc-btn.active { border: 1px solid var(--sage); background: rgba(96,192,96,.12); }
+.sc-btn .sc-rate { font-size: .62rem; font-weight: 700; color: var(--text-muted); }
+.sc-btn.active .sc-rate { color: var(--sage); }
+.sc-btn .sc-sub { font-size: .55rem; color: var(--text-muted); }
+
+/* ═══ ADVANCED PANEL ═══ */
+.adv-panel {
+  margin-top: .8rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0,0,0,.15);
+  overflow: hidden;
+}
+.adv-header {
+  padding: .6rem 1rem;
+  background: rgba(200,169,110,.07);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: .08em;
+  user-select: none;
+}
+.adv-body {
+  display: none;
+  padding: 1rem;
+  grid-template-columns: 1fr 1fr;
+  gap: .8rem;
+}
+.adv-body.open { display: grid; }
+
+/* ═══ WARNING / ALERT ═══ */
+.warning-box {
+  background: rgba(239,68,68,.08);
+  border-left: 3px solid var(--red);
+  padding: .6rem .8rem;
+  margin-bottom: 1rem;
+  font-size: .65rem;
+  color: #e0b0b0;
+  border-radius: 4px;
+  line-height: 1.6;
+}
+.warning-box strong { color: var(--red); }
+.sat-alert {
+  background: rgba(239,68,68,.12);
+  border: 1px solid rgba(239,68,68,.4);
+  padding: .5rem;
+  border-radius: 6px;
+  margin-top: .5rem;
+  font-size: .65rem;
+  color: #fca5a5;
+  display: none;
+  line-height: 1.4;
+}
+.tooltip { font-size: .58rem; color: var(--text-muted); margin-left: .2rem; cursor: help; }
+
+/* ═══ RIGHT PANEL ═══ */
+.rcard {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  margin-top: .7rem;
+  border: 1px solid var(--border);
+}
+.rttl { font-size: .63rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .45rem; font-weight: 600; }
+.big { font-size: 2.6rem; font-weight: 300; line-height: 1; }
+.bunit { font-size: 1rem; margin-left: .2rem; }
+.rsub { font-size: .67rem; color: var(--text-dim); margin-top: .25rem; }
+
+.sat-bar-wrap { margin: .65rem 0 .25rem; }
+.sat-bar-label { display: flex; justify-content: space-between; font-size: .62rem; color: var(--text-dim); margin-bottom: .25rem; }
+.sat-bar-bg { height: 4px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+.sat-bar-fill { height: 100%; border-radius: 2px; transition: width .35s, background .35s; }
+
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .8rem; }
+.cap-box { background: var(--surface); border-radius: 8px; padding: .45rem .6rem; }
+.cap-val { font-size: .9rem; font-weight: 700; }
+.cap-lbl { font-size: .58rem; color: var(--text-muted); margin-top: .1rem; }
+
+.rli {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .5rem;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.rl { color: var(--text-dim); font-size: .73rem; }
+.rv { color: #c8c0b8; font-size: .73rem; white-space: nowrap; }
+.rli.tot { border-top: 1px solid var(--gold-border); border-bottom: none; margin-top: 4px; padding-top: 5px; }
+.rli.tot .rl { color: var(--gold); font-weight: 700; font-size: .76rem; }
+.rli.tot .rv { color: var(--text); font-weight: 700; font-size: .76rem; }
+
+.section-sub {
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: .8rem;
+  margin-bottom: .3rem;
+  padding-bottom: .2rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin-bottom: .6rem; align-items: end; }
+.roi-big { font-size: 1.85rem; font-weight: 300; line-height: 1; }
+.roi-sub { font-size: .62rem; color: var(--text-dim); margin-top: .1rem; }
+
+#btn-devis {
+  width: 100%;
+  margin-top: 1rem;
+  padding: .85rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-dim), rgba(200,169,110,.08));
+  border: 1px solid var(--gold-border);
+  color: var(--gold);
+  font-size: .83rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+}
+#btn-devis:hover { background: linear-gradient(135deg, rgba(200,169,110,.28), rgba(200,169,110,.12)); }
+
+/* ═══ CONDITIONS BOX ═══ */
+.conditions-box {
+  margin-top: .75rem;
+  padding: .75rem;
+  background: rgba(255,255,255,.02);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.conditions-box h4 { color: var(--gold); font-size: .67rem; font-weight: 700; margin-bottom: .4rem; letter-spacing: .08em; }
+.conditions-box ul { list-style: none; padding: 0; }
+.conditions-box li { font-size: .63rem; color: var(--text-muted); line-height: 1.85; display: flex; align-items: baseline; gap: .3rem; }
+.badge-crit { font-size: .55rem; color: var(--red); font-weight: 700; }
+.badge-sig  { font-size: .55rem; color: var(--amber); font-weight: 700; }
+.badge-mod  { font-size: .55rem; color: var(--text-muted); }
+
+/* ═══ SOURCES ═══ */
+.sources {
+  font-size: .57rem;
+  color: var(--text-muted);
+  padding-bottom: 2rem;
+  line-height: 1.7;
+  margin-top: .5rem;
+}
+
+/* ═══ MODAL ═══ */
+#modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+#modal.on { display: flex; }
+#mbox {
+  background: var(--bg2);
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 440px;
+  max-width: 94vw;
+}
+.mf-lbl { font-size: .65rem; color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .4rem; }
+.mf-group { display: grid; gap: .9rem; }
+.val-btns { display: flex; gap: .4rem; }
+.val-btn {
+  flex: 1;
+  padding: .43rem;
+  border-radius: 8px;
+  font-size: .73rem;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.val-btn.active { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); font-weight: 700; }
+.modal-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
+.btn-cancel {
+  flex: 1; padding: .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: .82rem;
+}
+.btn-generate {
+  flex: 2; padding: .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--gold-border);
+  background: linear-gradient(135deg, rgba(200,169,110,.25), rgba(200,169,110,.1));
+  color: var(--gold);
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+/* ═══ DEVIS OVERLAY ═══ */
+#dov {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #dde;
+  overflow-y: auto;
+}
+#dov.on { display: block; }
+#dbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--gold-border);
+  padding: .65rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+#dbar .inf { color: var(--text-dim); font-size: .78rem; flex: 1; }
+#bprint {
+  padding: .52rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: .8rem;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  color: var(--gold);
+}
+#bback {
+  padding: .52rem .9rem;
+  border-radius: 8px;
+  font-size: .8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+#dhint {
+  background: rgba(96,192,96,.08);
+  border: 1px solid rgba(96,192,96,.2);
+  margin: 1rem auto;
+  max-width: 860px;
+  border-radius: 8px;
+  padding: .55rem 1rem;
+  font-size: .73rem;
+  color: #60c060;
+}
+#dpaper { max-width: 860px; margin: 0 auto 3rem; background: #fff; box-shadow: 0 4px 40px rgba(0,0,0,.25); overflow: hidden; }
+
+/* ═══ DEVIS STYLES (impression) ═══ */
+.dv { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a2e; font-size: 9pt; line-height: 1.5; }
+.d-strip { height: 4pt; background: linear-gradient(90deg, #c8a96e, #7eb8c9, #b896e8); }
+.d-hdr { background: linear-gradient(135deg, #0f0f1a, #1a1a2e); color: #e8e0d5; padding: 22pt 28pt 18pt; display: flex; justify-content: space-between; align-items: flex-start; }
+.d-logo { font-size: 7pt; letter-spacing: 4pt; color: #c8a96e; text-transform: uppercase; font-weight: 700; margin-bottom: 4pt; }
+.d-title { font-size: 16pt; font-weight: 300; color: #f5efe6; margin: 0; }
+.d-sub { font-size: 8pt; color: #9090b0; margin-top: 3pt; }
+.d-meta { text-align: right; font-size: 8pt; color: #9090b0; line-height: 2; }
+.d-meta strong { color: #c8a96e; font-size: 9.5pt; display: block; }
+.d-body { padding: 18pt 28pt; }
+.d-sttl { font-size: 7pt; letter-spacing: 3pt; text-transform: uppercase; color: #c8a96e; font-weight: 700; border-bottom: .5pt solid rgba(200,169,110,.4); padding-bottom: 3pt; margin-bottom: 8pt; margin-top: 14pt; }
+.d-pros { background: #f8f6f2; border-left: 3pt solid #c8a96e; padding: 10pt 14pt; border-radius: 0 6pt 6pt 0; margin-bottom: 14pt; display: flex; gap: 20pt; flex-wrap: wrap; }
+.d-pb { flex: 1; min-width: 120pt; }
+.d-plbl { font-size: 7pt; color: #9090b0; text-transform: uppercase; letter-spacing: 1pt; margin-bottom: 2pt; }
+.d-pval { font-size: 10pt; font-weight: 700; }
+.d-psub { font-size: 8pt; color: #6a6a8a; margin-top: 1pt; }
+.d-tbl { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 6pt; }
+.d-tbl th { background: #f0f0f8; color: #5a5a8a; font-size: 7pt; letter-spacing: 1pt; text-transform: uppercase; padding: 5pt 8pt; text-align: left; font-weight: 600; }
+.d-tbl td { padding: 5pt 8pt; border-bottom: .5pt solid #eee; vertical-align: middle; }
+.d-tbl .num { text-align: right; font-weight: 600; }
+.d-tbl .st { background: #f4f4fb; font-weight: 700; }
+.d-li { display: flex; justify-content: space-between; padding: 4pt 0; border-bottom: .5pt solid #f0f0f0; font-size: 8.5pt; }
+.d-li .ll { color: #6a6a8a; }
+.d-li .lv { font-weight: 600; }
+.d-li.tl { background: #f8f6f2; padding: 6pt 8pt; border-radius: 4pt; margin-top: 6pt; font-size: 9.5pt; font-weight: 700; border: none; }
+.d-li.tl .ll { color: #c8a96e; }
+.d-roi { display: flex; gap: 8pt; margin: 8pt 0; }
+.d-rbox { flex: 1; border-radius: 6pt; padding: 9pt; text-align: center; }
+.d-rbox.pos { background: #f0faf4; border: .5pt solid rgba(16,185,129,.3); }
+.d-rbox.neg { background: #fff5f5; border: .5pt solid rgba(239,68,68,.3); }
+.d-rbox.neu { background: #f8f8ff; border: .5pt solid #dde; }
+.d-rbig { font-size: 18pt; font-weight: 700; line-height: 1; }
+.d-rbig.pos { color: #10b981; }
+.d-rbig.neg { color: #ef4444; }
+.d-rbig.neu { color: #1a1a2e; font-size: 12pt; }
+.d-rlbl { font-size: 6.5pt; color: #9090b0; margin-top: 2pt; text-transform: uppercase; letter-spacing: .8pt; }
+.d-cond { background: #fff8f0; border: .5pt solid rgba(200,169,110,.35); border-radius: 6pt; padding: 10pt 14pt; }
+.d-cond ul { padding-left: 12pt; }
+.d-cond li { font-size: 8pt; color: #4a4a6a; line-height: 2; }
+.d-badge { display: inline-block; font-size: 5.5pt; font-weight: 700; padding: 1pt 3pt; border-radius: 2pt; margin-left: 3pt; vertical-align: middle; }
+.d-badge.cr { background: #fde8e8; color: #c0392b; }
+.d-badge.si { background: #fef3e2; color: #b7791f; }
+.d-badge.mo { background: #f0f0f0; color: #6a6a8a; }
+.d-ctx { background: #f5f8ff; border-radius: 5pt; padding: 8pt 12pt; font-size: 7.5pt; color: #5a5a8a; line-height: 1.7; margin-top: 6pt; }
+.d-synthese { background: #f0f4ff; border: .5pt solid #b0c4de; border-radius: 6pt; padding: 10pt 14pt; margin-top: 10pt; }
+.d-synthese-grid { display: flex; gap: 8pt; margin-top: 6pt; }
+.d-synthese-box { flex: 1; background: #fff; border-radius: 4pt; padding: 8pt; text-align: center; border: .5pt solid #dde; }
+.d-ftr { background: #f0f0f8; padding: 10pt 28pt; display: flex; justify-content: space-between; align-items: center; border-top: .5pt solid #dde; margin-top: 8pt; }
+.d-fl { font-size: 7.5pt; color: #6a6a8a; line-height: 1.7; }
+.d-fr { font-size: 7pt; color: #9090b0; text-align: right; line-height: 1.7; }
+.d-section-sub { font-size: 7pt; letter-spacing: 1pt; text-transform: uppercase; color: #8a8a9a; font-weight: 600; margin-top: 10pt; margin-bottom: 4pt; padding-bottom: 2pt; border-bottom: .5pt solid #f0f0f0; }
+
+@media print {
+  #hdr, #grid, #modal { display: none !important; }
+  #dov { position: static !important; overflow: visible !important; background: #fff !important; display: block !important; }
+  #dbar, #dhint { display: none !important; }
+  #dpaper { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; }
+  @page { margin: 0; size: A4; }
+}
 </style>
 </head>
 <body>
-<div id="hdr"><span class="brand">beOtop™</span><h1>beOtop™ - Calculateur ROI - Espace de Revitalisation (Etude v5.0 - 6/04/2026)</h1><span id="mode-lbl">Modèle 5j / semaine</span></div>
-<div id="grid"><div id="left">
-<div class="sec"><div class="sec-ttl" style="color:#c8a96e;border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem"><div><div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div><input type="range" id="s-nbs" min="50" max="2000" step="50" value="400"></div><div><div class="srow"><span class="slbl">Salaire brut moyen (€/an)</span><span class="sval" id="v-sal">70 200 €</span></div><input type="range" id="s-sal" min="20000" max="100000" step="500" value="70200"></div></div></div>
-<div class="sec"><div class="sec-ttl" style="color:#7eb8c9;border-color:rgba(126,184,201,.2)">02 · Mode de travail</div><div style="display:flex;gap:.5rem;margin-bottom:.85rem"><button class="tbtn" id="bm5j" onclick="setMode('5j')" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.13)"><div style="font-size:.8rem;font-weight:700;color:#7eb8c9;font-family:sans-serif">🏢 5j / semaine</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Flux lissé</div></button><button class="tbtn" id="bmhy" onclick="setMode('hybride')" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"><div style="font-size:.8rem;font-weight:700;color:#7a7a9a;font-family:sans-serif">🔄 Hybride</div><div style="font-size:.61rem;color:#5a5a7a;font-family:sans-serif;margin-top:.18rem">Pic concentré</div></button></div>
-<div id="jpanel" style="display:none;background:rgba(126,184,201,.06);border-radius:10px;padding:.85rem;border:1px solid rgba(126,184,201,.15);margin-bottom:.85rem"><div style="font-size:.7rem;color:#9090b0;font-family:sans-serif;margin-bottom:.5rem">Jours de présence / semaine</div><div style="display:flex;gap:.4rem"><button class="dbtn" data-j="1" onclick="setJours(1)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">1j</button><button class="dbtn" data-j="2" onclick="setJours(2)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">2j</button><button class="dbtn" data-j="3" onclick="setJours(3)" style="border:2px solid #7eb8c9;background:rgba(126,184,201,.2);color:#7eb8c9">3j<div style="font-size:.5rem;color:#c8a96e">✓ reco</div></button><button class="dbtn" data-j="4" onclick="setJours(4)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">4j</button></div><div id="picinfo" style="margin-top:.5rem;font-size:.63rem;color:#6a6a8a;font-family:sans-serif"></div></div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem;margin-bottom:.85rem"><div class="sb"><div class="sv" id="v-nbp" style="color:#7eb8c9">400</div><div class="sl">présents / jour</div></div><div class="sb"><div class="sv" id="v-nbu" style="color:#c8a96e">240</div><div class="sl" id="v-nbu-lbl">cible théorique / jour</div></div><div class="sb"><div class="sv" id="v-dh" style="color:#b896e8">480</div><div class="sl">demande / sem.</div></div></div>
-<div style="border-top:1px solid rgba(126,184,201,.15);padding-top:.85rem"><div class="srow"><span class="slbl">Cible d'adoption potentielle</span><span class="sval" id="v-ado">60%</span></div><input type="range" id="s-ado" min="5" max="100" step="5" value="60" disabled style="opacity:.5;cursor:not-allowed"><div style="margin-top:.4rem;font-size:.6rem;font-family:sans-serif;color:#7a9a8a;min-height:1rem">Pilotée par la posture managériale (objectif)</div></div></div>
-<div class="sec"><div class="sec-ttl" style="color:#b896e8;border-color:rgba(184,150,232,.2)">03 · L'Espace (m2 conseillés)</div><div style="display:flex;gap:.5rem;margin-bottom:1rem"><button class="opt-btn" data-opt="A" onclick="setOption('A')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option A (éco)</button><button class="opt-btn" data-opt="B" onclick="setOption('B')" style="flex:1;padding:.5rem;border-radius:8px;border:2px solid #b896e8;background:rgba(184,150,232,.2)">Option B (standard)</button><button class="opt-btn" data-opt="C" onclick="setOption('C')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #b896e8;background:rgba(184,150,232,.1)">Option C (premium)</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.62rem" id="agrid"></div><div id="arecap" style="margin-top:.65rem;font-size:.7rem;color:#7a7a9a;font-family:sans-serif;background:rgba(184,150,232,.06);padding:.55rem .75rem;border-radius:8px;line-height:1.6"></div></div>
-<div class="sec"><div class="sec-ttl" style="color:#f0a060;border-color:rgba(240,160,96,.2)">04 · Posture managériale</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.52rem" id="pgrid"></div><div style="margin-top:.65rem;font-size:.7rem;color:#f0a060;font-family:sans-serif;background:rgba(240,160,96,.08);padding:.52rem .72rem;border-radius:8px">⚠️ La posture détermine l'ambition d'adoption (objectif).</div></div>
-<div class="sec"><div class="sec-ttl" style="color:#60c060;border-color:rgba(96,192,96,.2)">05 · Scénario d'impact</div><div style="display:flex;gap:.3rem;margin-bottom:.65rem" id="scgrid"></div><div id="ref-roi-hint" style="font-size:.7rem;color:#9090b0;font-family:sans-serif;background:rgba(96,192,96,.06);padding:.52rem .72rem;border-radius:8px">💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%).</div></div>
-<div class="sec"><div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎨 Agencement & décoration <span style="color:#6a6a8a;font-size:.6rem">€/m²</span></span><span class="sval" id="v-deco-pm2">0 €/m²</span></div><input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span></div></div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🏢 Coût immobilier <span style="color:#6a6a8a;font-size:.6rem">€/m²/an</span></span><span class="sval" id="v-im-pm2">280 €/m²</span></div><input type="range" id="s-im-pm2" min="100" max="1000" step="10" value="280" style="accent-color:#7eb8c9" oninput="ST.im_pm2=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>100 — Province</span><span>280 — Réf. étude</span><span>1000 — Paris</span></div></div>
-<div style="margin-bottom:1.2rem"><div class="srow"><span class="slbl">🎓 Formation managers <span style="color:#ef4444;font-size:.55rem;font-weight:700">● CRITIQUE</span> <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="Investir dans la formation augmente le gain (coefficient de 0,85 à 1,30) mais aussi le coût annuel. L'effet net dépend du niveau d'investissement.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-form">1 300 €</span></div></div><input type="range" id="s-form" min="0" max="10000" step="100" value="2000" style="accent-color:#60c060" oninput="ST.form=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Risque adoption</span><span>1 300 — Réf. étude</span><span>5 000 — Renforcé</span></div></div>
-<div style="margin-bottom:.5rem"><div class="srow"><span class="slbl">✨ Animation espace <span style="color:#6a6a8a;font-size:.6rem">€/an</span> <span class="tooltip" title="L'animation améliore l'adoption (coefficient de 0,85 à 1,35) mais a un coût annuel. L'effet net peut être positif si le gain supplémentaire dépasse le coût.">ⓘ</span></span><div style="display:flex;align-items:center;gap:.5rem"><span class="sval" id="v-anim">1 100 €</span></div></div><input type="range" id="s-anim" min="0" max="10000" step="250" value="2000" style="accent-color:#c9a96e" oninput="ST.anim=+this.value;render()"><div style="display:flex;justify-content:space-between;font-size:.58rem;color:#4a4a6a;font-family:sans-serif;margin-top:.2rem"><span>0 — Minimal</span><span>1 100 — Réf. étude</span><span>5 000 — Premium</span></div></div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <span class="brand">beOtop™</span>
+  <h1>Calculateur ROI — Espace de Revitalisation · Étude v5.1 · 2026</h1>
+  <span id="mode-lbl">Modèle 5j / semaine</span>
 </div>
-<div class="sec"><div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
-<div class="adv-panel"><div class="adv-header" onclick="toggleAdv()"><span>🔧 Ajuster les coefficients internes</span><span id="adv-arrow">▼</span></div><div id="adv-body" class="adv-body">
-  <div><div class="srow"><span class="slbl">Taux de dysfonctionnements RH</span><span class="sval" id="v-taux_dysf">11%</span></div><input type="range" id="s-taux_dysf" min="0.05" max="0.30" step="0.005" value="0.11"><div style="font-size:.55rem;color:#6a6a8a">Part de la masse salariale (ANACT: 11%)</div></div>
-  <div><div class="srow"><span class="slbl">Part adressable par le bien-être</span><span class="sval" id="v-part_adr">28%</span></div><input type="range" id="s-part_adr" min="0.15" max="0.45" step="0.01" value="0.28"><div style="font-size:.55rem;color:#6a6a8a">% des dysfonctionnements évitables</div></div>
-  <div><div class="srow"><span class="slbl">Séances hebdo / utilisateur</span><span class="sval" id="v-seances_hebdo">2</span></div><input type="range" id="s-seances_hebdo" min="1" max="5" step="0.5" value="2"><div style="font-size:.55rem;color:#6a6a8a">Fréquence moyenne d'usage</div></div>
-  <div><div class="srow"><span class="slbl">Durée d'une séance (min)</span><span class="sval" id="v-duree_seance">15</span></div><input type="range" id="s-duree_seance" min="10" max="30" step="1" value="15"><div style="font-size:.55rem;color:#6a6a8a">Impacte la capacité horaire</div></div>
-  <div><div class="srow"><span class="slbl">⏰ Heures d'ouverture / jour</span><span class="sval" id="v-heures">8 h</span></div><input type="range" id="s-heures" min="4" max="12" step="1" value="8"><div style="font-size:.55rem;color:#6a6a8a">Taux de remplissage fixé à 75%</div></div>
-</div></div>
-</div>
-<div class="warning-box"><strong>⚠️ Limites du simulateur (conforme étude)</strong><br>• Dimensionnement basé sur un <strong>unique espace</strong>. Si la capacité est insuffisante, l'adoption est bridée et le ROI diminue.<br>• Le Payback est calculé sur le Flux de Trésorerie Net (Gain - OPEX).<br>• ROI annuel sans actualisation (pas de VAN/TRI).<br>• Résultats conditionnés par les facteurs critiques (formation managers, charte).</div>
-<div style="font-size:.58rem;color:#3a3a5a;font-family:sans-serif;padding-bottom:2rem;line-height:1.7">Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Institut Sapiens 2018 · Note méthodologique beOtop 02/2026</div>
-</div>
+
+<!-- MAIN GRID -->
+<div id="grid">
+
+<!-- ═══ COLONNE GAUCHE ═══ -->
+<div id="left">
+
+  <!-- 01 ENTREPRISE -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:var(--gold);border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">
+      <div>
+        <div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div>
+        <input type="range" id="s-nbs" min="50" max="2000" step="50" value="400" oninput="ST.nbs=+this.value;render()">
+      </div>
+      <div>
+        <div class="srow"><span class="slbl">Salaire brut moyen (€/an)</span><span class="sval" id="v-sal">70 200 €</span></div>
+        <input type="range" id="s-sal" min="20000" max="100000" step="500" value="70200" oninput="ST.sal=+this.value;render()">
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 MODE DE TRAVAIL -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:var(--teal);border-color:rgba(126,184,201,.2)">02 · Mode de travail</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+      <button class="mode-btn" id="bm5j" onclick="setMode('5j')">
+        <div class="btn-title" style="color:var(--teal)">🏢 5j / semaine</div>
+        <div class="btn-sub">Flux lissé</div>
+      </button>
+      <button class="mode-btn" id="bmhy" onclick="setMode('hybride')">
+        <div class="btn-title" style="color:var(--text-muted)">🔄 Hybride</div>
+        <div class="btn-sub">Pic concentré</div>
+      </button>
+    </div>
+    <div id="jpanel" style="display:none;background:var(--teal-dim);border-radius:10px;padding:.8rem;border:1px solid var(--teal-border);margin-bottom:.8rem">
+      <div style="font-size:.68rem;color:var(--text-dim);margin-bottom:.5rem">Jours de présence / semaine</div>
+      <div style="display:flex;gap:.4rem" id="jours-btns">
+        <button class="day-btn" data-j="1" onclick="setJours(1)">1j</button>
+        <button class="day-btn" data-j="2" onclick="setJours(2)">2j</button>
+        <button class="day-btn active" data-j="3" onclick="setJours(3)">3j<br><span style="font-size:.5rem;color:var(--gold)">✓ reco</span></button>
+        <button class="day-btn" data-j="4" onclick="setJours(4)">4j</button>
+      </div>
+      <div id="picinfo" style="margin-top:.45rem;font-size:.62rem;color:var(--text-muted)"></div>
+    </div>
+    <div class="sb-grid">
+      <div class="sb"><div class="sv" id="v-nbp" style="color:var(--teal)">400</div><div class="sl">présents / jour</div></div>
+      <div class="sb"><div class="sv" id="v-nbu" style="color:var(--gold)">240</div><div class="sl" id="v-nbu-lbl">cible théorique</div></div>
+      <div class="sb"><div class="sv" id="v-dh" style="color:var(--violet)">480</div><div class="sl">demande / sem.</div></div>
+    </div>
+    <div>
+      <div class="srow"><span class="slbl">Cible d'adoption potentielle</span><span class="sval" id="v-ado">60%</span></div>
+      <input type="range" id="s-ado" min="5" max="100" step="5" value="60" disabled style="opacity:.4;cursor:not-allowed">
+      <div class="hint-txt">Pilotée par la posture managériale (objectif)</div>
+    </div>
+  </div>
+
+  <!-- 03 L'ESPACE -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:var(--violet);border-color:rgba(184,150,232,.2)">03 · L'Espace (m² conseillés)</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem" id="opt-btns">
+      <button class="opt-btn" data-opt="A" onclick="setOption('A')">Option A (éco)</button>
+      <button class="opt-btn active" data-opt="B" onclick="setOption('B')">Option B (standard)</button>
+      <button class="opt-btn" data-opt="C" onclick="setOption('C')">Option C (premium)</button>
+    </div>
+    <div id="agrid"></div>
+    <div id="arecap" style="margin-top:.6rem;font-size:.68rem;color:var(--text-muted);background:var(--violet-dim);padding:.5rem .7rem;border-radius:8px;line-height:1.6"></div>
+  </div>
+
+  <!-- 04 POSTURE -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:var(--orange);border-color:rgba(240,160,96,.2)">04 · Posture managériale</div>
+    <div id="pgrid"></div>
+    <div style="margin-top:.6rem;font-size:.68rem;color:var(--orange);background:var(--orange-dim);padding:.5rem .7rem;border-radius:8px">
+      ⚠️ La posture détermine l'ambition d'adoption (objectif).
+    </div>
+  </div>
+
+  <!-- 05 SCÉNARIO -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:var(--sage);border-color:rgba(96,192,96,.2)">05 · Scénario d'impact</div>
+    <div id="scgrid" style="margin-bottom:.65rem"></div>
+    <div id="ref-roi-hint" style="font-size:.68rem;color:var(--text-dim);background:rgba(96,192,96,.06);padding:.5rem .7rem;border-radius:8px">
+      💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%).
+    </div>
+  </div>
+
+  <!-- 06 PARAMÈTRES OPTIONNELS -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
+
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">🎨 Agencement & décoration <span style="color:var(--text-muted);font-size:.6rem">€/m²</span></span>
+        <span class="sval" id="v-deco-pm2">0 €/m²</span>
+      </div>
+      <input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
+        <span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">🏢 Coût immobilier <span style="color:var(--text-muted);font-size:.6rem">€/m²/an</span></span>
+        <span class="sval" id="v-im-pm2">280 €/m²</span>
+      </div>
+      <input type="range" id="s-im-pm2" min="100" max="1000" step="10" value="280" style="accent-color:var(--teal)" oninput="ST.im_pm2=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
+        <span>100 — Province</span><span>280 — Réf. étude</span><span>1 000 — Paris</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.2rem">
+      <div class="srow">
+        <span class="slbl">
+          🎓 Formation managers <span style="color:var(--red);font-size:.55rem;font-weight:700">● CRITIQUE</span>
+          <span style="color:var(--text-muted);font-size:.6rem">€/an</span>
+          <span class="tooltip" title="Investir dans la formation augmente le gain (coef 0,85→1,30) mais aussi le coût annuel. L'effet net dépend du niveau.">ⓘ</span>
+        </span>
+        <span class="sval" id="v-form">1 300 €</span>
+      </div>
+      <input type="range" id="s-form" min="0" max="10000" step="100" value="2000" style="accent-color:var(--sage)" oninput="ST.form=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
+        <span>0 — Risque</span><span>1 300 — Réf.</span><span>5 000 — Renforcé</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="srow">
+        <span class="slbl">
+          ✨ Animation espace <span style="color:var(--text-muted);font-size:.6rem">€/an</span>
+          <span class="tooltip" title="L'animation améliore l'adoption (coef 0,85→1,35). L'effet net peut être positif si le gain dépasse le coût.">ⓘ</span>
+        </span>
+        <span class="sval" id="v-anim">1 100 €</span>
+      </div>
+      <input type="range" id="s-anim" min="0" max="10000" step="250" value="2000" style="accent-color:var(--gold)" oninput="ST.anim=+this.value;render()">
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
+        <span>0 — Minimal</span><span>1 100 — Réf.</span><span>5 000 — Premium</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 PARAMÈTRES AVANCÉS -->
+  <div class="sec">
+    <div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
+    <div class="adv-panel">
+      <div class="adv-header" onclick="toggleAdv()">
+        <span>🔧 Ajuster les coefficients internes</span>
+        <span id="adv-arrow">▼</span>
+      </div>
+      <div id="adv-body" class="adv-body">
+        <div>
+          <div class="srow"><span class="slbl">Taux de dysfonctionnements RH</span><span class="sval" id="v-taux_dysf">11%</span></div>
+          <input type="range" id="s-taux_dysf" min="0.05" max="0.30" step="0.005" value="0.11" oninput="ST.taux_dysf=+this.value;render()">
+          <div class="hint-txt">Part de la masse salariale (ANACT : 11%)</div>
+        </div>
+        <div>
+          <div class="srow"><span class="slbl">Part adressable par le bien-être</span><span class="sval" id="v-part_adr">28%</span></div>
+          <input type="range" id="s-part_adr" min="0.15" max="0.45" step="0.01" value="0.28" oninput="ST.part_adressable=+this.value;render()">
+          <div class="hint-txt">% des dysfonctionnements évitables</div>
+        </div>
+        <div>
+          <div class="srow"><span class="slbl">Séances hebdo / utilisateur</span><span class="sval" id="v-seances_hebdo">2</span></div>
+          <input type="range" id="s-seances_hebdo" min="1" max="5" step="0.5" value="2" oninput="ST.seances_par_semaine=+this.value;render()">
+          <div class="hint-txt">Fréquence moyenne d'usage</div>
+        </div>
+        <div>
+          <div class="srow"><span class="slbl">Durée d'une séance (min)</span><span class="sval" id="v-duree_seance">15</span></div>
+          <input type="range" id="s-duree_seance" min="10" max="30" step="1" value="15" oninput="ST.duree_seance=+this.value;render()">
+          <div class="hint-txt">Impacte la capacité horaire</div>
+        </div>
+        <div>
+          <div class="srow"><span class="slbl">⏰ Heures d'ouverture / jour</span><span class="sval" id="v-heures">8 h</span></div>
+          <input type="range" id="s-heures" min="4" max="12" step="1" value="8" oninput="ST.heures_ouverture=+this.value;render()">
+          <div class="hint-txt">Taux de remplissage fixé à 75%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVERTISSEMENT -->
+  <div class="warning-box">
+    <strong>⚠️ Limites du simulateur (conforme étude)</strong><br>
+    • Dimensionnement basé sur un <strong>unique espace</strong>. Si la capacité est insuffisante, l'adoption est bridée et le ROI diminue.<br>
+    • Le Payback est calculé sur le Flux de Trésorerie Net (Gain − OPEX).<br>
+    • ROI annuel sans actualisation (pas de VAN/TRI).<br>
+    • Résultats conditionnés par les facteurs critiques (formation managers, charte).
+  </div>
+
+  <div class="sources">
+    Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Institut Sapiens 2018 · Note méthodologique beOtop 02/2026
+  </div>
+
+</div><!-- /#left -->
+
+<!-- ═══ COLONNE DROITE ═══ -->
 <div id="right">
-<div style="font-size:.6rem;letter-spacing:.28em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif;margin-bottom:1.1rem">Recommandation pour votre Espace</div>
-<div class="rcard" style="background:rgba(126,184,201,.09);border:1px solid rgba(126,184,201,.35);margin-top:0">
-  <div class="rttl" style="color:#7eb8c9">SURFACE & CAPACITÉ (1 ESPACE)</div>
-  <div class="big"><span id="r-surf">—</span><span class="bunit" style="color:#7eb8c9">m²</span></div>
-  <div class="rsub"><span id="r-postes">—</span> places d'assise · <span id="r-duree_display">15</span> min / séance</div>
-  <div style="margin:.7rem 0 .28rem;display:flex;justify-content:space-between;font-size:.64rem;color:#9090b0;font-family:sans-serif"><span>Taux d'occupation</span><span id="r-satp" style="font-weight:700">—</span></div>
-  <div class="sat-bg"><div class="sat-f" id="r-satb" style="width:0%;background:#7eb8c9"></div></div>
-  <div id="r-sat-alert" class="sat-alert"></div>
-  <div class="sgrid" style="margin-top:1rem"><div class="sb"><div class="sv" id="r-dp" style="color:#ef4444">—</div><div class="sl">Demande pic / jour</div></div><div class="sb"><div class="sv" id="r-ce" style="color:#10b981">—</div><div class="sl">Capacité réelle</div></div></div></div>
-<div class="rcard" style="background:rgba(200,169,110,.09);border:1px solid rgba(200,169,110,.35)"><div class="rttl" style="color:#c8a96e">LA CHARGE FINANCIÈRE</div><div id="r-ctp"></div></div>
-<div class="rcard" id="r-roi-card" style="background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.35)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem"><div class="rttl" id="r-roi-ttl" style="color:#10b981;margin:0">RETOUR SUR INVESTISSEMENT</div><div id="r-sc-badge" style="font-size:.58rem;color:#7a7a9a;font-family:sans-serif;background:rgba(255,255,255,.05);padding:.15rem .42rem;border-radius:4px"></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin-bottom:.65rem;align-items:end"><div><div id="r-roi-pct" style="font-size:1.9rem;font-weight:300;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">ROI annuel net</div></div><div><div id="r-pb" style="font-size:1.9rem;font-weight:300;color:#e8e0d5;line-height:1">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Payback net</div></div><div style="text-align:right"><div id="r-eco-adj" style="font-size:.95rem;font-weight:700">—</div><div style="font-size:.63rem;color:#9090b0;font-family:sans-serif;margin-top:.12rem">Éco. nette / an</div></div></div><div style="font-size:.58rem;color:#7a8a7a;font-family:sans-serif;margin-bottom:.5rem" id="r-po-badge"></div><div id="r-roi-lines"></div></div>
-<div style="margin-top:.75rem;padding:.8rem;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.05)"><div style="color:#c8a96e;font-weight:700;font-size:.68rem;font-family:sans-serif;margin-bottom:.42rem">5 conditions d'atteinte du ROI</div><ul style="font-size:.65rem;color:#8080a0;font-family:sans-serif;line-height:1.85;padding-left:1rem"><li>Charte d'accès signée par la Direction <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Formation managers avant ouverture <span style="color:#ef4444;font-size:.58rem">● CRITIQUE</span></li><li>Protocole de mesure dès J1 <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Communication interne structurée <span style="color:#f59e0b;font-size:.58rem">● SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span style="color:#7a7a9a;font-size:.58rem">● MODÉRÉ</span></li></ul></div>
-<button id="btn-devis" onclick="openModal()"><span style="font-size:1.1rem">📄</span> Générer le devis PDF</button>
-<div style="margin-top:.45rem;font-size:.6rem;color:#4a4a6a;font-family:sans-serif;text-align:center">Récapitulatif complet · Numéro auto · Prêt à envoyer</div>
-</div></div>
-<div id="modal"><div id="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem"><div><div style="font-size:.65rem;letter-spacing:.25em;color:#c8a96e;text-transform:uppercase;font-family:sans-serif;margin-bottom:.25rem">beOtop</div><div style="font-size:1.1rem;color:#f5efe6">Générer le devis</div></div><button onclick="closeModal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9090b0;width:32px;height:32px;border-radius:8px;font-size:1rem">✕</button></div><div style="display:grid;gap:1rem"><div><div class="mflbl">Entreprise prospect</div><input type="text" id="f-pro" placeholder="Nom de l'entreprise"></div><div><div class="mflbl">Contact prospect</div><input type="text" id="f-con" placeholder="Prénom Nom, Fonction"></div><div><div class="mflbl">Commercial beOtop</div><input type="text" id="f-com" placeholder="Prénom Nom"></div><div><div class="mflbl">Validité du devis</div><div style="display:flex;gap:.4rem"><button class="vbtn" data-v="15" onclick="setVal(15)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">15 j.</button><button class="vbtn" data-v="30" onclick="setVal(30)" style="border:1px solid #c8a96e;background:rgba(200,169,110,.15);color:#c8a96e;font-weight:700">30 j.</button><button class="vbtn" data-v="60" onclick="setVal(60)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">60 j.</button><button class="vbtn" data-v="90" onclick="setVal(90)" style="border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a9a">90 j.</button></div></div></div><div style="display:flex;gap:.75rem;margin-top:1.5rem"><button onclick="closeModal()" style="flex:1;padding:.75rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#8080a0;font-size:.82rem;font-family:sans-serif">Annuler</button><button onclick="genDevis()" style="flex:2;padding:.75rem;border-radius:10px;border:1px solid rgba(200,169,110,.5);background:linear-gradient(135deg,rgba(200,169,110,.25),rgba(200,169,110,.1));color:#c8a96e;font-size:.82rem;font-family:sans-serif;font-weight:700">📄 Générer</button></div></div></div>
-<div id="dov"><div id="dbar"><span class="brand">beOtop</span><span class="inf">Aperçu du devis</span><button id="bprint" onclick="window.print()">🖨️ Imprimer / PDF</button><button id="bback" onclick="closeDevis()">← Retour</button></div><div id="dhint">💡 Impression → <strong>"Enregistrer en PDF"</strong> · A4 · Décocher en-têtes</div><div id="dpaper"></div></div>
+
+  <div style="font-size:.58rem;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem;font-weight:600">
+    Recommandation pour votre Espace
+  </div>
+
+  <!-- Surface & capacité -->
+  <div class="rcard" style="background:var(--teal-dim);border-color:var(--teal-border);margin-top:0">
+    <div class="rttl" style="color:var(--teal)">Surface & Capacité (1 espace)</div>
+    <div class="big"><span id="r-surf">—</span><span class="bunit" style="color:var(--teal)">m²</span></div>
+    <div class="rsub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
+    <div class="sat-bar-wrap">
+      <div class="sat-bar-label">
+        <span>Taux d'occupation</span>
+        <span id="r-satp" style="font-weight:700">—</span>
+      </div>
+      <div class="sat-bar-bg"><div class="sat-bar-fill" id="r-satb" style="width:0%;background:var(--teal)"></div></div>
+    </div>
+    <div id="r-sat-alert" class="sat-alert"></div>
+    <div class="cap-grid">
+      <div class="cap-box"><div class="cap-val" id="r-dp" style="color:var(--red)">—</div><div class="cap-lbl">Demande pic / jour</div></div>
+      <div class="cap-box"><div class="cap-val" id="r-ce" style="color:var(--green)">—</div><div class="cap-lbl">Capacité réelle</div></div>
+    </div>
+  </div>
+
+  <!-- Charge financière -->
+  <div class="rcard" style="background:var(--gold-dim);border-color:var(--gold-border)">
+    <div class="rttl" style="color:var(--gold)">La Charge Financière</div>
+    <div id="r-ctp"></div>
+  </div>
+
+  <!-- ROI -->
+  <div class="rcard" id="r-roi-card" style="background:var(--green-dim);border-color:var(--green-border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <div class="rttl" id="r-roi-ttl" style="color:var(--green);margin:0">Retour sur Investissement</div>
+      <div id="r-sc-badge" style="font-size:.57rem;color:var(--text-muted);background:var(--surface);padding:.14rem .4rem;border-radius:4px"></div>
+    </div>
+    <div class="roi-grid">
+      <div>
+        <div class="roi-big" id="r-roi-pct" style="color:var(--green)">—</div>
+        <div class="roi-sub">ROI annuel net</div>
+      </div>
+      <div>
+        <div class="roi-big" id="r-pb" style="color:var(--text)">—</div>
+        <div class="roi-sub">Payback net</div>
+      </div>
+      <div style="text-align:right">
+        <div id="r-eco-adj" style="font-size:.93rem;font-weight:700;color:var(--green)">—</div>
+        <div class="roi-sub">Éco. nette / an</div>
+      </div>
+    </div>
+    <div id="r-po-badge" style="font-size:.58rem;color:#7a8a7a;margin-bottom:.45rem;min-height:.8rem"></div>
+    <div id="r-roi-lines"></div>
+  </div>
+
+  <!-- Conditions -->
+  <div class="conditions-box">
+    <h4>5 conditions d'atteinte du ROI</h4>
+    <ul>
+      <li>Charte d'accès signée par la Direction <span class="badge-crit">● CRITIQUE</span></li>
+      <li>Formation managers avant ouverture <span class="badge-crit">● CRITIQUE</span></li>
+      <li>Protocole de mesure dès J1 <span class="badge-sig">● SIGNIFICATIF</span></li>
+      <li>Communication interne structurée <span class="badge-sig">● SIGNIFICATIF</span></li>
+      <li>Pilote instrumenté 6 mois <span class="badge-mod">● MODÉRÉ</span></li>
+    </ul>
+  </div>
+
+  <button id="btn-devis" onclick="openModal()">
+    <span style="font-size:1.05rem">📄</span> Générer le devis PDF
+  </button>
+  <div style="margin-top:.4rem;font-size:.58rem;color:var(--text-muted);text-align:center">
+    Récapitulatif complet · Numéro auto · Prêt à envoyer
+  </div>
+
+</div><!-- /#right -->
+</div><!-- /#grid -->
+
+<!-- ═══════════════════════════════════════════════════════
+   MODAL DEVIS
+═══════════════════════════════════════════════════════ -->
+<div id="modal">
+  <div id="mbox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div>
+        <div style="font-size:.65rem;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:.25rem">beOtop</div>
+        <div style="font-size:1.1rem;color:#f5efe6">Générer le devis</div>
+      </div>
+      <button onclick="closeModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:8px;font-size:1rem">✕</button>
+    </div>
+    <div class="mf-group">
+      <div><div class="mf-lbl">Entreprise prospect</div><input type="text" id="f-pro" placeholder="Nom de l'entreprise"></div>
+      <div><div class="mf-lbl">Contact prospect</div><input type="text" id="f-con" placeholder="Prénom Nom, Fonction"></div>
+      <div><div class="mf-lbl">Commercial beOtop</div><input type="text" id="f-com" placeholder="Prénom Nom"></div>
+      <div>
+        <div class="mf-lbl">Validité du devis</div>
+        <div class="val-btns">
+          <button class="val-btn" data-v="15" onclick="setVal(15)">15 j.</button>
+          <button class="val-btn active" data-v="30" onclick="setVal(30)">30 j.</button>
+          <button class="val-btn" data-v="60" onclick="setVal(60)">60 j.</button>
+          <button class="val-btn" data-v="90" onclick="setVal(90)">90 j.</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-generate" onclick="genDevis()">📄 Générer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+   DEVIS OVERLAY
+═══════════════════════════════════════════════════════ -->
+<div id="dov">
+  <div id="dbar">
+    <span class="brand" style="font-size:1rem">beOtop</span>
+    <span class="inf">Aperçu du devis</span>
+    <button id="bprint" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    <button id="bback" onclick="closeDevis()">← Retour</button>
+  </div>
+  <div id="dhint">💡 Impression → <strong>"Enregistrer en PDF"</strong> · A4 · Décocher en-têtes/pieds de page</div>
+  <div id="dpaper"></div>
+</div>
+
 <script>
-// ----- Données et constantes (conformes à l'étude papier v5.0) -----
+'use strict';
+
+/* ═══════════════════════════════════════════════════════
+   DONNÉES RÉFÉRENCE
+═══════════════════════════════════════════════════════ */
+
 const AT = [
-  {id:"bol_air", label:"Bol d'Air", icon:"🌬️", m2:1.0, prix:3990, cible:"Fatigue / Cognitif", addon:false},
-  {id:"p127", label:"Méridienne P127", icon:"🪑", m2:2.0, prix:2750, cible:"TMS / Lombaires", addon:false},
-  {id:"lunettes_psio", label:"Lunettes Psio", icon:"👓", m2:0.2, prix:995, cible:"Déconnexion", addon:true},
-  {id:"cocon_sieste", label:"Cocon de sieste", icon:"😴", m2:2.0, prix:4500, cible:"Fatigue", addon:false},
-  {id:"siege_massant", label:"Siège massant 0 Gravité", icon:"💆", m2:2.0, prix:3950, cible:"TMS / Stress", addon:false},
-  {id:"neurosonic_f", label:"Siège Massant Shiatsu", icon:"🎵", m2:2.0, prix:3950, cible:"TMS / Stress", addon:false},
-  {id:"neurosonic_l", label:"Neurosonic lit", icon:"🛏️", m2:2.5, prix:6450, cible:"Relaxation profonde", addon:false},
-  {id:"photobio", label:"Bain de Lumière Rouge", icon:"💡", m2:0.5, prix:3450, cible:"Régénération", addon:true},
-  {id:"transat_127", label:"Transat 127", icon:"🛋️", m2:2.0, prix:395, cible:"Détente", addon:false},
-  {id:"sensolight", label:"Sensosphère", icon:"💡", m2:0.3, prix:3750, cible:"Luminothérapie", addon:true},
-  {id:"siege_lecture", label:"Siège Lecture", icon:"📖", m2:1.5, prix:1480, cible:"Balancement", addon:false},
+  { id:'bol_air',       label:"Bol d'Air",              icon:'🌬️', m2:1.0, prix:3990, cible:'Fatigue / Cognitif',    addon:false },
+  { id:'p127',          label:'Méridienne P127',         icon:'🪑', m2:2.0, prix:2750, cible:'TMS / Lombaires',       addon:false },
+  { id:'lunettes_psio', label:'Lunettes Psio',           icon:'👓', m2:0.2, prix:995,  cible:'Déconnexion',           addon:true  },
+  { id:'cocon_sieste',  label:'Cocon de sieste',         icon:'😴', m2:2.0, prix:4500, cible:'Fatigue',               addon:false },
+  { id:'siege_massant', label:'Siège massant 0 Gravité', icon:'💆', m2:2.0, prix:3950, cible:'TMS / Stress',          addon:false },
+  { id:'neurosonic_f',  label:'Siège Massant Shiatsu',   icon:'🎵', m2:2.0, prix:3950, cible:'TMS / Stress',          addon:false },
+  { id:'neurosonic_l',  label:'Neurosonic lit',          icon:'🛏️', m2:2.5, prix:6450, cible:'Relaxation profonde',   addon:false },
+  { id:'photobio',      label:'Bain de Lumière Rouge',   icon:'💡', m2:0.5, prix:3450, cible:'Régénération',          addon:true  },
+  { id:'transat_127',   label:'Transat 127',             icon:'🛋️', m2:2.0, prix:395,  cible:'Détente',              addon:false },
+  { id:'sensolight',    label:'Sensosphère',             icon:'🌟', m2:0.3, prix:3750, cible:'Luminothérapie',        addon:true  },
+  { id:'siege_lecture', label:'Siège Lecture',           icon:'📖', m2:1.5, prix:1480, cible:'Balancement',           addon:false },
 ];
+
 const POSTURES = [
-  {id:"h", label:"Hostile", adopt:10, color:"#ef4444"},
-  {id:"m", label:"Mitigé", adopt:30, color:"#f59e0b"},
-  {id:"l", label:"Libre", adopt:60, color:"#3b82f6"},
-  {id:"e", label:"Encouragé", adopt:85, color:"#10b981"}
+  { id:'h', label:'Hostile',    adopt:10, color:'#ef4444' },
+  { id:'m', label:'Mitigé',     adopt:30, color:'#f59e0b' },
+  { id:'l', label:'Libre',      adopt:60, color:'#3b82f6' },
+  { id:'e', label:'Encouragé',  adopt:85, color:'#10b981' },
 ];
+
 const SCENARIOS = [
-  {label:"−1% (seuil)", rate:0.01},
-  {label:"−3% (pessimiste)", rate:0.03},
-  {label:"−5%", rate:0.05},
-  {label:"−10% (médian)", rate:0.10},
-  {label:"−15% (optimiste)", rate:0.15}
+  { label:'−1% (seuil)',       rate:0.01 },
+  { label:'−3% (pessimiste)',  rate:0.03 },
+  { label:'−5%',               rate:0.05 },
+  { label:'−10% (médian)',     rate:0.10 },
+  { label:'−15% (optimiste)', rate:0.15 },
 ];
+
 const DEFAULT_QTYS = {
   A: { bol_air:1, p127:0, lunettes_psio:0, cocon_sieste:1, siege_massant:0, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:0, sensolight:0, siege_lecture:0 },
   B: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:1, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 },
-  C: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:2, neurosonic_f:0, neurosonic_l:1, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 }
+  C: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:2, neurosonic_f:0, neurosonic_l:1, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 },
 };
+
+/* ═══════════════════════════════════════════════════════
+   ÉTAT
+═══════════════════════════════════════════════════════ */
 
 let ST = {
-  nbs: 400,
-  sal: 70200,
-  mode: "5j",
-  jours: 3,
+  nbs: 400, sal: 70200,
+  mode: '5j', jours: 3,
   qty: { ...DEFAULT_QTYS.B },
-  po: "l",
-  sc: 4,
-  deco_pm2: 0,
-  im_pm2: 280,
-  form: 2000,
-  anim: 2000,
-  taux_dysf: 0.11,
-  part_adressable: 0.28,
-  seances_par_semaine: 2,
-  duree_seance: 15,
-  heures_ouverture: 8,
+  po: 'l', sc: 4,
+  deco_pm2: 0, im_pm2: 280,
+  form: 2000, anim: 2000,
+  taux_dysf: 0.11, part_adressable: 0.28,
+  seances_par_semaine: 2, duree_seance: 15, heures_ouverture: 8,
   val: 30,
-  currentOption: "B"
 };
 
-// Helpers
-function eur(n){ return new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n); }
-function fnum(n){ return new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n); }
-function dateStr(){ return new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"}); }
-function devisNum(){ return "BEO-"+new Date().getFullYear()+"-"+String(Math.floor(Math.random()*9000)+1000); }
+/* ═══════════════════════════════════════════════════════
+   UTILITAIRES
+═══════════════════════════════════════════════════════ */
 
-// Coefficients d'impact
+function eur(n) {
+  return new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n);
+}
+function fnum(n) {
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits:0 }).format(n);
+}
+function dateStr() {
+  return new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+}
+function devisNum() {
+  return 'BEO-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+}
+function el(id) { return document.getElementById(id); }
+
+/* ═══════════════════════════════════════════════════════
+   COEFFICIENTS D'IMPACT
+═══════════════════════════════════════════════════════ */
+
 function getFormCoef(form) {
-  const ref = 2000;
-  if (form <= ref) {
-    return 0.85 + (form / ref) * 0.15;
-  } else {
-    return 1.0 + ((form - ref) / (5000 - ref)) * 0.30;
-  }
+  const REF = 2000;
+  if (form <= REF) return 0.85 + (form / REF) * 0.15;
+  return 1.0 + ((form - REF) / (5000 - REF)) * 0.30;
 }
+
 function getAnimCoef(anim) {
-  const ref = 2000;
-  if (anim <= ref) {
-    return 0.85 + (anim / ref) * 0.15;
-  } else {
-    return 1.0 + ((anim - ref) / (5000 - ref)) * 0.35;
-  }
+  const REF = 2000;
+  if (anim <= REF) return 0.85 + (anim / REF) * 0.15;
+  return 1.0 + ((anim - REF) / (5000 - REF)) * 0.35;
 }
+
 function getDecoCoef(decoTotal) {
-  if (decoTotal <= 0) return 1.0;
-  if (decoTotal <= 10000) {
-    return 1.0 + (decoTotal / 10000) * 0.05;
-  } else {
-    return 1.05 + (Math.min(decoTotal, 30000) - 10000) / 20000 * 0.15;
-  }
+  if (decoTotal <= 0)     return 1.0;
+  if (decoTotal <= 10000) return 1.0 + (decoTotal / 10000) * 0.05;
+  return 1.05 + (Math.min(decoTotal, 30000) - 10000) / 20000 * 0.15;
 }
 
-// Calcul principal
-function calc(){
-  let nbs = ST.nbs;
-  let salBrut = ST.sal;
-  let mode = ST.mode;
-  let jours = ST.jours;
-  let sc = SCENARIOS[ST.sc-1];
-  let po = POSTURES.find(p => p.id === ST.po);
-  let ado = po.adopt;
+/* ═══════════════════════════════════════════════════════
+   CALCUL PRINCIPAL
+   Toutes les divisions utilisent CTP_exact (pas de perte de précision)
+   Les arrondis ne sont effectués qu'à l'affichage via eur()
+═══════════════════════════════════════════════════════ */
 
- let salC = salBrut * 1.42;  // charges 42%
-let masseSalariale = nbs * salC;
-let nbp = Math.round(nbs * (mode === "5j" ? 1 : jours/5));
-let nbu = Math.round(nbp * ado / 100);
-let seancesSem = nbu * ST.seances_par_semaine;
-let picC = (mode === "5j") ? 0.20 : (jours<=1 ? 1.00 : jours<=2 ? 0.60 : jours<=3 ? 0.40 : jours<=4 ? 0.28 : 0.20);
-let nbu_total = Math.round(nbs * ado / 100);
-let seancesSem_total = (mode === "5j") ? seancesSem : nbu_total * ST.seances_par_semaine;
-let seancesPic = Math.round(seancesSem_total * picC);
+function calc() {
+  const nbs   = Math.max(1, ST.nbs);
+  const sal   = ST.sal;
+  const mode  = ST.mode;
+  const jours = ST.jours;
+  const sc    = SCENARIOS[ST.sc - 1];
+  const po    = POSTURES.find(p => p.id === ST.po);
+  const ado   = po.adopt;
 
-  let surfNet = 0;
-  let eqT = 0;
-  for(let a of AT){
-    let q = ST.qty[a.id] || 0;
+  // Masse salariale chargée (charges patronales 42%)
+  const salC           = sal * 1.42;
+  const masseSalariale = nbs * salC;
+
+  // Présents par jour & demande
+  const nbp     = Math.round(nbs * (mode === '5j' ? 1 : jours / 5));
+  const nbu     = Math.round(Math.max(1, nbp) * ado / 100);
+  const picC    = mode === '5j' ? 0.20 : (jours <= 1 ? 1.00 : jours <= 2 ? 0.60 : jours <= 3 ? 0.40 : jours <= 4 ? 0.28 : 0.20);
+  const nbu_tot = Math.round(nbs * ado / 100);
+  const seancesHebdo   = (mode === '5j' ? nbu : nbu_tot) * ST.seances_par_semaine;
+  const seancesPic     = Math.round(seancesHebdo * picC);
+
+  // Équipements
+  let surfNet = 0, eqT = 0;
+  for (const a of AT) {
+    const q = ST.qty[a.id] || 0;
     surfNet += a.m2 * q;
-    eqT += a.prix * q;
+    eqT    += a.prix * q;
   }
-    let nbPostes = AT.reduce((s,a) => s + (a.addon ? 0 : (ST.qty[a.id]||0)), 0);
-  let surfAt = Math.round(surfNet * 2.0);
-  let sessionsParHeure = 60 / ST.duree_seance;
-  let cap = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
-  let adoEff = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
-  let ag = Math.round(eqT * 0.10);
-  let setup = 2860;
-  let amortEquip = Math.round(eqT / 4);
-  let agAm = Math.round(ag / 5);
-  let su = Math.round(setup / 3);
-  let decoTotal = surfAt * ST.deco_pm2;
-  let deco = Math.round(decoTotal);
-  let decoAm = Math.round(deco / 5);
-  let maintenance = Math.round(eqT * 0.11);
-  let im = Math.round(surfAt * ST.im_pm2 * 1.20);
-  let opex = maintenance + ST.form + ST.anim;
-  let CTP = opex + amortEquip + agAm + su + decoAm + im;
-  let CTP_exact = (eqT/4) + (ag/5) + (setup/3) + (decoTotal/5) + (surfAt * ST.im_pm2 * 1.20) + maintenance + ST.form + ST.anim;
-  let formCoef = getFormCoef(ST.form);
-  let animCoef = getAnimCoef(ST.anim);
-  let decoCoef = getDecoCoef(decoTotal);
-  let ba_exact = masseSalariale * ST.taux_dysf * ST.part_adressable;
-  let ba = Math.round(ba_exact);
-  let gainBase_exact = ba_exact * sc.rate * (adoEff / 100);
-  let gain_exact = gainBase_exact * formCoef * animCoef * decoCoef;
-  let eco_exact = gain_exact - CTP_exact;
-  let gainBase = Math.round(gainBase_exact);
-  let gain = Math.round(gain_exact);
-  let eco = Math.round(eco_exact);
-  let roi = (CTP_exact === 0) ? 0 : (eco_exact / CTP_exact * 100);
-  let capexTotal = eqT + ag + setup + deco;
-  let cashFlow_exact = gain_exact - opex;
-  let pb = (cashFlow_exact > 0 && nbPostes > 0) ? capexTotal / (cashFlow_exact / 12) : 999;
+  const nbPostes = AT.reduce((s, a) => s + (a.addon ? 0 : (ST.qty[a.id] || 0)), 0);
+  const surfAt   = Math.round(surfNet * 2.0);
 
-  return { nbp, nbu, seancesSem, cap, seancesPic, tauxOcc: cap===0 ? 0 : Math.min(100, Math.round((seancesPic/cap)*100)),
-           ba, gain, gainBase, eco, roi, pb, surfAt, nbPostes, eqT, ag, agAm, amortEquip, maintenance, im, deco, decoAm,
-           CTP, CTP_exact, opex, capexTotal, su, setup, adoEff, ado, sc, po, salC, masseSalariale, decoTotal,
-           formCoef, animCoef, decoCoef };
-}
-// Référence dynamique (appelle calc() avec les paramètres de référence)
-function calcRef(){
-  let saved = {
-    nbs: ST.nbs, sal: ST.sal, mode: ST.mode, jours: ST.jours,
-    qty: {...ST.qty}, po: ST.po, sc: ST.sc,
-    deco_pm2: ST.deco_pm2, im_pm2: ST.im_pm2, form: ST.form, anim: ST.anim,
-    taux_dysf: ST.taux_dysf, part_adressable: ST.part_adressable,
-    seances_par_semaine: ST.seances_par_semaine, duree_seance: ST.duree_seance,
-    heures_ouverture: ST.heures_ouverture
+  // Capacité réelle (75% de remplissage)
+  const sessionsParHeure = 60 / ST.duree_seance;
+  const cap  = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
+  const tauxOcc  = cap === 0 ? 0 : Math.min(100, Math.round((seancesPic / cap) * 100));
+  const adoEff   = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
+
+  // Coûts
+  const ag       = eqT * 0.10;          // agencement 10%
+  const setup    = 2860;                 // lancement
+  const deco     = surfAt * ST.deco_pm2; // décoration
+  const im       = surfAt * ST.im_pm2 * 1.20; // loyer + charges
+  const maintenance = eqT * 0.11;       // maintenance annuelle
+
+  // Amortissements annuels
+  const amortEquip = eqT   / 4;
+  const agAm       = ag    / 5;
+  const su         = setup / 3;
+  const decoAm     = deco  / 5;
+
+  // OPEX (sorties trésorerie annuelles)
+  const opex = maintenance + ST.form + ST.anim;
+
+  // CTP exact (base du ROI — aucun arrondi intermédiaire)
+  const CTP_exact = amortEquip + agAm + su + decoAm + im + maintenance + ST.form + ST.anim;
+
+  // Coefficients multiplicateurs
+  const formCoef = getFormCoef(ST.form);
+  const animCoef = getAnimCoef(ST.anim);
+  const decoCoef = getDecoCoef(deco);
+
+  // Gains
+  const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable;
+  const gainBase_exact = ba_exact * sc.rate * (adoEff / 100);
+  const gain_exact     = gainBase_exact * formCoef * animCoef * decoCoef;
+  const eco_exact      = gain_exact - CTP_exact;
+
+  // ROI & payback (calculés sur valeurs exactes)
+  const roi = CTP_exact === 0 ? 0 : (eco_exact / CTP_exact) * 100;
+  const capexTotal = eqT + ag + setup + deco;
+  const cashFlow   = gain_exact - opex;
+  const pb = (cashFlow > 0 && nbPostes > 0) ? capexTotal / (cashFlow / 12) : 999;
+
+  return {
+    // Affichage
+    nbp, nbu, seancesHebdo, seancesPic, cap, tauxOcc, adoEff, ado,
+    nbPostes, surfAt,
+    // Financier (exact — arrondi uniquement à l'affichage)
+    eqT, ag, agAm, amortEquip, deco, decoAm, im, maintenance, su, setup,
+    opex, CTP_exact, capexTotal, cashFlow,
+    ba_exact, gainBase_exact, gain_exact, eco_exact,
+    roi, pb,
+    // Coefficients
+    formCoef, animCoef, decoCoef,
+    // Références
+    masseSalariale, salC, sc, po,
   };
-  ST.nbs = 400;
-  ST.sal = 70200;
-  ST.mode = "5j";
-  ST.jours = 3;
-  ST.qty = {...DEFAULT_QTYS.B};
-  ST.po = "l";
-  ST.sc = 4;
-  ST.deco_pm2 = 0;
-  ST.im_pm2 = 280;
-  ST.form = 2000;
-  ST.anim = 2000;
-  ST.taux_dysf = 0.11;
-  ST.part_adressable = 0.28;
-  ST.seances_par_semaine = 2;
-  ST.duree_seance = 15;
-  ST.heures_ouverture = 8;
-  let c = calc();
-  let roi = c.roi;
+}
+
+/* Calcul de référence (400 sal., option B, posture Libre, médian) */
+function calcRef() {
+  const saved = { ...ST, qty: { ...ST.qty } };
+  Object.assign(ST, {
+    nbs:400, sal:70200, mode:'5j', jours:3, qty:{ ...DEFAULT_QTYS.B },
+    po:'l', sc:4, deco_pm2:0, im_pm2:280, form:2000, anim:2000,
+    taux_dysf:0.11, part_adressable:0.28, seances_par_semaine:2,
+    duree_seance:15, heures_ouverture:8,
+  });
+  const roi = calc().roi;
   Object.assign(ST, saved);
+  ST.qty = saved.qty;
   return Math.round(roi);
 }
 
-// Rendu UI (identique à la version précédente, avec la correction du hint)
-function render(){
-  let c = calc();
-  let po = POSTURES.find(p => p.id === ST.po);
-  let refRoi = calcRef();
+/* ═══════════════════════════════════════════════════════
+   RENDU INTERFACE
+═══════════════════════════════════════════════════════ */
 
-  document.getElementById("mode-lbl").innerText = ST.mode==="5j" ? "Modèle 5j / semaine" : "Hybride "+ST.jours+"j / semaine";
-  document.getElementById("v-nbs").innerText = fnum(ST.nbs)+" pers.";
-  document.getElementById("v-sal").innerText = eur(ST.sal);
-  document.getElementById("s-ado").value = c.ado;
-  document.getElementById("v-ado").innerHTML = c.ado+"% (théorie posture "+po.label+")";
-  document.getElementById("v-nbp").innerText = c.nbp;
-  document.getElementById("v-nbu").innerText = c.nbu;
-  document.getElementById("v-nbu-lbl").innerText = ST.mode === "hybride" ? "cible théorique / jour" : "cible théorique (sur site)";
-  document.getElementById("v-dh").innerText = c.seancesSem;
-  document.getElementById("jpanel").style.display = ST.mode === "hybride" ? "block" : "none";
-  document.getElementById("picinfo").innerHTML = "Pic : "+Math.round((c.seancesPic/c.seancesSem)*100)+"% · "+c.nbp+" présents/jour";
+function render() {
+  const c   = calc();
+  const po  = POSTURES.find(p => p.id === ST.po);
+  const refRoi = calcRef();
+  const isZero = c.nbPostes === 0;
+  const isSat  = !isZero && c.tauxOcc > 100;
+  const rC     = isZero  ? '#4a4a6a'
+               : c.roi > 150 ? '#10b981'
+               : c.roi > 50  ? '#3b82f6'
+               : c.roi > 0   ? '#f59e0b'
+               : '#ef4444';
 
-  let bm5j = document.getElementById("bm5j"), bmhy = document.getElementById("bmhy");
-  if(ST.mode==="5j"){
-    bm5j.style.border="2px solid #7eb8c9"; bm5j.style.background="rgba(126,184,201,.13)"; bm5j.querySelector("div").style.color="#7eb8c9";
-    bmhy.style.border="1px solid rgba(255,255,255,.1)"; bmhy.style.background="rgba(255,255,255,.03)"; bmhy.querySelector("div").style.color="#7a7a9a";
-  } else {
-    bmhy.style.border="2px solid #7eb8c9"; bmhy.style.background="rgba(126,184,201,.13)"; bmhy.querySelector("div").style.color="#7eb8c9";
-    bm5j.style.border="1px solid rgba(255,255,255,.1)"; bm5j.style.background="rgba(255,255,255,.03)"; bm5j.querySelector("div").style.color="#7a7a9a";
+  // Header
+  el('mode-lbl').textContent = ST.mode === '5j' ? 'Modèle 5j / semaine' : 'Hybride ' + ST.jours + 'j / semaine';
+
+  // 01 Entreprise
+  el('v-nbs').textContent = fnum(ST.nbs) + ' pers.';
+  el('v-sal').textContent = eur(ST.sal);
+
+  // 02 Mode
+  el('v-nbp').textContent = c.nbp;
+  el('v-nbu').textContent = c.nbu;
+  el('v-nbu-lbl').textContent = ST.mode === 'hybride' ? 'cible théorique / jour' : 'cible théorique (sur site)';
+  el('v-dh').textContent = c.seancesHebdo;
+  el('s-ado').value = c.ado;
+  el('v-ado').textContent = c.ado + '% (posture ' + po.label + ')';
+  el('jpanel').style.display = ST.mode === 'hybride' ? 'block' : 'none';
+  if (ST.mode === 'hybride') {
+    el('picinfo').textContent = 'Pic : ' + Math.round((c.seancesPic / Math.max(1, c.seancesHebdo)) * 100) + '% · ' + c.nbp + ' présents/jour';
   }
 
-  let isA = Object.keys(DEFAULT_QTYS.A).every(k => ST.qty[k] === DEFAULT_QTYS.A[k]);
-  let isB = Object.keys(DEFAULT_QTYS.B).every(k => ST.qty[k] === DEFAULT_QTYS.B[k]);
-  let isC = Object.keys(DEFAULT_QTYS.C).every(k => ST.qty[k] === DEFAULT_QTYS.C[k]);
-  document.querySelectorAll(".opt-btn").forEach(btn => {
-    let o = btn.dataset.opt;
-    btn.style.border = (o==="A"&&isA || o==="B"&&isB || o==="C"&&isC) ? "2px solid #b896e8" : "1px solid #b896e8";
-  });
-  document.getElementById("arecap").innerHTML = '<span style="color:#d4b8f0;font-weight:700">'+c.nbPostes+'</span> place(s) d\'assise · nette <span style="color:#d4b8f0">'+(c.surfAt/2.0).toFixed(1)+' m²</span><span style="color:#b896e8"> → '+c.surfAt+' m²</span> (+100% circ.) · équipement : '+eur(c.eqT);
-  document.getElementById("ref-roi-hint").innerHTML = '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). (ROI calculé : <strong>+'+refRoi+'%</strong>)';
-  document.getElementById("r-surf").innerText = c.surfAt;
-  document.getElementById("r-postes").innerText = c.nbPostes;
+  // Mode buttons
+  const is5j = ST.mode === '5j';
+  el('bm5j').className = 'mode-btn' + (is5j ? ' active' : '');
+  el('bm5j').style.borderColor = is5j ? 'var(--teal)' : 'var(--border)';
+  el('bm5j').querySelector('.btn-title').style.color = is5j ? 'var(--teal)' : 'var(--text-muted)';
+  el('bmhy').className = 'mode-btn' + (!is5j ? ' active' : '');
+  el('bmhy').style.borderColor = !is5j ? 'var(--teal)' : 'var(--border)';
+  el('bmhy').querySelector('.btn-title').style.color = !is5j ? 'var(--teal)' : 'var(--text-muted)';
 
-  let isZero = c.nbPostes === 0;
-  let isSaturated = !isZero && c.tauxOcc > 100;
-  let rC = isZero ? "#4a4a6a" : (c.roi>150 ? "#10b981" : c.roi>50 ? "#3b82f6" : c.roi>0 ? "#f59e0b" : "#ef4444");
-  document.getElementById("r-satp").innerText = c.tauxOcc+"%";
-  document.getElementById("r-satp").style.color = isSaturated ? "#ef4444" : "#e8e0d5";
-  document.getElementById("r-satb").style.width = Math.min(c.tauxOcc,100)+"%";
-  document.getElementById("r-satb").style.background = isSaturated ? "#ef4444" : c.tauxOcc>75 ? "#f59e0b" : "#7eb8c9";
-
-  if(isZero){
-    document.getElementById("r-sat-alert").innerHTML = "⚠️ <strong>Aucun équipement d'assise.</strong><br>Votre espace ne peut accueillir personne. Ajoutez du matériel pour calculer le ROI.";
-    document.getElementById("r-sat-alert").style.display = "block";
-    document.getElementById("r-roi-pct").innerText = "—";
-  } else if(isSaturated){
-    document.getElementById("r-sat-alert").innerHTML = "⚠️ <strong>L'espace est saturé !</strong><br>Capacité insuffisante pour absorber le flux. Ajoutez des places assises ou augmentez l'amplitude horaire.";
-    document.getElementById("r-sat-alert").style.display = "block";
-    document.getElementById("r-roi-pct").innerText = (c.roi>0?"+":"")+Math.round(c.roi)+"%";
-  } else {
-    document.getElementById("r-sat-alert").style.display = "none";
-    document.getElementById("r-roi-pct").innerText = (c.roi>0?"+":"")+Math.round(c.roi)+"%";
-  }
-  document.getElementById("r-roi-pct").style.color = rC;
-  document.getElementById("r-roi-card").style.background = rC+"14";
-  document.getElementById("r-roi-card").style.border = "1px solid "+rC+"50";
-  document.getElementById("r-roi-ttl").style.color = rC;
-  document.getElementById("r-eco-adj").innerText = (c.eco>0?"+":"")+eur(c.eco);
-  document.getElementById("r-eco-adj").style.color = rC;
-  document.getElementById("r-dp").innerText = c.seancesPic;
-  document.getElementById("r-ce").innerText = c.cap;
-  document.getElementById("r-duree_display").innerText = ST.duree_seance;
-  document.getElementById("v-deco-pm2").innerText = ST.deco_pm2+" €/m²";
-  document.getElementById("v-im-pm2").innerText = ST.im_pm2+" €/m²";
-  document.getElementById("v-form").innerText = eur(ST.form);
-  document.getElementById("v-anim").innerText = eur(ST.anim);
-  document.getElementById("v-taux_dysf").innerText = Math.round(ST.taux_dysf*100)+"%";
-  document.getElementById("v-part_adr").innerText = Math.round(ST.part_adressable*100)+"%";
-  document.getElementById("v-heures").innerText = ST.heures_ouverture+" h";
-  document.getElementById("v-duree_seance").innerText = ST.duree_seance;
-  document.getElementById("v-seances_hebdo").innerText = ST.seances_par_semaine;
-  document.getElementById("r-sc-badge").innerText = SCENARIOS[ST.sc-1].label;
-  document.getElementById("s-taux_dysf").value = ST.taux_dysf;
-  document.getElementById("s-part_adr").value = ST.part_adressable;
-  document.getElementById("s-seances_hebdo").value = ST.seances_par_semaine;
-  document.getElementById("s-duree_seance").value = ST.duree_seance;
-  document.getElementById("s-heures").value = ST.heures_ouverture;
-
-  let dL = c.deco ? '<div class="rli"><span class="rl">Décoration (amort. 5 ans)</span><span class="rv">'+eur(c.decoAm)+'</span></div>' : "";
-  document.getElementById("r-ctp").innerHTML = '<div class="section-sub" style="margin-top:0">Frais annuels récurrents (OPEX)</div><div class="rli"><span class="rl">Maintenance (11% équip.)</span><span class="rv">'+eur(c.maintenance)+'</span></div><div class="rli"><span class="rl">Formation continue</span><span class="rv">'+eur(ST.form)+'</span></div><div class="rli"><span class="rl">Animation espace</span><span class="rv">'+eur(ST.anim)+'</span></div><div class="section-sub">Coûts indirects / Amortissements</div><div class="rli"><span class="rl">Matériel (amort. 4 ans)</span><span class="rv">'+eur(c.amortEquip)+'</span></div><div class="rli"><span class="rl">Agencement 10% (amort. 5 ans)</span><span class="rv">'+eur(c.agAm)+'</span></div><div class="rli"><span class="rl">Setup initial (amort. 3 ans)</span><span class="rv">'+eur(c.su)+'</span></div><div class="rli"><span class="rl">Loyer + charges locatives</span><span class="rv">'+eur(c.im)+'</span></div>'+dL+'<div class="rli tot" style="margin-top:8px;border-top-color:rgba(200,169,110,.5)"><span class="rl">Charge comptable totale / an</span><span class="rv">'+eur(c.CTP)+'</span></div><div style="text-align:right;font-size:.6rem;color:#7a7a9a;margin-top:3px">'+eur(Math.round(c.CTP/ST.nbs))+' / collab. / an</div>';
-  document.getElementById("r-pb").innerText = (c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
-  let aw = isSaturated ? "<br><span style='color:#ef4444;font-weight:700'>Adoption réelle bridée à "+c.adoEff.toFixed(1)+"%</span>" : "";
-  let bonus = (c.formCoef>1 || c.animCoef>1 || c.decoCoef>1) ? `<br><span style='color:#60c060;font-size:.7rem'>✔ Bonus gain : formation ×${c.formCoef.toFixed(2)} · animation ×${c.animCoef.toFixed(2)} · décoration ×${c.decoCoef.toFixed(2)}</span>` : "";
-  document.getElementById("r-po-badge").innerHTML = "Posture "+po.label+" → ambition "+c.ado+"%"+aw+bonus;
-  document.getElementById("r-roi-lines").innerHTML = '<div class="rli"><span class="rl">Base adressable</span><span class="rv">'+eur(c.ba)+'</span></div><div class="rli"><span class="rl">Gain brut ('+SCENARIOS[ST.sc-1].label+' × '+c.adoEff.toFixed(1)+'% réels)</span><span class="rv">'+eur(c.gainBase)+'</span></div><div class="rli"><span class="rl">Coefficients multiplicateurs (formation, animation, décoration)</span><span class="rv">×'+(c.formCoef*c.animCoef*c.decoCoef).toFixed(2)+'</span></div><div class="rli"><span class="rl">Gain après bonus</span><span class="rv">'+eur(c.gain)+'</span></div><div class="rli tot" style="border-color:'+rC+'40"><span class="rl" style="color:'+rC+'">Économie nette</span><span class="rv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>';
-}
-
-// UI des équipements (identique)
-function renderAt(){
-  let g = document.getElementById("agrid");
-  g.innerHTML = "";
-  for(let a of AT){
-    let q = ST.qty[a.id] || 0;
-    let on = q>0;
-    let div = document.createElement("div");
-    div.className = "acard";
-    div.style.border = on ? "1px solid rgba(184,150,232,.55)" : "1px solid rgba(255,255,255,.08)";
-    div.style.background = on ? "rgba(184,150,232,.09)" : "rgba(255,255,255,.03)";
-    div.innerHTML = '<div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.28rem"><span style="font-size:.95rem">'+a.icon+'</span><span style="font-size:.71rem;color:'+(on?"#d4b8f0":"#8080a0")+';font-family:sans-serif;flex:1;line-height:1.2">'+a.label+' '+(a.addon?'<span style="font-size:0.5rem;background:rgba(255,255,255,0.1);padding:1px 3px;border-radius:3px">Add-on</span>':'')+'</span></div><div style="font-size:.59rem;color:#5a5a7a;font-family:sans-serif;margin-bottom:.52rem;line-height:1.4">'+a.m2+' m² · '+eur(a.prix)+' HT · '+a.cible+'</div><div style="display:flex;align-items:center;gap:.32rem"><button class="qbtn '+(q===0?"off":"")+'" onclick="addQ(\''+a.id+'\',-1)">−</button><div style="flex:1;text-align:center;font-weight:700;font-size:1.05rem;color:'+(on?"#d4b8f0":"#3a3a5a")+';font-family:sans-serif">'+q+'</div><button class="qbtn '+(q>=5?"off":"")+'" onclick="addQ(\''+a.id+'\',1)">+</button>'+(q>0?'<span style="font-size:.59rem;color:#8a7aaa;font-family:sans-serif;white-space:nowrap">'+(a.m2*q).toFixed(1)+' m²</span>':"")+'</div>';
-    g.appendChild(div);
-  }
-}
-
-function renderPo(){
-  let g = document.getElementById("pgrid");
-  g.innerHTML = "";
-  for(let p of POSTURES){
-    let btn = document.createElement("button");
-    btn.className = "pbtn";
-    btn.onclick = () => { ST.po = p.id; renderPo(); render(); };
-    btn.style.border = ST.po === p.id ? "1px solid "+p.color+"80" : "1px solid rgba(255,255,255,.08)";
-    btn.style.background = ST.po === p.id ? p.color+"16" : "rgba(255,255,255,.03)";
-    btn.innerHTML = '<div style="font-size:.78rem;font-weight:700;color:'+(ST.po===p.id?p.color:"#8080a0")+';font-family:sans-serif">'+p.label+'</div><div style="font-size:.63rem;color:#6a6a8a;margin-top:.18rem">Ambition '+p.adopt+'%</div>';
-    g.appendChild(btn);
-  }
-}
-
-function renderSc(){
-  let g = document.getElementById("scgrid");
-  g.innerHTML = "";
-  let labels = ["−1%","−3%","−5%","−10%","−15%"];
-  let subs = ["seuil","pessim.","","médian","optim."];
-  for(let i=0; i<SCENARIOS.length; i++){
-    let btn = document.createElement("button");
-    btn.className = "scbtn";
-    btn.onclick = () => { ST.sc = i+1; renderSc(); render(); };
-    btn.style.border = ST.sc === i+1 ? "1px solid #60c060" : "1px solid rgba(255,255,255,.08)";
-    btn.style.background = ST.sc === i+1 ? "rgba(96,192,96,.13)" : "rgba(255,255,255,.03)";
-    btn.innerHTML = '<div style="font-size:.63rem;font-weight:700;color:'+(ST.sc===i+1?"#60c060":i===0?"#ef4444":"#5a5a7a")+'">'+labels[i]+'</div><div style="font-size:.57rem;color:'+(i===0?"#ef4444":ST.sc===i+1?"#60c060":"#4a4a6a")+'">'+subs[i]+'</div>';
-    g.appendChild(btn);
-  }
-}
-
-function renderJours(){
-  document.querySelectorAll(".dbtn").forEach(btn => {
-    let j = +btn.dataset.j;
-    if(j === ST.jours){
-      btn.style.border = "2px solid #7eb8c9";
-      btn.style.background = "rgba(126,184,201,.2)";
-      btn.style.color = "#7eb8c9";
-    } else {
-      btn.style.border = "1px solid rgba(255,255,255,.1)";
-      btn.style.background = "rgba(255,255,255,.03)";
-      btn.style.color = "#7a7a9a";
+  // 03 Option detection
+  for (const opt of ['A','B','C']) {
+    const match = Object.keys(DEFAULT_QTYS[opt]).every(k => ST.qty[k] === DEFAULT_QTYS[opt][k]);
+    const btn = document.querySelector(`[data-opt="${opt}"]`);
+    if (btn) {
+      btn.className = 'opt-btn' + (match ? ' active' : '');
+      btn.style.borderWidth = match ? '2px' : '1px';
     }
+  }
+  el('arecap').innerHTML =
+    '<span style="color:#d4b8f0;font-weight:700">' + c.nbPostes + '</span> place(s) d\'assise · nette ' +
+    '<span style="color:#d4b8f0">' + (c.surfAt / 2.0).toFixed(1) + ' m²</span>' +
+    '<span style="color:var(--violet)"> → ' + c.surfAt + ' m²</span>' +
+    ' (+100% circ.) · équipement : ' + eur(c.eqT);
+
+  // 05 Scénario hint
+  el('ref-roi-hint').innerHTML =
+    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). ' +
+    '(ROI calculé : <strong>+' + refRoi + '%</strong>)';
+
+  // 06 Paramètres
+  el('v-deco-pm2').textContent = ST.deco_pm2 + ' €/m²';
+  el('v-im-pm2').textContent   = ST.im_pm2   + ' €/m²';
+  el('v-form').textContent     = eur(ST.form);
+  el('v-anim').textContent     = eur(ST.anim);
+
+  // Avancés
+  el('v-taux_dysf').textContent    = Math.round(ST.taux_dysf * 100) + '%';
+  el('v-part_adr').textContent     = Math.round(ST.part_adressable * 100) + '%';
+  el('v-seances_hebdo').textContent = ST.seances_par_semaine;
+  el('v-duree_seance').textContent  = ST.duree_seance;
+  el('v-heures').textContent        = ST.heures_ouverture + ' h';
+
+  // ── Panneau droit ──
+
+  // Surface
+  el('r-surf').textContent    = c.surfAt;
+  el('r-postes').textContent  = c.nbPostes;
+  el('r-duree-display').textContent = ST.duree_seance;
+  el('r-dp').textContent = c.seancesPic;
+  el('r-ce').textContent = c.cap;
+
+  // Barre saturation
+  el('r-satp').textContent = c.tauxOcc + '%';
+  el('r-satp').style.color = isSat ? 'var(--red)' : 'var(--text)';
+  el('r-satb').style.width      = Math.min(c.tauxOcc, 100) + '%';
+  el('r-satb').style.background = isSat ? 'var(--red)' : c.tauxOcc > 75 ? 'var(--amber)' : 'var(--teal)';
+
+  // Alerte saturation
+  const satAlert = el('r-sat-alert');
+  if (isZero) {
+    satAlert.innerHTML = '⚠️ <strong>Aucun équipement d\'assise.</strong><br>Votre espace ne peut accueillir personne. Ajoutez du matériel.';
+    satAlert.style.display = 'block';
+  } else if (isSat) {
+    satAlert.innerHTML = '⚠️ <strong>L\'espace est saturé !</strong><br>Capacité insuffisante. Ajoutez des places ou augmentez l\'amplitude horaire.';
+    satAlert.style.display = 'block';
+  } else {
+    satAlert.style.display = 'none';
+  }
+
+  // Charge financière
+  const decoLine = c.deco > 0 ? `<div class="rli"><span class="rl">Décoration (amort. 5 ans)</span><span class="rv">${eur(c.decoAm)}</span></div>` : '';
+  el('r-ctp').innerHTML = `
+    <div class="section-sub" style="margin-top:0">Frais annuels récurrents (OPEX)</div>
+    <div class="rli"><span class="rl">Maintenance (11% équip.)</span><span class="rv">${eur(c.maintenance)}</span></div>
+    <div class="rli"><span class="rl">Formation continue</span><span class="rv">${eur(ST.form)}</span></div>
+    <div class="rli"><span class="rl">Animation espace</span><span class="rv">${eur(ST.anim)}</span></div>
+    <div class="section-sub">Coûts indirects / Amortissements</div>
+    <div class="rli"><span class="rl">Matériel (amort. 4 ans)</span><span class="rv">${eur(c.amortEquip)}</span></div>
+    <div class="rli"><span class="rl">Agencement 10% (amort. 5 ans)</span><span class="rv">${eur(c.agAm)}</span></div>
+    <div class="rli"><span class="rl">Setup initial (amort. 3 ans)</span><span class="rv">${eur(c.su)}</span></div>
+    <div class="rli"><span class="rl">Loyer + charges locatives</span><span class="rv">${eur(c.im)}</span></div>
+    ${decoLine}
+    <div class="rli tot">
+      <span class="rl">Charge comptable totale / an</span>
+      <span class="rv">${eur(c.CTP_exact)}</span>
+    </div>
+    <div style="text-align:right;font-size:.58rem;color:var(--text-muted);margin-top:3px">
+      ${eur(Math.round(c.CTP_exact / ST.nbs))} / collab. / an
+    </div>`;
+
+  // ROI card
+  const roiCard = el('r-roi-card');
+  roiCard.style.background = rC + '14';
+  roiCard.style.borderColor = rC + '55';
+  el('r-roi-ttl').style.color = rC;
+  el('r-sc-badge').textContent = SCENARIOS[ST.sc - 1].label;
+
+  const roiPct = el('r-roi-pct');
+  roiPct.textContent = isZero ? '—' : (c.roi > 0 ? '+' : '') + Math.round(c.roi) + '%';
+  roiPct.style.color = rC;
+
+  const pbStr = c.pb <= 0 || c.pb === 999 ? 'Jamais'
+              : c.pb < 1   ? '<1 mois'
+              : c.pb > 36  ? '36+ mois'
+              : Math.round(c.pb) + ' mois';
+  el('r-pb').textContent = pbStr;
+
+  el('r-eco-adj').textContent = (c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact);
+  el('r-eco-adj').style.color = rC;
+
+  // Badge posture + bonus
+  const satWarn = isSat ? `<br><span style="color:var(--red);font-weight:700">Adoption réelle bridée à ${c.adoEff.toFixed(1)}%</span>` : '';
+  const bonusLine = (c.formCoef > 1 || c.animCoef > 1 || c.decoCoef > 1)
+    ? `<br><span style="color:var(--sage);font-size:.7rem">✔ Bonus gain : formation ×${c.formCoef.toFixed(2)} · animation ×${c.animCoef.toFixed(2)} · décoration ×${c.decoCoef.toFixed(2)}</span>`
+    : '';
+  el('r-po-badge').innerHTML = 'Posture ' + po.label + ' → ambition ' + c.ado + '%' + satWarn + bonusLine;
+
+  // Lignes ROI
+  el('r-roi-lines').innerHTML = `
+    <div class="rli"><span class="rl">Base adressable</span><span class="rv">${eur(c.ba_exact)}</span></div>
+    <div class="rli"><span class="rl">Gain brut (${SCENARIOS[ST.sc-1].label} × ${c.adoEff.toFixed(1)}% réels)</span><span class="rv">${eur(c.gainBase_exact)}</span></div>
+    <div class="rli"><span class="rl">Coefficients multiplicateurs</span><span class="rv">×${(c.formCoef * c.animCoef * c.decoCoef).toFixed(2)}</span></div>
+    <div class="rli"><span class="rl">Gain après bonus</span><span class="rv">${eur(c.gain_exact)}</span></div>
+    <div class="rli tot" style="border-color:${rC}40">
+      <span class="rl" style="color:${rC}">Économie nette</span>
+      <span class="rv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDU COMPOSANTS
+═══════════════════════════════════════════════════════ */
+
+function renderAt() {
+  const grid = el('agrid');
+  grid.innerHTML = '';
+  for (const a of AT) {
+    const q  = ST.qty[a.id] || 0;
+    const on = q > 0;
+    const div = document.createElement('div');
+    div.className = 'acard' + (on ? ' on' : '');
+    div.innerHTML = `
+      <div class="acard-top">
+        <span style="font-size:.9rem">${a.icon}</span>
+        <span class="acard-label">${a.label}${a.addon ? '<span class="addon-badge">Add-on</span>' : ''}</span>
+      </div>
+      <div class="acard-meta">${a.m2} m² · ${eur(a.prix)} HT · ${a.cible}</div>
+      <div class="acard-ctrl">
+        <button class="qbtn${q === 0 ? ' off' : ''}" onclick="addQ('${a.id}',-1)">−</button>
+        <div class="qty-val">${q}</div>
+        <button class="qbtn${q >= 5 ? ' off' : ''}" onclick="addQ('${a.id}',1)">+</button>
+        ${q > 0 ? `<span class="qty-m2">${(a.m2 * q).toFixed(1)} m²</span>` : ''}
+      </div>`;
+    grid.appendChild(div);
+  }
+}
+
+function renderPo() {
+  const grid = el('pgrid');
+  grid.innerHTML = '';
+  for (const p of POSTURES) {
+    const active = ST.po === p.id;
+    const btn = document.createElement('button');
+    btn.className = 'pos-btn' + (active ? ' active' : '');
+    btn.style.borderColor = active ? p.color + '80' : 'var(--border)';
+    btn.style.background  = active ? p.color + '16' : 'var(--surface)';
+    btn.onclick = () => { ST.po = p.id; renderPo(); render(); };
+    btn.innerHTML = `
+      <div class="pb-title" style="color:${active ? p.color : 'var(--text-muted)'}">${p.label}</div>
+      <div class="pb-sub">Ambition ${p.adopt}%</div>`;
+    grid.appendChild(btn);
+  }
+}
+
+function renderSc() {
+  const grid = el('scgrid');
+  grid.innerHTML = '';
+  const rates  = ['−1%','−3%','−5%','−10%','−15%'];
+  const subs   = ['seuil','pessim.','','médian','optim.'];
+  for (let i = 0; i < SCENARIOS.length; i++) {
+    const active = ST.sc === i + 1;
+    const btn = document.createElement('button');
+    btn.className = 'sc-btn' + (active ? ' active' : '');
+    btn.onclick = () => { ST.sc = i + 1; renderSc(); render(); };
+    btn.innerHTML = `
+      <div class="sc-rate" style="color:${active ? 'var(--sage)' : i===0 ? 'var(--red)' : 'var(--text-muted)'}">${rates[i]}</div>
+      <div class="sc-sub" style="color:${active ? 'var(--sage)' : i===0 ? 'var(--red)' : 'var(--text-muted)'}">${subs[i]}</div>`;
+    grid.appendChild(btn);
+  }
+}
+
+function renderJours() {
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    const active = +btn.dataset.j === ST.jours;
+    btn.className = 'day-btn' + (active ? ' active' : '');
   });
 }
 
-function setMode(m){ ST.mode = m; renderJours(); render(); }
-function setJours(j){ ST.jours = j; renderJours(); render(); }
-function addQ(id, d){
-  ST.qty[id] = Math.max(0, Math.min(5, (ST.qty[id]||0) + d));
-  ST.currentOption = "custom";
-  renderAt();
-  render();
-}
-function setOption(o){
-  ST.qty = Object.assign({}, DEFAULT_QTYS[o]);
-  ST.currentOption = o;
-  renderAt();
-  render();
-}
-function setVal(v){ ST.val = v; document.querySelectorAll(".vbtn").forEach(btn => { let bv = +btn.dataset.v; if(bv===v){ btn.style.border="1px solid #c8a96e"; btn.style.background="rgba(200,169,110,.15)"; btn.style.color="#c8a96e"; btn.style.fontWeight="700"; } else { btn.style.border="1px solid rgba(255,255,255,.1)"; btn.style.background="rgba(255,255,255,.03)"; btn.style.color="#7a7a9a"; btn.style.fontWeight="400"; } }); }
-function openModal(){ document.getElementById("modal").classList.add("on"); }
-function closeModal(){ document.getElementById("modal").classList.remove("on"); }
-function closeDevis(){ document.getElementById("dov").classList.remove("on"); }
-function toggleAdv(){ let b = document.getElementById("adv-body"); b.classList.toggle("open"); document.getElementById("adv-arrow").innerHTML = b.classList.contains("open") ? "▲" : "▼"; }
+/* ═══════════════════════════════════════════════════════
+   ACTIONS UTILISATEUR
+═══════════════════════════════════════════════════════ */
 
-// Génération du devis (similaire à la version précédente, adaptée)
-function genDevis(){
+function setMode(m)  { ST.mode = m; renderJours(); render(); }
+function setJours(j) { ST.jours = j; renderJours(); render(); }
+
+function addQ(id, d) {
+  ST.qty[id] = Math.max(0, Math.min(5, (ST.qty[id] || 0) + d));
+  renderAt(); render();
+}
+
+function setOption(opt) {
+  ST.qty = { ...DEFAULT_QTYS[opt] };
+  renderAt(); render();
+}
+
+function setVal(v) {
+  ST.val = v;
+  document.querySelectorAll('.val-btn').forEach(btn => {
+    const active = +btn.dataset.v === v;
+    btn.className = 'val-btn' + (active ? ' active' : '');
+  });
+}
+
+function toggleAdv() {
+  const body = el('adv-body');
+  body.classList.toggle('open');
+  el('adv-arrow').textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function openModal()  { el('modal').classList.add('on'); }
+function closeModal() { el('modal').classList.remove('on'); }
+function closeDevis() { el('dov').classList.remove('on'); }
+
+/* ═══════════════════════════════════════════════════════
+   GÉNÉRATION DU DEVIS
+   Séparé en fonctions helper pour lisibilité et maintenabilité
+═══════════════════════════════════════════════════════ */
+
+function dLi(label, value, cls = '') {
+  return `<div class="d-li${cls ? ' ' + cls : ''}"><span class="ll">${label}</span><span class="lv">${value}</span></div>`;
+}
+
+function dSttl(text) {
+  return `<div class="d-sttl">${text}</div>`;
+}
+
+function dSectionSub(text) {
+  return `<div class="d-section-sub">${text}</div>`;
+}
+
+function dEquipRows(c) {
+  const sel = AT.filter(a => (ST.qty[a.id] || 0) > 0);
+  const rows = sel.map(a => {
+    const q = ST.qty[a.id];
+    return `<tr>
+      <td>${a.label}${a.addon ? ' <span style="font-size:6pt;color:#9090b0">(Add-on)</span>' : ''}</td>
+      <td style="color:#6a6a8a;font-size:8pt">${a.cible}</td>
+      <td style="text-align:center">${a.m2}</td>
+      <td class="num">${q}</td>
+      <td class="num">${eur(a.prix)}</td>
+      <td class="num">${eur(a.prix * q)}</td>
+    </tr>`;
+  }).join('');
+
+  const decoRow = c.deco > 0
+    ? `<tr><td colspan="5" style="color:#6a6a8a">Décoration (${ST.deco_pm2} €/m² × ${c.surfAt} m²)</td><td class="num" style="color:#6a6a8a">${eur(c.deco)}</td></tr>`
+    : '';
+
+  return `<table class="d-tbl">
+    <thead><tr>
+      <th style="width:30%">Équipement</th><th>Indication</th>
+      <th style="text-align:center">m²</th><th class="num">Qté</th>
+      <th class="num">Prix HT</th><th class="num">Total HT</th>
+    </tr></thead>
+    <tbody>
+      ${rows}
+      <tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT</td><td class="num" style="color:#6a6a8a">${eur(c.eqT)}</td></tr>
+      <tr><td colspan="5" style="color:#6a6a8a">Frais d'agencement (10% matériel)</td><td class="num" style="color:#6a6a8a">${eur(c.ag)}</td></tr>
+      <tr><td colspan="5" style="color:#6a6a8a">Setup initial (communication & lancement)</td><td class="num" style="color:#6a6a8a">${eur(c.setup)}</td></tr>
+      ${decoRow}
+      <tr class="st"><td colspan="5">TOTAL INVESTISSEMENT INITIAL (CAPEX)</td><td class="num">${eur(c.capexTotal)}</td></tr>
+    </tbody>
+  </table>`;
+}
+
+function dChargeSection(c) {
+  const decoLine = c.deco > 0 ? dLi('Décoration (amort. 5 ans)', eur(c.decoAm) + '/an') : '';
+  return `
+    ${dSectionSub('Frais de fonctionnement (OPEX sortant)')}
+    ${dLi('Maintenance (11% équip.)', eur(c.maintenance) + '/an')}
+    ${dLi('Formation continue managers', eur(ST.form) + '/an')}
+    ${dLi('Animation espace', eur(ST.anim) + '/an')}
+    <div class="d-li tl" style="background:#f0faf4;border-radius:4pt;padding:5pt 8pt;margin-top:4pt">
+      <span class="ll" style="color:#3a8a5a;font-size:8pt">Sous-total OPEX récurrent</span>
+      <span class="lv" style="color:#3a8a5a">${eur(c.opex)} / an</span>
+    </div>
+    ${dSectionSub('Coûts indirects / Amortissements (Impact P&L)')}
+    ${dLi('Amortissement matériel (4 ans)', eur(c.amortEquip) + '/an')}
+    ${dLi('Amort. Agencement 10% (5 ans)', eur(c.agAm) + '/an')}
+    ${dLi('Amortissement Setup initial (3 ans)', eur(c.su) + '/an')}
+    ${dLi('Loyer + charges locatives', eur(c.im) + '/an')}
+    ${decoLine}
+    <div class="d-li tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt">
+      <span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span>
+      <span class="lv">${eur(c.CTP_exact)} / an</span>
+    </div>`;
+}
+
+function dSyntheseBox(c) {
+  return `<div class="d-synthese">
+    <div style="font-size:7.5pt;font-weight:700;color:#2a4a7a;letter-spacing:1pt;text-transform:uppercase;margin-bottom:6pt">💰 Synthèse décisionnelle</div>
+    <div class="d-synthese-grid">
+      <div class="d-synthese-box">
+        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Année 1 (décaissement)</div>
+        <div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.capexTotal + c.opex)}</div>
+        <div style="font-size:7pt;color:#6a6a8a">CAPEX ${eur(c.capexTotal)} + OPEX ${eur(c.opex)}</div>
+      </div>
+      <div class="d-synthese-box">
+        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Années suivantes (récurrent)</div>
+        <div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.opex)} /an</div>
+        <div style="font-size:7pt;color:#6a6a8a">Maintenance + Formation + Animation</div>
+      </div>
+      <div class="d-synthese-box">
+        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Charge P&L annuelle</div>
+        <div style="font-size:14pt;font-weight:700;color:#c8a96e">${eur(c.CTP_exact)} /an</div>
+        <div style="font-size:7pt;color:#6a6a8a">OPEX + amortissements + loyer</div>
+      </div>
+    </div>
+    <div style="font-size:7pt;color:#6a6a8a;margin-top:6pt;font-style:italic">
+      * Charge calculée sur les années 1–3 (cas le plus défavorable). À partir de l'an 4, la charge diminue à mesure que les amortissements s'éteignent.
+    </div>
+  </div>`;
+}
+
+function dRoiSection(c, pbStr, rC) {
+  const isZero = c.nbPostes === 0;
+  const isSat  = !isZero && c.tauxOcc > 100;
+  const roiVal = isZero ? '—' : (c.roi > 0 ? '+' : '') + Math.round(c.roi) + '%';
+  const awH = !c.nbPostes
+    ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>'
+    : isSat
+    ? `<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation :</strong> Capacité insuffisante. Les gains sont bridés à l'adoption réelle (${c.adoEff.toFixed(1)}%).</div>`
+    : '';
+
+  return `
+    <div class="d-roi">
+      <div class="d-rbox ${c.roi >= 0 && !isZero ? 'pos' : 'neg'}" style="border-color:${rC}">
+        <div class="d-rbig" style="color:${rC}">${roiVal}</div>
+        <div class="d-rlbl">ROI annuel net</div>
+      </div>
+      <div class="d-rbox neu">
+        <div class="d-rbig neu">${pbStr}</div>
+        <div class="d-rlbl">Payback net</div>
+      </div>
+      <div class="d-rbox neu">
+        <div class="d-rbig neu">${eur(Math.round(c.masseSalariale * ST.taux_dysf))}</div>
+        <div class="d-rlbl">Coût dysfonctionnements</div>
+      </div>
+    </div>
+    ${dLi('Base adressable', eur(c.ba_exact))}
+    ${dLi('Gain brut (' + SCENARIOS[ST.sc-1].label + ' × ' + c.adoEff.toFixed(1) + '% adoption réelle)', eur(c.gainBase_exact))}
+    ${dLi('Coefficients bonus (formation, animation, décoration)', '×' + (c.formCoef * c.animCoef * c.decoCoef).toFixed(2))}
+    ${dLi('Gain après bonus', eur(c.gain_exact))}
+    ${dLi('Charge comptable totale', '− ' + eur(c.CTP_exact))}
+    <div class="d-li tl">
+      <span class="ll" style="color:${rC}">Économie nette / an</span>
+      <span class="lv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span>
+    </div>
+    ${awH}
+    <div class="d-ctx">
+      <strong>Hypothèses :</strong> Dysf. RH : ${Math.round(ST.taux_dysf*100)}% (ANACT) · Part adressable : ${Math.round(ST.part_adressable*100)}% · Sessions/sem : ${ST.seances_par_semaine} · Durée : ${ST.duree_seance} min · Adoption : ${c.ado}% · Ouverture : ${ST.heures_ouverture}h/j (75% remplissage).
+      <strong>Réf. étude : +${calcRef()}% pour 400 sal., option B, posture Libre (60%).</strong>
+    </div>`;
+}
+
+function genDevis() {
   closeModal();
-  let c = calc();
-  let sc = SCENARIOS[ST.sc-1];
-  let po = POSTURES.find(p => p.id === ST.po);
-  let pro = document.getElementById("f-pro").value || "—";
-  let con = document.getElementById("f-con").value || "—";
-  let com = document.getElementById("f-com").value || "—";
-  let today = dateStr();
-  let dnum = devisNum();
-  let vd = new Date(); vd.setDate(vd.getDate() + ST.val);
-  let vstr = vd.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
-  let sel = AT.filter(a => (ST.qty[a.id]||0) > 0);
-  let rows = sel.map(a => { let q = ST.qty[a.id]; return '<tr><td>'+a.label+(a.addon?' <span style="font-size:6pt;color:#9090b0">(Add-on)</span>':'')+'</span></td><td style="color:#6a6a8a;font-size:8pt">'+a.cible+'</span></td><td style="text-align:center">'+a.m2+'</span></td><td class="num">'+q+'</span></td><td class="num">'+eur(a.prix)+'</span></td><td class="num">'+eur(a.prix*q)+'</span></tr>'; }).join("");
-  let rC = c.roi>=0 ? "#10b981" : "#ef4444";
-  let pbStr = (c.pb <= 0 || c.pb === 999) ? "Jamais" : c.pb < 1 ? "<1 mois" : c.pb > 36 ? "36+ mois" : Math.round(c.pb) + " mois";
-  let awH = !c.nbPostes ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>' : (c.tauxOcc>100 ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation de l\'espace :</strong> Capacité insuffisante. Les gains sont bridés à l\'adoption réelle ('+c.adoEff.toFixed(1)+'%).</div>' : "");
-  let dL = c.deco ? '<div class="dli"><span class="ll">Décoration (amort. 5 ans)</span><span class="lv">'+eur(c.decoAm)+'/an</span></div>' : '';
-document.getElementById("dpaper").innerHTML = '<div class="dv"><div class="dstrip"></div><div class="dhdr"><div><div class="dlogo">beOtop</div><div class="dtitle">Proposition commerciale</div><div class="dsub">Espace de récupération unique & bien-être au travail</div></div><div class="dmeta"><strong>N° '+dnum+'</strong>Établi le '+today+'<br>Valable jusqu\'au '+vstr+'<br>Commercial : '+com+'</div></div><div class="dbody"><div class="dpros"><div class="dpb"><div class="dplbl">Établi pour</div><div class="dpval">'+pro+'</div><div class="dpsub">'+con+'</div></div><div class="dpb"><div class="dplbl">Contexte</div><div class="dpval">'+ST.nbs+' collaborateurs</div><div class="dpsub">'+(ST.mode==="5j"?"Présentiel 5j/sem.":"Hybride "+ST.jours+"j/sem.")+' · Posture '+po.label+'</div></div><div class="dpb"><div class="dplbl">L\'Espace beOtop</div><div class="dpval">'+c.nbPostes+' place(s) d\'assise</div><div class="dpval" style="font-size:8pt;margin-top:2pt">'+AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)+' ateliers au total</div><div class="dpsub">Surface cible : '+c.surfAt+' m²</div></div></div><div class="dsttl" style="margin-top:0">01 · Dépenses d\'investissement initial (CAPEX)</div><table class="dtbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>'+rows+'<tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT</td><td class="num" style="color:#6a6a8a">'+eur(c.eqT)+'</td></tr><tr><td colspan="5" style="color:#6a6a8a">Frais d\'agencement (10% matériel)</td><td class="num" style="color:#6a6a8a">'+eur(c.ag)+'</td></tr><tr><td colspan="5" style="color:#6a6a8a">Setup initial (communication & lancement)</td><td class="num" style="color:#6a6a8a">'+eur(c.setup)+'</td></tr>'+(c.deco ? '<tr><td colspan="5" style="color:#6a6a8a">Décoration ('+ST.deco_pm2+' €/m² × '+c.surfAt+' m²)</td><td class="num" style="color:#6a6a8a">'+eur(c.deco)+'</td></tr>' : '')+'<tr class="st"><td colspan="5">TOTAL INVESTISSEMENT INITIAL (CAPEX)</td><td class="num">'+eur(c.capexTotal)+'</td></tr></tbody></table><div class="dsttl">02 · Charge Financière Annuelle</div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:4pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Frais de fonctionnement (OPEX sortant)</span></div><div class="dli"><span class="ll">Maintenance (11% équip.)</span><span class="lv">'+eur(c.maintenance)+'/an</span></div><div class="dli"><span class="ll">Formation continue managers</span><span class="lv">'+eur(ST.form)+'/an</span></div><div class="dli"><span class="ll">Animation espace</span><span class="lv">'+eur(ST.anim)+'/an</span></div><div class="dli tl" style="background:#f0faf4;border-radius:4pt;padding:5pt 8pt;margin-top:4pt"><span class="ll" style="color:#3a8a5a;font-size:8pt">Sous-total OPEX récurrent (sortie de trésorerie)</span><span class="lv" style="color:#3a8a5a">'+eur(c.opex)+' / an</span></div><div class="dli tl" style="background:none;border-bottom:.5pt solid #f0f0f0;margin-top:8pt;padding:4pt 0"><span class="ll" style="color:#5a5a8a;font-size:8pt">Coûts indirects / Amortissements (Impact P&L)</span></div><div class="dli"><span class="ll">Amortissement matériel (4 ans)</span><span class="lv">'+eur(c.amortEquip)+'/an</span></div><div class="dli"><span class="ll">Amort. Agencement 10% (5 ans)</span><span class="lv">'+eur(c.agAm)+'/an</span></div><div class="dli"><span class="ll">Amortissement Setup initial (3 ans)</span><span class="lv">'+eur(c.su)+'/an</span></div><div class="dli"><span class="ll">Loyer + charges locatives</span><span class="lv">'+eur(c.im)+'/an</span></div>'+dL+'<div class="dli tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">'+eur(c.CTP)+' / an</span></div><div style="background:#f0f4ff;border:.5pt solid #b0c4de;border-radius:6pt;padding:10pt 14pt;margin-top:10pt"><div style="font-size:7.5pt;font-weight:700;color:#2a4a7a;letter-spacing:1pt;text-transform:uppercase;margin-bottom:6pt">💰 Synthèse décisionnelle</div><div style="display:flex;gap:8pt"><div style="flex:1;background:#fff;border-radius:4pt;padding:8pt;text-align:center;border:.5pt solid #dde"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Année 1 (décaissement)</div><div style="font-size:14pt;font-weight:700;color:#1a1a2e">'+eur(c.capexTotal + c.opex)+'</div><div style="font-size:7pt;color:#6a6a8a">CAPEX '+eur(c.capexTotal)+' + OPEX '+eur(c.opex)+'</div></div><div style="flex:1;background:#fff;border-radius:4pt;padding:8pt;text-align:center;border:.5pt solid #dde"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Années suivantes (récurrent)</div><div style="font-size:14pt;font-weight:700;color:#1a1a2e">'+eur(c.opex)+' /an</div><div style="font-size:7pt;color:#6a6a8a">Maintenance + Formation + Animation</div></div><div style="flex:1;background:#fff;border-radius:4pt;padding:8pt;text-align:center;border:.5pt solid #dde"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Charge P&L annuelle</div><div style="font-size:14pt;font-weight:700;color:#c8a96e">'+eur(c.CTP)+' /an</div><div style="font-size:7pt;color:#6a6a8a">OPEX + amortissements + loyer</div></div></div><div style="font-size:7pt;color:#6a6a8a;margin-top:6pt;font-style:italic">* Charge calculée sur les années 1 à 3 (cas le plus défavorable). À partir de l\'an 4, la charge diminue à mesure que les amortissements s\'éteignent.</div></div><div class="dsttl">03 · Retour sur investissement (ROI)</div><div class="droi"><div class="drbox" style="border-color:'+rC+'"><div class="drbig" style="color:'+rC+'">'+(c.nbPostes === 0 ? "—" : (c.roi>0?"+":"")+Math.round(c.roi)+"%")+'</div><div class="drlbl">ROI annuel net</div></div><div class="drbox"><div class="drbig" style="font-size:14pt">'+pbStr+'</div><div class="drlbl">Payback net</div></div><div class="drbox neu"><div class="drbig neu">'+eur(Math.round(c.masseSalariale * ST.taux_dysf))+'</div><div class="drlbl">Coût dysfonctionnements</div></div></div><div class="dli"><span class="ll">Base adressable</span><span class="lv">'+eur(c.ba)+'</span></div><div class="dli"><span class="ll">Gain brut ('+sc.label+' × '+c.adoEff.toFixed(1)+'% adoption réelle)</span><span class="lv">'+eur(c.gainBase)+'</span></div><div class="dli"><span class="ll">Coefficients bonus (formation, animation, décoration)</span><span class="lv">×'+(c.formCoef*c.animCoef*c.decoCoef).toFixed(2)+'</span></div><div class="dli"><span class="ll">Gain après bonus</span><span class="lv">'+eur(c.gain)+'</span></div><div class="dli"><span class="ll">Charge comptable totale</span><span class="lv">− '+eur(c.CTP)+'</span></div><div class="dli tl"><span class="ll" style="color:'+rC+'">Économie nette / an</span><span class="lv" style="color:'+rC+'">'+(c.eco>0?"+":"")+eur(c.eco)+'</span></div>'+awH+'<div class="dctx"><strong>Hypothèses et Paramètres :</strong> Dysf. RH : '+Math.round(ST.taux_dysf*100)+'% (ANACT) · Part adressable : '+Math.round(ST.part_adressable*100)+'% (beOtop) · Sessions/sem : '+ST.seances_par_semaine+' · Durée séance : '+ST.duree_seance+' min · Ambition adoption : '+c.ado+'% · Ouverture : '+ST.heures_ouverture+'h/j (remplissage 75%). <strong>Réf. étude : +'+calcRef()+'% pour 400 sal., option B, posture Libre (60%).</strong></div><div class="dsttl">04 · Conditions d\'atteinte du ROI</div><div class="dcond"><ul><li>Charte d\'accès signée par la Direction <span class="dbadge cr">CRITIQUE</span></li><li>Formation managers avant ouverture <span class="dbadge cr">CRITIQUE</span></li><li>Protocole de mesure KPI dès J1 <span class="dbadge si">SIGNIFICATIF</span></li><li>Communication interne structurée <span class="dbadge si">SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span class="dbadge mo">MODÉRÉ</span></li></ul></div></div><div class="dftr"><div class="dfl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>'+com+'<br>Devis '+dnum+' · Valable jusqu\'au '+vstr+'</div><div class="dfr">'+pro+' · '+ST.nbs+' collab.<br>'+today+'<br><em>Estimations indicatives</em></div></div><div class="dstrip"></div></div>';  document.getElementById("dov").classList.add("on");  document.getElementById("dov").scrollTop = 0;
+  const c   = calc();
+  const po  = POSTURES.find(p => p.id === ST.po);
+  const pro = el('f-pro').value || '—';
+  const con = el('f-con').value || '—';
+  const com = el('f-com').value || '—';
+  const dnum = devisNum();
+  const today = dateStr();
+  const expiry = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + ST.val);
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  })();
+
+  const isZero = c.nbPostes === 0;
+  const isSat  = !isZero && c.tauxOcc > 100;
+  const rC     = isZero ? '#4a4a6a' : c.roi > 0 ? '#10b981' : '#ef4444';
+  const pbStr  = c.pb <= 0 || c.pb === 999 ? 'Jamais' : c.pb < 1 ? '<1 mois' : c.pb > 36 ? '36+ mois' : Math.round(c.pb) + ' mois';
+
+  el('dpaper').innerHTML = `
+  <div class="dv">
+    <div class="d-strip"></div>
+    <div class="d-hdr">
+      <div>
+        <div class="d-logo">beOtop</div>
+        <div class="d-title">Proposition commerciale</div>
+        <div class="d-sub">Espace de récupération unique &amp; bien-être au travail</div>
+      </div>
+      <div class="d-meta">
+        <strong>N° ${dnum}</strong>
+        Établi le ${today}<br>
+        Valable jusqu'au ${expiry}<br>
+        Commercial : ${com}
+      </div>
+    </div>
+    <div class="d-body">
+      <div class="d-pros">
+        <div class="d-pb">
+          <div class="d-plbl">Établi pour</div>
+          <div class="d-pval">${pro}</div>
+          <div class="d-psub">${con}</div>
+        </div>
+        <div class="d-pb">
+          <div class="d-plbl">Contexte</div>
+          <div class="d-pval">${ST.nbs} collaborateurs</div>
+          <div class="d-psub">${ST.mode === '5j' ? 'Présentiel 5j/sem.' : 'Hybride ' + ST.jours + 'j/sem.'} · Posture ${po.label}</div>
+        </div>
+        <div class="d-pb">
+          <div class="d-plbl">L'Espace beOtop</div>
+          <div class="d-pval">${c.nbPostes} place(s) d'assise</div>
+          <div class="d-pval" style="font-size:8pt;margin-top:2pt">${AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)} ateliers au total</div>
+          <div class="d-psub">Surface cible : ${c.surfAt} m²</div>
+        </div>
+      </div>
+
+      ${dSttl('01 · Dépenses d\'investissement initial (CAPEX)')}
+      ${dEquipRows(c)}
+
+      ${dSttl('02 · Charge Financière Annuelle')}
+      ${dChargeSection(c)}
+      ${dSyntheseBox(c)}
+
+      ${dSttl('03 · Retour sur investissement (ROI)')}
+      ${dRoiSection(c, pbStr, rC)}
+
+      ${dSttl('04 · Conditions d\'atteinte du ROI')}
+      <div class="d-cond">
+        <ul>
+          <li>Charte d'accès signée par la Direction <span class="d-badge cr">CRITIQUE</span></li>
+          <li>Formation managers avant ouverture <span class="d-badge cr">CRITIQUE</span></li>
+          <li>Protocole de mesure KPI dès J1 <span class="d-badge si">SIGNIFICATIF</span></li>
+          <li>Communication interne structurée <span class="d-badge si">SIGNIFICATIF</span></li>
+          <li>Pilote instrumenté 6 mois <span class="d-badge mo">MODÉRÉ</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="d-ftr">
+      <div class="d-fl">
+        <strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>
+        ${com}<br>
+        Devis ${dnum} · Valable jusqu'au ${expiry}
+      </div>
+      <div class="d-fr">
+        ${pro} · ${ST.nbs} collab.<br>
+        ${today}<br>
+        <em>Estimations indicatives — ROI moyen simulé, non garanti</em>
+      </div>
+    </div>
+    <div class="d-strip"></div>
+  </div>`;
+
+  el('dov').classList.add('on');
+  el('dov').scrollTop = 0;
 }
 
-// Écouteurs
-document.getElementById("s-nbs").oninput = e => { ST.nbs = +e.target.value; render(); };
-document.getElementById("s-sal").oninput = e => { ST.sal = +e.target.value; render(); };
-document.getElementById("s-taux_dysf").oninput = e => { ST.taux_dysf = +e.target.value; render(); };
-document.getElementById("s-part_adr").oninput = e => { ST.part_adressable = +e.target.value; render(); };
-document.getElementById("s-seances_hebdo").oninput = e => { ST.seances_par_semaine = +e.target.value; render(); };
-document.getElementById("s-duree_seance").oninput = e => { ST.duree_seance = +e.target.value; render(); };
-document.getElementById("s-heures").oninput = e => { ST.heures_ouverture = +e.target.value; render(); };
+/* ═══════════════════════════════════════════════════════
+   INITIALISATION
+═══════════════════════════════════════════════════════ */
 
-// Initialisation
 renderJours();
 renderAt();
 renderPo();
