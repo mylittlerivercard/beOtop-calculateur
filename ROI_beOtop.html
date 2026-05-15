@@ -85,7 +85,6 @@ const AT = [
   {id:"transat_127", label:"Transat 127", icon:"🛋️", m2:2.0, prix:395, cible:"Détente", addon:false},
   {id:"sensolight", label:"Sensosphère", icon:"💡", m2:0.3, prix:3750, cible:"Luminothérapie", addon:true},
   {id:"siege_lecture", label:"Siège Lecture", icon:"📖", m2:1.5, prix:1480, cible:"Balancement", addon:false},
-  {id:"cabine_sur_mesure", label:"Immersion Oeuvre d'Art", icon:"🚪", m2:1.0, prix:4470, cible:"Déconnexion", addon:false}
 ];
 const POSTURES = [
   {id:"h", label:"Hostile", adopt:10, color:"#ef4444"},
@@ -101,9 +100,9 @@ const SCENARIOS = [
   {label:"−15% (optimiste)", rate:0.15}
 ];
 const DEFAULT_QTYS = {
-  A: { bol_air:1, p127:0, lunettes_psio:0, cocon_sieste:1, siege_massant:0, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:0, sensolight:0, siege_lecture:0, cabine_sur_mesure:0 },
-  B: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:1, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:1, sensolight:1, siege_lecture:0, cabine_sur_mesure:0 },
-  C: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:2, neurosonic_f:0, neurosonic_l:1, photobio:0, transat_127:1, sensolight:1, siege_lecture:0, cabine_sur_mesure:0 }
+  A: { bol_air:1, p127:0, lunettes_psio:0, cocon_sieste:1, siege_massant:0, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:0, sensolight:0, siege_lecture:0 },
+  B: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:1, neurosonic_f:0, neurosonic_l:0, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 },
+  C: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:2, neurosonic_f:0, neurosonic_l:1, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 }
 };
 
 let ST = {
