@@ -245,6 +245,38 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_res_site    ON reservations(site_slug)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_res_date    ON reservations(date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_res_atelier ON reservations(atelier)')
+
+        # Tables Compagnon
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_checkins (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                site_slug   TEXT,
+                date        DATE NOT NULL DEFAULT CURRENT_DATE,
+                energie     SMALLINT NOT NULL CHECK (energie BETWEEN 1 AND 10),
+                stress      SMALLINT NOT NULL CHECK (stress BETWEEN 1 AND 10),
+                focus       SMALLINT NOT NULL CHECK (focus BETWEEN 1 AND 10)
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_checkins_user ON companion_checkins(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_checkins_date ON companion_checkins(date)')
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_cc_sessions (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                site_slug   TEXT,
+                date        DATE NOT NULL DEFAULT CURRENT_DATE,
+                protocole   TEXT NOT NULL DEFAULT '365',
+                duree_min   SMALLINT NOT NULL DEFAULT 5,
+                complete    BOOLEAN NOT NULL DEFAULT TRUE
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cc_user ON companion_cc_sessions(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cc_date ON companion_cc_sessions(date)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -1331,6 +1363,160 @@ def cancel_reservation(res_id):
                 return jsonify({'error': 'Réservation introuvable ou accès refusé'}), 404
             conn.commit()
     return jsonify({'ok': True})
+
+
+# ========== COMPAGNON — CHECK-IN & COHÉRENCE CARDIAQUE ==========
+
+@app.route('/api/companion/checkin', methods=['POST'])
+@login_required
+def companion_save_checkin():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+    energie = int(data.get('energie', 0))
+    stress  = int(data.get('stress', 0))
+    focus   = int(data.get('focus', 0))
+    if not all(1 <= v <= 10 for v in [energie, stress, focus]):
+        return jsonify({'error': 'Valeurs entre 1 et 10 requises'}), 400
+    user_id   = session.get('user_id')
+    site_slug = data.get('site_slug')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Un seul check-in par jour et par user
+            cur.execute("""
+                INSERT INTO companion_checkins (user_id, site_slug, date, energie, stress, focus)
+                VALUES (%s, %s, CURRENT_DATE, %s, %s, %s)
+                ON CONFLICT DO NOTHING
+                RETURNING id
+            """, [user_id, site_slug, energie, stress, focus])
+            row = cur.fetchone()
+            if not row:
+                # Mise à jour si déjà fait aujourd'hui
+                cur.execute("""
+                    UPDATE companion_checkins
+                    SET energie=%s, stress=%s, focus=%s, created_at=CURRENT_TIMESTAMP
+                    WHERE user_id=%s AND date=CURRENT_DATE
+                    RETURNING id
+                """, [energie, stress, focus, user_id])
+                row = cur.fetchone()
+            conn.commit()
+    return jsonify({'ok': True, 'id': row['id'] if row else None}), 201
+
+
+@app.route('/api/companion/checkin/history', methods=['GET'])
+@login_required
+def companion_checkin_history():
+    user_id = session.get('user_id')
+    limit   = int(request.args.get('limit', 30))
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT date::text, energie, stress, focus, created_at
+                FROM companion_checkins
+                WHERE user_id=%s
+                ORDER BY date DESC
+                LIMIT %s
+            """, [user_id, limit])
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/companion/cc', methods=['POST'])
+@login_required
+def companion_save_cc():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+    duree_min = int(data.get('duree_min', 5))
+    if duree_min < 1 or duree_min > 60:
+        return jsonify({'error': 'duree_min entre 1 et 60'}), 400
+    user_id   = session.get('user_id')
+    site_slug = data.get('site_slug')
+    protocole = data.get('protocole', '365')
+    complete  = bool(data.get('complete', True))
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO companion_cc_sessions
+                    (user_id, site_slug, date, protocole, duree_min, complete)
+                VALUES (%s, %s, CURRENT_DATE, %s, %s, %s)
+                RETURNING id
+            """, [user_id, site_slug, protocole, duree_min, complete])
+            new_id = cur.fetchone()['id']
+            conn.commit()
+    return jsonify({'ok': True, 'id': new_id}), 201
+
+
+@app.route('/api/companion/cc/history', methods=['GET'])
+@login_required
+def companion_cc_history():
+    user_id = session.get('user_id')
+    limit   = int(request.args.get('limit', 30))
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT date::text, protocole, duree_min, complete, created_at
+                FROM companion_cc_sessions
+                WHERE user_id=%s
+                ORDER BY date DESC
+                LIMIT %s
+            """, [user_id, limit])
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/companion/stats', methods=['GET'])
+@login_required
+def companion_stats():
+    """KPIs mensuels pour l'onglet Compagnon du dashboard."""
+    user_id = session.get('user_id')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    COUNT(*) as nb_checkins,
+                    ROUND(AVG(energie), 1) as avg_energie,
+                    ROUND(AVG(stress), 1)  as avg_stress,
+                    ROUND(AVG(focus), 1)   as avg_focus
+                FROM companion_checkins
+                WHERE user_id=%s AND date >= DATE_TRUNC('month', CURRENT_DATE)
+            """, [user_id])
+            checkins = serialize_row(cur.fetchone())
+            cur.execute("""
+                SELECT
+                    COUNT(*) as nb_sessions,
+                    COALESCE(SUM(duree_min), 0) as total_minutes,
+                    COUNT(*) FILTER (WHERE complete) as nb_completes
+                FROM companion_cc_sessions
+                WHERE user_id=%s AND date >= DATE_TRUNC('month', CURRENT_DATE)
+            """, [user_id])
+            cc = serialize_row(cur.fetchone())
+            # Streak : jours consécutifs avec au moins une activité
+            cur.execute("""
+                SELECT date::text FROM (
+                    SELECT date FROM companion_checkins WHERE user_id=%s
+                    UNION
+                    SELECT date FROM companion_cc_sessions WHERE user_id=%s
+                ) t ORDER BY date DESC LIMIT 60
+            """, [user_id, user_id])
+            dates = [r['date'] for r in cur.fetchall()]
+    streak = 0
+    if dates:
+        from datetime import date as dt, timedelta
+        today = dt.today()
+        cur_date = today
+        for d_str in dates:
+            d = dt.fromisoformat(d_str)
+            if d == cur_date or d == cur_date - timedelta(days=1):
+                streak += 1
+                cur_date = d
+            else:
+                break
+    return jsonify({
+        'checkins': checkins,
+        'cc': cc,
+        'streak_jours': streak,
+    })
 
 
 # ========== HEALTH ==========
