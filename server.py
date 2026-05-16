@@ -22,6 +22,20 @@ app = Flask(__name__, static_folder='static')
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 CORS(app, supports_credentials=True)
 
+@app.after_request
+def add_headers(response):
+    # Autoriser YouTube et Vimeo en iframe (contenu Compagnon)
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "frame-src https://www.youtube.com https://player.vimeo.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self';"
+    )
+    return response
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def serve_html(filename):
