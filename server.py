@@ -228,6 +228,23 @@ def init_db():
                 client_id       INTEGER REFERENCES clients(id)
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS reservations (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_slug   TEXT NOT NULL,
+                atelier     TEXT NOT NULL,
+                user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                date        DATE NOT NULL,
+                heure_debut TIME NOT NULL,
+                duree_min   INTEGER NOT NULL DEFAULT 20,
+                statut      TEXT NOT NULL DEFAULT 'confirmee',
+                notes       TEXT
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_res_site    ON reservations(site_slug)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_res_date    ON reservations(date)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_res_atelier ON reservations(atelier)')
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -1214,6 +1231,107 @@ def client_update_effectif(site_slug):
                 return jsonify({'error': 'Site introuvable'}), 404
             conn.commit()
     return jsonify({'ok': True, 'site_slug': site_slug, 'nb_salaries': int(nb)})
+
+# ========== RÉSERVATIONS ==========
+
+@app.route('/api/reservations', methods=['GET'])
+@login_required
+def get_reservations():
+    site_slug = request.args.get('site_slug')
+    date_str  = request.args.get('date', date.today().isoformat())
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, atelier, date::text as date,
+                       heure_debut::text as heure_debut,
+                       (heure_debut + (duree_min || ' minutes')::INTERVAL)::time::text as heure_fin,
+                       duree_min, statut
+                FROM reservations
+                WHERE site_slug=%s AND date=%s AND statut != 'annulee'
+                ORDER BY heure_debut, atelier
+            """, [site_slug, date_str])
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/reservations', methods=['POST'])
+@login_required
+def create_reservation():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+    site_slug   = data.get('site_slug')
+    atelier     = data.get('atelier')
+    date_str    = data.get('date', date.today().isoformat())
+    heure_debut = data.get('heure_debut')
+    duree_min   = int(data.get('duree_min', 20))
+    if not all([site_slug, atelier, heure_debut]):
+        return jsonify({'error': 'site_slug, atelier, heure_debut requis'}), 400
+    if duree_min not in [10, 15, 20]:
+        return jsonify({'error': 'duree_min doit être 10, 15 ou 20'}), 400
+    # Vérifier accès
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+    # Vérifier conflit (même atelier, même créneau)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id FROM reservations
+                WHERE site_slug=%s AND atelier=%s AND date=%s AND statut != 'annulee'
+                AND heure_debut < (%s::time + (%s || ' minutes')::INTERVAL)
+                AND (heure_debut + (duree_min || ' minutes')::INTERVAL) > %s::time
+            """, [site_slug, atelier, date_str, heure_debut, duree_min, heure_debut])
+            conflict = cur.fetchone()
+    if conflict:
+        return jsonify({'error': 'Créneau déjà réservé pour cet atelier'}), 409
+    user_id  = session.get('user_id')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO reservations
+                    (site_slug, atelier, user_id, date, heure_debut, duree_min, statut)
+                VALUES (%s, %s, %s, %s, %s, %s, 'confirmee')
+                RETURNING id
+            """, [site_slug, atelier, user_id, date_str, heure_debut, duree_min])
+            new_id = cur.fetchone()['id']
+            conn.commit()
+    return jsonify({'ok': True, 'id': new_id}), 201
+
+
+@app.route('/api/reservations/<int:res_id>', methods=['DELETE'])
+@login_required
+def cancel_reservation(res_id):
+    user_id = session.get('user_id')
+    role    = session.get('role')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if role == 'admin':
+                cur.execute("UPDATE reservations SET statut='annulee' WHERE id=%s", [res_id])
+            else:
+                cur.execute(
+                    "UPDATE reservations SET statut='annulee' WHERE id=%s AND user_id=%s",
+                    [res_id, user_id])
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Réservation introuvable ou accès refusé'}), 404
+            conn.commit()
+    return jsonify({'ok': True})
+
 
 # ========== HEALTH ==========
 
