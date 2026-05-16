@@ -1346,6 +1346,12 @@ def dashboard_page():
         return redirect('/login')
     return serve_html('dashboard.html')
 
+@app.route('/companion')
+def companion_page():
+    if 'user_id' not in session:
+        return redirect('/login')
+    return serve_html('companion.html')
+
 @app.route('/roi')
 def roi_page():
     return serve_html('ROI_beOtop.html')
