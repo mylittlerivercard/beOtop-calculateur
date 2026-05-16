@@ -668,13 +668,22 @@ tr:hover td { background: var(--surface); color: var(--text); }
 
   <div class="nav-section-label">Bien-être</div>
   <div class="nav-item" onclick="switchView('coherence')">
-    <span class="nav-icon">💓</span><span>Cohérence cardiaque</span>
+    <span class="nav-icon">💓</span><span>Respiration & Cohérence</span>
   </div>
   <div class="nav-item" onclick="switchView('audio')">
     <span class="nav-icon">🎧</span><span>Bibliothèque audio</span>
   </div>
+  <div class="nav-item" onclick="switchView('sons')">
+    <span class="nav-icon">🌿</span><span>Sons immersifs</span>
+  </div>
+  <div class="nav-item" onclick="switchView('video')">
+    <span class="nav-icon">🎬</span><span>Bibliothèque vidéo</span>
+  </div>
   <div class="nav-item" onclick="switchView('exercices')">
-    <span class="nav-icon">🧘</span><span>Exercices physiques</span>
+    <span class="nav-icon">⚡</span><span>Exercices express</span>
+  </div>
+  <div class="nav-item" onclick="switchView('jeux')">
+    <span class="nav-icon">🧠</span><span>Jeux cérébraux</span>
   </div>
 
   <div class="nav-section-label">Suivi</div>
@@ -782,12 +791,12 @@ tr:hover td { background: var(--surface); color: var(--text); }
       <span class="qa-icon">📅</span>
       <div class="qa-label">Réserver un atelier</div>
     </div>
-    <div class="qa-btn" onclick="switchView('audio')">
-      <span class="qa-icon">🎧</span>
-      <div class="qa-label">Écouter un audio</div>
+    <div class="qa-btn" onclick="switchView('jeux')">
+      <span class="qa-icon">🧠</span>
+      <div class="qa-label">Jeux cérébraux</div>
     </div>
     <div class="qa-btn" onclick="switchView('exercices')">
-      <span class="qa-icon">🧘</span>
+      <span class="qa-icon">⚡</span>
       <div class="qa-label">Exercice express</div>
     </div>
   </div>
@@ -856,8 +865,8 @@ tr:hover td { background: var(--surface); color: var(--text); }
 <!-- ══════════════ COHÉRENCE CARDIAQUE ══════════════ -->
 <div class="view" id="view-coherence">
   <div class="page-header">
-    <h1>Cohérence <em>cardiaque</em></h1>
-    <p>Régulation du système nerveux autonome · Protocole 365</p>
+    <h1>Respiration &amp; <em>Cohérence cardiaque</em></h1>
+    <p>Régulation du système nerveux autonome · Protocoles guidés</p>
   </div>
 
   <div style="display:flex;gap:.4rem;margin-bottom:1.2rem" id="cc-protocols">
@@ -947,7 +956,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
 <!-- ══════════════ EXERCICES ══════════════ -->
 <div class="view" id="view-exercices">
   <div class="page-header">
-    <h1>Exercices <em>physiques</em></h1>
+    <h1>Exercices <em>express</em></h1>
     <p>TMS · Étirements · Micro-workout · Sans matériel</p>
   </div>
 
@@ -1028,6 +1037,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
   <div style="display:flex;gap:.5rem;margin-bottom:1rem" id="admin-tabs">
     <button class="cc-protocol-btn active" onclick="switchAdminTab('ateliers',this)">Ateliers</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('audios',this)">Audios</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('videos',this)">Vidéos</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
   </div>
@@ -1037,6 +1047,95 @@ tr:hover td { background: var(--surface); color: var(--text); }
 
 </div><!-- /main-content -->
 </div><!-- /app-shell -->
+
+<!-- ═══ SONS IMMERSIFS ═══ -->
+<div class="view" id="view-sons">
+  <div class="page-header">
+    <h1>Sons <em>immersifs</em></h1>
+    <p>Paysages sonores natifs · Travail en fond · Récupération</p>
+  </div>
+  <div class="grid-2" style="gap:1rem;margin-bottom:1.5rem">
+    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('foret')" id="son-foret">
+      <div style="font-size:3rem;margin-bottom:.6rem">🌲</div>
+      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Forêt</div>
+      <div style="font-size:.65rem;color:var(--text-dim)">Bruit rose filtré · Ambiance naturelle</div>
+      <div class="son-status" id="status-foret" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('pluie')" id="son-pluie">
+      <div style="font-size:3rem;margin-bottom:.6rem">🌧️</div>
+      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Pluie</div>
+      <div style="font-size:.65rem;color:var(--text-dim)">Pluie douce · Ambiance cocooning</div>
+      <div class="son-status" id="status-pluie" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('ocean')" id="son-ocean">
+      <div style="font-size:3rem;margin-bottom:.6rem">🌊</div>
+      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Océan</div>
+      <div style="font-size:.65rem;color:var(--text-dim)">Vagues rythmiques · Détente profonde</div>
+      <div class="son-status" id="status-ocean" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('cafe')" id="son-cafe">
+      <div style="font-size:3rem;margin-bottom:.6rem">☕</div>
+      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Café</div>
+      <div style="font-size:.65rem;color:var(--text-dim)">Ambiance café · Focus productivité</div>
+      <div class="son-status" id="status-cafe" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem">
+    <div style="font-size:.72rem;color:var(--text-dim)">Volume</div>
+    <input type="range" id="son-volume" min="0" max="100" value="40" style="flex:1" oninput="setSonVolume(this.value)">
+    <div id="son-vol-label" style="font-size:.7rem;color:var(--text-muted);width:32px">40%</div>
+    <button class="btn-secondary" style="font-size:.7rem;padding:.4rem .9rem" onclick="stopAllSons()">⏹ Arrêter</button>
+  </div>
+  <div style="margin-top:.6rem;font-size:.6rem;color:var(--text-muted)">Sons générés nativement · Aucune connexion requise · Idéal en fond sonore</div>
+</div>
+
+<!-- ═══ BIBLIOTHÈQUE VIDÉO ═══ -->
+<div class="view" id="view-video">
+  <div class="page-header">
+    <h1>Bibliothèque <em>vidéo</em></h1>
+    <p>Sophrologie filmée · Yoga bureau · Exercices guidés</p>
+  </div>
+  <div class="audio-categories" id="video-cats"></div>
+  <div class="grid-3" id="video-grid"></div>
+  <div style="margin-top:1.5rem;font-size:.65rem;color:var(--text-muted);background:var(--surface);border-radius:10px;padding:.8rem 1rem;border:1px solid var(--border)">
+    ✦ Ajoutez vos URLs Vimeo depuis l'administration · Cliquez ✎ sur une vidéo pour modifier
+  </div>
+</div>
+
+<!-- ═══ JEUX CÉRÉBRAUX ═══ -->
+<div class="view" id="view-jeux">
+  <div class="page-header">
+    <h1>Jeux <em>cérébraux</em></h1>
+    <p>Memory · Calcul mental · Attention · Réflexes</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem" id="jeux-menu">
+    <div class="card" style="cursor:pointer" onclick="startJeu('memory')">
+      <div style="font-size:2rem;margin-bottom:.5rem">🃏</div>
+      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Retrouvez les paires · Mémoire de travail</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-5 min</span><span class="ex-tag">Mémoire</span></div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="startJeu('calcul')">
+      <div style="font-size:2rem;margin-bottom:.5rem">🔢</div>
+      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Calcul mental</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Opérations rapides · Agilité cognitive</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Rapidité</span></div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="startJeu('attention')">
+      <div style="font-size:2rem;margin-bottom:.5rem">🎯</div>
+      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Attention sélective</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Trouvez la cible · Focus et discrimination</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-3 min</span><span class="ex-tag">Focus</span></div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="startJeu('reflexes')">
+      <div style="font-size:2rem;margin-bottom:.5rem">⚡</div>
+      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Réflexes</div>
+      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Temps de réaction · Éveil neuronal</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Réactivité</span></div>
+    </div>
+  </div>
+  <div id="jeu-zone"></div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
@@ -1078,31 +1177,38 @@ const DEMO_DB = {
     { id:9, nom:'Lunettes Psio', icon:'👓', indication:'Déconnexion · Stimulation visuelle', statut:'libre', couleur:'gold' },
   ],
   audios: [
-    { id:1, titre:'Scan corporel matinal', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Prise de conscience progressive du corps', statut:'active', url_audio:'https://www.youtube.com/embed/OPNLh6xQKGI' },
-    { id:2, titre:'Relaxation profonde', categorie:'sophrologie', duree:'20 min', icon:'🌊', description:'Détente complète par la visualisation', statut:'active', url_audio:'https://www.youtube.com/embed/inpok4MKVLM' },
-    { id:3, titre:'Sons alpha — focus', categorie:'binaural', duree:'30 min', icon:'🎵', description:'Ondes alpha 10 Hz · Concentration et clarté', statut:'active', url_audio:'https://www.youtube.com/embed/WPni755-Krk' },
-    { id:4, titre:'Sons thêta — repos', categorie:'binaural', duree:'45 min', icon:'🌙', description:'Ondes thêta 6 Hz · Méditation profonde', statut:'active', url_audio:'https://www.youtube.com/embed/A2sR4PJMcL4' },
-    { id:5, titre:'NSDR 20 min', categorie:'nsdr', duree:'20 min', icon:'🧠', description:'Non-Sleep Deep Rest · Protocole Stanford', statut:'active', url_audio:'https://www.youtube.com/embed/AKGrmY8OSHM' },
-    { id:6, titre:'NSDR 10 min', categorie:'nsdr', duree:'10 min', icon:'⚡', description:'Version courte · Boost énergétique', statut:'active', url_audio:'https://www.youtube.com/embed/pL02HRFk2vo' },
+    { id:1, titre:'Scan corporel matinal', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Prise de conscience progressive du corps', statut:'active', url_audio:'' },
+    { id:2, titre:'Relaxation profonde', categorie:'sophrologie', duree:'20 min', icon:'🌊', description:'Détente complète par la visualisation', statut:'active', url_audio:'' },
+    { id:3, titre:'Sons alpha — focus', categorie:'binaural', duree:'30 min', icon:'🎵', description:'Ondes alpha 10 Hz · Concentration et clarté', statut:'active', url_audio:'' },
+    { id:4, titre:'Sons thêta — repos', categorie:'binaural', duree:'45 min', icon:'🌙', description:'Ondes thêta 6 Hz · Méditation profonde', statut:'active', url_audio:'' },
+    { id:5, titre:'NSDR 20 min', categorie:'nsdr', duree:'20 min', icon:'🧠', description:'Non-Sleep Deep Rest · Protocole Stanford', statut:'active', url_audio:'' },
+    { id:6, titre:'NSDR 10 min', categorie:'nsdr', duree:'10 min', icon:'⚡', description:'Version courte · Boost énergétique', statut:'active', url_audio:'' },
     { id:7, titre:'Relaxation cervicales', categorie:'ciblé', duree:'8 min', icon:'🦒', description:'Guidé · Tensions cervicales et nuque', statut:'active', url_audio:'' },
     { id:8, titre:'Détente lombaires', categorie:'ciblé', duree:'12 min', icon:'🫁', description:'Relâchement du bas du dos', statut:'active', url_audio:'' },
-    { id:9, titre:'Sons nature — forêt', categorie:'ambiance', duree:'60 min', icon:'🌲', description:'Ambiance forêt · Travail en fond', statut:'active', url_audio:'https://www.youtube.com/embed/xNN7iTA57jM' },
+    { id:9, titre:'Sons nature — forêt', categorie:'ambiance', duree:'60 min', icon:'🌲', description:'Ambiance forêt · Travail en fond', statut:'active', url_audio:'' },
   ],
   exercices: [
-    { id:1, titre:'Cervicales express', categorie:'tms', icon:'🦒', bg:'rgba(90,138,106,.15)', indication:'Douleurs nuque · Bureau', tags:['5 min','Sans matériel','Assis'], description:'5 exercices de mobilisation cervicale douce', url_video:'https://www.youtube.com/embed/PHpFuAc7IHE' },
-    { id:2, titre:'Lombaires & dos', categorie:'tms', icon:'🫁', bg:'rgba(90,138,106,.15)', indication:'Douleurs lombaires · Station assise', tags:['8 min','Sans matériel','Debout'], description:'Étirements et renforcement du bas du dos', url_video:'https://www.youtube.com/embed/sTxC3J3gQEU' },
-    { id:3, titre:'Poignets & mains', categorie:'tms', icon:'🙌', bg:'rgba(90,138,106,.15)', indication:'Clavier intensif · Tendinite', tags:['5 min','Sans matériel','Assis'], description:'Mobilisation et étirements des poignets', url_video:'https://www.youtube.com/embed/fdD7CgN5FGg' },
-    { id:4, titre:'Étirements complets', categorie:'etirements', icon:'🧘', bg:'rgba(90,138,170,.15)', indication:'Raideurs générales · Pause déjeuner', tags:['15 min','Sans matériel','Debout'], description:'Programme complet haut et bas du corps', url_video:'https://www.youtube.com/embed/g_tea8ZNk5A' },
-    { id:5, titre:'Épaules & trapèzes', categorie:'etirements', icon:'💪', bg:'rgba(90,138,170,.15)', indication:'Tensions épaules · Stress accumulé', tags:['7 min','Sans matériel','Assis'], description:'Relâchement des épaules et du trapèze', url_video:'https://www.youtube.com/embed/2SzObKSWmOw' },
-    { id:6, titre:'Micro-workout 7 min', categorie:'workout', icon:'⚡', bg:'rgba(200,112,96,.12)', indication:'Manque d\'énergie · Après-repas', tags:['7 min','Espace requis','Debout'], description:'Circuit HIIT léger · Réveil énergétique', url_video:'https://www.youtube.com/embed/EC423RM52tc' },
+    { id:1, titre:'Cervicales express', categorie:'tms', icon:'🦒', bg:'rgba(90,138,106,.15)', indication:'Douleurs nuque · Bureau', tags:['5 min','Sans matériel','Assis'], description:'5 exercices de mobilisation cervicale douce', url_video:'' },
+    { id:2, titre:'Lombaires & dos', categorie:'tms', icon:'🫁', bg:'rgba(90,138,106,.15)', indication:'Douleurs lombaires · Station assise', tags:['8 min','Sans matériel','Debout'], description:'Étirements et renforcement du bas du dos', url_video:'' },
+    { id:3, titre:'Poignets & mains', categorie:'tms', icon:'🙌', bg:'rgba(90,138,106,.15)', indication:'Clavier intensif · Tendinite', tags:['5 min','Sans matériel','Assis'], description:'Mobilisation et étirements des poignets', url_video:'' },
+    { id:4, titre:'Étirements complets', categorie:'etirements', icon:'🧘', bg:'rgba(90,138,170,.15)', indication:'Raideurs générales · Pause déjeuner', tags:['15 min','Sans matériel','Debout'], description:'Programme complet haut et bas du corps', url_video:'' },
+    { id:5, titre:'Épaules & trapèzes', categorie:'etirements', icon:'💪', bg:'rgba(90,138,170,.15)', indication:'Tensions épaules · Stress accumulé', tags:['7 min','Sans matériel','Assis'], description:'Relâchement des épaules et du trapèze', url_video:'' },
+    { id:6, titre:'Micro-workout 7 min', categorie:'workout', icon:'⚡', bg:'rgba(200,112,96,.12)', indication:'Manque d\'énergie · Après-repas', tags:['7 min','Espace requis','Debout'], description:'Circuit HIIT léger · Réveil énergétique', url_video:'' },
     { id:7, titre:'Cardio doux 15 min', categorie:'workout', icon:'🏃', bg:'rgba(200,112,96,.12)', indication:'Énergie basse · Fatigue mentale', tags:['15 min','Couloir ok','Debout'], description:'Marche active + exercices de mobilité', url_video:'' },
-    { id:8, titre:'Respiration carrée', categorie:'respiration', icon:'◻', bg:'rgba(138,106,170,.12)', indication:'Stress aigu · Avant réunion', tags:['4 min','Partout','Assis/Debout'], description:'Box breathing 4-4-4-4 · Régulation immédiate', url_video:'https://www.youtube.com/embed/tEmt1Znux58' },
+    { id:8, titre:'Respiration carrée', categorie:'respiration', icon:'◻', bg:'rgba(138,106,170,.12)', indication:'Stress aigu · Avant réunion', tags:['4 min','Partout','Assis/Debout'], description:'Box breathing 4-4-4-4 · Régulation immédiate', url_video:'' },
     { id:9, titre:'Relaxation musculaire', categorie:'relaxation', icon:'🌊', bg:'rgba(200,169,110,.1)', indication:'Tension généralisée · Fin de journée', tags:['12 min','Chaise','Assis'], description:'Jacobson progressif · Contraction-relâchement', url_video:'' },
   ],
   sessions: [],
   reservations: [],
   cc_sessions: [],
   checkins: [],
+  videos: [
+    { id:1, titre:'Sophrologie guidée 10 min', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Séance complète de sophrologie filmée · Respiration et détente', url_video:'' },
+    { id:2, titre:'Yoga bureau debout', categorie:'yoga', duree:'12 min', icon:'🧘', description:'Postures debout adaptées au bureau · Sans matériel', url_video:'' },
+    { id:3, titre:'Yoga bureau assis', categorie:'yoga', duree:'8 min', icon:'💆', description:'Étirements assis · Pour libérer les tensions du travail', url_video:'' },
+    { id:4, titre:'Cervicales & épaules guidé', categorie:'tms', duree:'7 min', icon:'🦒', description:'Programme TMS filmé · Cervicales, épaules, nuque', url_video:'' },
+    { id:5, titre:'Mindfulness 5 min', categorie:'mindfulness', duree:'5 min', icon:'🌿', description:'Méditation de pleine conscience filmée · Ancrage rapide', url_video:'' },
+  ],
 };
 
 function loadDB() {
@@ -1132,6 +1238,15 @@ function switchView(id) {
   });
   if (id === 'dashboard') renderDashboard();
   if (id === 'reservation') renderCalendrier();
+  if (id === 'sons') { /* sons auto-start on click */ }
+  if (id === 'video') renderVideo();
+  if (id === 'jeux') {
+    var menu = document.getElementById('jeux-menu');
+    var zone = document.getElementById('jeu-zone');
+    if (menu) menu.style.display = 'grid';
+    if (zone) zone.innerHTML = '';
+    clearInterval(_jeuTimer);
+  }
   if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
   if (id === 'profil') renderProfil();
@@ -1566,6 +1681,643 @@ async function confirmerReservation() {
 function renderAteliers() { renderCalendrier(); }
 
 
+
+/* ════════════════════════════════════════════
+   CONTENU NATIF — Audio & Exercices
+════════════════════════════════════════════ */
+var _audioCtx = null, _audioNodes = [], _nativeSessionTimer = null, _nativeStepIdx = 0, _nativeSteps = [];
+
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+function stopNativeAudio() {
+  _audioNodes.forEach(function(n){ try{ n.stop(); } catch(e){} });
+  _audioNodes = [];
+}
+function playBinaural(baseHz, beatHz, durationSec, gainVal) {
+  stopNativeAudio();
+  var ctx = getAudioCtx(), g = gainVal || 0.10;
+  var gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(g, ctx.currentTime + 3);
+  gain.connect(ctx.destination);
+  var merger = ctx.createChannelMerger(2);
+  merger.connect(gain);
+  var oscL = ctx.createOscillator(); oscL.frequency.value = baseHz; oscL.type = 'sine';
+  var oscR = ctx.createOscillator(); oscR.frequency.value = baseHz + beatHz; oscR.type = 'sine';
+  var splL = ctx.createChannelSplitter(1); oscL.connect(splL); splL.connect(merger, 0, 0);
+  var splR = ctx.createChannelSplitter(1); oscR.connect(splR); splR.connect(merger, 0, 1);
+  if (durationSec) {
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + durationSec - 2);
+    oscL.stop(ctx.currentTime + durationSec); oscR.stop(ctx.currentTime + durationSec);
+  }
+  oscL.start(); oscR.start();
+  _audioNodes = [oscL, oscR];
+}
+function playNatureSounds() {
+  stopNativeAudio();
+  var ctx = getAudioCtx(), size = ctx.sampleRate * 2;
+  var buf = ctx.createBuffer(1, size, ctx.sampleRate), data = buf.getChannelData(0);
+  var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (var i=0;i<size;i++) {
+    var w=Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520;
+    b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+    data[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+  }
+  var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+  var flt = ctx.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 800;
+  var gain = ctx.createGain(); gain.gain.value = 0.3;
+  src.connect(flt); flt.connect(gain); gain.connect(ctx.destination); src.start();
+  _audioNodes = [src];
+}
+
+/* Steps en double quotes pour eviter les apostrophes */
+var AUDIO_STEPS = {
+  sophrologie: [
+    { t:0,   txt:"Installez-vous confortablement. Fermez les yeux ou posez votre regard au sol." },
+    { t:15,  txt:"Prenez une grande inspiration par le nez... retenez 2 secondes... expirez lentement par la bouche." },
+    { t:35,  txt:"Portez votre attention sur votre tete. Relacher chaque muscle du visage, du front, des joues, de la machoire." },
+    { t:60,  txt:"Descendez vers vos epaules. Sentez-les s'alourdir, s'eloigner de vos oreilles." },
+    { t:90,  txt:"Portez votre attention sur vos mains. Sentez la chaleur dans vos paumes, dans chaque doigt." },
+    { t:120, txt:"Votre respiration est calme et reguliere. Chaque expiration vous detend un peu plus." },
+    { t:160, txt:"Portez votre attention sur vos jambes. Elles sont lourdes, detendues, ancrees dans le sol." },
+    { t:200, txt:"Vous etes pleinement detendu(e). Restez dans cet espace de calme quelques instants." },
+    { t:500, txt:"Reprenez doucement conscience de l'espace autour de vous. Bougez les doigts, les orteils." },
+    { t:560, txt:"Ouvrez les yeux lentement. Gardez avec vous cette sensation de calme." },
+  ],
+  nsdr: [
+    { t:0,   txt:"Allongez-vous ou asseyez-vous confortablement. Fermez les yeux." },
+    { t:10,  txt:"Deux inspirations courtes par le nez, puis une longue expiration par la bouche. Respirez ainsi 3 fois." },
+    { t:40,  txt:"Detendez votre corps depuis le bas : pieds, mollets, cuisses. Laissez-les peser lourd." },
+    { t:80,  txt:"Remontez vers l'abdomen, le dos, la poitrine. Tout se relache a chaque expiration." },
+    { t:120, txt:"Votre cerveau est entre deux etats : pas endormi, pas eveille. Cet espace vous restaure." },
+    { t:180, txt:"Si des pensees surgissent, laissez-les passer comme des nuages. Ne vous y attachez pas." },
+    { t:240, txt:"Vous etes en etat de repos profond. Votre systeme nerveux se regenere." },
+    { t:500, txt:"Commencez a ressentir votre corps a nouveau. Bougez les doigts, les orteils." },
+    { t:540, txt:"Prenez une grande inspiration. Ouvrez les yeux. Vous etes recharge(e)." },
+  ],
+  binaural: [
+    { t:0, txt:"Son binaural actif. Portez un casque pour l'effet complet. Fermez les yeux." },
+    { t:10, txt:"Laissez votre esprit se detendre. Le battement binaural guide vos ondes cerebrales." },
+  ],
+  ambiance: [
+    { t:0, txt:"Sons de nature actifs. Volume a votre convenance. Ideal pour travailler en fond." },
+  ],
+  ciblé: [
+    { t:0,   txt:"Assis(e) bien droit(e). Laissez tomber lentement la tete vers l'epaule droite. Maintenez 5 secondes." },
+    { t:12,  txt:"Revenez au centre. Meme chose a gauche. Maintenez 5 secondes. Respirez." },
+    { t:28,  txt:"Ramenez le menton vers la poitrine, doucement. Sentez l'etirement dans la nuque. 8 secondes." },
+    { t:42,  txt:"Revenez. Rotation lente : regardez par-dessus l'epaule droite. 5 secondes. Changez de cote." },
+    { t:58,  txt:"Roulez les epaules vers l'arriere en grands cercles. 5 fois lentement." },
+    { t:78,  txt:"Vos cervicales sont deverrouillees. Gardez cette legerete." },
+  ],
+};
+
+var EXERCICE_STEPS = {
+  "Cervicales express": AUDIO_STEPS.ciblé,
+  "Lombaires & dos": [
+    { t:0,   txt:"Debout, pieds ecartes. Inclinez doucement le buste en avant, dos plat. 8 secondes." },
+    { t:18,  txt:"Revenez. Inclinez le buste vers l'arriere legerement. Ouvrez le thorax. 5 secondes." },
+    { t:32,  txt:"Rotation du bassin : dessinez des cercles lents avec les hanches. 5 fois dans chaque sens." },
+    { t:62,  txt:"Assis(e) : croisez la cheville droite sur le genou gauche. Penchez-vous en avant. 8 secondes." },
+    { t:78,  txt:"Changez de cote. Respirez profondement dans l'etirement." },
+    { t:96,  txt:"Votre dos est soulage. Maintenez une bonne posture dans les prochaines heures." },
+  ],
+  "Poignets & mains": [
+    { t:0,   txt:"Tendez les bras devant vous. Flechissez les poignets vers le haut. Maintenez 8 secondes." },
+    { t:14,  txt:"Flechissez vers le bas. Sentez l'etirement sur le dessus du poignet. 8 secondes." },
+    { t:28,  txt:"Rotation des poignets : 10 cercles dans chaque sens, lentement." },
+    { t:50,  txt:"Ouvrez grand la main, ecartez les doigts. Fermez en poing serre. Repetez 10 fois." },
+    { t:70,  txt:"Paumes a plat sur le bureau, doigts vers vous. Appuyez legerement. 10 secondes." },
+    { t:86,  txt:"Poignets et mains deverrouilles. Excellent travail." },
+  ],
+  "Etirements complets": [
+    { t:0,   txt:"Debout. Levez les deux bras au-dessus de la tete. Etirez-vous vers le haut. 8 secondes." },
+    { t:15,  txt:"Penchez-vous lateralement a droite. 8 secondes. Revenez. Gauche. 8 secondes." },
+    { t:40,  txt:"Rotation du buste : mains sur les epaules, tournez lentement. 5 fois chaque cote." },
+    { t:70,  txt:"Pliez le genou droit, attrapez votre cheville en arriere. Equilibre. 10 secondes. Changez." },
+    { t:100, txt:"Penchez-vous en avant, dos rond. Laissez pendre les bras. Relacher. 15 secondes." },
+    { t:122, txt:"Remontez lentement. Etirez une derniere fois vers le haut. Corps rechargé." },
+  ],
+  "Epaules & trapezes": [
+    { t:0,   txt:"Assis(e). Haussez les deux epaules vers les oreilles. Maintenez 3 secondes. Relacher brusquement." },
+    { t:12,  txt:"Repetez 5 fois. Sentez la tension se dissiper a chaque relachement." },
+    { t:35,  txt:"Roulez les epaules vers l'arriere : grands cercles lents. 10 fois." },
+    { t:55,  txt:"Bras droit dans le dos. Poussez legerement avec la main gauche. Etirement du trapeze. 10 secondes." },
+    { t:72,  txt:"Changez de cote. Respirez profondement dans l'etirement." },
+    { t:88,  txt:"Entrecroisez les doigts dans le dos. Ouvrez la poitrine. 8 secondes. Epaules liberees." },
+  ],
+  "Respiration carree": [
+    { t:0,   txt:"Box breathing 4-4-4-4. Asseyez-vous droit(e). Posez les mains sur les genoux." },
+    { t:8,   txt:"Inspirez par le nez en comptant 1... 2... 3... 4..." },
+    { t:16,  txt:"Retenez votre souffle... 1... 2... 3... 4..." },
+    { t:24,  txt:"Expirez lentement par la bouche... 1... 2... 3... 4..." },
+    { t:32,  txt:"Poumons vides... 1... 2... 3... 4... Recommencez." },
+    { t:40,  txt:"Inspirez... 1... 2... 3... 4..." },
+    { t:48,  txt:"Retenez... 1... 2... 3... 4..." },
+    { t:56,  txt:"Expirez... 1... 2... 3... 4..." },
+    { t:64,  txt:"Vide... 1... 2... 3... 4... Encore un cycle." },
+    { t:200, txt:"Systeme nerveux regule. Vous etes pret(e) pour votre reunion." },
+  ],
+  "Micro-workout 7 min": [
+    { t:0,   txt:"Echauffement : marchons sur place 30 secondes, genoux hauts !" },
+    { t:30,  txt:"Jumping jacks : 20 repetitions. Bras et jambes synchronises !" },
+    { t:55,  txt:"Squats : 15 repetitions. Descendez comme si vous vous assiez sur une chaise. Dos droit." },
+    { t:85,  txt:"Pompes sur le bureau : 10 repetitions. Mains sur le bureau, corps incline." },
+    { t:110, txt:"Fentes : 10 chaque jambe. Genou arriere proche du sol." },
+    { t:145, txt:"Mountain climbers : 20 secondes. Mains au sol, alternez les genoux." },
+    { t:170, txt:"Gainage : 30 secondes. Corps droit comme une planche. Tenez !" },
+    { t:205, txt:"Recuperation. Marchez lentement 30 secondes. Hydratez-vous !" },
+  ],
+  "Relaxation musculaire": [
+    { t:0,   txt:"Allongez-vous ou asseyez-vous. Fermez les yeux." },
+    { t:10,  txt:"Contractez les pieds : serrez fort 5 secondes... Relacher. Sentez la difference." },
+    { t:22,  txt:"Contractez les mollets 5 secondes... Relacher. La detente envahit vos jambes." },
+    { t:35,  txt:"Contractez les cuisses et les fessiers... 5 secondes... Relacher." },
+    { t:48,  txt:"Contractez l'abdomen... 5 secondes... Relacher. Votre ventre se depose." },
+    { t:62,  txt:"Contractez les poings et les avant-bras... 5 secondes... Relacher." },
+    { t:75,  txt:"Haussez les epaules jusqu'aux oreilles... 5 secondes... Lacher tout d'un coup." },
+    { t:90,  txt:"Plissez le visage entier... 5 secondes... Relacher. Corps entierement detendu." },
+    { t:600, txt:"Reprenez doucement contact avec votre environnement. Ouvrez les yeux." },
+  ],
+};
+
+function getAudioSteps(audio) {
+  var cat = audio.categorie;
+  if (cat === 'nsdr') return AUDIO_STEPS.nsdr;
+  if (cat === 'binaural') return AUDIO_STEPS.binaural;
+  if (cat === 'ambiance') return AUDIO_STEPS.ambiance;
+  if (cat === 'ciblé') return AUDIO_STEPS.ciblé;
+  return AUDIO_STEPS.sophrologie;
+}
+
+function startNativeSound(audio, durSec) {
+  var cat = audio.categorie;
+  try {
+    if (cat === 'binaural') {
+      var hz = audio.titre.indexOf('tha') > -1 ? 6 : 10;
+      playBinaural(200, hz, durSec, 0.10);
+    } else if (cat === 'nsdr') {
+      playBinaural(180, 6, durSec, 0.07);
+    } else if (cat === 'ambiance') {
+      playNatureSounds();
+    } else if (cat === 'sophrologie') {
+      playBinaural(200, 4, durSec, 0.06);
+    }
+  } catch(e) { console.warn('WebAudio non disponible:', e.message); }
+}
+
+function runNativePlayer(steps, durSec, colorVar, onEnd) {
+  clearInterval(_nativeSessionTimer);
+  _nativeStepIdx = 0; _nativeSteps = steps;
+  var elapsed = 0;
+  _nativeSessionTimer = setInterval(function() {
+    elapsed++;
+    var m = Math.floor(elapsed/60), s = elapsed%60;
+    var timerEl = document.getElementById('native-timer');
+    var progEl  = document.getElementById('native-progress');
+    if (timerEl) timerEl.textContent = m + ':' + String(s).padStart(2,'0');
+    if (progEl)  progEl.style.width = Math.min(elapsed/durSec*100, 100) + '%';
+    var nextIdx = _nativeStepIdx + 1;
+    if (nextIdx < _nativeSteps.length && elapsed >= _nativeSteps[nextIdx].t) {
+      _nativeStepIdx = nextIdx;
+      var stepEl = document.getElementById('native-step');
+      if (stepEl) {
+        stepEl.style.opacity = '0';
+        setTimeout(function(){
+          if (stepEl && _nativeSteps[_nativeStepIdx]) {
+            stepEl.textContent = _nativeSteps[_nativeStepIdx].txt;
+            stepEl.style.opacity = '1';
+          }
+        }, 400);
+      }
+    }
+    if (elapsed >= durSec) {
+      clearInterval(_nativeSessionTimer);
+      stopNativeAudio();
+      if (onEnd) onEnd();
+    }
+  }, 1000);
+}
+
+function buildNativeModal(firstTxt, durLabel, colorVar, hasSnd) {
+  var sndBadge = hasSnd ? '<div style="font-size:.6rem;color:var(--sage);margin-bottom:.8rem">&#128266; Son genere · Portez un casque pour le meilleur effet</div>' : '';
+  return sndBadge
+    + '<div id="native-step" style="min-height:70px;background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7;transition:opacity .5s">' + firstTxt + '</div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
+    + '<div id="native-timer" style="font-size:1.8rem;font-weight:300;color:var(' + colorVar + ')">0:00</div>'
+    + '<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">'
+    + '<div id="native-progress" style="height:100%;background:var(' + colorVar + ');border-radius:2px;width:0%;transition:width 1s linear"></div>'
+    + '</div>'
+    + '<div style="font-size:.68rem;color:var(--text-muted)">' + durLabel + '</div>'
+    + '</div>'
+    + '<button class="btn-primary" id="native-stop-btn" style="width:100%">&#9209; Arreter</button>';
+}
+
+
+
+/* ════════════════════════════════════════════
+   SONS IMMERSIFS
+════════════════════════════════════════════ */
+var _sonCtx = null, _sonNodes = {}, _sonGain = null, _sonActive = null;
+
+function getSonCtx() {
+  if (!_sonCtx) _sonCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _sonCtx;
+}
+
+function makePinkNoise(ctx, bufSec) {
+  var size = ctx.sampleRate * bufSec;
+  var buf = ctx.createBuffer(2, size, ctx.sampleRate);
+  for (var ch = 0; ch < 2; ch++) {
+    var d = buf.getChannelData(ch), b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (var i=0; i<size; i++) {
+      var w = Math.random()*2-1;
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+    }
+  }
+  return buf;
+}
+
+function buildSonGraph(type, masterGain) {
+  var ctx = getSonCtx();
+  var nodes = [];
+  if (type === 'foret') {
+    // Bruit rose filtré passe-bas (feuillage) + LFO pour vent
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 4); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 600;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.08; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.15;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    src.connect(lpf); lpf.connect(masterGain);
+    src.start(); lfo.start();
+    nodes = [src, lfo];
+  } else if (type === 'pluie') {
+    // Bruit blanc filtré passe-haut (gouttes) + LFO irrégulier
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 3); src.loop = true;
+    var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 1200;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 8000;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.15; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.1;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    src.connect(hpf); hpf.connect(lpf); lpf.connect(masterGain);
+    src.start(); lfo.start();
+    nodes = [src, lfo];
+  } else if (type === 'ocean') {
+    // Bruit rose + LFO lent (vagues ~6s) + passe-bas
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 6); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 400;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.17; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.3;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    src.connect(lpf); lpf.connect(masterGain);
+    src.start(); lfo.start();
+    nodes = [src, lfo];
+  } else if (type === 'cafe') {
+    // Bruit brun médium + LFO très lent (humus de café)
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 5); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 1800;
+    var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 200;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.04; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.08;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    src.connect(hpf); hpf.connect(lpf); lpf.connect(masterGain);
+    src.start(); lfo.start();
+    nodes = [src, lfo];
+  }
+  return nodes;
+}
+
+function playSon(type) {
+  stopAllSons();
+  var ctx = getSonCtx();
+  _sonGain = ctx.createGain();
+  var vol = (document.getElementById('son-volume') ? +document.getElementById('son-volume').value : 40) / 100 * 0.5;
+  _sonGain.gain.setValueAtTime(0, ctx.currentTime);
+  _sonGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 1.5);
+  _sonGain.connect(ctx.destination);
+  _sonNodes[type] = buildSonGraph(type, _sonGain);
+  _sonActive = type;
+  ['foret','pluie','ocean','cafe'].forEach(function(t) {
+    var card = document.getElementById('son-' + t);
+    var status = document.getElementById('status-' + t);
+    if (card) card.style.borderColor = t === type ? 'var(--gold-border)' : '';
+    if (status) status.textContent = t === type ? '■ En lecture' : '▶ Démarrer';
+    if (status && t === type) status.style.color = 'var(--gold)';
+    else if (status) status.style.color = 'var(--text-muted)';
+  });
+  showToast('♫ ' + {foret:'Forêt',pluie:'Pluie',ocean:'Océan',cafe:'Café'}[type] + ' en lecture');
+}
+
+function stopAllSons() {
+  Object.keys(_sonNodes).forEach(function(t) {
+    _sonNodes[t].forEach(function(n){ try{ n.stop(); } catch(e){} });
+  });
+  _sonNodes = {}; _sonActive = null;
+  if (_sonGain) { try { _sonGain.disconnect(); } catch(e){} _sonGain = null; }
+  ['foret','pluie','ocean','cafe'].forEach(function(t) {
+    var card = document.getElementById('son-' + t);
+    var status = document.getElementById('status-' + t);
+    if (card) card.style.borderColor = '';
+    if (status) { status.textContent = '▶ Démarrer'; status.style.color = 'var(--text-muted)'; }
+  });
+}
+
+function setSonVolume(val) {
+  document.getElementById('son-vol-label').textContent = val + '%';
+  if (_sonGain) _sonGain.gain.setTargetAtTime(val / 100 * 0.5, getSonCtx().currentTime, 0.1);
+}
+
+
+/* ════════════════════════════════════════════
+   BIBLIOTHÈQUE VIDÉO
+════════════════════════════════════════════ */
+var CATS_VIDEO = [
+  { id:'all', label:'Tout' },
+  { id:'sophrologie', label:'Sophrologie' },
+  { id:'yoga', label:'Yoga bureau' },
+  { id:'tms', label:'TMS' },
+  { id:'mindfulness', label:'Mindfulness' },
+];
+var currentVideoCat = 'all';
+
+// Vidéos démo dans DEMO_DB déjà initialisées — on lit DB.videos
+function renderVideo() {
+  if (!DB.videos) DB.videos = [];
+  var catsEl = document.getElementById('video-cats');
+  var grid   = document.getElementById('video-grid');
+  if (!catsEl || !grid) return;
+  catsEl.innerHTML = CATS_VIDEO.map(function(c) {
+    var activeCls = c.id === currentVideoCat ? ' active' : '';
+    var onclick = 'filterVideo(\'' + c.id + '\')';
+    return '<div class="cat-pill' + activeCls + '" onclick="' + onclick + '">' + c.label + '</div>';
+  }).join('');
+  var filtered = currentVideoCat === 'all' ? DB.videos : DB.videos.filter(function(v){ return v.categorie === currentVideoCat; });
+  if (!filtered.length) {
+    grid.innerHTML = "<div style=\"grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)\">Aucune video — Ajoutez depuis Administration</div>";
+    return;
+  }
+  var bg = { sophrologie:'rgba(90,138,106,.15)', yoga:'rgba(90,138,170,.15)', tms:'rgba(200,169,110,.1)', mindfulness:'rgba(138,106,170,.15)' };
+  grid.innerHTML = filtered.map(function(v) {
+    return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer">'
+      + '<div class="audio-thumb" style="background:' + (bg[v.categorie]||'var(--surface2)') + '">' + (v.icon||'🎬') + '</div>'
+      + '<div class="audio-title">' + v.titre + '</div>'
+      + '<div class="audio-meta"><span>' + v.categorie + '</span><span class="audio-duration">' + (v.duree||'') + '</span></div>'
+      + '<button class="audio-play-btn">▶ Regarder</button>'
+      + '</div>';
+  }).join('');
+}
+
+function filterVideo(cat) { currentVideoCat = cat; renderVideo(); }
+
+function openVideo(id) {
+  var v = DB.videos.find(function(x){ return x.id === id; });
+  if (!v) return;
+  if (!v.url_video) {
+    showToast("URL video non renseignee — Modifiez depuis Administration");
+    return;
+  }
+  openModal(v.titre,
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
+    + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
+    + '<iframe src="' + v.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+    + '</div>'
+    + '<div style="font-size:.78rem;color:var(--text)">' + (v.description||'') + '</div>'
+  );
+}
+
+
+/* ════════════════════════════════════════════
+   JEUX CÉRÉBRAUX
+════════════════════════════════════════════ */
+var _jeuTimer = null;
+
+function startJeu(type) {
+  var zone = document.getElementById('jeu-zone');
+  var menu = document.getElementById('jeux-menu');
+  if (!zone) return;
+  if (menu) menu.style.display = 'none';
+  clearInterval(_jeuTimer);
+  if (type === 'memory')    startMemory(zone);
+  if (type === 'calcul')    startCalcul(zone);
+  if (type === 'attention') startAttention(zone);
+  if (type === 'reflexes')  startReflexes(zone);
+}
+
+function jeuBack() {
+  clearInterval(_jeuTimer);
+  var menu = document.getElementById('jeux-menu');
+  if (menu) menu.style.display = 'grid';
+  var zone = document.getElementById('jeu-zone');
+  if (zone) zone.innerHTML = '';
+}
+
+function jeuHeader(titre, score) {
+  return '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">'
+    + '<button class="btn-secondary" style="font-size:.7rem;padding:.35rem .8rem" onclick="jeuBack()">← Retour</button>'
+    + '<div style="font-size:.75rem;font-weight:500;color:var(--text)">' + titre + '</div>'
+    + '<div id="jeu-score" style="font-size:.75rem;color:var(--gold)">' + score + '</div>'
+    + '</div>';
+}
+
+/* ── MEMORY ── */
+function startMemory(zone) {
+  var EMOJIS = ['🧠','💓','🌊','🌲','⚡','🎯','🎵','🌿'];
+  var pairs = EMOJIS.concat(EMOJIS);
+  pairs.sort(function(){ return Math.random()-.5; });
+  var flipped = [], matched = [], moves = 0;
+  zone.innerHTML = jeuHeader('Memory','0 paire')
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem" id="memory-grid"></div>';
+  var grid = document.getElementById('memory-grid');
+  pairs.forEach(function(em, i) {
+    var card = document.createElement('div');
+    card.style.cssText = 'aspect-ratio:1;background:var(--surface);border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;cursor:pointer;user-select:none;transition:all .25s';
+    card.textContent = '?';
+    card.setAttribute('data-em', em);
+    card.setAttribute('data-idx', i);
+    card.onclick = function() {
+      if (matched.indexOf(i) > -1 || flipped.indexOf(i) > -1 || flipped.length === 2) return;
+      flipped.push(i);
+      card.textContent = em;
+      card.style.background = 'var(--gold-dim)';
+      card.style.borderColor = 'var(--gold-border)';
+      if (flipped.length === 2) {
+        moves++;
+        var i1 = flipped[0], i2 = flipped[1];
+        var c1 = grid.querySelector('[data-idx="'+i1+'"]');
+        var c2 = grid.querySelector('[data-idx="'+i2+'"]');
+        if (pairs[i1] === pairs[i2]) {
+          matched.push(i1); matched.push(i2);
+          flipped = [];
+          [c1,c2].forEach(function(c){ c.style.background='rgba(90,138,106,.2)'; c.style.borderColor='rgba(90,138,106,.4)'; });
+          document.getElementById('jeu-score').textContent = (matched.length/2) + ' paire' + (matched.length>2?'s':'');
+          if (matched.length === pairs.length) {
+            setTimeout(function(){ showToast('Bravo ! ' + (matched.length/2) + ' paires en ' + moves + ' coups'); jeuBack(); }, 600);
+          }
+        } else {
+          setTimeout(function(){
+            [c1,c2].forEach(function(c){ c.textContent='?'; c.style.background='var(--surface)'; c.style.borderColor='var(--border2)'; });
+            flipped = [];
+          }, 900);
+        }
+      }
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ── CALCUL MENTAL ── */
+function startCalcul(zone) {
+  var score = 0, total = 0, timeLeft = 90;
+  function newQuestion() {
+    var ops = ['+','-','×'];
+    var op = ops[Math.floor(Math.random()*ops.length)];
+    var a, b, ans;
+    if (op==='+') { a=Math.floor(Math.random()*50)+1; b=Math.floor(Math.random()*50)+1; ans=a+b; }
+    else if (op==='-') { a=Math.floor(Math.random()*50)+20; b=Math.floor(Math.random()*a)+1; ans=a-b; }
+    else { a=Math.floor(Math.random()*12)+2; b=Math.floor(Math.random()*12)+2; ans=a*b; }
+    var distractors = [ans];
+    while(distractors.length<4) { var d=ans+Math.floor(Math.random()*20)-10; if(distractors.indexOf(d)<0&&d!==ans||distractors.length>1) distractors.push(d); }
+    distractors.sort(function(){return Math.random()-.5;});
+    document.getElementById('calc-question').textContent = a + ' ' + op + ' ' + b + ' = ?';
+    document.getElementById('calc-choices').innerHTML = distractors.map(function(d) {
+      return '<button class="btn-secondary" style="font-size:1.1rem;padding:.6rem;border-radius:10px" onclick="checkCalc('+d+','+ans+')">' + d + '</button>';
+    }).join('');
+  }
+  zone.innerHTML = jeuHeader('Calcul mental', '0 / 0')
+    + '<div style="text-align:center;font-size:2rem;font-weight:300;color:var(--gold);margin:1.5rem 0" id="calc-question"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem" id="calc-choices"></div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="calc-timer-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="calc-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+  window._calcScore = 0; window._calcTotal = 0;
+  newQuestion();
+  _jeuTimer = setInterval(function(){
+    timeLeft--;
+    var m=Math.floor(timeLeft/60), s=timeLeft%60;
+    var timeEl=document.getElementById('calc-time'), barEl=document.getElementById('calc-timer-bar');
+    if(timeEl) timeEl.textContent=m+':'+String(s).padStart(2,'0');
+    if(barEl) barEl.style.width=(timeLeft/90*100)+'%';
+    if(timeLeft<=0){ clearInterval(_jeuTimer); showToast('Score : '+window._calcScore+' / '+window._calcTotal); jeuBack(); }
+  }, 1000);
+  window._calcNextQ = newQuestion;
+}
+
+window.checkCalc = function(val, ans) {
+  window._calcTotal++;
+  if (val === ans) { window._calcScore++; showToast('✓'); }
+  else { showToast('✗ La réponse était ' + ans); }
+  document.getElementById('jeu-score').textContent = window._calcScore + ' / ' + window._calcTotal;
+  window._calcNextQ();
+};
+
+/* ── ATTENTION SÉLECTIVE ── */
+function startAttention(zone) {
+  var score = 0, round = 0, totalRounds = 12;
+  var SHAPES = ['●','■','▲','◆','★','✦'];
+  var COLORS = ['#e74c3c','#2ecc71','#3498db','#f39c12','#9b59b6','#1abc9c'];
+  function nextRound() {
+    if (round >= totalRounds) {
+      clearInterval(_jeuTimer);
+      showToast('Score final : ' + score + ' / ' + totalRounds);
+      jeuBack(); return;
+    }
+    round++;
+    document.getElementById('jeu-score').textContent = score + ' / ' + (round-1);
+    var targetShape = SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    var targetColor = COLORS[Math.floor(Math.random()*COLORS.length)];
+    var items = [];
+    items.push({ shape:targetShape, color:targetColor, isTarget:true });
+    while(items.length < 16) {
+      var s=SHAPES[Math.floor(Math.random()*SHAPES.length)];
+      var c=COLORS[Math.floor(Math.random()*COLORS.length)];
+      if(s!==targetShape || c!==targetColor) items.push({ shape:s, color:c, isTarget:false });
+    }
+    items.sort(function(){return Math.random()-.5;});
+    var gridEl = document.getElementById('att-grid');
+    if (!gridEl) return;
+    document.getElementById('att-target').innerHTML = 'Trouvez : <span style="font-size:2rem;color:'+targetColor+'">'+targetShape+'</span>';
+    gridEl.innerHTML = items.map(function(item, i) {
+      return '<div style="font-size:1.8rem;text-align:center;cursor:pointer;padding:.3rem;border-radius:8px;transition:background .1s" data-ok="'+item.isTarget+'" onclick="attClick(this)">'
+        + '<span style="color:'+item.color+'">'+item.shape+'</span></div>';
+    }).join('');
+  }
+  zone.innerHTML = jeuHeader('Attention sélective', '0 / 0')
+    + '<div id="att-target" style="text-align:center;font-size:.85rem;color:var(--text-dim);margin-bottom:1rem;padding:.8rem;background:var(--surface);border-radius:10px"></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem" id="att-grid"></div>';
+  nextRound();
+  window._attNext = nextRound;
+  window._attScore = function(ok) {
+    if (ok) score++;
+    setTimeout(nextRound, 300);
+  };
+}
+
+window.attClick = function(el) {
+  var ok = el.getAttribute('data-ok') === 'true';
+  el.style.background = ok ? 'rgba(90,138,106,.3)' : 'rgba(192,64,48,.2)';
+  document.getElementById('jeu-score').textContent = (ok ? parseInt((document.getElementById('jeu-score').textContent||'0').split('/')[0])+1 : parseInt((document.getElementById('jeu-score').textContent||'0').split('/')[0])) + ' / ' + document.getElementById('jeu-score').textContent.split('/')[1];
+  window._attScore(ok);
+};
+
+/* ── RÉFLEXES ── */
+function startReflexes(zone) {
+  var scores = [], round = 0, totalRounds = 8, waiting = false;
+  var _rfTimer = null;
+  zone.innerHTML = jeuHeader('Réflexes','— ms')
+    + '<div style="text-align:center;padding:2rem 0">'
+    + '<div id="rf-zone" style="width:160px;height:160px;border-radius:50%;background:var(--surface);border:2px solid var(--border2);margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--text-muted);cursor:pointer;transition:all .3s;user-select:none" onclick="rfClick()">'
+    + 'Prêt ?</div>'
+    + '<div style="font-size:.65rem;color:var(--text-muted);margin-top:1rem" id="rf-instruction">Cliquez sur le cercle quand il devient vert</div>'
+    + '</div>';
+  function rfRound() {
+    round++;
+    if (round > totalRounds) {
+      var avg = Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length);
+      showToast('Temps moyen : ' + avg + ' ms · Excellent !');
+      jeuBack(); return;
+    }
+    var rfZone = document.getElementById('rf-zone');
+    if (!rfZone) return;
+    rfZone.style.background = 'var(--surface)';
+    rfZone.style.borderColor = 'var(--border2)';
+    rfZone.textContent = round + ' / ' + totalRounds;
+    waiting = false;
+    var delay = 1500 + Math.random() * 2500;
+    _rfTimer = setTimeout(function(){
+      var z = document.getElementById('rf-zone');
+      if (!z) return;
+      z.style.background = 'rgba(30,138,80,.3)';
+      z.style.borderColor = 'var(--green)';
+      z.textContent = 'CLIQUEZ !';
+      waiting = true;
+      window._rfStart = Date.now();
+    }, delay);
+  }
+  window.rfClick = function() {
+    var rfZone = document.getElementById('rf-zone');
+    if (!rfZone) return;
+    if (!waiting) { rfRound(); return; }
+    var rt = Date.now() - window._rfStart;
+    scores.push(rt);
+    document.getElementById('jeu-score').textContent = rt + ' ms';
+    rfZone.style.background = 'rgba(90,138,170,.3)';
+    rfZone.textContent = rt + ' ms';
+    waiting = false;
+    clearTimeout(_rfTimer);
+    setTimeout(rfRound, 800);
+  };
+  rfRound();
+}
+
+
 /* ════════════════════════════════════════════
    COHÉRENCE CARDIAQUE
 ════════════════════════════════════════════ */
@@ -1736,50 +2488,25 @@ function filterAudio(cat) {
 }
 
 function playAudio(id) {
-  const audio = DB.audios.find(a => a.id === id);
+  var audio = DB.audios.find(function(a){ return a.id === id; });
   if (!audio) return;
 
-  /* Si URL audio/vidéo dispo → ouvrir dans un modal iframe */
-  if (audio.url_audio) {
-    DB.sessions.push({
-      date: new Date().toISOString(), label: audio.titre,
-      detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60
-    });
-    saveDB(DB);
-    openModal(audio.titre,
-      '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + ' · ' + audio.duree + '</div>' +
-      '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">' +
-      '<iframe src="' + audio.url_audio + '?autoplay=1&rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen allow="autoplay" loading="lazy"></iframe>' +
-      '</div>' +
-      '<div style="font-size:.75rem;color:var(--text);margin-bottom:.5rem">' + audio.description + '</div>' +
-      '<div style="font-size:.6rem;color:var(--text-muted)">✦ Le contenu est hébergé sur YouTube · remplaçable par vos propres audios</div>'
-    );
-    return;
-  }
-
-  /* Fallback : player barre interne (simulé) */
-  if (currentAudio && currentAudio.id === id) { togglePlay(); return; }
-  currentAudio = audio;
-  playerRunning = true;
-  playerSec = 0;
-  playerTotalSec = parseDuration(audio.duree);
-  clearInterval(playerTimer);
-  playerTimer = setInterval(tickPlayer, 1000);
-
-  const bar = document.getElementById('player-bar');
-  bar.classList.add('visible');
-  document.getElementById('player-title').textContent = audio.titre;
-  document.getElementById('player-sub').textContent = audio.categorie + ' · ' + audio.duree;
-  document.getElementById('player-total').textContent = audio.duree;
-  document.getElementById('play-pause-btn').textContent = '⏸';
-  updatePlayerUI();
-  renderAudio();
-
-  DB.sessions.push({
-    date: new Date().toISOString(), label: audio.titre,
-    detail: audio.categorie + ' · ' + audio.duree, duree: playerTotalSec / 60
-  });
+  DB.sessions.push({ date: new Date().toISOString(), label: audio.titre, detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60 });
   saveDB(DB);
+
+  var durSec = parseDuration(audio.duree);
+  var steps = getAudioSteps(audio);
+  var hasSnd = ['sophrologie','binaural','nsdr','ambiance'].indexOf(audio.categorie) > -1;
+  startNativeSound(audio, durSec);
+  var firstTxt = steps.length ? steps[0].txt : audio.description;
+  var modalBody = '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + ' · ' + audio.duree + '</div>'
+    + buildNativeModal(firstTxt, audio.duree, '--gold', hasSnd);
+  openModal(audio.titre, modalBody);
+  runNativePlayer(steps, durSec, '--gold', function(){ showToast('Session terminee : ' + audio.titre); });
+  setTimeout(function() {
+    var btn = document.getElementById('native-stop-btn');
+    if (btn) btn.onclick = function(){ clearInterval(_nativeSessionTimer); stopNativeAudio(); closeModal(); };
+  }, 100);
 }
 
 function parseDuration(str) {
@@ -1850,22 +2577,33 @@ function openExercice(id) {
     detail: ex.categorie + ' · ' + ex.tags[0], duree: parseInt(ex.tags[0]) || 10
   });
   saveDB(DB);
-  const videoHtml = ex.url_video
-    ? '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
-      + '<iframe src="' + ex.url_video + '?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
-      + '</div>'
-    : '<div style="background:var(--surface);border-radius:10px;padding:2rem;margin-bottom:1rem;text-align:center;font-size:2.5rem">' + ex.icon + '</div>';
-  const tagsHtml = ex.tags.map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
-  const bodyHtml = '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem">' + ex.indication + '</div>'
-    + videoHtml
-    + '<div style="font-size:.8rem;color:var(--text);margin-bottom:.8rem">' + ex.description + '</div>'
-    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem">' + tagsHtml + '</div>'
-    + '<button class="btn-primary" style="width:100%" id="ex-done-btn">Marquer comme effectué</button>';
-  openModal(ex.titre, bodyHtml);
-  const btn = document.getElementById('ex-done-btn');
-  if (btn) btn.onclick = function(){ closeModal(); showToast('Exercice enregistré'); };
-}
 
+  var steps = EXERCICE_STEPS[ex.titre] || [];
+  var durSec = (parseInt(ex.tags[0]) || 5) * 60;
+  var tagsHtml = ex.tags.map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
+  var bodyHtml = '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem">' + ex.indication + '</div>';
+  if (steps.length) {
+    bodyHtml += buildNativeModal(steps[0].txt, ex.tags[0], '--sage', false);
+  } else {
+    bodyHtml += '<div style="background:var(--surface);border-radius:10px;padding:1.5rem;margin-bottom:1rem;text-align:center;font-size:2rem">' + ex.icon + '</div>'
+      + '<div style="font-size:.8rem;color:var(--text);margin-bottom:1rem">' + ex.description + '</div>'
+      + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem">' + tagsHtml + '</div>'
+      + '<button class="btn-primary" style="width:100%" id="ex-done-btn">Marquer comme effectue</button>';
+  }
+  openModal(ex.titre, bodyHtml);
+  if (steps.length) {
+    runNativePlayer(steps, durSec, '--sage', function(){ showToast('Exercice termine ! Bravo !'); });
+    setTimeout(function(){
+      var btn = document.getElementById('native-stop-btn');
+      if (btn) btn.onclick = function(){ clearInterval(_nativeSessionTimer); closeModal(); showToast('Exercice enregistre'); };
+    }, 100);
+  } else {
+    setTimeout(function(){
+      var btn = document.getElementById('ex-done-btn');
+      if (btn) btn.onclick = function(){ closeModal(); showToast('Exercice enregistre'); };
+    }, 100);
+  }
+}
 
 /* ════════════════════════════════════════════
    PROFIL
@@ -1943,6 +2681,17 @@ function renderAdmin(tab) {
       <td><button class="btn-ghost" onclick="editAudio(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAudio(${a.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
+  } else if (tab === 'videos') {
+    if (!DB.videos) DB.videos = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddVideo()">+ Vidéo</button></div>'
+      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>URL</th><th>Action</th></tr></thead><tbody>'
+      + DB.videos.map(function(v) {
+        return '<tr><td>' + v.id + '</td><td>' + (v.icon||'🎬') + ' ' + v.titre + '</td><td>' + v.categorie + '</td><td>' + (v.duree||'—') + '</td>'
+          + '<td style="font-size:.58rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">' + (v.url_video ? '✓ Définie' : '⚠ Vide') + '</td>'
+          + '<td><button class="btn-ghost" onclick="editVideo(' + v.id + ')">✎</button>'
+          + '<button class="btn-ghost" onclick="deleteVideo(' + v.id + ')" style="color:var(--red)">✕</button></td></tr>';
+      }).join('')
+      + '</tbody></table>';
   } else if (tab === 'exercices') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Tags</th><th>Action</th>
@@ -1960,6 +2709,83 @@ function renderAdmin(tab) {
       <td>${DB.sessions.length + DB.cc_sessions.length}</td>
     </tr></tbody></table>`;
   }
+}
+
+
+/* ── CRUD Vidéos ── */
+function openAddVideo() {
+  openModal('Ajouter une vidéo', `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" placeholder="Sophrologie guidée 10 min"></div>
+    <div class="form-field"><label>Catégorie</label>
+      <select id="f-vi-cat">
+        <option value="sophrologie">Sophrologie</option>
+        <option value="yoga">Yoga bureau</option>
+        <option value="tms">TMS</option>
+        <option value="mindfulness">Mindfulness</option>
+      </select>
+    </div>
+    <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
+    <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
+    <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" placeholder="Description courte"></div>
+    <div class="form-field"><label>URL vidéo (Vimeo embed)</label><input type="text" id="f-vi-url" placeholder="https://player.vimeo.com/video/...">
+      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Format Vimeo : https://player.vimeo.com/video/XXXXXXX</div></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveVideo()">✓ Ajouter</button>
+    </div>`);
+}
+
+function saveVideo() {
+  const titre = document.getElementById('f-vi-titre').value.trim();
+  if (!titre) { showToast('⚠ Titre requis'); return; }
+  if (!DB.videos) DB.videos = [];
+  const newId = Math.max(0, ...DB.videos.map(v => v.id), 0) + 1;
+  DB.videos.push({
+    id: newId, titre,
+    categorie: document.getElementById('f-vi-cat').value,
+    duree: document.getElementById('f-vi-duree').value || '',
+    icon: document.getElementById('f-vi-icon').value || '🎬',
+    description: document.getElementById('f-vi-desc').value,
+    url_video: document.getElementById('f-vi-url').value.trim(),
+  });
+  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderVideo();
+  showToast('Video ajoutee');
+}
+
+function editVideo(id) {
+  if (!DB.videos) return;
+  const v = DB.videos.find(x => x.id === id);
+  if (!v) return;
+  openModal('Modifier ' + v.titre, `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" value="${v.titre}"></div>
+    <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" value="${v.duree||''}"></div>
+    <div class="form-field"><label>Icône</label><input type="text" id="f-vi-icon" value="${v.icon||'🎬'}" style="width:80px"></div>
+    <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" value="${v.description||''}"></div>
+    <div class="form-field"><label>URL vidéo (Vimeo embed)</label><input type="text" id="f-vi-url" value="${v.url_video||''}"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="updateVideo(${id})">✓ Enregistrer</button>
+    </div>`);
+}
+
+function updateVideo(id) {
+  if (!DB.videos) return;
+  const v = DB.videos.find(x => x.id === id);
+  if (!v) return;
+  v.titre = document.getElementById('f-vi-titre').value;
+  v.duree = document.getElementById('f-vi-duree').value;
+  v.icon  = document.getElementById('f-vi-icon').value;
+  v.description = document.getElementById('f-vi-desc').value;
+  v.url_video = document.getElementById('f-vi-url').value.trim();
+  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderVideo();
+  showToast('Video mise a jour');
+}
+
+function deleteVideo(id) {
+  if (!confirm('Supprimer cette video ?')) return;
+  DB.videos = (DB.videos||[]).filter(v => v.id !== id);
+  saveDB(DB); renderAdmin(currentAdminTab);
+  showToast('Video supprimee');
 }
 
 /* ── Modals admin ── */
