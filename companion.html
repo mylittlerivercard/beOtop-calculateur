@@ -1233,20 +1233,29 @@ function renderHistoryRecent() {
     </div>`).join('');
 }
 
-function submitCheckin() {
+async function submitCheckin() {
   const energie = +document.getElementById('sl-energie').value;
   const stress  = +document.getElementById('sl-stress').value;
   const focus   = +document.getElementById('sl-focus').value;
+  const detail  = 'Énergie ' + energie + '/10 · Stress ' + stress + '/10 · Focus ' + focus + '/10';
 
-  DB.checkins.push({
-    date: new Date().toISOString(), label: 'Check-in',
-    detail: `Énergie ${energie}/10 · Stress ${stress}/10 · Focus ${focus}/10`,
-    energie, stress, focus
-  });
+  /* Enregistrement local */
+  DB.checkins.push({ date: new Date().toISOString(), label: 'Check-in', detail, energie, stress, focus });
   saveDB(DB);
+
+  /* Enregistrement serveur */
+  try {
+    const siteSlug = await getSiteSlug();
+    await fetch('/api/companion/checkin', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ energie, stress, focus, site_slug: siteSlug })
+    });
+  } catch(e) { console.warn('Check-in API indisponible — données locales conservées'); }
+
   showToast('✓ Check-in enregistré');
 
-  // Recommandation
+  /* Recommandation */
   const band = document.getElementById('reco-band');
   band.style.display = 'flex';
   let reco = { icon:'💆', title:'', sub:'' };
@@ -1640,17 +1649,35 @@ function tickCC() {
   }
 }
 
-function finishCC() {
+async function finishCC() {
   clearInterval(ccInterval); ccRunning = false;
   document.getElementById('cc-start-btn').textContent = '▶ Recommencer';
   document.getElementById('breathe-label').textContent = 'Terminé';
   document.getElementById('breathe-phase').textContent = 'Bravo !';
   const duree = Math.round(ccTotalSec / 60);
+
+  /* Enregistrement local */
   DB.cc_sessions.push({
     date: new Date().toISOString(), label: 'Cohérence cardiaque',
     detail: ccProtocolName + ' · ' + duree + ' min', duree
   });
   saveDB(DB);
+
+  /* Enregistrement serveur */
+  try {
+    const siteSlug = await getSiteSlug();
+    await fetch('/api/companion/cc', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        duree_min: duree,
+        protocole: ccProtocolName,
+        complete:  true,
+        site_slug: siteSlug
+      })
+    });
+  } catch(e) { console.warn('CC API indisponible — données locales conservées'); }
+
   showToast('✓ Session terminée · ' + duree + ' minutes');
   renderCCStats();
 }
