@@ -543,6 +543,88 @@ tr:hover td { background: var(--surface); color: var(--text); }
 .reco-sub { font-size: .65rem; color: var(--text-dim); margin-top: .15rem; }
 .reco-action { flex-shrink: 0; }
 
+/* ══ CALENDRIER ══ */
+.cal-grid {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cal-header-row {
+  display: grid;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border2);
+  position: sticky; top: 0; z-index: 5;
+}
+.cal-time-col {
+  width: 52px; flex-shrink: 0;
+  font-size: .58rem; color: var(--text-muted);
+  text-align: right; padding-right: .5rem;
+  border-right: 1px solid var(--border);
+}
+.cal-at-header {
+  padding: .55rem .4rem; text-align: center;
+  border-right: 1px solid var(--border);
+  font-size: .62rem; color: var(--text-dim);
+  font-weight: 500; line-height: 1.3;
+}
+.cal-at-header .at-h-icon { font-size: 1rem; display: block; margin-bottom: .2rem; }
+.cal-at-header.libre-now { color: var(--green); }
+.cal-at-header.occupe-now { color: var(--red); }
+.cal-row {
+  display: grid;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  min-height: 28px;
+}
+.cal-row:last-child { border-bottom: none; }
+.cal-row.now-row { background: rgba(200,169,110,.04); }
+.cal-time-cell {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: .5rem; padding-top: 6px;
+  font-size: .58rem; color: var(--text-muted);
+  border-right: 1px solid var(--border);
+}
+.cal-cell {
+  border-right: 1px solid rgba(255,255,255,.04);
+  cursor: pointer; transition: background .12s;
+  position: relative; min-height: 28px;
+}
+.cal-cell:last-child { border-right: none; }
+.cal-cell.libre:hover { background: rgba(90,138,106,.1); }
+.cal-cell.reserve {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: 4px; margin: 1px;
+  cursor: default;
+}
+.cal-cell.occupe {
+  background: rgba(239,68,68,.12);
+  border-left: 2px solid rgba(239,68,68,.4);
+  cursor: default;
+}
+.cal-cell.inaccessible { opacity: .3; cursor: default; }
+.cal-cell.selected-slot { background: rgba(200,169,110,.15); outline: 1px solid var(--gold); }
+.cal-cell-label {
+  font-size: .55rem; padding: 3px 4px; line-height: 1.2;
+  color: var(--text-muted); white-space: nowrap; overflow: hidden;
+}
+.cal-cell.reserve .cal-cell-label { color: var(--gold); font-weight: 500; }
+.cal-cell.occupe .cal-cell-label { color: rgba(239,68,68,.8); }
+.now-indicator {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: var(--gold); opacity: .6; z-index: 4;
+}
+.duree-btn {
+  flex: 1; padding: .55rem; border-radius: 9px;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text-dim); font-size: .78rem; cursor: pointer;
+  transition: all .15s;
+}
+.duree-btn.active, .duree-btn:hover {
+  border-color: var(--gold-border); background: var(--gold-dim); color: var(--gold);
+}
+
 /* ══ RESPONSIVE ══ */
 @media (max-width: 900px) {
   .sidenav { width: 60px; }
@@ -720,24 +802,54 @@ tr:hover td { background: var(--surface); color: var(--text); }
 <div class="view" id="view-reservation">
   <div class="page-header">
     <h1>Réserver un <em>atelier</em></h1>
-    <p>Disponibilité en temps réel · Réservation immédiate</p>
+    <p>Calendrier du jour · Créneaux disponibles en temps réel</p>
   </div>
 
+  <!-- Barre de contrôle -->
   <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap">
-    <div style="font-size:.7rem;color:var(--text-dim)">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:.3rem"></span>Libres :
-      <strong id="count-libres" style="color:var(--green)">—</strong>
+    <div style="display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:.3rem .5rem">
+      <button class="btn-ghost" style="padding:.2rem .5rem;font-size:.9rem" onclick="calNav(-1)">‹</button>
+      <span id="cal-date-label" style="font-size:.75rem;color:var(--text);min-width:130px;text-align:center"></span>
+      <button class="btn-ghost" style="padding:.2rem .5rem;font-size:.9rem" onclick="calNav(+1)">›</button>
+      <button class="btn-ghost" style="padding:.2rem .6rem;font-size:.65rem;border-left:1px solid var(--border);border-radius:0" onclick="calGoToday()">Auj.</button>
     </div>
-    <div style="font-size:.7rem;color:var(--text-dim)">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:.3rem"></span>Occupés :
-      <strong id="count-occupes" style="color:var(--red)">—</strong>
-    </div>
-    <div id="res-source" style="font-size:.6rem;color:var(--text-muted);padding:.2rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:8px">⏳ Chargement...</div>
-    <div id="res-last-update" style="font-size:.6rem;color:var(--text-muted)"></div>
-    <button class="btn-secondary" style="margin-left:auto;font-size:.68rem;padding:.4rem .9rem" onclick="renderAteliers()">↻ Actualiser</button>
+    <div id="cal-libres-badge" style="font-size:.65rem;color:var(--text-dim)"></div>
+    <div id="res-source" style="font-size:.6rem;color:var(--text-muted);padding:.2rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:8px">⏳</div>
+    <button class="btn-secondary" style="margin-left:auto;font-size:.68rem;padding:.4rem .9rem" onclick="renderCalendrier()">↻ Actualiser</button>
   </div>
 
-  <div class="atelier-grid" id="atelier-grid"></div>
+  <!-- Légende -->
+  <div style="display:flex;gap:1rem;margin-bottom:.9rem;font-size:.6rem;color:var(--text-dim);flex-wrap:wrap">
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--gold-dim);border:1px solid var(--gold-border);vertical-align:middle;margin-right:3px"></span>Réservé</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);vertical-align:middle;margin-right:3px"></span>Occupé (capteur)</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(90,138,106,.12);border:1px solid rgba(90,138,106,.3);vertical-align:middle;margin-right:3px"></span>Disponible</span>
+  </div>
+
+  <!-- Calendrier -->
+  <div style="overflow-x:auto">
+    <div id="calendrier-wrap" style="min-width:700px"></div>
+  </div>
+
+  <!-- Modal de réservation -->
+  <div id="modal-res" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+    <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
+          <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem" id="mres-sub">—</div>
+        </div>
+        <button onclick="closeResModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.9rem">✕</button>
+      </div>
+      <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.12em">Choisir une durée</div>
+      <div style="display:flex;gap:.5rem;margin-bottom:1.4rem">
+        <button class="duree-btn" data-d="10" onclick="selectDuree(10)">10 min</button>
+        <button class="duree-btn active" data-d="15" onclick="selectDuree(15)">15 min</button>
+        <button class="duree-btn" data-d="20" onclick="selectDuree(20)">20 min</button>
+      </div>
+      <button onclick="confirmerReservation()" style="width:100%;padding:.8rem;border-radius:10px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid var(--gold-border);color:var(--gold);font-size:.82rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
+      <div id="mres-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════ COHÉRENCE CARDIAQUE ══════════════ -->
@@ -1018,7 +1130,7 @@ function switchView(id) {
       n.classList.add('active');
   });
   if (id === 'dashboard') renderDashboard();
-  if (id === 'reservation') renderAteliers();
+  if (id === 'reservation') renderCalendrier();
   if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
   if (id === 'profil') renderProfil();
@@ -1168,18 +1280,19 @@ const ATELIERS_META_COMPANION = {
 };
 const SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
 
-function generateSlots() {
-  /* Prochain créneau disponible (arrondi au quart d'heure supérieur) */
-  const now = new Date();
-  const startMin = Math.ceil((now.getHours() * 60 + now.getMinutes()) / 15) * 15;
-  const h = Math.floor(startMin / 60);
-  const m = startMin % 60;
-  if (h < 8 || h >= 19) return [];
-  const hStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
-  /* Retourne le créneau de départ + les 3 durées */
-  return [{ heure: hStr, duree: 10 }, { heure: hStr, duree: 15 }, { heure: hStr, duree: 20 }];
-}
+/* ════════════════════════════════════════════
+   CALENDRIER DE RÉSERVATION
+════════════════════════════════════════════ */
 
+const HEURES_DEBUT = 8, HEURES_FIN = 19;       // 08h → 19h
+const SLOT_MIN = 15;                             // granularité grille (15 min)
+const DUREES   = [10, 15, 20];
+
+let calDate      = new Date();                   // date affichée
+let calAteliers  = [];                           // liste ateliers avec statut PIR
+let calReservations = [];                        // réservations du jour depuis API
+let calSelected  = null;                         // {atelier, heure} en attente
+let calDuree     = 15;                           // durée choisie dans modal
 let realtimeTimer = null;
 let cachedSiteSlug = null;
 
@@ -1195,95 +1308,243 @@ async function getSiteSlug() {
   return null;
 }
 
-async function renderAteliers() {
-  const grid = document.getElementById('atelier-grid');
+function calDateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function calNav(delta) {
+  calDate.setDate(calDate.getDate() + delta);
+  renderCalendrier();
+}
+
+function calGoToday() {
+  calDate = new Date();
+  renderCalendrier();
+}
+
+function fmtHM(totalMin) {
+  return String(Math.floor(totalMin / 60)).padStart(2,'0') + ':' + String(totalMin % 60).padStart(2,'0');
+}
+
+function parseHM(str) {
+  const [h, m] = str.split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function renderCalendrier() {
+  clearTimeout(realtimeTimer);
+  const wrap = document.getElementById('calendrier-wrap');
   const srcEl = document.getElementById('res-source');
-  const updEl = document.getElementById('res-last-update');
-  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:.72rem;color:var(--text-muted)">⏳ Récupération des données en temps réel...</div>';
+  wrap.innerHTML = '<div style="padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">⏳ Chargement...</div>';
+
+  /* ── Label date ── */
+  const isToday = calDateStr(calDate) === calDateStr(new Date());
+  const dateLabel = calDate.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('cal-date-label').textContent = (isToday ? '📅 ' : '') + dateLabel;
 
   const siteSlug = await getSiteSlug();
-  let occData = null;
-  let passagesToday = 0;
 
+  /* ── Données PIR occupation ── */
+  let occData = null;
   if (siteSlug) {
     try {
-      const [rOcc, rPass] = await Promise.all([
-        fetch('/api/sensors/occupation/current?site_slug=' + siteSlug, { credentials: 'include' }),
-        fetch('/api/sensors/passages/today?site_slug=' + siteSlug, { credentials: 'include' })
-      ]);
-      if (rOcc.ok) occData = await rOcc.json();
-      if (rPass.ok) { const d = await rPass.json(); passagesToday = d.passages_today || 0; }
+      const r = await fetch('/api/sensors/occupation/current?site_slug=' + siteSlug, { credentials: 'include' });
+      if (r.ok) occData = await r.json();
     } catch(e) {}
   }
 
-  let ateliers = [];
-  const slots = generateSlots();
-
-  if (occData && occData.ateliers && Object.keys(occData.ateliers).length > 0) {
-    srcEl.innerHTML = '🟢 Capteurs PIR · Temps réel';
-    srcEl.style.color = 'var(--green)';
-    updEl.textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-
-    ateliers = Object.entries(occData.ateliers).map(([nom, occupe], idx) => ({
-      id: idx + 1, nom,
-      statut: occupe ? 'occupe' : 'libre',
-      ...(ATELIERS_META_COMPANION[nom] || { icon:'⚙️', indication:'Atelier beOtop' })
-    }));
-    // Ajouter accessoires sans PIR
-    SANS_CAPTEUR_PIR.forEach((nom, i) => {
-      if (!ateliers.find(a => a.nom === nom)) {
-        ateliers.push({ id: 100 + i, nom, statut: 'inconnu', ...(ATELIERS_META_COMPANION[nom] || { icon:'⚙️', indication:'Accessoire déclaratif' }) });
-      }
-    });
-  } else {
-    srcEl.innerHTML = '🟡 Hors-ligne · Données locales';
-    srcEl.style.color = 'var(--gold)';
-    updEl.textContent = '';
-    ateliers = DB.ateliers;
+  /* ── Réservations du jour depuis API ── */
+  calReservations = [];
+  if (siteSlug) {
+    try {
+      const r = await fetch('/api/reservations?site_slug=' + siteSlug + '&date=' + calDateStr(calDate), { credentials: 'include' });
+      if (r.ok) calReservations = await r.json();
+    } catch(e) {}
   }
 
-  const libres  = ateliers.filter(a => a.statut === 'libre').length;
-  const occupes = ateliers.filter(a => a.statut === 'occupe').length;
-  document.getElementById('count-libres').textContent = libres;
-  document.getElementById('count-occupes').textContent = occupes;
+  /* ── Construire liste ateliers ── */
+  const ACCESSOIRES = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+  if (occData && occData.ateliers && Object.keys(occData.ateliers).length > 0) {
+    srcEl.innerHTML = '🟢 PIR · Temps réel';
+    srcEl.style.color = 'var(--green)';
+    calAteliers = Object.entries(occData.ateliers)
+      .filter(([nom]) => !ACCESSOIRES.includes(nom))
+      .map(([nom, occupe]) => ({
+        nom, statut: occupe ? 'occupe' : 'libre',
+        ...(ATELIERS_META_COMPANION[nom] || { icon:'⚙️' })
+      }));
+  } else {
+    srcEl.innerHTML = '🟡 Hors-ligne';
+    srcEl.style.color = 'var(--gold)';
+    calAteliers = DB.ateliers.filter(a => !ACCESSOIRES.includes(a.nom));
+  }
+
+  /* ── Compteurs ── */
+  const libres = calAteliers.filter(a => a.statut === 'libre').length;
+  document.getElementById('cal-libres-badge').textContent =
+    libres + ' atelier' + (libres > 1 ? 's' : '') + ' libre' + (libres > 1 ? 's' : '') + ' maintenant';
   document.getElementById('badge-libres').textContent = libres;
 
-  grid.innerHTML = ateliers.map(a => {
-    const statusLabel = a.statut === 'libre' ? 'Libre' : a.statut === 'occupe' ? 'Occupé' : a.statut === 'inconnu' ? 'Non mesuré' : 'Bientôt libre';
-    const timeNote = a.statut === 'occupe' ? '· Session en cours' : '';
-    const canReserve = a.statut === 'libre' || a.statut === 'bientot';
-    const slotHtml = canReserve && slots.length
-      ? `<div class="slot-pills">${slots.map(s => `<span class="slot-pill" onclick="reserveSlot('${a.nom}','${s.heure}',${s.duree},this)">${s.duree} min</span>`).join('')}</div>`
-      : (a.statut === 'inconnu' ? '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.5rem">Accessoire · Sans capteur PIR</div>' : '');
-    return `<div class="atelier-card ${a.statut}">
-      <div class="at-header">
-        <span class="at-icon">${a.icon}</span>
-        <span class="at-status ${a.statut}">${statusLabel}</span>
-      </div>
-      <div class="at-name">${a.nom}</div>
-      <div class="at-indication">${a.indication}</div>
-      <div class="at-time">${timeNote}</div>
-      ${slotHtml}
-    </div>`;
-  }).join('');
+  /* ── Construire la grille ── */
+  const nbCols = calAteliers.length;
+  const slots = [];
+  for (let m = HEURES_DEBUT * 60; m < HEURES_FIN * 60; m += SLOT_MIN) slots.push(m);
 
-  clearTimeout(realtimeTimer);
-  realtimeTimer = setTimeout(renderAteliers, 30000);
+  const nowMin = isToday ? (new Date().getHours() * 60 + new Date().getMinutes()) : -1;
+
+  /* Header */
+  const colTpl = '52px ' + calAteliers.map(() => '1fr').join(' ');
+  let html = `<div class="cal-grid">
+    <div class="cal-header-row" style="grid-template-columns:${colTpl}">
+      <div class="cal-time-col" style="padding:.55rem .4rem"></div>`;
+
+  calAteliers.forEach(a => {
+    const statusCls = a.statut === 'libre' ? 'libre-now' : a.statut === 'occupe' ? 'occupe-now' : '';
+    html += `<div class="cal-at-header ${statusCls}">
+      <span class="at-h-icon">${a.icon}</span>${a.nom}
+    </div>`;
+  });
+  html += '</div>';
+
+  /* Lignes */
+  slots.forEach(slotMin => {
+    const hStr = fmtHM(slotMin);
+    const showLabel = slotMin % 60 === 0;
+    const isNowRow = isToday && nowMin >= slotMin && nowMin < slotMin + SLOT_MIN;
+    const isPast   = isToday && slotMin + SLOT_MIN <= nowMin;
+
+    html += `<div class="cal-row${isNowRow ? ' now-row' : ''}" style="grid-template-columns:${colTpl}">
+      <div class="cal-time-cell">${showLabel ? hStr : ''}</div>`;
+
+    calAteliers.forEach(a => {
+      /* Est-ce que ce créneau est réservé ? */
+      const res = calReservations.find(r => {
+        const rStart = parseHM(r.heure_debut.slice(0,5));
+        const rEnd   = parseHM(r.heure_fin.slice(0,5));
+        return r.atelier === a.nom && slotMin >= rStart && slotMin < rEnd;
+      });
+      /* Début exact de la réservation = afficher label */
+      const resStart = res ? parseHM(res.heure_debut.slice(0,5)) === slotMin : false;
+
+      /* Occupé par capteur PIR */
+      const pir = !isPast && a.statut === 'occupe' && isToday;
+
+      let cls = 'libre';
+      let label = '';
+      let clickable = !isPast && !res && !pir;
+
+      if (res) {
+        cls = 'reserve';
+        if (resStart) label = '🔒 Réservé · ' + res.duree_min + ' min';
+      } else if (pir) {
+        cls = 'occupe';
+        label = '● En cours';
+      } else if (isPast) {
+        cls = 'inaccessible';
+      }
+
+      const onclick = clickable
+        ? `onclick="openResModal('${a.nom}','${hStr}')"`
+        : '';
+
+      html += `<div class="cal-cell ${cls}" ${onclick}>
+        ${label ? '<div class="cal-cell-label">' + label + '</div>' : ''}
+      </div>`;
+    });
+
+    /* Indicateur heure actuelle */
+    if (isNowRow) {
+      const pct = ((nowMin - slotMin) / SLOT_MIN) * 100;
+      html += `<div class="now-indicator" style="top:${pct}%"></div>`;
+    }
+
+    html += '</div>';
+  });
+
+  html += '</div>';
+  wrap.innerHTML = html;
+
+  realtimeTimer = setTimeout(renderCalendrier, 30000);
 }
 
-function reserveSlot(atelierNom, slot, duree, el) {
-  document.querySelectorAll('.slot-pill.selected').forEach(p => p.classList.remove('selected'));
-  el.classList.add('selected');
+/* ── Modal réservation ── */
+function openResModal(atelierNom, heure) {
+  calSelected = { atelier: atelierNom, heure };
+  calDuree = 15;
+  document.getElementById('mres-titre').textContent = atelierNom;
+  document.getElementById('mres-sub').textContent = 'Créneau : ' + heure + ' · ' + calDateStr(calDate);
+  document.getElementById('mres-error').style.display = 'none';
+  document.querySelectorAll('.duree-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.d === calDuree);
+  });
+  document.getElementById('modal-res').style.display = 'flex';
+}
+
+function closeResModal() {
+  document.getElementById('modal-res').style.display = 'none';
+  calSelected = null;
+}
+
+function selectDuree(d) {
+  calDuree = d;
+  document.querySelectorAll('.duree-btn').forEach(b => b.classList.toggle('active', +b.dataset.d === d));
+}
+
+async function confirmerReservation() {
+  if (!calSelected) return;
+  const errEl = document.getElementById('mres-error');
+  errEl.style.display = 'none';
+
+  const siteSlug = await getSiteSlug();
+
+  /* Appel API si connecté */
+  if (siteSlug) {
+    try {
+      const r = await fetch('/api/reservations', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          site_slug:   siteSlug,
+          atelier:     calSelected.atelier,
+          date:        calDateStr(calDate),
+          heure_debut: calSelected.heure,
+          duree_min:   calDuree
+        })
+      });
+      if (r.status === 409) {
+        errEl.textContent = "Ce créneau vient d'être réservé. Choisissez un autre.";
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!r.ok) {
+        errEl.textContent = 'Erreur serveur — réservation non enregistrée.';
+        errEl.style.display = 'block';
+        return;
+      }
+    } catch(e) {
+      errEl.textContent = 'Impossible de joindre le serveur.';
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  /* Enregistrement local pour l'historique */
   DB.sessions.push({
     date: new Date().toISOString(),
-    label: atelierNom,
-    detail: 'Réservé à ' + slot + ' · ' + duree + ' min',
-    duree: duree
+    label: calSelected.atelier,
+    detail: 'Réservé ' + calSelected.heure + ' · ' + calDuree + ' min',
+    duree: calDuree
   });
   saveDB(DB);
-  showToast('✓ ' + atelierNom + ' · ' + duree + ' min à ' + slot);
+
+  closeResModal();
+  showToast('✓ ' + calSelected.atelier + ' · ' + calDuree + ' min à ' + calSelected.heure);
   renderHistoryRecent();
+  renderCalendrier();
 }
+
+/* Alias pour compatibilité switchView */
+function renderAteliers() { renderCalendrier(); }
 
 
 /* ════════════════════════════════════════════
