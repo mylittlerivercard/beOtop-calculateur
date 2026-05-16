@@ -264,6 +264,7 @@
     <div class="tab"        id="tab-capteurs" onclick="switchTab('capteurs')">&#128225; Retours capteurs</div>
     <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">&#128203; Analyse QVCT</div>
     <div class="tab"        id="tab-realtime" onclick="switchTab('realtime')">&#128994; Disponibilité</div>
+    <div class="tab"        id="tab-companion" onclick="switchTab('companion')">&#128241; Compagnon</div>
   </div>
 
   <!-- ═══ STATS ═══ -->
@@ -535,6 +536,110 @@
     <div id="rt-error" style="display:none;padding:.8rem 1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.7rem;color:#ef4444;margin-top:1rem"></div>
   </div>
 
+<!-- ═══ COMPAGNON ═══ -->
+  <div class="view" id="view-companion">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6rem;flex-wrap:wrap;gap:.8rem">
+      <div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">beOtop <em>Compagnon</em></div>
+        <div class="page-sub" style="margin-bottom:0">Application bien-être · Réservation · Cohérence cardiaque · Exercices · Audio</div>
+      </div>
+      <a href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
+        ↗ Ouvrir l'app complète
+      </a>
+    </div>
+
+    <!-- KPIs utilisateur -->
+    <div class="kpi-row" style="margin-bottom:1.2rem">
+      <div class="kpi" style="--accent:var(--gold)">
+        <div class="kpi-label">Séances ce mois</div>
+        <div class="kpi-val" id="cp-kpi-seances">—</div>
+        <div class="kpi-sub">sessions enregistrées</div>
+      </div>
+      <div class="kpi" style="--accent:var(--sage)">
+        <div class="kpi-label">Durée totale</div>
+        <div class="kpi-val" id="cp-kpi-duree">—</div>
+        <div class="kpi-sub">minutes de récupération</div>
+      </div>
+      <div class="kpi" style="--accent:var(--mist)">
+        <div class="kpi-label">Cohérence cardiaque</div>
+        <div class="kpi-val" id="cp-kpi-cc">—</div>
+        <div class="kpi-sub">sessions ce mois</div>
+      </div>
+      <div class="kpi" style="--accent:#9b8fc4">
+        <div class="kpi-label">Streak</div>
+        <div class="kpi-val" id="cp-kpi-streak">—</div>
+        <div class="kpi-sub">jours consécutifs</div>
+      </div>
+    </div>
+
+    <!-- Disponibilité ateliers temps réel + accès rapide -->
+    <div class="grid-2" style="gap:1rem;margin-bottom:1rem">
+
+      <!-- Disponibilité -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+          <div class="card-title" style="margin-bottom:0">Ateliers · Disponibilité</div>
+          <div id="cp-src-badge" style="font-size:.58rem;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid rgba(0,0,0,.1);padding:.15rem .5rem;border-radius:6px">⏳</div>
+        </div>
+        <div id="cp-ateliers-list"></div>
+        <div style="margin-top:.8rem;font-size:.58rem;color:var(--muted)">Rafraîchissement auto · 30s</div>
+      </div>
+
+      <!-- Accès rapides -->
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
+          <div style="display:flex;align-items:center;gap:.9rem">
+            <div style="font-size:1.6rem">💓</div>
+            <div>
+              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Cohérence cardiaque</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Protocole 365 · 5 min</div>
+            </div>
+            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
+          <div style="display:flex;align-items:center;gap:.9rem">
+            <div style="font-size:1.6rem">🎧</div>
+            <div>
+              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Bibliothèque audio</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Sophrologie · NSDR · Binaural</div>
+            </div>
+            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
+          <div style="display:flex;align-items:center;gap:.9rem">
+            <div style="font-size:1.6rem">🧘</div>
+            <div>
+              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Exercices physiques</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">TMS · Étirements · Workout</div>
+            </div>
+            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
+          <div style="display:flex;align-items:center;gap:.9rem">
+            <div style="font-size:1.6rem">📝</div>
+            <div>
+              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Check-in du jour</div>
+              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Énergie · Stress · Focus</div>
+            </div>
+            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique récent compagnon -->
+    <div class="card">
+      <div class="card-title">Activité récente (Compagnon)</div>
+      <div id="cp-history" style="font-size:.7rem;color:var(--muted)">Ouvrez le Compagnon pour enregistrer vos premières sessions.</div>
+    </div>
+
+  </div>
+
 <!-- ═══ MODAL ═══ -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
   <div class="modal-box">
@@ -616,6 +721,7 @@ function switchTab(tab){
   if(tab==='qvct'){buildQvctBar();loadQvct();}
   if(tab==='realtime'){startRealtimeRefresh();}
   else{stopRealtimeRefresh();}
+  if(tab==='companion'){loadCompanion();}
 }
 
 async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login';}
@@ -1264,6 +1370,103 @@ function calcROI(){
           '<div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+bp+'%;--bar-color:var(--sage)"></div></div></div></div>';
       }).filter(Boolean).join('');
   } else {eDiv.style.display='none';}
+}
+
+/* ═══════════════════════════════════════════════════════
+   ONGLET COMPAGNON
+═══════════════════════════════════════════════════════ */
+
+var cpRefreshTimer = null;
+
+function loadCompanion(){
+  /* ── KPIs depuis localStorage du Compagnon ── */
+  try {
+    var raw = localStorage.getItem('beotop_companion_db');
+    if(raw){
+      var db = JSON.parse(raw);
+      var now = new Date(); var m = new Date(now.getFullYear(), now.getMonth(), 1);
+      var sess = (db.sessions||[]).filter(function(s){return new Date(s.date)>=m;});
+      var ccSess = (db.cc_sessions||[]).filter(function(s){return new Date(s.date)>=m;});
+      var dureeMin = sess.reduce(function(a,s){return a+(s.duree||0);},0);
+      document.getElementById('cp-kpi-seances').textContent = sess.length;
+      document.getElementById('cp-kpi-duree').textContent = dureeMin+' min';
+      document.getElementById('cp-kpi-cc').textContent = ccSess.length;
+      /* Streak */
+      var all = sess.concat(ccSess).map(function(s){return s.date?s.date.slice(0,10):null;}).filter(Boolean);
+      var unique = all.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().reverse();
+      var streak=0,today=new Date().toISOString().slice(0,10),cur=today;
+      unique.forEach(function(d){if(d===cur){streak++;var dt=new Date(cur);dt.setDate(dt.getDate()-1);cur=dt.toISOString().slice(0,10);}});
+      document.getElementById('cp-kpi-streak').textContent = streak+' j';
+      /* Historique récent */
+      var hist = sess.concat(ccSess).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6);
+      var icons = {'Cohérence cardiaque':'💓'};
+      document.getElementById('cp-history').innerHTML = hist.length ? hist.map(function(s){
+        var icon = icons[s.label]||'🪑';
+        var d = new Date(s.date);
+        var df = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+        return '<div style="display:flex;align-items:center;gap:.7rem;padding:.55rem 0;border-bottom:1px solid rgba(0,0,0,.07)">'+
+          '<div style="width:30px;height:30px;border-radius:8px;background:rgba(201,169,110,.1);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">'+icon+'</div>'+
+          '<div style="flex:1"><div style="font-size:.75rem;color:var(--cream)">'+s.label+'</div><div style="font-size:.6rem;color:var(--muted)">'+s.detail+'</div></div>'+
+          '<div style="font-size:.58rem;color:var(--muted)">'+df+'</div></div>';
+      }).join('') : '<div style="color:var(--muted);padding:.5rem 0">Aucune activité enregistrée dans le Compagnon.</div>';
+    }
+  } catch(e){}
+
+  /* ── Disponibilité ateliers temps réel ── */
+  loadCompanionAteliers();
+  clearInterval(cpRefreshTimer);
+  cpRefreshTimer = setInterval(loadCompanionAteliers, 30000);
+}
+
+async function loadCompanionAteliers(){
+  var site = currentSite||(sites.length?sites[0].slug:null);
+  var badge = document.getElementById('cp-src-badge');
+  var el = document.getElementById('cp-ateliers-list');
+  if(!site){
+    el.innerHTML='<div style="font-size:.68rem;color:var(--muted)">Aucun site sélectionné</div>';
+    return;
+  }
+  var occData = null;
+  try {
+    var r = await fetch('/api/sensors/occupation/current?site_slug='+site,{credentials:'include'});
+    if(r.ok) occData = await r.json();
+  } catch(e){}
+
+  if(!occData||!occData.ateliers||!Object.keys(occData.ateliers).length){
+    badge.textContent='🟡 Hors-ligne';
+    el.innerHTML='<div style="font-size:.68rem;color:var(--muted)">Aucune donnée capteur disponible</div>';
+    return;
+  }
+
+  badge.textContent='🟢 Temps réel';
+  badge.style.color='var(--sage)';
+  var ateliers = Object.entries(occData.ateliers);
+  var libres = ateliers.filter(function(a){return !a[1];}).length;
+  var occupes = ateliers.filter(function(a){return a[1];}).length;
+
+  var ICONS = {
+    'Méridienne P127':'🪑','Cocon de Sieste':'😴','Neurosonic Lit':'🛏️',
+    "Bol d'Air Jacquier":'🌬️','Transat 127':'🛋️','Siège Massant 0 Gravité':'💆',
+    'Siège Massant Shiatsu':'🎵','Siège Lecture':'📖','Sensosphère':'🌟',
+    'Bain de Lumière Rouge':'💡','Photobiomodulation':'✨','Lunettes Psio':'👓'
+  };
+
+  el.innerHTML =
+    '<div style="display:flex;gap:.6rem;margin-bottom:.7rem;font-size:.65rem">'+
+      '<span style="color:var(--sage)">●  '+libres+' libre'+(libres>1?'s':'')+'</span>'+
+      '<span style="color:var(--red)">● '+occupes+' occupé'+(occupes>1?'s':'')+'</span>'+
+    '</div>'+
+    ateliers.map(function(entry){
+      var nom=entry[0],occ=entry[1];
+      var icon=ICONS[nom]||'⚙️';
+      var col=occ?'var(--red)':'var(--sage)';
+      var lbl=occ?'Occupé':'Libre';
+      return '<div style="display:flex;align-items:center;gap:.6rem;padding:.38rem 0;border-bottom:1px solid rgba(0,0,0,.05)">'+
+        '<span style="font-size:.9rem">'+icon+'</span>'+
+        '<span style="flex:1;font-size:.68rem;color:var(--cream2,#1e1a30)">'+nom+'</span>'+
+        '<span style="font-size:.6rem;font-weight:500;color:'+col+'">'+lbl+'</span>'+
+      '</div>';
+    }).join('');
 }
 
 init();
