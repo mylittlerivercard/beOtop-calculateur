@@ -588,10 +588,11 @@ tr:hover td { background: var(--surface); color: var(--text); }
 .cal-cell {
   border-right: 1px solid rgba(255,255,255,.04);
   cursor: pointer; transition: background .12s;
-  position: relative; min-height: 28px;
+  position: relative; min-height: 36px;
 }
 .cal-cell:last-child { border-right: none; }
-.cal-cell.libre:hover { background: rgba(90,138,106,.1); }
+.cal-cell.libre { background: rgba(255,255,255,.025); }
+.cal-cell.libre:hover { background: rgba(90,138,106,.2); outline: 1px solid rgba(90,138,106,.5); cursor: pointer; }
 .cal-cell.reserve {
   background: var(--gold-dim);
   border: 1px solid var(--gold-border);
@@ -1285,7 +1286,7 @@ const SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','B
 ════════════════════════════════════════════ */
 
 const HEURES_DEBUT = 8, HEURES_FIN = 19;       // 08h → 19h
-const SLOT_MIN = 15;                             // granularité grille (15 min)
+const SLOT_MIN = 10;                             // granularité grille (10 min)
 const DUREES   = [10, 15, 20];
 
 let calDate      = new Date();                   // date affichée
@@ -1409,7 +1410,7 @@ async function renderCalendrier() {
   /* Lignes */
   slots.forEach(slotMin => {
     const hStr = fmtHM(slotMin);
-    const showLabel = slotMin % 60 === 0;
+    const showLabel = slotMin % 30 === 0;
     const isNowRow = isToday && nowMin >= slotMin && nowMin < slotMin + SLOT_MIN;
     const isPast   = isToday && slotMin + SLOT_MIN <= nowMin;
 
@@ -1429,7 +1430,7 @@ async function renderCalendrier() {
       /* Occupé par capteur PIR */
       const pir = !isPast && a.statut === 'occupe' && isToday;
 
-      let cls = 'libre';
+      let cls = isPast ? 'inaccessible' : 'libre';
       let label = '';
       let clickable = !isPast && !res && !pir;
 
@@ -1439,8 +1440,6 @@ async function renderCalendrier() {
       } else if (pir) {
         cls = 'occupe';
         label = '● En cours';
-      } else if (isPast) {
-        cls = 'inaccessible';
       }
 
       const safeNom = a.nom.replace(/'/g, '&#39;');
@@ -1466,6 +1465,14 @@ async function renderCalendrier() {
   wrap.innerHTML = html;
 
   realtimeTimer = setTimeout(renderCalendrier, 30000);
+
+  /* Scroll automatique à l'heure courante */
+  if (isToday) {
+    setTimeout(() => {
+      const nowRow = document.querySelector('.cal-row.now-row');
+      if (nowRow) nowRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
 }
 
 /* ── Modal réservation ── */
