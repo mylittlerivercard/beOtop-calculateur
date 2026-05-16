@@ -848,7 +848,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
     <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
         <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
+          <div style="font-size:1.6rem;font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
           <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem" id="mres-sub">—</div>
         </div>
         <button onclick="closeResModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.9rem">✕</button>
@@ -1054,30 +1054,60 @@ tr:hover td { background: var(--surface); color: var(--text); }
     <h1>Sons <em>immersifs</em></h1>
     <p>Paysages sonores natifs · Travail en fond · Récupération</p>
   </div>
-  <div class="grid-2" style="gap:1rem;margin-bottom:1.5rem">
-    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('foret')" id="son-foret">
-      <div style="font-size:3rem;margin-bottom:.6rem">🌲</div>
-      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Forêt</div>
-      <div style="font-size:.65rem;color:var(--text-dim)">Bruit rose filtré · Ambiance naturelle</div>
-      <div class="son-status" id="status-foret" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem">
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('foret')" id="son-foret">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">🌲</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Forêt</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Feuillage · Vent</div>
+      <div class="son-status" id="status-foret" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
-    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('pluie')" id="son-pluie">
-      <div style="font-size:3rem;margin-bottom:.6rem">🌧️</div>
-      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Pluie</div>
-      <div style="font-size:.65rem;color:var(--text-dim)">Pluie douce · Ambiance cocooning</div>
-      <div class="son-status" id="status-pluie" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('pluie')" id="son-pluie">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">🌧️</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pluie</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Douce · Cocooning</div>
+      <div class="son-status" id="status-pluie" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
-    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('ocean')" id="son-ocean">
-      <div style="font-size:3rem;margin-bottom:.6rem">🌊</div>
-      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Océan</div>
-      <div style="font-size:.65rem;color:var(--text-dim)">Vagues rythmiques · Détente profonde</div>
-      <div class="son-status" id="status-ocean" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('ocean')" id="son-ocean">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">🌊</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Océan</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Vagues · Détente</div>
+      <div class="son-status" id="status-ocean" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
-    <div class="card" style="text-align:center;cursor:pointer" onclick="playSon('cafe')" id="son-cafe">
-      <div style="font-size:3rem;margin-bottom:.6rem">☕</div>
-      <div style="font-size:.95rem;font-weight:400;color:var(--text);margin-bottom:.3rem">Café</div>
-      <div style="font-size:.65rem;color:var(--text-dim)">Ambiance café · Focus productivité</div>
-      <div class="son-status" id="status-cafe" style="margin-top:.6rem;font-size:.62rem;color:var(--text-muted)">▶ Démarrer</div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('cafe')" id="son-cafe">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">☕</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Café</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Ambiance · Focus</div>
+      <div class="son-status" id="status-cafe" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('orage')" id="son-orage">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">⛈️</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Orage</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Tonnerre · Intensité</div>
+      <div class="son-status" id="status-orage" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('clavier')" id="son-clavier">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">⌨️</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Clavier</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Claquement · Flow</div>
+      <div class="son-status" id="status-clavier" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('creche')" id="son-creche">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">👶</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Crèche</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Douceur · Sérénité</div>
+      <div class="son-status" id="status-creche" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('noel')" id="son-noel">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">🎄</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Noël</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Cheminée · Cloches</div>
+      <div class="son-status" id="status-noel" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('paques')" id="son-paques">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">🐣</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pâques</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Oiseaux · Printemps</div>
+      <div class="son-status" id="status-paques" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem">
@@ -1106,32 +1136,82 @@ tr:hover td { background: var(--surface); color: var(--text); }
 <div class="view" id="view-jeux">
   <div class="page-header">
     <h1>Jeux <em>cérébraux</em></h1>
-    <p>Memory · Calcul mental · Attention · Réflexes</p>
+    <p>Mémoire · Réflexes · Attention · Logique · Inattention</p>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem" id="jeux-menu">
-    <div class="card" style="cursor:pointer" onclick="startJeu('memory')">
-      <div style="font-size:2rem;margin-bottom:.5rem">🃏</div>
-      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Retrouvez les paires · Mémoire de travail</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-5 min</span><span class="ex-tag">Mémoire</span></div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border)">🧠 Mémoire</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🃏</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Paires d'emojis</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-5 min</span></div>
     </div>
-    <div class="card" style="cursor:pointer" onclick="startJeu('calcul')">
-      <div style="font-size:2rem;margin-bottom:.5rem">🔢</div>
-      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Calcul mental</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Opérations rapides · Agilité cognitive</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Rapidité</span></div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('simon')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔵</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Simon</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Séquence de couleurs</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
     </div>
-    <div class="card" style="cursor:pointer" onclick="startJeu('attention')">
-      <div style="font-size:2rem;margin-bottom:.5rem">🎯</div>
-      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Attention sélective</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Trouvez la cible · Focus et discrimination</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-3 min</span><span class="ex-tag">Focus</span></div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">⚡ Réflexes</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('reflexes')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🟢</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Réflexes</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Temps de réaction</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
     </div>
-    <div class="card" style="cursor:pointer" onclick="startJeu('reflexes')">
-      <div style="font-size:2rem;margin-bottom:.5rem">⚡</div>
-      <div style="font-size:.9rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Réflexes</div>
-      <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.6rem">Temps de réaction · Éveil neuronal</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Réactivité</span></div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('double')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🎭</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Double tâche</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Pair/impair + couleur</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🎯 Attention</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('attention')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🎯</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Attention sélective</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez la cible</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('comptage')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">👁️</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Comptage sélectif</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Comptez une seule couleur</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="startJeu('inattention')">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div style="font-size:1.8rem">🦍</div>
+        <div>
+          <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Inattention · Le gorille invisible</div>
+          <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Phénomène de cécité inattentionnelle · Comptez les passes blanches</div>
+          <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Prise de conscience</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🔢 Calcul & Logique</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('calcul')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔢</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Calcul mental</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Opérations rapides</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('stroop')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔴</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Stroop</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Couleur vs mot · Flexibilité</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('suite')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">📐</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Suite logique</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez le suivant</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('analogie')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔗</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Analogies</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">A est à B ce que C est à…</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
     </div>
   </div>
   <div id="jeu-zone"></div>
@@ -1149,10 +1229,10 @@ tr:hover td { background: var(--surface); color: var(--text); }
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
       <div>
         <div style="font-size:2rem" id="pg-niveau-emoji">🌱</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--gold);margin-top:.2rem" id="pg-niveau-label">Débutant</div>
+        <div style="font-size:1.6rem;font-size:1.2rem;font-weight:300;color:var(--gold);margin-top:.2rem" id="pg-niveau-label">Débutant</div>
       </div>
       <div style="text-align:right">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1" id="pg-total">—</div>
+        <div style="font-size:1.6rem;font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1" id="pg-total">—</div>
         <div style="font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em">points totaux</div>
       </div>
     </div>
@@ -1169,15 +1249,15 @@ tr:hover td { background: var(--surface); color: var(--text); }
   <!-- KPIs semaine / mois / streak -->
   <div class="grid-3" style="gap:.7rem;margin-bottom:1rem">
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-semaine">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-semaine">—</div>
       <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Cette semaine</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-mois">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-mois">—</div>
       <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Ce mois</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-streak">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-streak">—</div>
       <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Jours consécutifs</div>
     </div>
   </div>
@@ -1904,7 +1984,7 @@ var EXERCICE_STEPS = {
     { t:35,  txt:"Contractez les cuisses et les fessiers... 5 secondes... Relacher." },
     { t:48,  txt:"Contractez l'abdomen... 5 secondes... Relacher. Votre ventre se depose." },
     { t:62,  txt:"Contractez les poings et les avant-bras... 5 secondes... Relacher." },
-    { t:75,  txt:"Haussez les epaules jusqu'aux oreilles... 5 secondes... Lacher tout d'un coup." },
+    { t:75,  txt:"Haussez les epaules jusqu'aux oreilles... 5 secondes... Lacher tout d un coup." },
     { t:90,  txt:"Plissez le visage entier... 5 secondes... Relacher. Corps entierement detendu." },
     { t:600, txt:"Reprenez doucement contact avec votre environnement. Ouvrez les yeux." },
   ],
@@ -2197,7 +2277,6 @@ function buildSonGraph(type, masterGain) {
     src.start(); lfo.start();
     nodes = [src, lfo];
   } else if (type === 'cafe') {
-    // Bruit brun médium + LFO très lent (humus de café)
     var src = ctx.createBufferSource();
     src.buffer = makePinkNoise(ctx, 5); src.loop = true;
     var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 1800;
@@ -2208,6 +2287,127 @@ function buildSonGraph(type, masterGain) {
     src.connect(hpf); hpf.connect(lpf); lpf.connect(masterGain);
     src.start(); lfo.start();
     nodes = [src, lfo];
+  } else if (type === 'orage') {
+    // Bruit blanc basse fréquence (tonnerre) + impulsions aléatoires + pluie intense
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 4); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 300;
+    var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 80;
+    // LFO lent pour vagues de tonnerre
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.05; lfo.type = 'sawtooth';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.4;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    // Pluie intense superposée
+    var src2 = ctx.createBufferSource();
+    src2.buffer = makePinkNoise(ctx, 3); src2.loop = true;
+    var hpf2 = ctx.createBiquadFilter(); hpf2.type = 'highpass'; hpf2.frequency.value = 2000;
+    var gainPluie = ctx.createGain(); gainPluie.gain.value = 0.4;
+    src2.connect(hpf2); hpf2.connect(gainPluie); gainPluie.connect(masterGain);
+    src.connect(hpf); hpf.connect(lpf); lpf.connect(masterGain);
+    src.start(); src2.start(); lfo.start();
+    nodes = [src, src2, lfo];
+  } else if (type === 'clavier') {
+    // Claquements périodiques simulant des touches de clavier mécanique
+    function scheduleClick() {
+      var ctx2 = getSonCtx();
+      var osc = ctx2.createOscillator();
+      osc.type = 'square'; osc.frequency.value = 800 + Math.random() * 400;
+      var env = ctx2.createGain(); env.gain.value = 0;
+      osc.connect(env); env.connect(masterGain);
+      var t = ctx2.currentTime;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.12, t + 0.003);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      osc.start(t); osc.stop(t + 0.07);
+    }
+    var clickInterval = setInterval(function() {
+      if (!_sonActive || _sonActive !== 'clavier') { clearInterval(clickInterval); return; }
+      var burst = 1 + Math.floor(Math.random() * 4);
+      for (var b = 0; b < burst; b++) {
+        setTimeout(scheduleClick, b * (40 + Math.random() * 60));
+      }
+    }, 200 + Math.random() * 300);
+    // Ambiance légère en fond
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 3); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 500;
+    var gainBg = ctx.createGain(); gainBg.gain.value = 0.08;
+    src.connect(lpf); lpf.connect(gainBg); gainBg.connect(masterGain);
+    src.start();
+    nodes = [src, { stop: function(){ clearInterval(clickInterval); } }];
+  } else if (type === 'creche') {
+    // Sons doux : bruit rose très filtré (berceuse) + LFO très lent (respiration bébé)
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 8); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 250;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.25; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.06;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    // Micro-sons hauts (gazouillis très atténués)
+    var src2 = ctx.createBufferSource();
+    src2.buffer = makePinkNoise(ctx, 2); src2.loop = true;
+    var bpf = ctx.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 1500; bpf.Q.value = 8;
+    var gainG = ctx.createGain(); gainG.gain.value = 0.04;
+    src2.connect(bpf); bpf.connect(gainG); gainG.connect(masterGain);
+    src.connect(lpf); lpf.connect(masterGain);
+    src.start(); src2.start(); lfo.start();
+    nodes = [src, src2, lfo];
+  } else if (type === 'noel') {
+    // Crépitement de feu (bruit rose impulsif) + LFO (flammes) + cloches (oscillateurs purs)
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 4); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 350;
+    var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 100;
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.3; lfo.type = 'sine';
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.2;
+    lfo.connect(lfoGain); lfoGain.connect(masterGain.gain);
+    src.connect(hpf); hpf.connect(lpf); lpf.connect(masterGain);
+    // Cloche de Noël périodique
+    function ringBell() {
+      var ctx2 = getSonCtx();
+      var osc = ctx2.createOscillator(); osc.type = 'sine'; osc.frequency.value = 880;
+      var osc2 = ctx2.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 1320;
+      var env = ctx2.createGain(); env.gain.value = 0;
+      osc.connect(env); osc2.connect(env); env.connect(masterGain);
+      var t = ctx2.currentTime;
+      env.gain.setValueAtTime(0.06, t);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+      osc.start(t); osc2.start(t); osc.stop(t+1.6); osc2.stop(t+1.6);
+    }
+    var bellInt = setInterval(function(){ if(_sonActive==='noel') ringBell(); else clearInterval(bellInt); }, 6000 + Math.random()*4000);
+    setTimeout(ringBell, 1000);
+    src.start(); lfo.start();
+    nodes = [src, lfo, { stop: function(){ clearInterval(bellInt); } }];
+  } else if (type === 'paques') {
+    // Oiseaux printaniers : oscillateurs modulés + bruit rose très filtré (brise légère)
+    var src = ctx.createBufferSource();
+    src.buffer = makePinkNoise(ctx, 6); src.loop = true;
+    var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.value = 200;
+    var gainBrise = ctx.createGain(); gainBrise.gain.value = 0.3;
+    src.connect(lpf); lpf.connect(gainBrise); gainBrise.connect(masterGain);
+    // Chant d'oiseau aléatoire
+    function chirp() {
+      var ctx2 = getSonCtx();
+      var osc = ctx2.createOscillator(); osc.type = 'sine';
+      var freqBase = 1800 + Math.random() * 1200;
+      osc.frequency.setValueAtTime(freqBase, ctx2.currentTime);
+      osc.frequency.linearRampToValueAtTime(freqBase * 1.3, ctx2.currentTime + 0.08);
+      osc.frequency.linearRampToValueAtTime(freqBase * 0.9, ctx2.currentTime + 0.18);
+      var env = ctx2.createGain(); env.gain.value = 0;
+      osc.connect(env); env.connect(masterGain);
+      var t = ctx2.currentTime;
+      env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(0.07, t+0.02);
+      env.gain.linearRampToValueAtTime(0, t+0.22);
+      osc.start(t); osc.stop(t+0.25);
+    }
+    var chirpInt = setInterval(function(){
+      if(_sonActive!=='paques'){clearInterval(chirpInt);return;}
+      var n=1+Math.floor(Math.random()*3);
+      for(var i=0;i<n;i++) setTimeout(chirp, i*(80+Math.random()*120));
+      if(Math.random()>0.5) setTimeout(function(){var m=1+Math.floor(Math.random()*2);for(var j=0;j<m;j++) setTimeout(chirp,j*90+200);}, 400);
+    }, 1500 + Math.random()*2000);
+    src.start();
+    nodes = [src, { stop: function(){ clearInterval(chirpInt); } }];
   }
   return nodes;
 }
@@ -2222,7 +2422,7 @@ function playSon(type) {
   _sonGain.connect(ctx.destination);
   _sonNodes[type] = buildSonGraph(type, _sonGain);
   _sonActive = type;
-  ['foret','pluie','ocean','cafe'].forEach(function(t) {
+  ['foret','pluie','ocean','cafe','orage','clavier','creche','noel','paques'].forEach(function(t) {
     var card = document.getElementById('son-' + t);
     var status = document.getElementById('status-' + t);
     if (card) card.style.borderColor = t === type ? 'var(--gold-border)' : '';
@@ -2230,7 +2430,8 @@ function playSon(type) {
     if (status && t === type) status.style.color = 'var(--gold)';
     else if (status) status.style.color = 'var(--text-muted)';
   });
-  showToast('♫ ' + {foret:'Forêt',pluie:'Pluie',ocean:'Océan',cafe:'Café'}[type] + ' en lecture');
+  var _sonLbls = {foret:'Foret',pluie:'Pluie',ocean:'Ocean',cafe:'Cafe',orage:'Orage',clavier:'Clavier',creche:'Creche',noel:'Noel',paques:'Paques'};
+  showToast('♫ ' + (_sonLbls[type]||type) + ' en lecture');
   setTimeout(function(){ awardPoints('sons', 'Sons immersifs · ' + type); }, 5 * 60 * 1000);
 }
 
@@ -2240,7 +2441,7 @@ function stopAllSons() {
   });
   _sonNodes = {}; _sonActive = null;
   if (_sonGain) { try { _sonGain.disconnect(); } catch(e){} _sonGain = null; }
-  ['foret','pluie','ocean','cafe'].forEach(function(t) {
+  ['foret','pluie','ocean','cafe','orage','clavier','creche','noel','paques'].forEach(function(t) {
     var card = document.getElementById('son-' + t);
     var status = document.getElementById('status-' + t);
     if (card) card.style.borderColor = '';
@@ -2323,10 +2524,17 @@ function startJeu(type) {
   if (!zone) return;
   if (menu) menu.style.display = 'none';
   clearInterval(_jeuTimer);
-  if (type === 'memory')    startMemory(zone);
-  if (type === 'calcul')    startCalcul(zone);
-  if (type === 'attention') startAttention(zone);
-  if (type === 'reflexes')  startReflexes(zone);
+  if (type === 'memory')     startMemory(zone);
+  if (type === 'calcul')     startCalcul(zone);
+  if (type === 'simon')      startSimon(zone);
+  if (type === 'stroop')     startStroop(zone);
+  if (type === 'suite')      startSuite(zone);
+  if (type === 'attention')  startAttention(zone);
+  if (type === 'comptage')   startComptage(zone);
+  if (type === 'differences')startDifferences(zone);
+  if (type === 'gorille')    startGorille(zone);
+  if (type === 'reflexes')   startReflexes(zone);
+  if (type === 'double')     startDouble(zone);
 }
 
 function jeuBack() {
@@ -2482,6 +2690,317 @@ window.attClick = function(el) {
   document.getElementById('jeu-score').textContent = (ok ? parseInt((document.getElementById('jeu-score').textContent||'0').split('/')[0])+1 : parseInt((document.getElementById('jeu-score').textContent||'0').split('/')[0])) + ' / ' + document.getElementById('jeu-score').textContent.split('/')[1];
   window._attScore(ok);
 };
+
+/* ── SIMON ── */
+function startSimon(zone) {
+  var seq = [], playerSeq = [], colors = ['#e74c3c','#2ecc71','#3498db','#f1c40f'];
+  var cnames = ['Rouge','Vert','Bleu','Jaune'];
+  var level = 0, playing = false;
+  zone.innerHTML = jeuHeader('Simon','Niveau 0')
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;max-width:280px;margin:1rem auto" id="simon-grid">'
+    + colors.map(function(c,i){ return '<div data-i="'+i+'" onclick="simonClick('+i+')" style="height:100px;border-radius:14px;background:'+c+';opacity:.5;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:rgba(255,255,255,.7)">'+cnames[i]+'</div>'; }).join('')
+    + '</div>'
+    + '<div style="text-align:center;margin-top:.8rem;font-size:.7rem;color:var(--text-muted)" id="simon-msg">Regardez la séquence...</div>';
+  function flash(idx, done) {
+    var el = zone.querySelector('[data-i="'+idx+'"]');
+    if (!el) return done();
+    el.style.opacity = '1'; el.style.boxShadow = '0 0 20px '+colors[idx];
+    setTimeout(function(){ el.style.opacity='.5'; el.style.boxShadow=''; done(); }, 400);
+  }
+  function playSeq() {
+    playing = true;
+    document.getElementById('simon-msg').textContent = 'Regardez...';
+    var i = 0;
+    function next(){ if(i>=seq.length){playing=false;document.getElementById('simon-msg').textContent='A votre tour !';return;} flash(seq[i],function(){i++;setTimeout(next,300);}); }
+    setTimeout(next, 600);
+  }
+  function nextLevel() {
+    level++; seq.push(Math.floor(Math.random()*4)); playerSeq=[];
+    document.getElementById('jeu-score').textContent = 'Niveau '+level;
+    playSeq();
+  }
+  window.simonClick = function(i) {
+    if(playing) return;
+    var el=zone.querySelector('[data-i="'+i+'"]');
+    if(el){el.style.opacity='1';el.style.boxShadow='0 0 15px '+colors[i];setTimeout(function(){el.style.opacity='.5';el.style.boxShadow='';},200);}
+    playerSeq.push(i);
+    var pos=playerSeq.length-1;
+    if(playerSeq[pos]!==seq[pos]){ awardPoints('jeu','Simon · niveau '+level); showToast('Score : niveau '+level); jeuBack(); return; }
+    if(playerSeq.length===seq.length) { setTimeout(nextLevel,500); }
+  };
+  nextLevel();
+}
+
+/* ── STROOP ── */
+function startStroop(zone) {
+  var score=0,total=0,timeLeft=90;
+  var MOTS=['ROUGE','VERT','BLEU','JAUNE','ORANGE','VIOLET'];
+  var COLS=['#e74c3c','#2ecc71','#3498db','#f1c40f','#e67e22','#9b59b6'];
+  function newQ() {
+    var wi=Math.floor(Math.random()*MOTS.length);
+    var ci=Math.floor(Math.random()*COLS.length);
+    document.getElementById('stroop-word').textContent=MOTS[wi];
+    document.getElementById('stroop-word').style.color=COLS[ci];
+    window._stroopAnswer=COLS[ci];
+    document.getElementById('stroop-choices').innerHTML=COLS.map(function(c,i){
+      return '<button data-sc="'+i+'" onclick="stroopClick2(this)" style="width:40px;height:40px;border-radius:50%;background:'+c+';border:2px solid rgba(255,255,255,.2);cursor:pointer"></button>';
+    }).join('');
+  }
+  zone.innerHTML = jeuHeader('Stroop','0 / 0')
+    + '<div style="text-align:center;margin:1.5rem 0">'
+    + '<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">Cliquez la couleur de l encre (pas le mot)</div>'
+    + '<div id="stroop-word" style="font-size:3rem;font-weight:700;margin-bottom:1.2rem">—</div>'
+    + '<div id="stroop-choices" style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap"></div></div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem;margin-top:1rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="stroop-bar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear"></div></div><div id="stroop-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+  newQ();
+  window._stroopCols = COLS;
+  window.stroopClick2=function(el){ window.stroopClick(window._stroopCols[+el.getAttribute('data-sc')]); };
+  window.stroopClick=function(col){
+    total++;
+    if(col===window._stroopAnswer){score++;showToast('✓');}else showToast('✗');
+    document.getElementById('jeu-score').textContent=score+' / '+total;
+    newQ();
+  };
+  _jeuTimer=setInterval(function(){
+    timeLeft--;
+    var tEl=document.getElementById('stroop-time'),bEl=document.getElementById('stroop-bar');
+    if(tEl)tEl.textContent=Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
+    if(bEl)bEl.style.width=(timeLeft/90*100)+'%';
+    if(timeLeft<=0){clearInterval(_jeuTimer);awardPoints('jeu','Stroop');showToast('Score Stroop : '+score+' / '+total);jeuBack();}
+  },1000);
+}
+
+/* ── SUITE LOGIQUE ── */
+function startSuite(zone) {
+  var score=0,total=0;
+  var SUITES=[
+    {seq:[2,4,6,8],ans:10,rule:'+ 2'},{seq:[1,3,6,10],ans:15,rule:'triangulaires'},{seq:[3,6,12,24],ans:48,rule:'× 2'},
+    {seq:[100,91,82,73],ans:64,rule:'- 9'},{seq:[1,4,9,16],ans:25,rule:'carrés'},{seq:[2,3,5,8,13],ans:21,rule:'Fibonacci'},
+    {seq:[5,10,20,40],ans:80,rule:'× 2'},{seq:[81,27,9,3],ans:1,rule:'÷ 3'},{seq:[1,8,27,64],ans:125,rule:'cubes'},
+    {seq:[50,45,40,35],ans:30,rule:'- 5'},{seq:[2,6,18,54],ans:162,rule:'× 3'},{seq:[0,1,3,6,10],ans:15,rule:'triangulaires'}
+  ];
+  var idx=0; SUITES.sort(function(){return Math.random()-.5;});
+  function newQ(){
+    if(idx>=SUITES.length){showToast('Terminé ! '+score+' / '+total);awardPoints('jeu','Suite logique');jeuBack();return;}
+    var s=SUITES[idx++];
+    var wrong=[s.ans+Math.floor(Math.random()*5)+1,s.ans-Math.floor(Math.random()*5)-1,s.ans*2];
+    wrong=wrong.filter(function(x){return x!==s.ans;}).slice(0,3);
+    var choices=[s.ans,...wrong].sort(function(){return Math.random()-.5;});
+    document.getElementById('suite-seq').textContent=s.seq.join(' — ')+' — ?';
+    document.getElementById('suite-choices').innerHTML=choices.map(function(c){
+      return '<button class="btn-secondary" style="font-size:1.1rem;padding:.6rem 1rem;border-radius:10px" onclick="suiteClick('+c+','+s.ans+')">'+c+'</button>';
+    }).join('');
+  }
+  zone.innerHTML=jeuHeader('Suite logique','0 / 0')
+    +'<div style="text-align:center;margin:1.5rem 0">'
+    +'<div id="suite-seq" style="font-size:1.4rem;font-weight:300;color:var(--gold);margin-bottom:1.5rem">—</div>'
+    +'<div id="suite-choices" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div></div>';
+  newQ();
+  window.suiteClick=function(val,ans){
+    total++;
+    if(val===ans){score++;showToast('✓ Bonne réponse');}else showToast('✗ Réponse : '+ans);
+    document.getElementById('jeu-score').textContent=score+' / '+total;
+    newQ();
+  };
+}
+
+/* ── ANALOGIES ── */
+function startAnalogie(zone) {
+  var score=0,total=0;
+  var QS=[
+    {q:'Chaud est à Froid ce que Jour est à…',ans:'Nuit',w:['Soleil','Heure','Matin']},
+    {q:'Livre est à Bibliothèque ce que Tableau est à…',ans:'Musée',w:['Peinture','Cadre','Galerie']},
+    {q:'Médecin est à Hôpital ce que Enseignant est à…',ans:'École',w:['Maison','Bureau','Cahier']},
+    {q:'Oiseau est à Nid ce que Poisson est à…',ans:'Eau',w:['Mer','Nageoire','Aquarium']},
+    {q:'Piano est à Musique ce que Pinceau est à…',ans:'Peinture',w:['Artiste','Tableau','Couleur']},
+    {q:'Victoire est à Défaite ce que Bonheur est à…',ans:'Tristesse',w:['Joie','Émoi','Sourire']},
+    {q:'Main est à Gant ce que Pied est à…',ans:'Chaussure',w:['Sol','Jambe','Botte']},
+    {q:'Lune est à Nuit ce que Soleil est à…',ans:'Jour',w:['Étoile','Ciel','Été']},
+    {q:'Silence est à Bruit ce que Paix est à…',ans:'Guerre',w:['Repos','Calme','Sérénité']},
+    {q:'Eau est à Rivière ce que Sable est à…',ans:'Désert',w:['Plage','Mer','Pierre']},
+  ];
+  var idx=0; QS.sort(function(){return Math.random()-.5;});
+  function newQ(){
+    if(idx>=QS.length){showToast('Terminé ! '+score+' / '+total);awardPoints('jeu','Analogies');jeuBack();return;}
+    var q=QS[idx++];
+    var choices=[q.ans,...q.w].sort(function(){return Math.random()-.5;});
+    document.getElementById('ana-q').textContent=q.q;
+    document.getElementById('ana-choices').innerHTML=choices.map(function(c){
+      return '<button class="btn-secondary" data-val="'+encodeURIComponent(c)+'" data-ans="'+encodeURIComponent(q.ans)+'" style="font-size:.9rem;padding:.55rem 1rem;border-radius:10px" onclick="anaClick2(this)">'+c+'</button>';
+    }).join('');
+  }
+  zone.innerHTML=jeuHeader('Analogies','0 / 0')
+    +'<div style="background:var(--surface);border-radius:12px;padding:1.2rem;margin:1rem 0;font-size:.85rem;color:var(--text);line-height:1.5;text-align:center" id="ana-q">—</div>'
+    +'<div id="ana-choices" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"></div>';
+  newQ();
+  window.anaClick2=function(el){var val=decodeURIComponent(el.getAttribute('data-val'));var ans=decodeURIComponent(el.getAttribute('data-ans'));anaClick(val,ans);};
+  window.anaClick=function(val,ans){
+    total++;
+    if(val===ans){score++;showToast('Exact !');}else showToast('Incorrect. Réponse : '+ans);
+    document.getElementById('jeu-score').textContent=score+' / '+total;
+    setTimeout(newQ,600);
+  };
+}
+
+/* ── COMPTAGE SÉLECTIF ── */
+function startComptage(zone) {
+  var score=0,total=0,rounds=8,round=0;
+  var EMOJIS=[['🔴','🔵','🟢','🟡'],['⭕','🔷','💚','💛']];
+  function newRound(){
+    if(round>=rounds){awardPoints('jeu','Comptage sélectif');showToast('Score : '+score+' / '+total);jeuBack();return;}
+    round++;
+    var set=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+    var target=set[Math.floor(Math.random()*2)]; // seulement parmi les 2 premiers
+    var items=[]; var correctCount=0;
+    for(var i=0;i<20;i++){
+      var em=set[Math.floor(Math.random()*set.length)];
+      items.push(em);
+      if(em===target) correctCount++;
+    }
+    document.getElementById('cpt-instr').textContent='Comptez : '+target;
+    document.getElementById('cpt-grid').innerHTML=items.map(function(e){return '<span style="font-size:1.5rem">'+e+'</span>';}).join('');
+    document.getElementById('cpt-answer').innerHTML='';
+    var choices=[correctCount];
+    while(choices.length<4){var d=correctCount+Math.floor(Math.random()*5)-2;if(d>=0&&choices.indexOf(d)<0) choices.push(d);}
+    choices.sort(function(){return Math.random()-.5;});
+    document.getElementById('cpt-answer').innerHTML=choices.map(function(c){
+      return '<button class="btn-secondary" style="font-size:1rem;padding:.5rem 1.2rem;border-radius:10px" onclick="cptClick('+c+','+correctCount+')">'+c+'</button>';
+    }).join('');
+    document.getElementById('jeu-score').textContent=score+' / '+(round-1);
+  }
+  zone.innerHTML=jeuHeader('Comptage sélectif','0 / 0')
+    +'<div id="cpt-instr" style="text-align:center;font-size:1.1rem;color:var(--gold);margin-bottom:.8rem;font-weight:500">—</div>'
+    +'<div id="cpt-grid" style="display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;background:var(--surface);border-radius:12px;padding:1rem;margin-bottom:1rem;max-height:140px;overflow:hidden"></div>'
+    +'<div id="cpt-answer" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div>';
+  newRound();
+  window.cptClick=function(val,ans){
+    total++;
+    if(val===ans){score++;showToast('✓');}else showToast('✗ Réponse : '+ans);
+    setTimeout(newRound,400);
+  };
+}
+
+/* ── INATTENTION (GORILLE INVISIBLE) ── */
+function startInattention(zone) {
+  // Simulation du phénomène : on demande de compter des passes,
+  // puis on révèle un élément inattendu qui est passé inaperçu.
+  var phase=0,passCount=0,targetCount=0,inputDone=false;
+  var SCENARIOS=[
+    {
+      title:"Le gorille invisible",
+      task:"Comptez le nombre de passes entre les joueurs en blanc (ignorez les noirs)",
+      players:['🏃🏻','🧍🏻','🚶🏻','🦍','🧍🏿','🏃🏿','🚶🏿'],
+      hidden:"🦍",hiddenLabel:"le gorille",
+      correctPasses:15,
+      reveal:"Un gorille a traversé la scène ! L'avez-vous remarqué ? La plupart des gens concentrés sur le comptage ne le voient pas — c est la cécité inattentionnelle."
+    },
+    {
+      title:"Le pot de fleurs",
+      task:"Comptez les objets RONDS visibles dans la scène",
+      players:['🌸','🔵','⚽','🪴','🍎','🔴','🌺','⚪'],
+      hidden:"🪴",hiddenLabel:"le pot de fleurs (qui a changé de couleur entre deux regards)",
+      correctPasses:6,
+      reveal:"Le pot de fleurs a changé de couleur ! C'est le phénomène de 'change blindness' — notre cerveau ne remarque pas les changements quand notre attention est concentrée ailleurs."
+    }
+  ];
+  var sc=SCENARIOS[Math.floor(Math.random()*SCENARIOS.length)];
+
+  function showTask(){
+    zone.innerHTML=jeuHeader(sc.title,'Comptez !')
+      +'<div style="background:var(--surface);border-radius:12px;padding:1rem;margin-bottom:1rem;font-size:.78rem;color:var(--text)">'+sc.task+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;padding:1rem;font-size:2rem;min-height:80px;background:var(--surface2);border-radius:12px;margin-bottom:1rem" id="inat-scene"></div>'
+      +'<div style="text-align:center">'
+      +'<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.6rem">Votre décompte :</div>'
+      +'<input type="number" id="inat-input" min="0" max="30" style="width:80px;text-align:center;font-size:1.5rem;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:.4rem;color:var(--text)">'
+      +'<button class="btn-primary" style="margin-left:.8rem" onclick="inatSubmit()">Valider</button>'
+      +'</div>';
+    // Animer la scène
+    var sceneEl=document.getElementById('inat-scene');
+    var shown=sc.players.filter(function(p){return p!==sc.hidden;});
+    var frame=0,gorilla_shown=false;
+    var animInt=setInterval(function(){
+      frame++;
+      var display=shown.slice(0,4+Math.floor(Math.random()*3));
+      if(frame%7===0&&!gorilla_shown){display.splice(2,0,sc.hidden);gorilla_shown=true;setTimeout(function(){gorilla_shown=false;},600);}
+      else display=display.filter(function(p){return p!==sc.hidden;});
+      sceneEl.innerHTML=display.map(function(p){return '<span>'+p+'</span>';}).join('');
+      targetCount=Math.round(sc.correctPasses*0.9+frame*0.3);
+    },600);
+    window.inatSubmit=function(){
+      clearInterval(animInt);
+      var val=parseInt(document.getElementById('inat-input').value)||0;
+      showReveal(val);
+    };
+  }
+
+  function showReveal(userCount){
+    var diff=Math.abs(userCount-sc.correctPasses);
+    var accuracy=Math.max(0,100-diff*10);
+    zone.innerHTML=jeuHeader(sc.title,'Révélation !')
+      +'<div style="font-size:3rem;text-align:center;margin:1rem 0">'+sc.hidden+'</div>'
+      +'<div style="background:rgba(200,169,110,.08);border:1px solid var(--gold-border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;font-size:.78rem;color:var(--text);line-height:1.7">'+sc.reveal+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">'
+      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--gold)">'+userCount+'</div><div style="font-size:.6rem;color:var(--text-muted)">Votre décompte</div></div>'
+      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--gold)">'+sc.correctPasses+'</div><div style="font-size:.6rem;color:var(--text-muted)">Décompte réel</div></div>'
+      +'</div>'
+      +'<button class="btn-primary" style="width:100%" id="inat-done-btn">Compris ! Retour aux jeux</button>';
+    setTimeout(function(){ var b=document.getElementById('inat-done-btn'); if(b) b.onclick=function(){jeuBack();awardPoints('jeu','Inattention gorille');}; },50);
+  }
+
+  showTask();
+}
+
+/* ── DOUBLE TÂCHE ── */
+function startDouble(zone) {
+  var score=0,total=0,timeLeft=90;
+  function newQ(){
+    var num=Math.floor(Math.random()*20)+1;
+    var cols=['rouge','bleu','vert','jaune'];
+    var col=cols[Math.floor(Math.random()*cols.length)];
+    var colHex={'rouge':'#e74c3c','bleu':'#3498db','vert':'#2ecc71','jaune':'#f1c40f'};
+    var pariteOK=num%2===0;
+    document.getElementById('dbl-num').textContent=num;
+    document.getElementById('dbl-num').style.color=colHex[col];
+    window._dblCorrect={parite:pariteOK?'pair':'impair',couleur:col};
+    // 4 boutons : chaque bouton = (pair/impair) + (couleur)
+    var parites=['pair','impair'];
+    var choices=[];
+    parites.forEach(function(p){
+      cols.slice(0,2).forEach(function(c){
+        choices.push({p:p,c:c,label:(p==='pair'?'Pair':'Impair')+' + '+c});
+      });
+    });
+    choices.sort(function(){return Math.random()-.5;});
+    choices=choices.slice(0,4);
+    var correct={p:pariteOK?'pair':'impair',c:col};
+    if(!choices.find(function(x){return x.p===correct.p&&x.c===correct.c;})){choices[0]=Object.assign({label:(correct.p==='pair'?'Pair':'Impair')+' + '+correct.c},correct);}
+    document.getElementById('dbl-choices').innerHTML=choices.map(function(ch){
+      return '<button class="btn-secondary" data-p="'+ch.p+'" data-c="'+ch.c+'" style="font-size:.75rem;padding:.5rem;border-radius:10px;line-height:1.3" onclick="dblClick2(this)">'+ch.label+'</button>';
+    }).join('');
+  }
+  zone.innerHTML=jeuHeader('Double tâche','0 / 0')
+    +'<div style="text-align:center;margin:1rem 0">'
+    +'<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.4rem">Choisissez : parité du nombre ET couleur de l encre</div>'
+    +'<div id="dbl-num" style="font-size:5rem;font-weight:700;line-height:1;margin-bottom:1rem">—</div>'
+    +'<div id="dbl-choices" style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem"></div></div>'
+    +'<div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="dbl-bar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear"></div></div><div id="dbl-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+  newQ();
+  window.dblClick2=function(el){dblClick(el.getAttribute('data-p'),el.getAttribute('data-c'));};
+  window.dblClick=function(p,c){
+    total++;
+    var ok=p===window._dblCorrect.parite&&c===window._dblCorrect.couleur;
+    if(ok){score++;showToast('✓');}else showToast('✗ '+window._dblCorrect.parite+' + '+window._dblCorrect.couleur);
+    document.getElementById('jeu-score').textContent=score+' / '+total;
+    newQ();
+  };
+  _jeuTimer=setInterval(function(){
+    timeLeft--;
+    var tEl=document.getElementById('dbl-time'),bEl=document.getElementById('dbl-bar');
+    if(tEl)tEl.textContent=Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
+    if(bEl)bEl.style.width=(timeLeft/90*100)+'%';
+    if(timeLeft<=0){clearInterval(_jeuTimer);awardPoints('jeu','Double tache');showToast('Score double tache : '+score+' / '+total);jeuBack();}
+  },1000);
+}
 
 /* ── RÉFLEXES ── */
 function startReflexes(zone) {
@@ -2822,6 +3341,367 @@ function openExercice(id) {
     }, 100);
   }
 }
+
+
+/* ── SIMON ── */
+function startSimon(zone) {
+  var COLORS = ['#e74c3c','#2ecc71','#3498db','#f39c12'];
+  var NAMES  = ['Rouge','Vert','Bleu','Orange'];
+  var seq = [], playerSeq = [], level = 0, accepting = false;
+
+  zone.innerHTML = jeuHeader('Simon','Niveau 1')
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;max-width:280px;margin:1rem auto" id="simon-board">'
+    + COLORS.map(function(c,i){ return '<div style="height:80px;border-radius:12px;background:'+c+';opacity:.35;cursor:pointer;transition:opacity .15s" id="sc'+i+'" onclick="simonClick('+i+')"></div>'; }).join('')
+    + '</div><div id="simon-msg" style="text-align:center;font-size:.7rem;color:var(--text-muted);margin-top:.8rem">Regardez la séquence...</div>';
+
+  function flash(idx, cb) {
+    var el = document.getElementById('sc'+idx);
+    if (!el) return cb && cb();
+    el.style.opacity = '1';
+    setTimeout(function(){ el.style.opacity = '.35'; setTimeout(cb||function(){}, 300); }, 400);
+  }
+  function playSeq() {
+    accepting = false;
+    playerSeq = [];
+    document.getElementById('simon-msg').textContent = "Regardez la sequence...";
+    var i = 0;
+    var t = setInterval(function(){
+      if (i >= seq.length) { clearInterval(t); accepting = true; document.getElementById('simon-msg').textContent = 'A vous ! Repetez la sequence'; return; }
+      flash(seq[i]); i++;
+    }, 700);
+  }
+  function nextLevel() {
+    level++;
+    seq.push(Math.floor(Math.random()*4));
+    document.getElementById('jeu-score').textContent = 'Niveau '+level;
+    setTimeout(playSeq, 600);
+  }
+  window.simonClick = function(idx) {
+    if (!accepting) return;
+    flash(idx);
+    playerSeq.push(idx);
+    var pos = playerSeq.length-1;
+    if (playerSeq[pos] !== seq[pos]) {
+      awardPoints('jeu','Simon');
+      showToast("Erreur ! Niveau atteint : "+level); jeuBack(); return;
+    }
+    if (playerSeq.length === seq.length) {
+      accepting = false;
+      setTimeout(nextLevel, 500);
+    }
+  };
+  nextLevel();
+}
+
+/* ── EFFET STROOP ── */
+function startStroop(zone) {
+  var MOTS   = ['ROUGE','VERT','BLEU','JAUNE'];
+  var COLORS = ['#e74c3c','#2ecc71','#3498db','#f1c40f'];
+  var score = 0, total = 0, timeLeft = 60;
+  function newQ() {
+    var motIdx   = Math.floor(Math.random()*4);
+    var colorIdx = Math.floor(Math.random()*4);
+    document.getElementById('stroop-word').textContent = MOTS[motIdx];
+    document.getElementById('stroop-word').style.color = COLORS[colorIdx];
+    document.getElementById('stroop-choices').innerHTML = COLORS.map(function(c,i){
+      return '<button onclick="stroopCheck('+i+','+colorIdx+')" style="background:'+c+';border:none;border-radius:8px;width:48px;height:48px;cursor:pointer;font-size:1.2rem"></button>';
+    }).join('');
+  }
+  zone.innerHTML = jeuHeader('Effet Stroop','0 / 0')
+    + '<div style="text-align:center;padding:1.5rem 0">'
+    + '<div style="font-size:.68rem;color:var(--text-dim);margin-bottom:.8rem">Cliquez la COULEUR du texte</div>'
+    + '<div id="stroop-word" style="font-size:3rem;font-weight:700;margin-bottom:1.2rem">—</div>'
+    + '<div id="stroop-choices" style="display:flex;gap:.6rem;justify-content:center;margin-bottom:1rem"></div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="stroop-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="stroop-time" style="font-size:.7rem;color:var(--text-muted)">1:00</div></div>'
+    + '</div>';
+  window._stroopScore = 0; window._stroopTotal = 0;
+  newQ();
+  _jeuTimer = setInterval(function(){
+    timeLeft--;
+    var bar = document.getElementById('stroop-bar'), t = document.getElementById('stroop-time');
+    if (bar) bar.style.width = (timeLeft/60*100)+'%';
+    if (t) t.textContent = Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
+    if (timeLeft<=0){ clearInterval(_jeuTimer); awardPoints('jeu','Stroop'); showToast("Score Stroop : "+window._stroopScore+"/"+window._stroopTotal); jeuBack(); }
+  },1000);
+  window.stroopCheck = function(chosen, correct) {
+    window._stroopTotal++;
+    if (chosen === correct) { window._stroopScore++; showToast('✓'); }
+    else showToast('✗');
+    document.getElementById('jeu-score').textContent = window._stroopScore+' / '+window._stroopTotal;
+    newQ();
+  };
+}
+
+/* ── SUITE LOGIQUE ── */
+function startSuite(zone) {
+  var score = 0, total = 0;
+  function newQ() {
+    var types = [
+      function(){ var a=Math.floor(Math.random()*5)+1,b=Math.floor(Math.random()*5)+1; var seq=[a,a+b,a+2*b,a+3*b]; var ans=a+4*b; return {seq:seq,ans:ans,d1:ans+2,d2:ans-b,d3:ans+b*2}; },
+      function(){ var a=Math.floor(Math.random()*3)+2; var seq=[a,a*a,a*a*a]; var ans=a*a*a*a; return {seq:seq,ans:ans,d1:ans+a,d2:ans-1,d3:ans+a*a}; },
+      function(){ var a=Math.floor(Math.random()*4)+2,r=Math.floor(Math.random()*3)+2; var seq=[a,a*r,a*r*r,a*r*r*r]; var ans=a*r*r*r*r; return {seq:seq,ans:ans,d1:ans+r,d2:ans-a,d3:ans*2}; },
+    ];
+    var gen = types[Math.floor(Math.random()*types.length)]();
+    var choices = [gen.ans, gen.d1, gen.d2, gen.d3].sort(function(){return Math.random()-.5;});
+    document.getElementById('suite-seq').textContent = gen.seq.join(' · ') + ' · ?';
+    document.getElementById('suite-choices').innerHTML = choices.map(function(c){
+      return '<button class="btn-secondary" style="font-size:1.1rem;padding:.5rem .8rem;border-radius:10px" onclick="suiteCheck('+c+','+gen.ans+')">'+c+'</button>';
+    }).join('');
+  }
+  zone.innerHTML = jeuHeader('Suite logique','0 / 0')
+    + '<div style="text-align:center;padding:1rem 0">'
+    + '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">Trouvez le nombre manquant</div>'
+    + '<div id="suite-seq" style="font-size:1.6rem;font-weight:300;color:var(--gold);margin-bottom:1.2rem;font-size:1.6rem">—</div>'
+    + '<div id="suite-choices" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div>'
+    + '</div>';
+  window._suiteScore=0; window._suiteTotal=0;
+  newQ();
+  window.suiteCheck = function(val, ans) {
+    window._suiteTotal++;
+    if (val===ans) { window._suiteScore++; showToast("Exact !"); }
+    else showToast("La reponse etait "+ans);
+    document.getElementById('jeu-score').textContent = window._suiteScore+' / '+window._suiteTotal;
+    if (window._suiteTotal >= 8) { awardPoints('jeu','Suite logique'); showToast("Score final : "+window._suiteScore+"/8"); jeuBack(); return; }
+    newQ();
+  };
+}
+
+/* ── COMPTAGE SÉLECTIF (phénomène de cecite attentionnelle) ── */
+function startComptage(zone) {
+  var passes = 0, userCount = null;
+  var PLAYERS = ['A','B','C','D','E','F'];
+  var frames = [];
+  // Générer 45 frames d'animation (1.5s @ 30fps simulé via CSS)
+  for (var f=0; f<30; f++) {
+    var team = Math.random()<0.5?'blanc':'noir';
+    if (team==='blanc') passes++;
+    frames.push({team:team,frame:f});
+  }
+  passes = Math.floor(8 + Math.random()*8); // 8-15 passes blanches
+
+  zone.innerHTML = jeuHeader('Comptage selectif','?')
+    + '<div style="text-align:center">'
+    + '<div style="font-size:.75rem;color:var(--text-dim);margin-bottom:1rem;background:var(--surface);padding:.8rem;border-radius:10px">Comptez les passes de <strong style="color:white">l equipe BLANCHE</strong>.<br>Ignorez l equipe noire.</div>'
+    + '<div style="position:relative;width:100%;height:200px;background:#1a2030;border-radius:12px;overflow:hidden;margin-bottom:1rem" id="comptage-arena">'
+    + generateComptageAnim(passes)
+    + '</div>'
+    + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.8rem">Combien de passes blanches avez-vous comptées ?</div>'
+    + '<div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap">'
+    + [passes-3,passes-2,passes-1,passes,passes+1,passes+2,passes+3].filter(function(x){return x>0;}).map(function(n){
+        return '<button class="btn-secondary" style="font-size:1.1rem;padding:.5rem .8rem;border-radius:10px" onclick="comptageCheck('+n+','+passes+')">'+n+'</button>';
+      }).join('')
+    + '</div>'
+    + '<div style="margin-top:1rem;font-size:.58rem;color:var(--text-muted)">💡 Avez-vous remarque quelque chose d habituel pendant le comptage ?</div>'
+    + '</div>';
+  window.comptageCheck = function(val, ans) {
+    var ok = val === ans;
+    awardPoints('jeu','Comptage selectif');
+    openModal('Resultats', '<div style="text-align:center">'
+      + '<div style="font-size:2rem;margin-bottom:.5rem">'+(ok?'🎯':'📊')+'</div>'
+      + '<div style="font-size:.85rem;margin-bottom:.8rem">'+(ok?'Exact ! '+ans+' passes blanches.':'Il y avait '+ans+' passes blanches. Vous avez compté '+val+'.')+'</div>'
+      + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:1rem">Phénomène de cecite attentionnelle : quand on se concentre sur une tâche, on peut rater des éléments évidents (comme un gorille qui traverse !)</div>'
+      + '<button class="btn-primary" style="width:100%" onclick="closeModal();jeuBack()">Compris !</button>'
+      + '</div>');
+  };
+}
+
+function generateComptageAnim(passes) {
+  // Générer des joueurs qui se déplacent et se passent la balle (SVG animé)
+  var svg = '<svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">';
+  // 6 joueurs (3 blancs, 3 noirs)
+  var whites = [{x:80,y:80},{x:200,y:40},{x:320,y:100}];
+  var blacks  = [{x:120,y:140},{x:240,y:160},{x:360,y:80}];
+  whites.forEach(function(p,i){
+    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="14" fill="white" opacity=".9">';
+    svg += '<animateTransform attributeName="transform" type="translate" values="0,0;'+(Math.random()*40-20)+','+(Math.random()*30-15)+';0,0" dur="'+(1.5+Math.random())+'s" repeatCount="indefinite"/>';
+    svg += '</circle>';
+  });
+  blacks.forEach(function(p,i){
+    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="14" fill="#333" opacity=".9">';
+    svg += '<animateTransform attributeName="transform" type="translate" values="0,0;'+(Math.random()*40-20)+','+(Math.random()*30-15)+';0,0" dur="'+(1.5+Math.random())+'s" repeatCount="indefinite"/>';
+    svg += '</circle>';
+  });
+  // Balle blanche qui circule
+  svg += '<circle cx="80" cy="80" r="6" fill="#ffdd00">';
+  svg += '<animateMotion dur="2s" repeatCount="indefinite" path="M0,0 L120,-40 L240,20 L120,60 Z"/>';
+  svg += '</circle>';
+  // Gorille (personnage surprise - discret)
+  svg += '<text x="190" y="105" font-size="28" opacity=".5"><animate attributeName="opacity" values=".4;.6;.4" dur="3s" repeatCount="indefinite"/>🦍</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+/* ── GORILLE INVISIBLE (expérience de Christopher Chabris) ── */
+function startGorille(zone) {
+  var userAnswer = null;
+  var actualPasses = Math.floor(12 + Math.random()*7);
+
+  zone.innerHTML = jeuHeader('Le gorille invisible','?')
+    + '<div style="text-align:center">'
+    + '<div style="font-size:.75rem;color:var(--text-dim);margin-bottom:1rem;background:var(--surface);padding:.8rem;border-radius:10px">'
+    + 'Comptez <strong style="color:white">les passes de l equipe blanche</strong> uniquement.</div>'
+    + '<div style="position:relative;width:100%;height:220px;background:#0d1520;border-radius:12px;overflow:hidden;margin-bottom:1rem">'
+    + generateGorille(actualPasses) + '</div>'
+    + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.8rem">Votre compte de passes blanches :</div>'
+    + '<div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap" id="gorille-btns">'
+    + [actualPasses-2,actualPasses-1,actualPasses,actualPasses+1,actualPasses+2].map(function(n){
+        return '<button class="btn-secondary" style="font-size:1.1rem;padding:.5rem 1rem;border-radius:10px" onclick="gorilleStep2('+n+','+actualPasses+')">'+n+'</button>';
+      }).join('')
+    + '</div></div>';
+  window.gorilleStep2 = function(val, ans) {
+    var ok = val===ans;
+    var revealHtml = '<div style="text-align:center">'
+      + '<div style="font-size:2.5rem;margin-bottom:.6rem">🦍</div>'
+      + '<div style="font-size:.85rem;font-weight:500;margin-bottom:.5rem">'+(ok?'Exact ! '+ans+' passes.':'Il y avait '+ans+' passes.')+'</div>'
+      + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.8rem">Et le gorille ?</div>'
+      + '<div style="font-size:.72rem;color:var(--gold);margin-bottom:1rem">Un gorille a traversé l ecran en se frappant la poitrine. Environ 50% des gens le ratent en se concentrant sur les passes.<br><br>C est la <strong>cecite attentionnelle</strong> — démontrée par Simons et Chabris (1999).</div>'
+      + '<button class="btn-primary" style="width:100%" id="gorille-done-btn">Fascinant !</button>'
+      + '</div>';
+    openModal('Avez-vous vu le gorille ?', revealHtml);
+    setTimeout(function(){
+      var b=document.getElementById('gorille-done-btn');
+      if(b) b.onclick=function(){ closeModal(); awardPoints('jeu','Gorille invisible'); jeuBack(); };
+    },100);
+  };
+}
+
+function generateGorille(passes) {
+  var svg = '<svg width="100%" height="100%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">';
+  // Terrain
+  svg += '<rect width="400" height="220" fill="#0d1520"/>';
+  // Joueurs blancs
+  var wp = [{x:60,y:60},{x:200,y:30},{x:340,y:90}];
+  var bp = [{x:100,y:160},{x:220,y:180},{x:360,y:140}];
+  wp.forEach(function(p){
+    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="16" fill="white">';
+    svg += '<animateTransform attributeName="transform" type="translate" values="0,0;30,-15;-20,10;0,0" dur="'+(2+Math.random())+'s" repeatCount="indefinite"/></circle>';
+  });
+  bp.forEach(function(p){
+    svg += '<circle cx="'+p.x+'" cy="'+p.y+'" r="16" fill="#555">';
+    svg += '<animateTransform attributeName="transform" type="translate" values="0,0;-25,10;15,-8;0,0" dur="'+(2.2+Math.random())+'s" repeatCount="indefinite"/></circle>';
+  });
+  // Balle
+  svg += '<circle r="7" fill="#fff700"><animateMotion dur="1.8s" repeatCount="indefinite" path="M60,60 L340,90 L200,30 Z"/></circle>';
+  // Gorille traverse discrètement
+  svg += '<text font-size="32"><animateMotion dur="4s" begin="1s" fill="freeze" path="M-30,110 L430,110"/>🦍</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+/* ── TROUVEZ LES DIFFÉRENCES ── */
+function startDifferences(zone) {
+  var SCENES = [
+    { emoji:'🏖️', items:['☀️','🌊','🦀','⛱️','🐚','🏄','🌴','🦋'], changes:['🌊→🐋','⛱️→🎪','🦀→🦞'] },
+    { emoji:'🌆', items:['🏢','🚗','🌳','💡','🚦','🎭','⛽','🛒'], changes:['🚗→🚕','💡→🕯️','🌳→🌵'] },
+    { emoji:'🏡', items:['🏠','🌸','🐕','📬','🌻','🐱','🚿','🌿'], changes:['🌸→🌺','🐕→🐇','📬→📦'] },
+  ];
+  var scene = SCENES[Math.floor(Math.random()*SCENES.length)];
+  var found = [], totalChanges = scene.changes.length;
+  var originalItems = scene.items.slice();
+  var modifiedItems = scene.items.slice();
+  // Appliquer 3 modifications cachées
+  var changeMap = {};
+  scene.changes.forEach(function(c){
+    var parts = c.split('→');
+    var idx = modifiedItems.indexOf(parts[0]);
+    if (idx>=0) { modifiedItems[idx]=parts[1]; changeMap[idx]=parts[1]; }
+  });
+
+  function renderGrids() {
+    var orig = originalItems.map(function(em,i){ return '<div style="font-size:2rem;padding:.4rem;cursor:default">'+em+'</div>'; }).join('');
+    var mod  = modifiedItems.map(function(em,i){
+      var isFound = found.indexOf(i)>=0;
+      return '<div style="font-size:2rem;padding:.4rem;cursor:pointer;border-radius:8px;background:'+(isFound?'rgba(46,125,79,.3)':'transparent')+'" onclick="diffClick('+i+')">'+em+'</div>';
+    }).join('');
+    document.getElementById('diff-orig').innerHTML = orig;
+    document.getElementById('diff-mod').innerHTML  = mod;
+    document.getElementById('jeu-score').textContent = found.length+' / '+totalChanges;
+  }
+  zone.innerHTML = jeuHeader('Trouvez les differences','0 / '+totalChanges)
+    + '<div style="font-size:.65rem;color:var(--text-dim);text-align:center;margin-bottom:.8rem">Cliquez sur les elements qui ont change dans l image de droite</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">'
+    + '<div><div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.3rem;text-align:center">ORIGINAL</div><div id="diff-orig" style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:10px;padding:.5rem"></div></div>'
+    + '<div><div style="font-size:.6rem;color:var(--gold);margin-bottom:.3rem;text-align:center">MODIFIE — cliquez les changements</div><div id="diff-mod" style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:10px;padding:.5rem"></div></div>'
+    + '</div>';
+  window._diffFound = found; window._diffChangeMap = changeMap; window._diffTotal = totalChanges;
+  renderGrids();
+  window.diffClick = function(idx) {
+    if (found.indexOf(idx)>=0) return;
+    if (changeMap[idx]) {
+      found.push(idx);
+      showToast("Trouve !");
+      renderGrids();
+      if (found.length >= totalChanges) {
+        setTimeout(function(){ awardPoints('jeu','Differences'); showToast("Bravo ! Toutes les differences !"); jeuBack(); }, 600);
+      }
+    } else {
+      showToast("Non modifie - cherchez encore");
+    }
+  };
+}
+
+/* ── DOUBLE TÂCHE ── */
+function startDouble(zone) {
+  var score=0, total=0, timeLeft=90;
+  var direction = null, mathQ = null, mathAns = null;
+
+  function newRound() {
+    var dirs = ['↑','↓','←','→'];
+    direction = dirs[Math.floor(Math.random()*4)];
+    var a = Math.floor(Math.random()*10)+1, b=Math.floor(Math.random()*10)+1;
+    var op = Math.random()<0.5?'+':'-';
+    mathAns = op==='+'?a+b:a-b;
+    mathQ = a+' '+op+' '+b+' = ?';
+    var choices=[mathAns, mathAns+(Math.random()<0.5?1:-1)*2, mathAns+(Math.random()<0.5?3:-3)].sort(function(){return Math.random()-.5;});
+    document.getElementById('dt-dir').textContent = direction;
+    document.getElementById('dt-math').textContent = mathQ;
+    document.getElementById('dt-choices').innerHTML = choices.map(function(c){
+      return '<button class="btn-secondary" style="font-size:1rem;padding:.4rem .7rem;border-radius:8px" onclick="dtCheck('+c+')">'+c+'</button>';
+    }).join('');
+  }
+
+  zone.innerHTML = jeuHeader('Double tache','0 / 0')
+    + '<div style="text-align:center;padding:.5rem 0">'
+    + '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem;background:var(--surface);padding:.6rem;border-radius:8px">1) Appuyez sur la fleche du clavier 2) ET resolvez le calcul</div>'
+    + '<div id="dt-dir" style="font-size:4rem;color:var(--gold);margin:.5rem 0">?</div>'
+    + '<div id="dt-math" style="font-size:1.2rem;color:var(--text);margin-bottom:.8rem">?</div>'
+    + '<div id="dt-choices" style="display:flex;gap:.4rem;justify-content:center;margin-bottom:.8rem"></div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="dt-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="dt-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>'
+    + '</div>';
+
+  window._dtScore=0; window._dtTotal=0;
+  newRound();
+
+  // Écouter les touches de direction
+  var dtKeyHandler = function(e) {
+    var map={'ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→'};
+    if (map[e.key] && map[e.key]===direction) {
+      document.getElementById('dt-dir').style.color='var(--green)';
+      setTimeout(function(){ var el=document.getElementById('dt-dir'); if(el) el.style.color='var(--gold)'; },300);
+    }
+  };
+  document.addEventListener('keydown', dtKeyHandler);
+
+  _jeuTimer = setInterval(function(){
+    timeLeft--;
+    var bar=document.getElementById('dt-bar'),t=document.getElementById('dt-time');
+    if(bar) bar.style.width=(timeLeft/90*100)+'%';
+    if(t) t.textContent=Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
+    if(timeLeft<=0){ clearInterval(_jeuTimer); document.removeEventListener('keydown',dtKeyHandler); awardPoints('jeu','Double tache'); showToast("Score : "+window._dtScore+"/"+window._dtTotal); jeuBack(); }
+  },1000);
+
+  window.dtCheck = function(val) {
+    window._dtTotal++;
+    if (val===mathAns) { window._dtScore++; showToast('✓'); }
+    else showToast('✗ ('+mathAns+')');
+    document.getElementById('jeu-score').textContent=window._dtScore+' / '+window._dtTotal;
+    newRound();
+  };
+  // Cleanup on jeuBack
+  var origBack = window.jeuBack;
+  window.jeuBack = function(){ document.removeEventListener('keydown',dtKeyHandler); origBack(); window.jeuBack=origBack; };
+}
+
 
 /* ════════════════════════════════════════════
    PROFIL
