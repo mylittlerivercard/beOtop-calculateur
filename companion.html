@@ -1443,8 +1443,9 @@ async function renderCalendrier() {
         cls = 'inaccessible';
       }
 
+      const safeNom = a.nom.replace(/'/g, '&#39;');
       const onclick = clickable
-        ? `onclick="openResModal('${a.nom}','${hStr}')"`
+        ? `onclick="openResModal(this)" data-atelier="${safeNom}" data-heure="${hStr}"`
         : '';
 
       html += `<div class="cal-cell ${cls}" ${onclick}>
@@ -1468,7 +1469,9 @@ async function renderCalendrier() {
 }
 
 /* ── Modal réservation ── */
-function openResModal(atelierNom, heure) {
+function openResModal(el) {
+  const atelierNom = el.getAttribute('data-atelier');
+  const heure = el.getAttribute('data-heure');
   calSelected = { atelier: atelierNom, heure };
   calDuree = 15;
   document.getElementById('mres-titre').textContent = atelierNom;
