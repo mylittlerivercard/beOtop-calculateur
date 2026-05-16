@@ -1306,6 +1306,22 @@ Priorité   : {priorite}
 
 # ========== PAGES HTML ==========
 
+@app.route('/realtime/<site_slug>')
+def realtime_page(site_slug):
+    """
+    Page temps réel publique — pas d'authentification requise.
+    Accessible depuis un écran à l'entrée de l'espace.
+    """
+    path = os.path.join(BASE_DIR, 'realtime.html')
+    try:
+        with open(path, encoding='utf-8') as f:
+            html = f.read()
+        # Injecter le site_slug dans la page
+        html = html.replace("const SITE = 'dmmf-agde'", f"const SITE = '{site_slug}'")
+        return Response(html, mimetype='text/html; charset=utf-8')
+    except FileNotFoundError:
+        return Response('<h1>Page realtime.html introuvable</h1>', status=404, mimetype='text/html')
+
 @app.route('/')
 def index():
     if 'user_id' not in session:
