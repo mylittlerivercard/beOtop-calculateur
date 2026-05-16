@@ -488,46 +488,50 @@
 
 <!-- ═══ DISPONIBILITÉ TEMPS RÉEL ═══ -->
   <div class="view" id="view-realtime">
-    <!-- Header compact -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;gap:.5rem">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;flex-wrap:wrap;gap:.6rem">
       <div>
-        <div class="page-title" style="font-size:1rem;margin-bottom:.1rem">Disponibilité <em>en temps réel</em></div>
-        <div style="font-size:.63rem;color:var(--muted)">État d'occupation des ateliers · rafraîchissement toutes les 15s</div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.15rem">Disponibilité <em>en temps réel</em></div>
+        <div class="page-sub" style="margin-bottom:0">État d'occupation des ateliers · rafraîchissement automatique toutes les 15s</div>
       </div>
       <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-        <div style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:100px;padding:.28rem .7rem;font-size:.63rem;color:#10b981;font-weight:500">
+        <div style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:100px;padding:.3rem .8rem;font-size:.65rem;color:#10b981;font-weight:500">
           <span style="width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse-green 2s ease-in-out infinite;flex-shrink:0"></span>En direct
         </div>
         <div id="rt-last-update" style="font-size:.6rem;color:var(--muted)">—</div>
-        <button onclick="copyRealtimeLink()" style="padding:.32rem .75rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.25);color:var(--gold);font-size:.63rem;cursor:pointer;font-family:'Jost',sans-serif">🔗 Lien public</button>
+        <button onclick="copyRealtimeLink()" style="padding:.35rem .8rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.25);color:var(--gold);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif">🔗 Lien public</button>
       </div>
     </div>
-    <!-- KPIs + grille dans un wrapper de même largeur -->
-    <div style="max-width:960px">
-      <!-- KPIs inline -->
-      <div style="display:flex;gap:2rem;margin-bottom:1rem;padding:.7rem 1rem;background:rgba(255,255,255,.75);border:1px solid rgba(200,190,180,.35);border-radius:10px;align-items:center;flex-wrap:wrap">
-        <div style="display:flex;align-items:baseline;gap:.35rem">
-          <span id="rt-libres" style="font-size:1.5rem;font-weight:300;color:#10b981;line-height:1">—</span>
-          <span style="font-size:.62rem;color:var(--muted)">libres</span>
-        </div>
-        <div style="width:1px;height:1rem;background:rgba(0,0,0,.1);flex-shrink:0"></div>
-        <div style="display:flex;align-items:baseline;gap:.35rem">
-          <span id="rt-occupes" style="font-size:1.5rem;font-weight:300;color:var(--gold);line-height:1">—</span>
-          <span style="font-size:.62rem;color:var(--muted)">occupés</span>
-        </div>
-        <div style="width:1px;height:1rem;background:rgba(0,0,0,.1);flex-shrink:0"></div>
-        <div style="display:flex;align-items:baseline;gap:.35rem">
-          <span id="rt-passages" style="font-size:1.5rem;font-weight:300;color:var(--mist);line-height:1">—</span>
-          <span style="font-size:.62rem;color:var(--muted)">passages aujourd'hui</span>
-        </div>
-      </div>
-      <!-- Grille ateliers -->
-      <div id="rt-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem"></div>
-      <!-- Erreur -->
-      <div id="rt-error" style="display:none;padding:.7rem 1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.68rem;color:#ef4444;margin-top:.8rem"></div>
-    </div>
-  </div>
 
+    <!-- KPIs -->
+    <div class="kpi-row" style="margin-bottom:1.4rem">
+      <div class="kpi" style="--accent:#10b981">
+        <div class="kpi-label">Ateliers libres</div>
+        <div class="kpi-value" id="rt-libres" style="color:#10b981">—</div>
+        <div class="kpi-sub">disponibles maintenant</div>
+      </div>
+      <div class="kpi" style="--accent:var(--gold)">
+        <div class="kpi-label">En cours</div>
+        <div class="kpi-value" id="rt-occupes" style="color:var(--gold)">—</div>
+        <div class="kpi-sub">ateliers occupés</div>
+      </div>
+      <div class="kpi" style="--accent:var(--mist)">
+        <div class="kpi-label">Passages aujourd'hui</div>
+        <div class="kpi-value" id="rt-passages" style="color:var(--mist)">—</div>
+        <div class="kpi-sub">entrées · faisceau IR</div>
+      </div>
+    </div>
+
+    <!-- Titre section -->
+    <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:.8rem">État des ateliers</div>
+
+    <!-- Grille -->
+    <div id="rt-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem"></div>
+
+    <!-- Erreur -->
+    <div id="rt-error" style="display:none;padding:.8rem 1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.7rem;color:#ef4444;margin-top:1rem"></div>
+  </div>
 
 <!-- ═══ MODAL ═══ -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
@@ -1237,13 +1241,13 @@ function renderRealtimeGrid(occ) {
     var statusLabel = status === 'libre' ? 'Libre' : status === 'occupe' ? 'Occupé' : 'Non mesuré';
     var dotHtml = status !== 'inconnu' ? '<span class="rt-dot ' + status + '"></span>' : '';
 
-    return '<div class="rt-atelier-card ' + status + '" style="padding:.7rem .9rem">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem">' +
-        '<div style="flex:1;min-width:0;overflow:hidden">' +
-          '<div style="font-size:.75rem;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + meta.icon + ' ' + nom + '</div>' +
-          '<div style="font-size:.58rem;color:#9090b0;margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + meta.indication + '</div>' +
+    return '<div class="rt-atelier-card ' + status + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">' +
+        '<div>' +
+          '<div style="font-size:.78rem;font-weight:600;color:#1a1a2e;margin-bottom:.15rem">' + meta.icon + ' ' + nom + '</div>' +
+          '<div style="font-size:.6rem;color:#9090b0">' + meta.indication + '</div>' +
         '</div>' +
-        '<div class="rt-status-pill ' + status + '" style="flex-shrink:0;font-size:.6rem;padding:.2rem .55rem">' + dotHtml + statusLabel + '</div>' +
+        '<div class="rt-status-pill ' + status + '" style="flex-shrink:0">' + dotHtml + statusLabel + '</div>' +
       '</div>' +
     '</div>';
   }).join('');
