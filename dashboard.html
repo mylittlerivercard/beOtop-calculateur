@@ -314,12 +314,13 @@
     </div>
     <div class="context-card">
       <div class="card-title">Contexte de l'entreprise</div>
-      <div class="context-grid">
+      <div class="context-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <div class="context-field"><label>Type de site</label><div class="ctx-type-pills"><div class="ctx-type-pill active-siege" id="ctx-siege" onclick="setContext('siege')">&#127970; Siège social</div><div class="ctx-type-pill" id="ctx-industrie" onclick="setContext('industrie')">&#127981; Site industriel</div></div></div>
-        <div class="context-field"><label>Nombre d'employés</label><input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400" oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()"></div>
+        <div class="context-field"><label>Collaborateurs</label><input type="number" id="ctx-nbs" min="50" max="5000" step="10" value="400" oninput="ROI.nbs=Math.max(50,+this.value||400);calcROI()"></div>
+        <div class="context-field"><label>Salaire brut moyen (€/an)</label><input type="number" id="ctx-sal" min="20000" max="120000" step="500" value="70200" oninput="ROI.sal=Math.max(20000,+this.value||70200);calcROI()"><div style="font-size:.55rem;color:var(--muted);margin-top:.2rem">Réf. étude : 70 200 €</div></div>
         <div class="context-field"><label>Option superficie</label><div class="pills" style="margin-top:.35rem" id="surf-pills"></div></div>
       </div>
-      <div class="ctx-note" id="ctx-note">Siège social · bases adressables : absentéisme 511 056 € · présentéisme 235 872 € · turnover 485 376 €</div>
+      <div class="ctx-note" id="ctx-note">Siège social · Formule ANACT : masse salariale chargée × 11% dysf. × 28% adressable</div>
     </div>
     <div class="drh-section">
       <div class="drh-header">
@@ -553,14 +554,14 @@
 var BASE_400={siege:{absenteisme:511056,presenteisme:235872,turnover:485376,accidents:32000},industrie:{absenteisme:369787,presenteisme:493200,turnover:217980,accidents:32000}};
 var CTP_BASE={siege:{am:17500,im:6250,maint:2100,form:1960,com:2970,anim:2000},industrie:{am:17500,im:6500,maint:2100,form:1960,com:2970,anim:1970}};
 var SURF_OPT={A:15,B:25,C:40};
-var SCENARIOS=[{label:'-5% pessimiste',rate:0.05},{label:'-10% médian',rate:0.10},{label:'-15% optimiste',rate:0.15}];
-var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitigé',adopt:30},{id:'l',label:'Libre',adopt:65},{id:'e',label:'Encouragé',adopt:90}];
+var SCENARIOS=[{label:'−1% (seuil)',rate:0.01},{label:'−3% (pessimiste)',rate:0.03},{label:'−5%',rate:0.05},{label:'−10% (médian)',rate:0.10},{label:'−15% (optimiste)',rate:0.15}];
+var POSTURES=[{id:'h',label:'Hostile',adopt:10},{id:'m',label:'Mitigé',adopt:30},{id:'l',label:'Libre',adopt:60},{id:'e',label:'Encouragé',adopt:85}];
 var MOOD_ICONS={'Épuisé':'😮‍💨','Neutre':'😐','Mieux':'🙂','Rechargé':'✨'};
 var MOOD_COLORS={'Épuisé':'192,57,43','Neutre':'106,96,112','Mieux':'176,125,46','Rechargé':'45,107,66'};
 var MOODS_ORDER=['Rechargé','Mieux','Neutre','Épuisé'];
 var currentSite=null,currentPeriod='month',sites=[],realSeancesTotal=0,roiBuilt=false;
 var seancesAnnualiseesROI=0;
-var ROI={nbs:400,ctx:'siege',sc:2,po:'l',surf:'B'};
+var ROI={nbs:400,sal:70200,ctx:'siege',sc:4,po:'l',surf:'B'};
 var DRH={source:'default',absenteisme:null,presenteisme:null,turnover:null,accidents:null};
 var DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};
 var sensorSite=null,sensorPeriod='today',sensorTimer=null;
@@ -1087,7 +1088,7 @@ function setContext(ctx){
   ROI.ctx=ctx;
   document.getElementById('ctx-siege').className='ctx-type-pill'+(ctx==='siege'?' active-siege':'');
   document.getElementById('ctx-industrie').className='ctx-type-pill'+(ctx==='industrie'?' active-industrie':'');
-  var b=BASE_400[ctx];document.getElementById('ctx-note').textContent=(ctx==='siege'?'Siège social':'Site industriel')+' · bases adressables : absentéisme '+eur(b.absenteisme)+' · présentéisme '+eur(b.presenteisme)+' · turnover '+eur(b.turnover);
+  var salC=ROI.sal*1.42;var ms=ROI.nbs*salC;var ba=ms*0.11*0.28;document.getElementById('ctx-note').textContent=(ctx==='siege'?'Siège social':'Site industriel')+' · Masse sal. chargée : '+eur(ms)+' · Dysf. 11% : '+eur(ms*0.11)+' · Base adressable 28% : '+eur(ba);
   document.getElementById('daf-im-hint').textContent=ctx==='siege'?'Défaut siège : 6 250 €':'Défaut industrie : 6 500 €';
   if(DRH.source!=='default'){if(window.confirm('Changer le type de site réinitialise les données RH saisies. Continuer ?'))resetDRH();else return;}
   updateDRHGrid();calcROI();
@@ -1126,42 +1127,142 @@ function toggleDAF(){var f=document.getElementById('daf-form-wrapper');var btn=d
 function applyDAF(){function g(id){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}DAF.am=g('daf-am');DAF.im=g('daf-im');DAF.maint=g('daf-maint');DAF.form=g('daf-formation');DAF.com=g('daf-com');DAF.anim=g('daf-anim');DAF.autres=g('daf-autres');document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI();}
 function resetDAF(){DAF={am:null,im:null,maint:null,form:null,com:null,anim:null,autres:null};document.getElementById('daf-form-wrapper').style.display='none';document.getElementById('btn-daf').textContent='✎ Modifier';calcROI();}
 
+/* ── Coefficients multiplicateurs (alignés étalon ROI_beOtop v5.1) ── */
+function getFormCoef(form){var REF=2000;if(form<=REF)return 0.85+(form/REF)*0.15;return 1.0+((form-REF)/(5000-REF))*0.30;}
+function getAnimCoef(anim){var REF=2000;if(anim<=REF)return 0.85+(anim/REF)*0.15;return 1.0+((anim-REF)/(5000-REF))*0.35;}
+
 function calcROI(){
-  var scale=ROI.nbs/400;var bases=BASE_400[ROI.ctx];var sc=SCENARIOS[ROI.sc-1];var po=POSTURES.find(function(p){return p.id===ROI.po;});var impact=sc.rate;var adoption=po.adopt/100;var baseTotale=(bases.absenteisme+bases.presenteisme+bases.turnover)*scale;var isR=DRH.source!=='default';
+  var sc=SCENARIOS[ROI.sc-1];
+  var po=POSTURES.find(function(p){return p.id===ROI.po;});
+  var impact=sc.rate;
+  var adoption=po.adopt/100;
+  var isR=DRH.source!=='default';
+
+  /* Masse salariale chargée (charges patronales 42%) — aligné étalon */
+  var salC=ROI.sal*1.42;
+  var masseSalariale=ROI.nbs*salC;
+
+  /* Paramètres ANACT constants */
+  var TAUX_DYSF=0.11;
+  var PART_ADR=0.28;
+  var ba_exact=masseSalariale*TAUX_DYSF*PART_ADR;
+
+  var ctpComp=calcCTP();
+  var ctp=ctpComp.total;
+
+  /* Coefficients multiplicateurs (proxy via valeurs CTP) */
+  var formVal=DAF.form!==null?DAF.form:CTP_BASE[ROI.ctx].form;
+  var animVal=DAF.anim!==null?DAF.anim:CTP_BASE[ROI.ctx].anim;
+  var formCoef=getFormCoef(formVal);
+  var animCoef=getAnimCoef(animVal);
+
   var gain,decomposition;
+
   if(isR){
+    /* Mode données RH réelles : écart ref/réel × adoption × coefficients */
+    var scale=ROI.nbs/400;
+    var bases=BASE_400[ROI.ctx];
     var absRef=bases.absenteisme*scale,presRef=bases.presenteisme*scale,turnRef=bases.turnover*scale,accRef=bases.accidents*scale;
-    var absReal=DRH.absenteisme!==null?DRH.absenteisme:absRef,presReal=DRH.presenteisme!==null?DRH.presenteisme:presRef,turnReal=DRH.turnover!==null?DRH.turnover:turnRef,accReal=DRH.accidents!==null?DRH.accidents:accRef;
-    var eA=Math.max(0,absRef-absReal)*adoption,eP=Math.max(0,presRef-presReal)*adoption,eT=Math.max(0,turnRef-turnReal)*adoption,eAc=Math.max(0,accRef-accReal)*adoption;
+    var absReal=DRH.absenteisme!==null?DRH.absenteisme:absRef;
+    var presReal=DRH.presenteisme!==null?DRH.presenteisme:presRef;
+    var turnReal=DRH.turnover!==null?DRH.turnover:turnRef;
+    var accReal=DRH.accidents!==null?DRH.accidents:accRef;
+    var eA=Math.max(0,absRef-absReal)*adoption*formCoef*animCoef;
+    var eP=Math.max(0,presRef-presReal)*adoption*formCoef*animCoef;
+    var eT=Math.max(0,turnRef-turnReal)*adoption*formCoef*animCoef;
+    var eAc=Math.max(0,accRef-accReal)*adoption*formCoef*animCoef;
     gain=eA+eP+eT+eAc;
-    decomposition='<div class="detail-row"><span>Absentéisme</span><span>'+eur(absRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eA)+'</span></div><div class="detail-row"><span>Présentéisme</span><span>'+eur(presRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eP)+'</span></div><div class="detail-row"><span>Turnover</span><span>'+eur(turnRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eT)+'</span></div><div class="detail-row"><span>Accidents</span><span>'+eur(accRef)+'</span><span>→</span><span style="color:var(--sage)">'+eur(eAc)+'</span></div><div class="detail-row total"><span>Total gain</span><span></span><span></span><span style="color:var(--gold)">'+eur(gain)+'</span></div>';
+    var bonusLbl='×'+(formCoef*animCoef).toFixed(2)+' (form. ×'+formCoef.toFixed(2)+' · anim. ×'+animCoef.toFixed(2)+')';
+    decomposition=
+      '<div class="detail-row"><span>Absentéisme (réf. → écart × adoption × bonus)</span><span style="color:var(--sage)">'+eur(eA)+'</span></div>'+
+      '<div class="detail-row"><span>Présentéisme</span><span style="color:var(--sage)">'+eur(eP)+'</span></div>'+
+      '<div class="detail-row"><span>Turnover</span><span style="color:var(--sage)">'+eur(eT)+'</span></div>'+
+      '<div class="detail-row"><span>Accidents</span><span style="color:var(--sage)">'+eur(eAc)+'</span></div>'+
+      '<div class="detail-row" style="font-size:.6rem;color:var(--muted)"><span>Coefficients multiplicateurs</span><span>'+bonusLbl+'</span></div>'+
+      '<div class="detail-row total"><span>Gain estimé</span><span style="color:var(--gold)">'+eur(gain)+'</span></div>';
   } else {
-    gain=baseTotale*impact;
-    decomposition='<div class="detail-row"><span>Base adressable totale</span><span style="color:var(--cream)">'+eur(baseTotale)+'</span></div><div class="detail-row"><span>Impact retenu</span><span>'+sc.label+' ('+Math.round(impact*100)+'%)</span></div><div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>';
+    /* Mode sectoriel ANACT (aligné étalon) */
+    var gainBase_exact=ba_exact*impact*adoption;
+    gain=gainBase_exact*formCoef*animCoef;
+    var bonusLbl2='×'+(formCoef*animCoef).toFixed(2)+' (form. ×'+formCoef.toFixed(2)+' · anim. ×'+animCoef.toFixed(2)+')';
+    decomposition=
+      '<div class="detail-row"><span>Masse sal. chargée ('+ROI.nbs+' × '+eur(ROI.sal)+' × 1,42)</span><span style="color:var(--muted2)">'+eur(masseSalariale)+'</span></div>'+
+      '<div class="detail-row"><span>Dysfonctionnements RH (11% ANACT)</span><span style="color:var(--muted2)">'+eur(masseSalariale*TAUX_DYSF)+'</span></div>'+
+      '<div class="detail-row"><span>Part adressable bien-être (28%)</span><span style="color:var(--muted2)">'+eur(ba_exact)+'</span></div>'+
+      '<div class="detail-row"><span>Scénario '+sc.label+' × adoption '+po.adopt+'%</span><span style="color:var(--muted2)">'+eur(gainBase_exact)+'</span></div>'+
+      '<div class="detail-row" style="font-size:.6rem;color:var(--muted)"><span>Coefficients multiplicateurs</span><span>'+bonusLbl2+'</span></div>'+
+      '<div class="detail-row total"><span>Gain estimé</span><span style="color:var(--sage)">'+eur(gain)+'</span></div>';
   }
-  var ctpComp=calcCTP();var ctp=ctpComp.total;var eco=gain-ctp;var roi=ctp>0?(eco/ctp)*100:0;var pb=gain>0?ctp/(gain/12):999;
+
+  var eco=gain-ctp;
+  var roi=ctp>0?(eco/ctp)*100:0;
+  var pb=gain>0?ctp/(gain/12):999;
+
   document.querySelectorAll('#po-pills .pill').forEach(function(p){p.classList.toggle('disabled',!isR);});
   document.getElementById('adoption-note').style.opacity=isR?'1':'0.4';
-  var rEl=document.getElementById('roi-pct');rEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';rEl.className='roi-big'+(roi<0?' neg':'');
+
+  var rEl=document.getElementById('roi-pct');
+  rEl.textContent=(roi>=0?'+':'')+Math.round(roi)+'%';
+  rEl.className='roi-big'+(roi<0?' neg':'');
   document.getElementById('roi-payback').textContent=pb<100?'Retour sur investissement en '+pb.toFixed(1)+' mois':'Gain insuffisant';
-  document.getElementById('roi-seuil').textContent=!isR?'Seuil de rentabilité : '+(baseTotale>0?(ctp/baseTotale*100).toFixed(2):0)+"% d'impact":'';
-  document.getElementById('roi-source-label').textContent=isR?'Basé sur vos données RH réelles':'Valeurs sectorielles · '+(ROI.ctx==='siege'?'siège social':'site industriel');
-  document.getElementById('roi-gain').textContent=eur(gain);document.getElementById('roi-ctp').textContent=eur(ctp);document.getElementById('roi-eco').textContent=eur(eco);
+  document.getElementById('roi-seuil').textContent=!isR?
+    'Base adressable : '+eur(ba_exact)+' · '+ROI.nbs+' sal. × '+eur(ROI.sal)+'/an chargé':'';
+  document.getElementById('roi-source-label').textContent=isR?
+    'Basé sur vos données RH réelles':
+    'Modèle ANACT · '+(ROI.ctx==='siege'?'siège social':'site industriel')+' · ROI moyen simulé';
+
+  document.getElementById('roi-gain').textContent=eur(gain);
+  document.getElementById('roi-ctp').textContent=eur(ctp);
+  document.getElementById('roi-eco').textContent=eur(eco);
   var sA=seancesAnnualiseesROI>0?seancesAnnualiseesROI:realSeancesTotal*12;
   document.getElementById('roi-seances-annee').textContent=fnum(sA)+' séances';
   document.getElementById('roi-decomposition').innerHTML=decomposition;
-  var detail='<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div><div class="detail-row"><span>Loyer opportunité ('+SURF_OPT[ROI.surf]+' m²)</span><span>'+eur(ctpComp.im)+'</span></div><div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div><div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div><div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div><div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
+
+  var detail=
+    '<div class="detail-row"><span>Amortissement</span><span>'+eur(ctpComp.am)+'</span></div>'+
+    '<div class="detail-row"><span>Loyer opportunité ('+SURF_OPT[ROI.surf]+' m²)</span><span>'+eur(ctpComp.im)+'</span></div>'+
+    '<div class="detail-row"><span>Maintenance</span><span>'+eur(ctpComp.maint)+'</span></div>'+
+    '<div class="detail-row"><span>Formation</span><span>'+eur(ctpComp.form)+'</span></div>'+
+    '<div class="detail-row"><span>Communication</span><span>'+eur(ctpComp.com)+'</span></div>'+
+    '<div class="detail-row"><span>Animation</span><span>'+eur(ctpComp.anim)+'</span></div>';
   if(ctpComp.autres>0)detail+='<div class="detail-row"><span>Autres</span><span>'+eur(ctpComp.autres)+'</span></div>';
   detail+='<div class="detail-row total"><span>Total CTP</span><span>'+eur(ctp)+'</span></div>';
   document.getElementById('roi-detail').innerHTML=detail;
+
   var adoR=ROI.nbs>0?clamp(Math.round(sA/(ROI.nbs*2*46)*100),0,100):0;
   var po2=POSTURES.find(function(p){return p.id===ROI.po;});
-  document.getElementById('roi-adoption-compare').innerHTML='<div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption réelle mesurée</span><span style="color:var(--sage)">'+adoR+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+adoR+'%;--bar-color:var(--sage)"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem"><span>Adoption théorique (posture '+po2.label+')</span><span style="color:var(--gold)">'+po2.adopt+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+po2.adopt+'%;--bar-color:var(--gold)"></div></div></div>';
-  document.getElementById('roi-impact-summary').innerHTML='Absentéisme : '+eur(bases.absenteisme*scale)+'<br>Turnover : '+eur(bases.turnover*scale)+'<br>Base adressable : '+eur(baseTotale)+'<br>'+ROI.nbs+' employés';
+  document.getElementById('roi-adoption-compare').innerHTML=
+    '<div style="margin-bottom:.6rem">'+
+      '<div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem">'+
+        '<span>Adoption réelle mesurée (PIR)</span><span style="color:var(--sage)">'+adoR+'%</span>'+
+      '</div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+adoR+'%;--bar-color:var(--sage)"></div></div>'+
+    '</div>'+
+    '<div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--muted2);margin-bottom:.3rem">'+
+        '<span>Adoption théorique (posture '+po2.label+')</span><span style="color:var(--gold)">'+po2.adopt+'%</span>'+
+      '</div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+po2.adopt+'%;--bar-color:var(--gold)"></div></div>'+
+    '</div>';
+
+  document.getElementById('roi-impact-summary').innerHTML=
+    'Masse sal. chargée : '+eur(masseSalariale)+'<br>'+
+    'Base adressable (11%×28%) : '+eur(ba_exact)+'<br>'+
+    ROI.nbs+' collaborateurs · '+eur(ROI.sal)+'/an';
+
   var eDiv=document.getElementById('drh-evolution');
   if(isR){
     eDiv.style.display='block';
-    document.getElementById('evolution-grid').innerHTML=[{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}].map(function(k){if(DRH[k.key]===null)return '';var cur=DRH[k.key];var proj=cur*(1-impact);var gv=cur-proj;var bp=Math.round(proj/Math.max(cur,1)*100);return '<div class="evol-card"><div class="evol-title">'+k.label+'</div><div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(cur)+'</span></div><div class="evol-row"><span>Projeté</span><span style="color:var(--sage)">'+eur(proj)+' <span style="font-size:.65rem">▼ -'+eur(gv)+'</span></span></div><div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+bp+'%;--bar-color:var(--sage)"></div></div></div></div>';}).filter(Boolean).join('');
+    document.getElementById('evolution-grid').innerHTML=
+      [{key:'absenteisme',label:'Absentéisme'},{key:'presenteisme',label:'Présentéisme'},{key:'turnover',label:'Turnover'},{key:'accidents',label:'Accidents'}]
+      .map(function(k){
+        if(DRH[k.key]===null)return '';
+        var cur=DRH[k.key];var proj=cur*(1-impact);var gv=cur-proj;var bp=Math.round(proj/Math.max(cur,1)*100);
+        return '<div class="evol-card"><div class="evol-title">'+k.label+'</div>'+
+          '<div class="evol-row"><span>Actuel</span><span style="color:var(--cream)">'+eur(cur)+'</span></div>'+
+          '<div class="evol-row"><span>Projeté</span><span style="color:var(--sage)">'+eur(proj)+' <span style="font-size:.65rem">▼ −'+eur(gv)+'</span></span></div>'+
+          '<div style="margin-top:.5rem"><div class="bar-track"><div class="bar-fill" style="width:'+bp+'%;--bar-color:var(--sage)"></div></div></div></div>';
+      }).filter(Boolean).join('');
   } else {eDiv.style.display='none';}
 }
 
