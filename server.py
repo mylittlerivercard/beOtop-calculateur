@@ -291,6 +291,21 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cc_user ON companion_cc_sessions(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cc_date ON companion_cc_sessions(date)')
 
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_points (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                site_slug   TEXT,
+                action      TEXT NOT NULL,
+                label       TEXT,
+                points      SMALLINT NOT NULL,
+                date        DATE NOT NULL DEFAULT CURRENT_DATE
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_pts_user ON companion_points(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_pts_date ON companion_points(date)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -1357,6 +1372,8 @@ def create_reservation():
             """, [site_slug, atelier, user_id, date_str, heure_debut, duree_min])
             new_id = cur.fetchone()['id']
             conn.commit()
+    user_id_pts = session.get('user_id')
+    award_points(user_id_pts, 'reservation', f'Réservation · {atelier}', site_slug)
     return jsonify({'ok': True, 'id': new_id}), 201
 
 
@@ -1414,7 +1431,8 @@ def companion_save_checkin():
                 """, [energie, stress, focus, user_id])
                 row = cur.fetchone()
             conn.commit()
-    return jsonify({'ok': True, 'id': row['id'] if row else None}), 201
+    pts = award_points(user_id, 'checkin', 'Check-in quotidien', site_slug)
+    return jsonify({'ok': True, 'id': row['id'] if row else None, 'points': pts}), 201
 
 
 @app.route('/api/companion/checkin/history', methods=['GET'])
@@ -1458,7 +1476,8 @@ def companion_save_cc():
             """, [user_id, site_slug, protocole, duree_min, complete])
             new_id = cur.fetchone()['id']
             conn.commit()
-    return jsonify({'ok': True, 'id': new_id}), 201
+    pts = award_points(user_id, 'cc', f'Cohérence cardiaque · {protocole}', site_slug)
+    return jsonify({'ok': True, 'id': new_id, 'points': pts}), 201
 
 
 @app.route('/api/companion/cc/history', methods=['GET'])
@@ -1530,6 +1549,171 @@ def companion_stats():
         'checkins': checkins,
         'cc': cc,
         'streak_jours': streak,
+    })
+
+
+
+# ========== GAMIFICATION POINTS ==========
+
+# Barème
+POINTS_BAREME = {
+    'checkin':      10,
+    'cc':           20,
+    'audio':        15,
+    'exercice':     15,
+    'jeu':          10,
+    'reservation':  25,
+    'sons':         10,
+    'video':        15,
+}
+
+# Niveaux
+NIVEAUX = [
+    { 'seuil':    0, 'label': 'Débutant',    'emoji': '🌱' },
+    { 'seuil':  100, 'label': 'Actif',        'emoji': '🌿' },
+    { 'seuil':  300, 'label': 'Régulier',     'emoji': '💪' },
+    { 'seuil':  600, 'label': 'Engagé',       'emoji': '🌟' },
+    { 'seuil': 1000, 'label': 'Expert',       'emoji': '🏆' },
+    { 'seuil': 1500, 'label': 'Ambassadeur',  'emoji': '💎' },
+]
+
+def get_niveau(total_pts):
+    niveau = NIVEAUX[0]
+    for n in NIVEAUX:
+        if total_pts >= n['seuil']:
+            niveau = n
+    idx = NIVEAUX.index(niveau)
+    next_n = NIVEAUX[idx + 1] if idx + 1 < len(NIVEAUX) else None
+    pts_dans_niveau = total_pts - niveau['seuil']
+    pts_prochain    = (next_n['seuil'] - niveau['seuil']) if next_n else None
+    pct = int(pts_dans_niveau / pts_prochain * 100) if pts_prochain else 100
+    return {
+        'niveau':         niveau,
+        'next':           next_n,
+        'pts_dans_niveau': pts_dans_niveau,
+        'pts_prochain':   pts_prochain,
+        'pct':            pct,
+    }
+
+
+def award_points(user_id, action, label, site_slug=None):
+    """Attribuer des points et retourner le nombre de points ajoutés."""
+    pts = POINTS_BAREME.get(action, 0)
+    if pts <= 0:
+        return 0
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO companion_points (user_id, site_slug, action, label, points)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, [user_id, site_slug, action, label, pts])
+                conn.commit()
+    except Exception as e:
+        print(f">>> award_points error: {e}", file=sys.stderr)
+    return pts
+
+
+@app.route('/api/companion/points', methods=['POST'])
+@login_required
+def add_points():
+    """Route générique pour attribuer des points depuis le front."""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Body JSON requis'}), 400
+    action    = data.get('action')
+    label     = data.get('label', action)
+    site_slug = data.get('site_slug')
+    if action not in POINTS_BAREME:
+        return jsonify({'error': f'Action inconnue : {action}'}), 400
+    user_id = session.get('user_id')
+    pts = award_points(user_id, action, label, site_slug)
+    return jsonify({'ok': True, 'points': pts}), 201
+
+
+@app.route('/api/companion/scores', methods=['GET'])
+@login_required
+def get_scores():
+    """KPIs gamification : total, niveau, historique 30 jours, classement."""
+    user_id   = session.get('user_id')
+    site_slug = request.args.get('site_slug')
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Total tous temps
+            cur.execute("""
+                SELECT COALESCE(SUM(points), 0) as total
+                FROM companion_points WHERE user_id=%s
+            """, [user_id])
+            total = cur.fetchone()['total']
+
+            # Points ce mois
+            cur.execute("""
+                SELECT COALESCE(SUM(points), 0) as mois
+                FROM companion_points
+                WHERE user_id=%s AND date >= DATE_TRUNC('month', CURRENT_DATE)
+            """, [user_id])
+            mois = cur.fetchone()['mois']
+
+            # Points cette semaine
+            cur.execute("""
+                SELECT COALESCE(SUM(points), 0) as semaine
+                FROM companion_points
+                WHERE user_id=%s AND date >= DATE_TRUNC('week', CURRENT_DATE)
+            """, [user_id])
+            semaine = cur.fetchone()['semaine']
+
+            # Historique 30 dernières actions
+            cur.execute("""
+                SELECT action, label, points, date::text, created_at
+                FROM companion_points
+                WHERE user_id=%s
+                ORDER BY created_at DESC LIMIT 30
+            """, [user_id])
+            historique = [serialize_row(r) for r in cur.fetchall()]
+
+            # Répartition par action (ce mois)
+            cur.execute("""
+                SELECT action, COUNT(*) as nb, SUM(points) as pts
+                FROM companion_points
+                WHERE user_id=%s AND date >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY action ORDER BY pts DESC
+            """, [user_id])
+            repartition = [serialize_row(r) for r in cur.fetchall()]
+
+            # Streak (jours consécutifs avec au moins 1 action)
+            cur.execute("""
+                SELECT DISTINCT date::text FROM companion_points
+                WHERE user_id=%s ORDER BY date DESC LIMIT 60
+            """, [user_id])
+            dates = [r['date'] for r in cur.fetchall()]
+
+    streak = 0
+    if dates:
+        from datetime import date as dt, timedelta
+        today = dt.today()
+        cur_d = today
+        for d_str in dates:
+            d = dt.fromisoformat(d_str)
+            if d == cur_d or d == cur_d - timedelta(days=1):
+                streak += 1
+                cur_d = d
+            else:
+                break
+
+    niveau_info = get_niveau(int(total))
+
+    return jsonify({
+        'total':        int(total),
+        'mois':         int(mois),
+        'semaine':      int(semaine),
+        'streak':       streak,
+        'niveau':       niveau_info['niveau'],
+        'next_niveau':  niveau_info['next'],
+        'pct_niveau':   niveau_info['pct'],
+        'pts_restants': niveau_info['pts_prochain'],
+        'historique':   historique,
+        'repartition':  repartition,
     })
 
 
