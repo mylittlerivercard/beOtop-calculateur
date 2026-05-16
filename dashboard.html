@@ -501,6 +501,7 @@
         </div>
         <div id="rt-last-update" style="font-size:.6rem;color:var(--muted)">—</div>
         <button onclick="copyRealtimeLink()" style="padding:.35rem .8rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.25);color:var(--gold);font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif">🔗 Lien public</button>
+        <button onclick="openKiosk()" style="padding:.35rem .8rem;border-radius:7px;background:rgba(126,184,201,.08);border:1px solid rgba(126,184,201,.25);color:#5a9ab0;font-size:.65rem;cursor:pointer;font-family:'Jost',sans-serif">🖥️ Ouvrir le kiosque</button>
       </div>
     </div>
 
@@ -1267,6 +1268,11 @@ function copyRealtimeLink() {
   } else {
     prompt('Lien public à partager :', url);
   }
+}
+
+function openKiosk() {
+  var slug = currentSite || 'dmmf-agde';
+  window.open('/kiosk/' + slug, '_blank');
 }
 
 function showToast(msg) {
