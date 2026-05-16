@@ -487,50 +487,47 @@
 </div>
 
 <!-- ═══ DISPONIBILITÉ TEMPS RÉEL ═══ -->
-  <div class="view" id="view-realtime" style="padding:0 .5rem">
-
-    <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.4rem;flex-wrap:wrap;gap:.8rem">
+  <div class="view" id="view-realtime">
+    <!-- Header compact -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;gap:.5rem">
       <div>
-        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">Disponibilité <em>en temps réel</em></div>
-        <div class="page-sub" style="margin-bottom:0">État d'occupation des ateliers · rafraîchissement automatique toutes les 15s</div>
+        <div class="page-title" style="font-size:1rem;margin-bottom:.1rem">Disponibilité <em>en temps réel</em></div>
+        <div style="font-size:.63rem;color:var(--muted)">État d'occupation des ateliers · rafraîchissement toutes les 15s</div>
       </div>
-      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
-        <div style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:100px;padding:.35rem .9rem;font-size:.68rem;color:#10b981;font-weight:500;letter-spacing:.05em">
-          <span style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s ease-in-out infinite;flex-shrink:0"></span>
-          En direct
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <div style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:100px;padding:.28rem .7rem;font-size:.63rem;color:#10b981;font-weight:500">
+          <span style="width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse-green 2s ease-in-out infinite;flex-shrink:0"></span>En direct
         </div>
-        <div id="rt-last-update" style="font-size:.62rem;color:var(--muted)">—</div>
-        <button onclick="copyRealtimeLink()" style="padding:.4rem .9rem;border-radius:8px;background:rgba(176,125,46,.1);border:1px solid rgba(176,125,46,.3);color:var(--gold);font-size:.68rem;cursor:pointer;font-family:'Jost',sans-serif;display:flex;align-items:center;gap:.3rem">🔗 Lien public</button>
+        <div id="rt-last-update" style="font-size:.6rem;color:var(--muted)">—</div>
+        <button onclick="copyRealtimeLink()" style="padding:.32rem .75rem;border-radius:7px;background:rgba(176,125,46,.08);border:1px solid rgba(176,125,46,.25);color:var(--gold);font-size:.63rem;cursor:pointer;font-family:'Jost',sans-serif">🔗 Lien public</button>
       </div>
     </div>
-
-    <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.4rem;max-width:800px">
-      <div class="kpi">
-        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Ateliers libres</div>
-        <div id="rt-libres" style="font-size:2rem;font-weight:300;color:#10b981;line-height:1">—</div>
-        <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">disponibles maintenant</div>
+    <!-- KPIs + grille dans un wrapper de même largeur -->
+    <div style="max-width:960px">
+      <!-- KPIs inline -->
+      <div style="display:flex;gap:2rem;margin-bottom:1rem;padding:.7rem 1rem;background:rgba(255,255,255,.75);border:1px solid rgba(200,190,180,.35);border-radius:10px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:baseline;gap:.35rem">
+          <span id="rt-libres" style="font-size:1.5rem;font-weight:300;color:#10b981;line-height:1">—</span>
+          <span style="font-size:.62rem;color:var(--muted)">libres</span>
+        </div>
+        <div style="width:1px;height:1rem;background:rgba(0,0,0,.1);flex-shrink:0"></div>
+        <div style="display:flex;align-items:baseline;gap:.35rem">
+          <span id="rt-occupes" style="font-size:1.5rem;font-weight:300;color:var(--gold);line-height:1">—</span>
+          <span style="font-size:.62rem;color:var(--muted)">occupés</span>
+        </div>
+        <div style="width:1px;height:1rem;background:rgba(0,0,0,.1);flex-shrink:0"></div>
+        <div style="display:flex;align-items:baseline;gap:.35rem">
+          <span id="rt-passages" style="font-size:1.5rem;font-weight:300;color:var(--mist);line-height:1">—</span>
+          <span style="font-size:.62rem;color:var(--muted)">passages aujourd'hui</span>
+        </div>
       </div>
-      <div class="kpi">
-        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">En cours</div>
-        <div id="rt-occupes" style="font-size:2rem;font-weight:300;color:var(--gold);line-height:1">—</div>
-        <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">ateliers occupés</div>
-      </div>
-      <div class="kpi">
-        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Passages aujourd'hui</div>
-        <div id="rt-passages" style="font-size:2rem;font-weight:300;color:var(--mist);line-height:1">—</div>
-        <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">entrées détectées · faisceau IR</div>
-      </div>
+      <!-- Grille ateliers -->
+      <div id="rt-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem"></div>
+      <!-- Erreur -->
+      <div id="rt-error" style="display:none;padding:.7rem 1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.68rem;color:#ef4444;margin-top:.8rem"></div>
     </div>
-
-    <!-- Grille ateliers -->
-    <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:.8rem">État des ateliers</div>
-    <div id="rt-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.8rem;max-width:1100px"></div>
-
-    <!-- Message erreur -->
-    <div id="rt-error" style="display:none;padding:1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;font-size:.72rem;color:#ef4444;margin-top:1rem"></div>
   </div>
+
 
 <!-- ═══ MODAL ═══ -->
 <div class="modal-overlay" id="passages-modal" onclick="if(event.target===this)closePassagesModal()">
