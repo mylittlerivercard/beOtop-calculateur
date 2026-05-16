@@ -564,7 +564,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
     </button>
     <div class="user-pill">
       <div class="avatar" id="user-avatar">MR</div>
-      <span id="user-display">Nathalie J.</span>
+      <span id="user-display">Marie R.</span>
     </div>
   </div>
 </div>
@@ -615,7 +615,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
 <!-- ══════════════ DASHBOARD ══════════════ -->
 <div class="view active" id="view-dashboard">
   <div class="page-header">
-    <h1>Bonjour, <em id="dash-prenom">Nathalie</em></h1>
+    <h1>Bonjour, <em id="dash-prenom">Marie</em></h1>
     <p id="dash-date"></p>
   </div>
 
@@ -732,6 +732,8 @@ tr:hover td { background: var(--surface); color: var(--text); }
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:.3rem"></span>Occupés :
       <strong id="count-occupes" style="color:var(--red)">—</strong>
     </div>
+    <div id="res-source" style="font-size:.6rem;color:var(--text-muted);padding:.2rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:8px">⏳ Chargement...</div>
+    <div id="res-last-update" style="font-size:.6rem;color:var(--text-muted)"></div>
     <button class="btn-secondary" style="margin-left:auto;font-size:.68rem;padding:.4rem .9rem" onclick="renderAteliers()">↻ Actualiser</button>
   </div>
 
@@ -852,7 +854,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
       <div class="profile-header">
         <div class="profile-avatar" id="profile-avatar-big">MR</div>
         <div>
-          <div class="profile-name" id="profile-name-display">Nathalie Jalenques</div>
+          <div class="profile-name" id="profile-name-display">Marie Roux</div>
           <div class="profile-dept" id="profile-dept-display">Direction Marketing · BPCE</div>
           <div style="margin-top:.5rem">
             <span class="streak-badge">🔥 <span id="profile-streak">3</span> jours consécutifs</span>
@@ -864,7 +866,7 @@ tr:hover td { background: var(--surface); color: var(--text); }
         <div class="card-title" style="color:var(--text-dim)">Informations</div>
         <div class="form-field">
           <label>Prénom</label>
-          <input type="text" id="pf-prenom" value="Nathalie">
+          <input type="text" id="pf-prenom" value="Marie">
         </div>
         <div class="form-field">
           <label>Nom</label>
@@ -947,7 +949,7 @@ const DB_KEY = 'beotop_companion_db';
 
 const DEMO_DB = {
   user: {
-    prenom: 'Nathalie', nom: 'Jalenques',
+    prenom: 'Marie', nom: 'Roux',
     dept: 'Direction Marketing', site: 'BPCE — Paris 15e',
     initiales: 'MR'
   },
@@ -1149,23 +1151,110 @@ function submitCheckin() {
 /* ════════════════════════════════════════════
    RÉSERVATION
 ════════════════════════════════════════════ */
-function renderAteliers() {
+/* ── Méta-données ateliers côté client ── */
+const ATELIERS_META_COMPANION = {
+  'Méridienne P127':         { icon:'🪑', indication:'TMS · Position 127°' },
+  'Cocon de Sieste':         { icon:'😴', indication:'Fatigue · Récupération profonde' },
+  'Neurosonic Lit':          { icon:'🛏️', indication:'Relaxation · Vibrations sonores' },
+  "Bol d'Air Jacquier":      { icon:'🌬️', indication:'Fatigue cognitive · Oxygénation' },
+  'Transat 127':             { icon:'🛋️', indication:'Détente · Anti-gravité' },
+  'Siège Massant 0 Gravité': { icon:'💆', indication:'TMS · Stress · Massage' },
+  'Siège Massant Shiatsu':   { icon:'🎵', indication:'TMS · Stress · Shiatsu' },
+  'Siège Lecture':           { icon:'📖', indication:'Détente · Balancement' },
+  'Sensosphère':             { icon:'🌟', indication:'Luminothérapie' },
+  'Bain de Lumière Rouge':   { icon:'💡', indication:'Régénération cellulaire' },
+  'Photobiomodulation':      { icon:'✨', indication:'TMS · Régénération' },
+  'Lunettes Psio':           { icon:'👓', indication:'Déconnexion visuelle' },
+};
+const SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+
+function generateSlots() {
+  /* Prochain créneau disponible (arrondi au quart d'heure supérieur) */
+  const now = new Date();
+  const startMin = Math.ceil((now.getHours() * 60 + now.getMinutes()) / 15) * 15;
+  const h = Math.floor(startMin / 60);
+  const m = startMin % 60;
+  if (h < 8 || h >= 19) return [];
+  const hStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  /* Retourne le créneau de départ + les 3 durées */
+  return [{ heure: hStr, duree: 10 }, { heure: hStr, duree: 15 }, { heure: hStr, duree: 20 }];
+}
+
+let realtimeTimer = null;
+let cachedSiteSlug = null;
+
+async function getSiteSlug() {
+  if (cachedSiteSlug) return cachedSiteSlug;
+  try {
+    const r = await fetch('/api/client/sites', { credentials: 'include' });
+    if (r.ok) {
+      const sites = await r.json();
+      if (sites.length) { cachedSiteSlug = sites[0].slug; return cachedSiteSlug; }
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function renderAteliers() {
   const grid = document.getElementById('atelier-grid');
-  const libres = DB.ateliers.filter(a => a.statut === 'libre').length;
-  const occupes = DB.ateliers.filter(a => a.statut === 'occupe').length;
+  const srcEl = document.getElementById('res-source');
+  const updEl = document.getElementById('res-last-update');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;font-size:.72rem;color:var(--text-muted)">⏳ Récupération des données en temps réel...</div>';
+
+  const siteSlug = await getSiteSlug();
+  let occData = null;
+  let passagesToday = 0;
+
+  if (siteSlug) {
+    try {
+      const [rOcc, rPass] = await Promise.all([
+        fetch('/api/sensors/occupation/current?site_slug=' + siteSlug, { credentials: 'include' }),
+        fetch('/api/sensors/passages/today?site_slug=' + siteSlug, { credentials: 'include' })
+      ]);
+      if (rOcc.ok) occData = await rOcc.json();
+      if (rPass.ok) { const d = await rPass.json(); passagesToday = d.passages_today || 0; }
+    } catch(e) {}
+  }
+
+  let ateliers = [];
+  const slots = generateSlots();
+
+  if (occData && occData.ateliers && Object.keys(occData.ateliers).length > 0) {
+    srcEl.innerHTML = '🟢 Capteurs PIR · Temps réel';
+    srcEl.style.color = 'var(--green)';
+    updEl.textContent = 'Mis à jour ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    ateliers = Object.entries(occData.ateliers).map(([nom, occupe], idx) => ({
+      id: idx + 1, nom,
+      statut: occupe ? 'occupe' : 'libre',
+      ...(ATELIERS_META_COMPANION[nom] || { icon:'⚙️', indication:'Atelier beOtop' })
+    }));
+    // Ajouter accessoires sans PIR
+    SANS_CAPTEUR_PIR.forEach((nom, i) => {
+      if (!ateliers.find(a => a.nom === nom)) {
+        ateliers.push({ id: 100 + i, nom, statut: 'inconnu', ...(ATELIERS_META_COMPANION[nom] || { icon:'⚙️', indication:'Accessoire déclaratif' }) });
+      }
+    });
+  } else {
+    srcEl.innerHTML = '🟡 Hors-ligne · Données locales';
+    srcEl.style.color = 'var(--gold)';
+    updEl.textContent = '';
+    ateliers = DB.ateliers;
+  }
+
+  const libres  = ateliers.filter(a => a.statut === 'libre').length;
+  const occupes = ateliers.filter(a => a.statut === 'occupe').length;
   document.getElementById('count-libres').textContent = libres;
   document.getElementById('count-occupes').textContent = occupes;
   document.getElementById('badge-libres').textContent = libres;
 
-  const slots = ['09:00','09:20','09:40','10:00','10:20','10:40','11:00','14:00','14:20','14:40','15:00'];
-
-  grid.innerHTML = DB.ateliers.map(a => {
-    const statusLabel = a.statut === 'libre' ? 'Libre' : a.statut === 'occupe' ? 'Occupé' : 'Bientôt libre';
-    const timeNote = a.statut === 'occupe' ? '· Libre dans ~15 min' : a.statut === 'bientot' ? '· Disponible à 10h40' : '';
-    const slotHtml = a.statut !== 'occupe' ? `
-      <div class="slot-pills">
-        ${slots.slice(0,4).map(s => `<span class="slot-pill" onclick="reserveSlot(${a.id},'${s}',this)">${s}</span>`).join('')}
-      </div>` : '';
+  grid.innerHTML = ateliers.map(a => {
+    const statusLabel = a.statut === 'libre' ? 'Libre' : a.statut === 'occupe' ? 'Occupé' : a.statut === 'inconnu' ? 'Non mesuré' : 'Bientôt libre';
+    const timeNote = a.statut === 'occupe' ? '· Session en cours' : '';
+    const canReserve = a.statut === 'libre' || a.statut === 'bientot';
+    const slotHtml = canReserve && slots.length
+      ? `<div class="slot-pills">${slots.map(s => `<span class="slot-pill" onclick="reserveSlot('${a.nom}','${s.heure}',${s.duree},this)">${s.duree} min</span>`).join('')}</div>`
+      : (a.statut === 'inconnu' ? '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.5rem">Accessoire · Sans capteur PIR</div>' : '');
     return `<div class="atelier-card ${a.statut}">
       <div class="at-header">
         <span class="at-icon">${a.icon}</span>
@@ -1177,25 +1266,25 @@ function renderAteliers() {
       ${slotHtml}
     </div>`;
   }).join('');
+
+  clearTimeout(realtimeTimer);
+  realtimeTimer = setTimeout(renderAteliers, 30000);
 }
 
-function reserveSlot(atelierID, slot, el) {
+function reserveSlot(atelierNom, slot, duree, el) {
   document.querySelectorAll('.slot-pill.selected').forEach(p => p.classList.remove('selected'));
   el.classList.add('selected');
-  const atelier = DB.ateliers.find(a => a.id === atelierID);
-  if (!atelier) return;
-  DB.reservations.push({
-    date: new Date().toISOString(),
-    atelier: atelier.nom, slot,
-    label: 'Réservation', detail: atelier.nom + ' · ' + slot
-  });
   DB.sessions.push({
     date: new Date().toISOString(),
-    label: atelier.nom, detail: 'Réservé pour ' + slot, duree: 20
+    label: atelierNom,
+    detail: 'Réservé à ' + slot + ' · ' + duree + ' min',
+    duree: duree
   });
   saveDB(DB);
-  showToast('✓ ' + atelier.nom + ' réservé à ' + slot);
+  showToast('✓ ' + atelierNom + ' · ' + duree + ' min à ' + slot);
+  renderHistoryRecent();
 }
+
 
 /* ════════════════════════════════════════════
    COHÉRENCE CARDIAQUE
