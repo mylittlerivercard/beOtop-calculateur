@@ -1078,26 +1078,26 @@ const DEMO_DB = {
     { id:9, nom:'Lunettes Psio', icon:'👓', indication:'Déconnexion · Stimulation visuelle', statut:'libre', couleur:'gold' },
   ],
   audios: [
-    { id:1, titre:'Scan corporel matinal', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Prise de conscience progressive du corps', statut:'active' },
-    { id:2, titre:'Relaxation profonde', categorie:'sophrologie', duree:'20 min', icon:'🌊', description:'Détente complète par la visualisation', statut:'active' },
-    { id:3, titre:'Sons alpha — focus', categorie:'binaural', duree:'30 min', icon:'🎵', description:'Ondes alpha 10 Hz · Concentration et clarté', statut:'active' },
-    { id:4, titre:'Sons thêta — repos', categorie:'binaural', duree:'45 min', icon:'🌙', description:'Ondes thêta 6 Hz · Méditation profonde', statut:'active' },
-    { id:5, titre:'NSDR 20 min', categorie:'nsdr', duree:'20 min', icon:'🧠', description:'Non-Sleep Deep Rest · Protocole Stanford', statut:'active' },
-    { id:6, titre:'NSDR 10 min', categorie:'nsdr', duree:'10 min', icon:'⚡', description:'Version courte · Boost énergétique', statut:'active' },
-    { id:7, titre:'Relaxation cervicales', categorie:'ciblé', duree:'8 min', icon:'🦒', description:'Guidé · Tensions cervicales et nuque', statut:'active' },
-    { id:8, titre:'Détente lombaires', categorie:'ciblé', duree:'12 min', icon:'🫁', description:'Relâchement du bas du dos', statut:'active' },
-    { id:9, titre:'Sons nature — forêt', categorie:'ambiance', duree:'60 min', icon:'🌲', description:'Ambiance forêt · Travail en fond', statut:'active' },
+    { id:1, titre:'Scan corporel matinal', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Prise de conscience progressive du corps', statut:'active', url_audio:'https://www.youtube.com/embed/OPNLh6xQKGI' },
+    { id:2, titre:'Relaxation profonde', categorie:'sophrologie', duree:'20 min', icon:'🌊', description:'Détente complète par la visualisation', statut:'active', url_audio:'https://www.youtube.com/embed/inpok4MKVLM' },
+    { id:3, titre:'Sons alpha — focus', categorie:'binaural', duree:'30 min', icon:'🎵', description:'Ondes alpha 10 Hz · Concentration et clarté', statut:'active', url_audio:'https://www.youtube.com/embed/WPni755-Krk' },
+    { id:4, titre:'Sons thêta — repos', categorie:'binaural', duree:'45 min', icon:'🌙', description:'Ondes thêta 6 Hz · Méditation profonde', statut:'active', url_audio:'https://www.youtube.com/embed/A2sR4PJMcL4' },
+    { id:5, titre:'NSDR 20 min', categorie:'nsdr', duree:'20 min', icon:'🧠', description:'Non-Sleep Deep Rest · Protocole Stanford', statut:'active', url_audio:'https://www.youtube.com/embed/AKGrmY8OSHM' },
+    { id:6, titre:'NSDR 10 min', categorie:'nsdr', duree:'10 min', icon:'⚡', description:'Version courte · Boost énergétique', statut:'active', url_audio:'https://www.youtube.com/embed/pL02HRFk2vo' },
+    { id:7, titre:'Relaxation cervicales', categorie:'ciblé', duree:'8 min', icon:'🦒', description:'Guidé · Tensions cervicales et nuque', statut:'active', url_audio:'' },
+    { id:8, titre:'Détente lombaires', categorie:'ciblé', duree:'12 min', icon:'🫁', description:'Relâchement du bas du dos', statut:'active', url_audio:'' },
+    { id:9, titre:'Sons nature — forêt', categorie:'ambiance', duree:'60 min', icon:'🌲', description:'Ambiance forêt · Travail en fond', statut:'active', url_audio:'https://www.youtube.com/embed/xNN7iTA57jM' },
   ],
   exercices: [
-    { id:1, titre:'Cervicales express', categorie:'tms', icon:'🦒', bg:'rgba(90,138,106,.15)', indication:'Douleurs nuque · Bureau', tags:['5 min','Sans matériel','Assis'], description:'5 exercices de mobilisation cervicale douce' },
-    { id:2, titre:'Lombaires & dos', categorie:'tms', icon:'🫁', bg:'rgba(90,138,106,.15)', indication:'Douleurs lombaires · Station assise', tags:['8 min','Sans matériel','Debout'], description:'Étirements et renforcement du bas du dos' },
-    { id:3, titre:'Poignets & mains', categorie:'tms', icon:'🙌', bg:'rgba(90,138,106,.15)', indication:'Clavier intensif · Tendinite', tags:['5 min','Sans matériel','Assis'], description:'Mobilisation et étirements des poignets' },
-    { id:4, titre:'Étirements complets', categorie:'etirements', icon:'🧘', bg:'rgba(90,138,170,.15)', indication:'Raideurs générales · Pause déjeuner', tags:['15 min','Sans matériel','Debout'], description:'Programme complet haut et bas du corps' },
-    { id:5, titre:'Épaules & trapèzes', categorie:'etirements', icon:'💪', bg:'rgba(90,138,170,.15)', indication:'Tensions épaules · Stress accumulé', tags:['7 min','Sans matériel','Assis'], description:'Relâchement des épaules et du trapèze' },
-    { id:6, titre:'Micro-workout 7 min', categorie:'workout', icon:'⚡', bg:'rgba(200,112,96,.12)', indication:'Manque d\'énergie · Après-repas', tags:['7 min','Espace requis','Debout'], description:'Circuit HIIT léger · Réveil énergétique' },
-    { id:7, titre:'Cardio doux 15 min', categorie:'workout', icon:'🏃', bg:'rgba(200,112,96,.12)', indication:'Énergie basse · Fatigue mentale', tags:['15 min','Couloir ok','Debout'], description:'Marche active + exercices de mobilité' },
-    { id:8, titre:'Respiration carrée', categorie:'respiration', icon:'◻', bg:'rgba(138,106,170,.12)', indication:'Stress aigu · Avant réunion', tags:['4 min','Partout','Assis/Debout'], description:'Box breathing 4-4-4-4 · Régulation immédiate' },
-    { id:9, titre:'Relaxation musculaire', categorie:'relaxation', icon:'🌊', bg:'rgba(200,169,110,.1)', indication:'Tension généralisée · Fin de journée', tags:['12 min','Chaise','Assis'], description:'Jacobson progressif · Contraction-relâchement' },
+    { id:1, titre:'Cervicales express', categorie:'tms', icon:'🦒', bg:'rgba(90,138,106,.15)', indication:'Douleurs nuque · Bureau', tags:['5 min','Sans matériel','Assis'], description:'5 exercices de mobilisation cervicale douce', url_video:'https://www.youtube.com/embed/PHpFuAc7IHE' },
+    { id:2, titre:'Lombaires & dos', categorie:'tms', icon:'🫁', bg:'rgba(90,138,106,.15)', indication:'Douleurs lombaires · Station assise', tags:['8 min','Sans matériel','Debout'], description:'Étirements et renforcement du bas du dos', url_video:'https://www.youtube.com/embed/sTxC3J3gQEU' },
+    { id:3, titre:'Poignets & mains', categorie:'tms', icon:'🙌', bg:'rgba(90,138,106,.15)', indication:'Clavier intensif · Tendinite', tags:['5 min','Sans matériel','Assis'], description:'Mobilisation et étirements des poignets', url_video:'https://www.youtube.com/embed/fdD7CgN5FGg' },
+    { id:4, titre:'Étirements complets', categorie:'etirements', icon:'🧘', bg:'rgba(90,138,170,.15)', indication:'Raideurs générales · Pause déjeuner', tags:['15 min','Sans matériel','Debout'], description:'Programme complet haut et bas du corps', url_video:'https://www.youtube.com/embed/g_tea8ZNk5A' },
+    { id:5, titre:'Épaules & trapèzes', categorie:'etirements', icon:'💪', bg:'rgba(90,138,170,.15)', indication:'Tensions épaules · Stress accumulé', tags:['7 min','Sans matériel','Assis'], description:'Relâchement des épaules et du trapèze', url_video:'https://www.youtube.com/embed/2SzObKSWmOw' },
+    { id:6, titre:'Micro-workout 7 min', categorie:'workout', icon:'⚡', bg:'rgba(200,112,96,.12)', indication:'Manque d\'énergie · Après-repas', tags:['7 min','Espace requis','Debout'], description:'Circuit HIIT léger · Réveil énergétique', url_video:'https://www.youtube.com/embed/EC423RM52tc' },
+    { id:7, titre:'Cardio doux 15 min', categorie:'workout', icon:'🏃', bg:'rgba(200,112,96,.12)', indication:'Énergie basse · Fatigue mentale', tags:['15 min','Couloir ok','Debout'], description:'Marche active + exercices de mobilité', url_video:'' },
+    { id:8, titre:'Respiration carrée', categorie:'respiration', icon:'◻', bg:'rgba(138,106,170,.12)', indication:'Stress aigu · Avant réunion', tags:['4 min','Partout','Assis/Debout'], description:'Box breathing 4-4-4-4 · Régulation immédiate', url_video:'https://www.youtube.com/embed/tEmt1Znux58' },
+    { id:9, titre:'Relaxation musculaire', categorie:'relaxation', icon:'🌊', bg:'rgba(200,169,110,.1)', indication:'Tension généralisée · Fin de journée', tags:['12 min','Chaise','Assis'], description:'Jacobson progressif · Contraction-relâchement', url_video:'' },
   ],
   sessions: [],
   reservations: [],
@@ -1738,6 +1738,26 @@ function filterAudio(cat) {
 function playAudio(id) {
   const audio = DB.audios.find(a => a.id === id);
   if (!audio) return;
+
+  /* Si URL audio/vidéo dispo → ouvrir dans un modal iframe */
+  if (audio.url_audio) {
+    DB.sessions.push({
+      date: new Date().toISOString(), label: audio.titre,
+      detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60
+    });
+    saveDB(DB);
+    openModal(audio.titre,
+      '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + ' · ' + audio.duree + '</div>' +
+      '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">' +
+      '<iframe src="' + audio.url_audio + '?autoplay=1&rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen allow="autoplay" loading="lazy"></iframe>' +
+      '</div>' +
+      '<div style="font-size:.75rem;color:var(--text);margin-bottom:.5rem">' + audio.description + '</div>' +
+      '<div style="font-size:.6rem;color:var(--text-muted)">✦ Le contenu est hébergé sur YouTube · remplaçable par vos propres audios</div>'
+    );
+    return;
+  }
+
+  /* Fallback : player barre interne (simulé) */
   if (currentAudio && currentAudio.id === id) { togglePlay(); return; }
   currentAudio = audio;
   playerRunning = true;
@@ -1830,14 +1850,22 @@ function openExercice(id) {
     detail: ex.categorie + ' · ' + ex.tags[0], duree: parseInt(ex.tags[0]) || 10
   });
   saveDB(DB);
-  openModal(ex.titre, `
-    <div style="font-size:.7rem;color:var(--text-dim);margin-bottom:1rem">${ex.indication}</div>
-    <div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;text-align:center;font-size:2rem">${ex.icon}</div>
-    <div style="font-size:.82rem;color:var(--text);margin-bottom:.8rem">${ex.description}</div>
-    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem">${ex.tags.map(t=>`<span class="ex-tag">${t}</span>`).join('')}</div>
-    <button class="btn-primary" style="width:100%" onclick="closeModal();showToast('✓ Exercice enregistré')">✓ Marquer comme effectué</button>
-  `);
+  const videoHtml = ex.url_video
+    ? '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
+      + '<iframe src="' + ex.url_video + '?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+      + '</div>'
+    : '<div style="background:var(--surface);border-radius:10px;padding:2rem;margin-bottom:1rem;text-align:center;font-size:2.5rem">' + ex.icon + '</div>';
+  const tagsHtml = ex.tags.map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
+  const bodyHtml = '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem">' + ex.indication + '</div>'
+    + videoHtml
+    + '<div style="font-size:.8rem;color:var(--text);margin-bottom:.8rem">' + ex.description + '</div>'
+    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem">' + tagsHtml + '</div>'
+    + '<button class="btn-primary" style="width:100%" id="ex-done-btn">Marquer comme effectué</button>';
+  openModal(ex.titre, bodyHtml);
+  const btn = document.getElementById('ex-done-btn');
+  if (btn) btn.onclick = function(){ closeModal(); showToast('Exercice enregistré'); };
 }
+
 
 /* ════════════════════════════════════════════
    PROFIL
@@ -2019,6 +2047,7 @@ function openAddAudio() {
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" placeholder="Description courte"></div>
+    <div class="form-field"><label>URL audio (YouTube embed)</label><input type="text" id="f-au-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible · Vimeo aussi accepté</div></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="saveAudio()">✓ Ajouter</button>
@@ -2036,6 +2065,7 @@ function saveAudio() {
     duree: document.getElementById('f-au-duree').value || '10 min',
     icon: document.getElementById('f-au-icon').value || '🎵',
     description: document.getElementById('f-au-desc').value,
+    url_audio: document.getElementById('f-au-url').value.trim(),
     statut: 'active'
   });
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderAudio();
@@ -2050,6 +2080,7 @@ function editAudio(id) {
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" value="${a.duree}"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-au-icon" value="${a.icon}" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" value="${a.description}"></div>
+    <div class="form-field"><label>URL audio (YouTube/Vimeo embed)</label><input type="text" id="f-au-url" value="${a.url_audio||''}"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateAudio(${id})">✓ Enregistrer</button>
@@ -2063,6 +2094,7 @@ function updateAudio(id) {
   a.duree = document.getElementById('f-au-duree').value;
   a.icon  = document.getElementById('f-au-icon').value;
   a.description = document.getElementById('f-au-desc').value;
+  a.url_audio = document.getElementById('f-au-url').value.trim();
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderAudio();
   showToast('✓ Audio mis à jour');
 }
@@ -2088,6 +2120,7 @@ function openAddExercice() {
     <div class="form-field"><label>Tags (séparés par virgule)</label><input type="text" id="f-ex-tags" placeholder="5 min,Sans matériel,Assis"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" placeholder="Description courte"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-ex-icon" placeholder="🧘" style="width:80px"></div>
+    <div class="form-field"><label>URL vidéo (YouTube/Vimeo embed)</label><input type="text" id="f-ex-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore filmé</div></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="saveExercice()">✓ Ajouter</button>
@@ -2105,7 +2138,8 @@ function saveExercice() {
     tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     description: document.getElementById('f-ex-desc').value,
     icon: document.getElementById('f-ex-icon').value || '🧘',
-    bg: 'rgba(90,138,106,.15)'
+    bg: 'rgba(90,138,106,.15)',
+    url_video: document.getElementById('f-ex-url').value.trim()
   });
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
   showToast('✓ Exercice ajouté');
@@ -2120,6 +2154,7 @@ function editExercice(id) {
     <div class="form-field"><label>Tags</label><input type="text" id="f-ex-tags" value="${e.tags.join(', ')}"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" value="${e.description}"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-ex-icon" value="${e.icon}" style="width:80px"></div>
+    <div class="form-field"><label>URL vidéo (YouTube/Vimeo embed)</label><input type="text" id="f-ex-url" value="${e.url_video||''}"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateExercice(${id})">✓ Enregistrer</button>
@@ -2134,6 +2169,7 @@ function updateExercice(id) {
   e.tags = document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean);
   e.description = document.getElementById('f-ex-desc').value;
   e.icon = document.getElementById('f-ex-icon').value;
+  e.url_video = document.getElementById('f-ex-url').value.trim();
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
   showToast('✓ Exercice mis à jour');
 }
