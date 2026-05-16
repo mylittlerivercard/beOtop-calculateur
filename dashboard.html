@@ -1240,13 +1240,13 @@ function renderRealtimeGrid(occ) {
     var statusLabel = status === 'libre' ? 'Libre' : status === 'occupe' ? 'Occupé' : 'Non mesuré';
     var dotHtml = status !== 'inconnu' ? '<span class="rt-dot ' + status + '"></span>' : '';
 
-    return '<div class="rt-atelier-card ' + status + '">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-size:.82rem;font-weight:600;color:#1a1a2e;margin-bottom:.2rem;line-height:1.3">' + meta.icon + ' ' + nom + '</div>' +
-          '<div style="font-size:.6rem;color:#9090b0;line-height:1.4">' + meta.indication + '</div>' +
+    return '<div class="rt-atelier-card ' + status + '" style="padding:.7rem .9rem">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem">' +
+        '<div style="flex:1;min-width:0;overflow:hidden">' +
+          '<div style="font-size:.75rem;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + meta.icon + ' ' + nom + '</div>' +
+          '<div style="font-size:.58rem;color:#9090b0;margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + meta.indication + '</div>' +
         '</div>' +
-        '<div class="rt-status-pill ' + status + '" style="flex-shrink:0">' + dotHtml + statusLabel + '</div>' +
+        '<div class="rt-status-pill ' + status + '" style="flex-shrink:0;font-size:.6rem;padding:.2rem .55rem">' + dotHtml + statusLabel + '</div>' +
       '</div>' +
     '</div>';
   }).join('');
