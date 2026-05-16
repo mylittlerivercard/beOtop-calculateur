@@ -2524,17 +2524,19 @@ function startJeu(type) {
   if (!zone) return;
   if (menu) menu.style.display = 'none';
   clearInterval(_jeuTimer);
-  if (type === 'memory')     startMemory(zone);
-  if (type === 'calcul')     startCalcul(zone);
-  if (type === 'simon')      startSimon(zone);
-  if (type === 'stroop')     startStroop(zone);
-  if (type === 'suite')      startSuite(zone);
-  if (type === 'attention')  startAttention(zone);
-  if (type === 'comptage')   startComptage(zone);
-  if (type === 'differences')startDifferences(zone);
-  if (type === 'gorille')    startGorille(zone);
-  if (type === 'reflexes')   startReflexes(zone);
-  if (type === 'double')     startDouble(zone);
+  if (type === 'memory')      startMemory(zone);
+  if (type === 'calcul')      startCalcul(zone);
+  if (type === 'simon')       startSimon(zone);
+  if (type === 'stroop')      startStroop(zone);
+  if (type === 'suite')       startSuite(zone);
+  if (type === 'analogie')    startAnalogie(zone);
+  if (type === 'attention')   startAttention(zone);
+  if (type === 'comptage')    startComptage(zone);
+  if (type === 'inattention') startInattention(zone);
+  if (type === 'differences') startDifferences(zone);
+  if (type === 'gorille')     startGorille(zone);
+  if (type === 'reflexes')    startReflexes(zone);
+  if (type === 'double')      startDouble(zone);
 }
 
 function jeuBack() {
@@ -3344,166 +3346,9 @@ function openExercice(id) {
 
 
 /* ── SIMON ── */
-function startSimon(zone) {
-  var COLORS = ['#e74c3c','#2ecc71','#3498db','#f39c12'];
-  var NAMES  = ['Rouge','Vert','Bleu','Orange'];
-  var seq = [], playerSeq = [], level = 0, accepting = false;
 
-  zone.innerHTML = jeuHeader('Simon','Niveau 1')
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;max-width:280px;margin:1rem auto" id="simon-board">'
-    + COLORS.map(function(c,i){ return '<div style="height:80px;border-radius:12px;background:'+c+';opacity:.35;cursor:pointer;transition:opacity .15s" id="sc'+i+'" onclick="simonClick('+i+')"></div>'; }).join('')
-    + '</div><div id="simon-msg" style="text-align:center;font-size:.7rem;color:var(--text-muted);margin-top:.8rem">Regardez la séquence...</div>';
 
-  function flash(idx, cb) {
-    var el = document.getElementById('sc'+idx);
-    if (!el) return cb && cb();
-    el.style.opacity = '1';
-    setTimeout(function(){ el.style.opacity = '.35'; setTimeout(cb||function(){}, 300); }, 400);
-  }
-  function playSeq() {
-    accepting = false;
-    playerSeq = [];
-    document.getElementById('simon-msg').textContent = "Regardez la sequence...";
-    var i = 0;
-    var t = setInterval(function(){
-      if (i >= seq.length) { clearInterval(t); accepting = true; document.getElementById('simon-msg').textContent = 'A vous ! Repetez la sequence'; return; }
-      flash(seq[i]); i++;
-    }, 700);
-  }
-  function nextLevel() {
-    level++;
-    seq.push(Math.floor(Math.random()*4));
-    document.getElementById('jeu-score').textContent = 'Niveau '+level;
-    setTimeout(playSeq, 600);
-  }
-  window.simonClick = function(idx) {
-    if (!accepting) return;
-    flash(idx);
-    playerSeq.push(idx);
-    var pos = playerSeq.length-1;
-    if (playerSeq[pos] !== seq[pos]) {
-      awardPoints('jeu','Simon');
-      showToast("Erreur ! Niveau atteint : "+level); jeuBack(); return;
-    }
-    if (playerSeq.length === seq.length) {
-      accepting = false;
-      setTimeout(nextLevel, 500);
-    }
-  };
-  nextLevel();
-}
 
-/* ── EFFET STROOP ── */
-function startStroop(zone) {
-  var MOTS   = ['ROUGE','VERT','BLEU','JAUNE'];
-  var COLORS = ['#e74c3c','#2ecc71','#3498db','#f1c40f'];
-  var score = 0, total = 0, timeLeft = 60;
-  function newQ() {
-    var motIdx   = Math.floor(Math.random()*4);
-    var colorIdx = Math.floor(Math.random()*4);
-    document.getElementById('stroop-word').textContent = MOTS[motIdx];
-    document.getElementById('stroop-word').style.color = COLORS[colorIdx];
-    document.getElementById('stroop-choices').innerHTML = COLORS.map(function(c,i){
-      return '<button onclick="stroopCheck('+i+','+colorIdx+')" style="background:'+c+';border:none;border-radius:8px;width:48px;height:48px;cursor:pointer;font-size:1.2rem"></button>';
-    }).join('');
-  }
-  zone.innerHTML = jeuHeader('Effet Stroop','0 / 0')
-    + '<div style="text-align:center;padding:1.5rem 0">'
-    + '<div style="font-size:.68rem;color:var(--text-dim);margin-bottom:.8rem">Cliquez la COULEUR du texte</div>'
-    + '<div id="stroop-word" style="font-size:3rem;font-weight:700;margin-bottom:1.2rem">—</div>'
-    + '<div id="stroop-choices" style="display:flex;gap:.6rem;justify-content:center;margin-bottom:1rem"></div>'
-    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="stroop-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="stroop-time" style="font-size:.7rem;color:var(--text-muted)">1:00</div></div>'
-    + '</div>';
-  window._stroopScore = 0; window._stroopTotal = 0;
-  newQ();
-  _jeuTimer = setInterval(function(){
-    timeLeft--;
-    var bar = document.getElementById('stroop-bar'), t = document.getElementById('stroop-time');
-    if (bar) bar.style.width = (timeLeft/60*100)+'%';
-    if (t) t.textContent = Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
-    if (timeLeft<=0){ clearInterval(_jeuTimer); awardPoints('jeu','Stroop'); showToast("Score Stroop : "+window._stroopScore+"/"+window._stroopTotal); jeuBack(); }
-  },1000);
-  window.stroopCheck = function(chosen, correct) {
-    window._stroopTotal++;
-    if (chosen === correct) { window._stroopScore++; showToast('✓'); }
-    else showToast('✗');
-    document.getElementById('jeu-score').textContent = window._stroopScore+' / '+window._stroopTotal;
-    newQ();
-  };
-}
-
-/* ── SUITE LOGIQUE ── */
-function startSuite(zone) {
-  var score = 0, total = 0;
-  function newQ() {
-    var types = [
-      function(){ var a=Math.floor(Math.random()*5)+1,b=Math.floor(Math.random()*5)+1; var seq=[a,a+b,a+2*b,a+3*b]; var ans=a+4*b; return {seq:seq,ans:ans,d1:ans+2,d2:ans-b,d3:ans+b*2}; },
-      function(){ var a=Math.floor(Math.random()*3)+2; var seq=[a,a*a,a*a*a]; var ans=a*a*a*a; return {seq:seq,ans:ans,d1:ans+a,d2:ans-1,d3:ans+a*a}; },
-      function(){ var a=Math.floor(Math.random()*4)+2,r=Math.floor(Math.random()*3)+2; var seq=[a,a*r,a*r*r,a*r*r*r]; var ans=a*r*r*r*r; return {seq:seq,ans:ans,d1:ans+r,d2:ans-a,d3:ans*2}; },
-    ];
-    var gen = types[Math.floor(Math.random()*types.length)]();
-    var choices = [gen.ans, gen.d1, gen.d2, gen.d3].sort(function(){return Math.random()-.5;});
-    document.getElementById('suite-seq').textContent = gen.seq.join(' · ') + ' · ?';
-    document.getElementById('suite-choices').innerHTML = choices.map(function(c){
-      return '<button class="btn-secondary" style="font-size:1.1rem;padding:.5rem .8rem;border-radius:10px" onclick="suiteCheck('+c+','+gen.ans+')">'+c+'</button>';
-    }).join('');
-  }
-  zone.innerHTML = jeuHeader('Suite logique','0 / 0')
-    + '<div style="text-align:center;padding:1rem 0">'
-    + '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">Trouvez le nombre manquant</div>'
-    + '<div id="suite-seq" style="font-size:1.6rem;font-weight:300;color:var(--gold);margin-bottom:1.2rem;font-size:1.6rem">—</div>'
-    + '<div id="suite-choices" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div>'
-    + '</div>';
-  window._suiteScore=0; window._suiteTotal=0;
-  newQ();
-  window.suiteCheck = function(val, ans) {
-    window._suiteTotal++;
-    if (val===ans) { window._suiteScore++; showToast("Exact !"); }
-    else showToast("La reponse etait "+ans);
-    document.getElementById('jeu-score').textContent = window._suiteScore+' / '+window._suiteTotal;
-    if (window._suiteTotal >= 8) { awardPoints('jeu','Suite logique'); showToast("Score final : "+window._suiteScore+"/8"); jeuBack(); return; }
-    newQ();
-  };
-}
-
-/* ── COMPTAGE SÉLECTIF (phénomène de cecite attentionnelle) ── */
-function startComptage(zone) {
-  var passes = 0, userCount = null;
-  var PLAYERS = ['A','B','C','D','E','F'];
-  var frames = [];
-  // Générer 45 frames d'animation (1.5s @ 30fps simulé via CSS)
-  for (var f=0; f<30; f++) {
-    var team = Math.random()<0.5?'blanc':'noir';
-    if (team==='blanc') passes++;
-    frames.push({team:team,frame:f});
-  }
-  passes = Math.floor(8 + Math.random()*8); // 8-15 passes blanches
-
-  zone.innerHTML = jeuHeader('Comptage selectif','?')
-    + '<div style="text-align:center">'
-    + '<div style="font-size:.75rem;color:var(--text-dim);margin-bottom:1rem;background:var(--surface);padding:.8rem;border-radius:10px">Comptez les passes de <strong style="color:white">l equipe BLANCHE</strong>.<br>Ignorez l equipe noire.</div>'
-    + '<div style="position:relative;width:100%;height:200px;background:#1a2030;border-radius:12px;overflow:hidden;margin-bottom:1rem" id="comptage-arena">'
-    + generateComptageAnim(passes)
-    + '</div>'
-    + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.8rem">Combien de passes blanches avez-vous comptées ?</div>'
-    + '<div style="display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap">'
-    + [passes-3,passes-2,passes-1,passes,passes+1,passes+2,passes+3].filter(function(x){return x>0;}).map(function(n){
-        return '<button class="btn-secondary" style="font-size:1.1rem;padding:.5rem .8rem;border-radius:10px" onclick="comptageCheck('+n+','+passes+')">'+n+'</button>';
-      }).join('')
-    + '</div>'
-    + '<div style="margin-top:1rem;font-size:.58rem;color:var(--text-muted)">💡 Avez-vous remarque quelque chose d habituel pendant le comptage ?</div>'
-    + '</div>';
-  window.comptageCheck = function(val, ans) {
-    var ok = val === ans;
-    awardPoints('jeu','Comptage selectif');
-    openModal('Resultats', '<div style="text-align:center">'
-      + '<div style="font-size:2rem;margin-bottom:.5rem">'+(ok?'🎯':'📊')+'</div>'
-      + '<div style="font-size:.85rem;margin-bottom:.8rem">'+(ok?'Exact ! '+ans+' passes blanches.':'Il y avait '+ans+' passes blanches. Vous avez compté '+val+'.')+'</div>'
-      + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:1rem">Phénomène de cecite attentionnelle : quand on se concentre sur une tâche, on peut rater des éléments évidents (comme un gorille qui traverse !)</div>'
-      + '<button class="btn-primary" style="width:100%" onclick="closeModal();jeuBack()">Compris !</button>'
-      + '</div>');
-  };
-}
 
 function generateComptageAnim(passes) {
   // Générer des joueurs qui se déplacent et se passent la balle (SVG animé)
@@ -3641,66 +3486,6 @@ function startDifferences(zone) {
 }
 
 /* ── DOUBLE TÂCHE ── */
-function startDouble(zone) {
-  var score=0, total=0, timeLeft=90;
-  var direction = null, mathQ = null, mathAns = null;
-
-  function newRound() {
-    var dirs = ['↑','↓','←','→'];
-    direction = dirs[Math.floor(Math.random()*4)];
-    var a = Math.floor(Math.random()*10)+1, b=Math.floor(Math.random()*10)+1;
-    var op = Math.random()<0.5?'+':'-';
-    mathAns = op==='+'?a+b:a-b;
-    mathQ = a+' '+op+' '+b+' = ?';
-    var choices=[mathAns, mathAns+(Math.random()<0.5?1:-1)*2, mathAns+(Math.random()<0.5?3:-3)].sort(function(){return Math.random()-.5;});
-    document.getElementById('dt-dir').textContent = direction;
-    document.getElementById('dt-math').textContent = mathQ;
-    document.getElementById('dt-choices').innerHTML = choices.map(function(c){
-      return '<button class="btn-secondary" style="font-size:1rem;padding:.4rem .7rem;border-radius:8px" onclick="dtCheck('+c+')">'+c+'</button>';
-    }).join('');
-  }
-
-  zone.innerHTML = jeuHeader('Double tache','0 / 0')
-    + '<div style="text-align:center;padding:.5rem 0">'
-    + '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem;background:var(--surface);padding:.6rem;border-radius:8px">1) Appuyez sur la fleche du clavier 2) ET resolvez le calcul</div>'
-    + '<div id="dt-dir" style="font-size:4rem;color:var(--gold);margin:.5rem 0">?</div>'
-    + '<div id="dt-math" style="font-size:1.2rem;color:var(--text);margin-bottom:.8rem">?</div>'
-    + '<div id="dt-choices" style="display:flex;gap:.4rem;justify-content:center;margin-bottom:.8rem"></div>'
-    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="dt-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="dt-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>'
-    + '</div>';
-
-  window._dtScore=0; window._dtTotal=0;
-  newRound();
-
-  // Écouter les touches de direction
-  var dtKeyHandler = function(e) {
-    var map={'ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→'};
-    if (map[e.key] && map[e.key]===direction) {
-      document.getElementById('dt-dir').style.color='var(--green)';
-      setTimeout(function(){ var el=document.getElementById('dt-dir'); if(el) el.style.color='var(--gold)'; },300);
-    }
-  };
-  document.addEventListener('keydown', dtKeyHandler);
-
-  _jeuTimer = setInterval(function(){
-    timeLeft--;
-    var bar=document.getElementById('dt-bar'),t=document.getElementById('dt-time');
-    if(bar) bar.style.width=(timeLeft/90*100)+'%';
-    if(t) t.textContent=Math.floor(timeLeft/60)+':'+(timeLeft%60<10?'0':'')+timeLeft%60;
-    if(timeLeft<=0){ clearInterval(_jeuTimer); document.removeEventListener('keydown',dtKeyHandler); awardPoints('jeu','Double tache'); showToast("Score : "+window._dtScore+"/"+window._dtTotal); jeuBack(); }
-  },1000);
-
-  window.dtCheck = function(val) {
-    window._dtTotal++;
-    if (val===mathAns) { window._dtScore++; showToast('✓'); }
-    else showToast('✗ ('+mathAns+')');
-    document.getElementById('jeu-score').textContent=window._dtScore+' / '+window._dtTotal;
-    newRound();
-  };
-  // Cleanup on jeuBack
-  var origBack = window.jeuBack;
-  window.jeuBack = function(){ document.removeEventListener('keydown',dtKeyHandler); origBack(); window.jeuBack=origBack; };
-}
 
 
 /* ════════════════════════════════════════════
