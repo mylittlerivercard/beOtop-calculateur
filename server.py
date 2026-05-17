@@ -32,7 +32,8 @@ def add_headers(response):
         "font-src 'self' https://fonts.gstatic.com; "
         "frame-src https://www.youtube.com https://player.vimeo.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self';"
+        "media-src 'self' https://mylittlerivercard.github.io https://beotop-api.onrender.com blob:; "
+        "connect-src 'self' https://mylittlerivercard.github.io https://api.qrserver.com https://speech.platform.bing.com wss://speech.platform.bing.com; "
     )
     return response
 
@@ -2372,6 +2373,21 @@ def auth_register():
     session['role'] = 'client'
     session['client_id'] = tok['client_id']
     return jsonify({'ok': True, 'user_id': user_id})
+
+
+@app.route('/audio/<path:filename>')
+def serve_audio(filename):
+    """Sert les fichiers audio depuis /static/ avec headers corrects"""
+    import mimetypes
+    path = os.path.join(BASE_DIR, 'static', filename)
+    if not os.path.exists(path):
+        return jsonify({'error': 'Fichier introuvable'}), 404
+    mime = mimetypes.guess_type(path)[0] or 'audio/mpeg'
+    response = send_from_directory(os.path.join(BASE_DIR, 'static'), filename, mimetype=mime)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Accept-Ranges'] = 'bytes'
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
