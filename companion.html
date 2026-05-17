@@ -1345,10 +1345,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <div class="toast" id="toast"></div>
 
 <script>
-/* === beOtop Companion === */
-(function() {
-try {
-
 
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
@@ -1493,7 +1489,10 @@ function openModal(title, bodyHtml) {
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal').classList.add('open');
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  stopSpeech(); stopExerciceBg();
+}
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -2880,54 +2879,16 @@ function openVideo(id) {
   var v = DB.videos.find(function(x){ return x.id === id; });
   if (!v) return;
   if (!v.url_video) {
-    showToast('URL video non renseignee — Modifiez depuis Administration');
+    showToast("URL video non renseignee — Modifiez depuis Administration");
     return;
   }
-  var url = v.url_video.trim();
-  // Ajouter https:// si absent
-  if (url && !url.startsWith('http')) url = 'https://' + url;
-
-  // Détecter le type d URL
-  var isYoutube = url.indexOf('youtube.com') >= 0 || url.indexOf('youtu.be') >= 0;
-  var isVimeo   = url.indexOf('vimeo.com') >= 0;
-  var isEmbed   = url.indexOf('/embed/') >= 0 || url.indexOf('player.vimeo') >= 0;
-
-  // Convertir URLs YouTube normales en embed
-  if (isYoutube && !isEmbed) {
-    var ytId = '';
-    var m1 = url.match(/youtube\.com\/watch\?v=([^&]+)/);
-    var m2 = url.match(/youtu\.be\/([^?]+)/);
-    if (m1) ytId = m1[1];
-    else if (m2) ytId = m2[1];
-    if (ytId) url = 'https://www.youtube.com/embed/' + ytId;
-  }
-  // Convertir URLs Vimeo normales en embed
-  if (isVimeo && !isEmbed) {
-    var vmId = url.match(/vimeo\.com\/(\d+)/);
-    if (vmId) url = 'https://player.vimeo.com/video/' + vmId[1];
-  }
-
-  var canEmbed = url.indexOf('/embed/') >= 0 || url.indexOf('player.vimeo') >= 0;
-  var bodyHtml = '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>';
-
-  if (canEmbed) {
-    bodyHtml += '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
-      + '<iframe src="' + url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
-      + '</div>';
-  } else {
-    // URL directe (Pexels, etc.) : afficher un lien d ouverture
-    bodyHtml += '<div style="background:var(--surface2);border-radius:10px;padding:1.5rem;text-align:center;margin-bottom:1rem">'
-      + '<div style="font-size:2.5rem;margin-bottom:.8rem">🎬</div>'
-      + '<div style="font-size:.78rem;color:var(--text);margin-bottom:1rem">' + (v.description||'') + '</div>'
-      + '<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;padding:.65rem 1.4rem;background:linear-gradient(135deg,#f5855a,#e8641e);border-radius:10px;color:#fff;font-size:.78rem;font-weight:600;text-decoration:none">▶ Ouvrir la vidéo</a>'
-      + '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.6rem">S ouvrira dans un nouvel onglet</div>'
-      + '</div>'
-      + '<div style="font-size:.6rem;color:var(--text-muted);background:var(--surface);border-radius:8px;padding:.5rem .7rem">'
-      + '💡 Pour un lecteur intégré, utilisez une URL YouTube embed (youtube.com/embed/ID) ou Vimeo (player.vimeo.com/video/ID)'
-      + '</div>';
-  }
-  bodyHtml += '<div style="font-size:.78rem;color:var(--text)">' + (canEmbed ? v.description||'' : '') + '</div>';
-  openModal(v.titre, bodyHtml);
+  openModal(v.titre,
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
+    + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
+    + '<iframe src="' + v.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+    + '</div>'
+    + '<div style="font-size:.78rem;color:var(--text)">' + (v.description||'') + '</div>'
+  );
 }
 
 
@@ -3613,25 +3574,27 @@ var CATS_AUDIO = [
 var currentAudioCat = 'all';
 
 function renderAudio() {
-  var catsEl = document.getElementById('audio-cats');
-  if (!catsEl) return;
-  catsEl.innerHTML = CATS_AUDIO.map(function(cat) {
-    var activeCls = cat.id === currentAudioCat ? ' active' : '';
-    return '<div class="cat-pill' + activeCls + '" onclick="filterAudio(&#39;' + cat.id + '&#39;)">' + cat.label + '</div>';
-  }).join('');
-  var filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(function(a){ return a.categorie === currentAudioCat; });
-  var grid = document.getElementById('audio-grid');
-  if (!grid) return;
-  var BG_AUDIO = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ambiance:'rgba(90,138,106,.1)' };
-  grid.innerHTML = filtered.map(function(a) {
-    var isPlaying = currentAudio && currentAudio.id === a.id;
-    var bgColor = BG_AUDIO[a.categorie] || 'var(--surface2)';
-    return '<div class="audio-card' + (isPlaying ? ' playing' : '') + '" id="audio-card-' + a.id + '">'
-      + '<div class="audio-thumb" style="background:' + bgColor + '">' + (a.icon || '🎵') + '</div>'
-      + '<div class="audio-title">' + a.titre + '</div>'
-      + '<div class="audio-meta"><span>' + a.categorie + '</span><span class="audio-duration">' + a.duree + '</span></div>'
-      + '<button class="audio-play-btn" onclick="playAudio(' + a.id + ')">' + (isPlaying ? '⏸ En lecture' : '▶ Écouter') + '</button>'
-      + '</div>';
+  const catsEl = document.getElementById('audio-cats');
+  catsEl.innerHTML = CATS_AUDIO.map(c =>
+    `<div class="cat-pill${c.id === currentAudioCat ? ' active':''}" onclick="filterAudio('${c.id}')">${c.label}</div>`
+  ).join('');
+
+  const filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(a => a.categorie === currentAudioCat);
+  const grid = document.getElementById('audio-grid');
+  grid.innerHTML = filtered.map(a => {
+    const isPlaying = currentAudio && currentAudio.id === a.id;
+    const bg = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ciblé:'rgba(200,169,110,.1)', ambiance:'rgba(90,138,106,.1)' };
+    return `<div class="audio-card${isPlaying?' playing':''}" id="audio-card-${a.id}">
+      <div class="audio-thumb" style="background:${bg[a.categorie]||'var(--surface2)'}">${a.icon}</div>
+      <div class="audio-title">${a.titre}</div>
+      <div class="audio-meta">
+        <span>${a.categorie}</span>
+        <span class="audio-duration">${a.duree}</span>
+      </div>
+      <button class="audio-play-btn" onclick="playAudio(${a.id})">
+        ${isPlaying ? '⏸ En lecture' : '▶ Écouter'}
+      </button>
+    </div>`;
   }).join('');
 }
 
@@ -3698,31 +3661,153 @@ var CATS_EX = [
 var currentExCat = 'all';
 
 function renderExercices() {
-  var catsEl = document.getElementById('ex-cats');
-  if (!catsEl) return;
-  catsEl.innerHTML = CATS_EX.map(function(cat) {
-    var activeCls = cat.id === currentExCat ? ' active' : '';
-    return '<div class="cat-pill' + activeCls + '" onclick="filterEx(&#39;' + cat.id + '&#39;)">' + cat.label + '</div>';
-  }).join('');
-  var filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(function(e){ return e.categorie === currentExCat; });
-  var grid = document.getElementById('exercise-grid');
-  if (!grid) return;
-  grid.innerHTML = filtered.map(function(e) {
-    var tagsHtml = (e.tags||[]).map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
-    return '<div class="exercise-card" onclick="openExercice(' + e.id + ')">'
-      + '<div class="ex-header">'
-      + '<div class="ex-icon" style="background:' + (e.bg||'var(--surface2)') + '">' + (e.icon||'⚡') + '</div>'
-      + '<div><div class="ex-title">' + e.titre + '</div><div class="ex-target">' + (e.indication||'') + '</div></div>'
-      + '</div>'
-      + '<div class="ex-tags">' + tagsHtml + '</div>'
-      + '<div class="ex-duration">' + (e.description||'') + '</div>'
-      + '</div>';
-  }).join('');
+  const catsEl = document.getElementById('ex-cats');
+  catsEl.innerHTML = CATS_EX.map(c =>
+    `<div class="cat-pill${c.id === currentExCat ? ' active':''}" onclick="filterEx('${c.id}')">${c.label}</div>`
+  ).join('');
+
+  const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
+  document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
+    <div class="exercise-card" onclick="openExercice(${e.id})">
+      <div class="ex-header">
+        <div class="ex-icon" style="background:${e.bg}">${e.icon}</div>
+        <div>
+          <div class="ex-title">${e.titre}</div>
+          <div class="ex-target">${e.indication}</div>
+        </div>
+      </div>
+      <div class="ex-tags">${e.tags.map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
+      <div class="ex-duration">${e.description}</div>
+    </div>`).join('');
 }
 
 function filterEx(cat) {
   currentExCat = cat;
   renderExercices();
+}
+
+/* ════ VOIX + FOND SONORE EXERCICES ════ */
+var _speechSynth = window.speechSynthesis || null;
+var _exerciceBgGain = null;
+var _exerciceBgSrc  = null;
+var _voiceEnabled   = true;
+var _bgEnabled      = true;
+
+function getVoiceFR() {
+  if (!_speechSynth) return null;
+  var voices = _speechSynth.getVoices();
+  return voices.find(function(v){ return v.lang === 'fr-FR' && v.name.indexOf('Google') >= 0; })
+      || voices.find(function(v){ return v.lang === 'fr-FR'; })
+      || voices.find(function(v){ return v.lang && v.lang.indexOf('fr') === 0; })
+      || null;
+}
+
+function speakStep(txt) {
+  if (!_voiceEnabled || !_speechSynth) return;
+  try {
+    _speechSynth.cancel();
+    var utt = new SpeechSynthesisUtterance(txt);
+    utt.lang = 'fr-FR'; utt.rate = 0.88; utt.pitch = 1.0; utt.volume = 0.9;
+    var voice = getVoiceFR();
+    if (voice) utt.voice = voice;
+    _speechSynth.speak(utt);
+  } catch(e) { console.warn('Speech:', e.message); }
+}
+
+function stopSpeech() {
+  if (_speechSynth) { try { _speechSynth.cancel(); } catch(e){} }
+}
+
+function startExerciceBg(categorie) {
+  if (!_bgEnabled) return;
+  try {
+    var ctx = getSonCtx();
+    _exerciceBgGain = gainNode(ctx, 0);
+    _exerciceBgGain.connect(ctx.destination);
+    _exerciceBgSrc = ctx.createBufferSource();
+    var noiseType = 'pink', freq = 400;
+    if (categorie === 'workout') { noiseType = 'white'; freq = 1200; }
+    else if (categorie === 'relaxation') { noiseType = 'brown'; freq = 200; }
+    _exerciceBgSrc.buffer = makeNoise(ctx, 6, noiseType);
+    _exerciceBgSrc.loop = true;
+    var lp = lpFilter(ctx, freq);
+    _exerciceBgSrc.connect(lp); lp.connect(_exerciceBgGain);
+    _exerciceBgSrc.start();
+    _exerciceBgGain.gain.setValueAtTime(0, ctx.currentTime);
+    _exerciceBgGain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 2);
+  } catch(e) { console.warn('BG audio:', e.message); }
+}
+
+function stopExerciceBg() {
+  if (_exerciceBgSrc) { try { _exerciceBgSrc.stop(); } catch(e){} _exerciceBgSrc = null; }
+  _exerciceBgGain = null;
+}
+
+function toggleVoice() {
+  _voiceEnabled = !_voiceEnabled;
+  var btn = document.getElementById('voice-toggle');
+  if (btn) btn.textContent = _voiceEnabled ? '🔊 Voix activée' : '🔇 Voix désactivée';
+  if (!_voiceEnabled) stopSpeech();
+}
+
+function toggleBg() {
+  _bgEnabled = !_bgEnabled;
+  var btn = document.getElementById('bg-toggle');
+  if (btn) btn.textContent = _bgEnabled ? '🎵 Fond sonore' : '🔕 Fond coupé';
+  if (!_bgEnabled) stopExerciceBg();
+  else startExerciceBg(_currentExCategorie || 'tms');
+}
+
+var _currentExCategorie = 'tms';
+
+function buildExerciceModal(firstTxt, durLabel, colorVar, categorie) {
+  _currentExCategorie = categorie;
+  return '<div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap">'
+    + '<button id="voice-toggle" onclick="toggleVoice()" class="btn-secondary" style="font-size:.65rem;padding:.3rem .7rem">🔊 Voix activée</button>'
+    + '<button id="bg-toggle" onclick="toggleBg()" class="btn-secondary" style="font-size:.65rem;padding:.3rem .7rem">🎵 Fond sonore</button>'
+    + '</div>'
+    + '<div id="native-step" style="min-height:70px;background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7;transition:opacity .5s">' + firstTxt + '</div>'
+    + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
+    + '<div id="native-timer" style="font-size:1.8rem;font-weight:300;color:var(' + colorVar + ')">0:00</div>'
+    + '<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">'
+    + '<div id="native-progress" style="height:100%;background:var(' + colorVar + ');border-radius:2px;width:0%;transition:width 1s linear"></div>'
+    + '</div>'
+    + '<div style="font-size:.68rem;color:var(--text-muted)">' + durLabel + '</div>'
+    + '</div>'
+    + '<button class="btn-primary" id="native-stop-btn" style="width:100%">⏹ Arrêter</button>';
+}
+
+function runExercicePlayer(steps, durSec, colorVar, categorie, onEnd) {
+  clearInterval(_nativeSessionTimer);
+  stopSpeech(); stopExerciceBg();
+  _nativeStepIdx = 0; _nativeSteps = steps;
+  var elapsed = 0;
+  startExerciceBg(categorie);
+  if (steps.length) setTimeout(function(){ speakStep(steps[0].txt); }, 800);
+  _nativeSessionTimer = setInterval(function() {
+    elapsed++;
+    var m = Math.floor(elapsed/60), s = elapsed%60;
+    var timerEl = document.getElementById('native-timer');
+    var progEl  = document.getElementById('native-progress');
+    if (timerEl) timerEl.textContent = m + ':' + String(s).padStart(2,'0');
+    if (progEl)  progEl.style.width = Math.min(elapsed/durSec*100, 100) + '%';
+    var nextIdx = _nativeStepIdx + 1;
+    if (nextIdx < _nativeSteps.length && elapsed >= _nativeSteps[nextIdx].t) {
+      _nativeStepIdx = nextIdx;
+      var stepTxt = _nativeSteps[_nativeStepIdx].txt;
+      var stepEl = document.getElementById('native-step');
+      if (stepEl) {
+        stepEl.style.opacity = '0';
+        setTimeout(function(){ if (stepEl) { stepEl.textContent = stepTxt; stepEl.style.opacity = '1'; } }, 400);
+      }
+      setTimeout(function(){ speakStep(stepTxt); }, 600);
+    }
+    if (elapsed >= durSec) {
+      clearInterval(_nativeSessionTimer);
+      stopNativeAudio(); stopExerciceBg(); stopSpeech();
+      if (onEnd) onEnd();
+    }
+  }, 1000);
 }
 
 function openExercice(id) {
@@ -3740,24 +3825,28 @@ function openExercice(id) {
   var tagsHtml = ex.tags.map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
   var bodyHtml = '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem">' + ex.indication + '</div>';
   if (steps.length) {
-    bodyHtml += buildNativeModal(steps[0].txt, ex.tags[0], '--sage', false);
+    bodyHtml += buildExerciceModal(steps[0].txt, ex.tags[0], '--sage', ex.categorie);
   } else {
-    bodyHtml += '<div style="background:var(--surface);border-radius:10px;padding:1.5rem;margin-bottom:1rem;text-align:center;font-size:2rem">' + ex.icon + '</div>'
+    bodyHtml += '<div style="background:var(--surface);border-radius:10px;padding:1.5rem;margin-bottom:1rem;text-align:center;font-size:2rem">' + (ex.icon||'') + '</div>'
       + '<div style="font-size:.8rem;color:var(--text);margin-bottom:1rem">' + ex.description + '</div>'
       + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem">' + tagsHtml + '</div>'
-      + '<button class="btn-primary" style="width:100%" id="ex-done-btn">Marquer comme effectue</button>';
+      + '<button class="btn-primary" style="width:100%" id="ex-done-btn">Marquer comme effectué</button>';
   }
   openModal(ex.titre, bodyHtml);
   if (steps.length) {
-    runNativePlayer(steps, durSec, '--sage', function(){ showToast('Exercice termine ! Bravo !'); });
+    runExercicePlayer(steps, durSec, '--sage', ex.categorie, function(){ showToast('Exercice terminé ! Bravo !'); });
     setTimeout(function(){
       var btn = document.getElementById('native-stop-btn');
-      if (btn) btn.onclick = function(){ clearInterval(_nativeSessionTimer); closeModal(); showToast('Exercice enregistre'); };
+      if (btn) btn.onclick = function(){
+        clearInterval(_nativeSessionTimer);
+        stopExerciceBg(); stopSpeech();
+        closeModal(); showToast('Exercice enregistré');
+      };
     }, 100);
   } else {
     setTimeout(function(){
       var btn = document.getElementById('ex-done-btn');
-      if (btn) btn.onclick = function(){ closeModal(); showToast('Exercice enregistre'); };
+      if (btn) btn.onclick = function(){ closeModal(); showToast('Exercice enregistré'); };
     }, 100);
   }
 }
@@ -4316,23 +4405,9 @@ function resetDB() {
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
-function _beotopInit() {
-  try {
-    renderDashboard();
-    renderCCStats();
-  } catch(e) {
-    console.error('beOtop init error:', e);
-  }
-}
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', _beotopInit);
-} else {
-  _beotopInit();
-}
-
-} catch(e) {
-  console.error('[beOtop] Script error:', e.message, e.stack);
-}
+(function(){
+  function _init(){ try{ renderDashboard(); renderCCStats(); }catch(e){ console.error('[beOtop]',e); } }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_init); else _init();
 })();
 </script>
 </body>
