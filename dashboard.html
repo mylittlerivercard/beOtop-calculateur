@@ -1877,8 +1877,8 @@ function showToast(msg) {
   document.body.appendChild(t);
   setTimeout(function(){ t.remove(); }, 3000);
 }
-</script>
 
+</script>
 
   <!-- ═══ VIEW INSCRIPTIONS QR ═══ -->
   <div class="view" id="view-inscriptions">
@@ -1893,8 +1893,6 @@ function showToast(msg) {
         </button>
       </div>
     </div>
-
-    <!-- Explication -->
     <div style="background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.4rem;font-size:.72rem;color:var(--muted);line-height:1.8">
       <strong style="color:var(--cream)">Comment ça marche :</strong><br>
       1. Cliquez "Générer" pour créer un lien unique par site &nbsp;·&nbsp;
@@ -1902,148 +1900,188 @@ function showToast(msg) {
       3. Les collaborateurs scannent et créent leur compte en 30 secondes &nbsp;·&nbsp;
       4. Leur compte est automatiquement rattaché au bon site
     </div>
-
-    <!-- Grille QR codes -->
     <div id="qr-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem">
       <div style="color:var(--muted);font-size:.75rem">Cliquez "Générer pour tous les sites" pour créer les liens</div>
     </div>
-
-    <!-- Styles boutons -->
     <style>
-      .btn-small {
-        padding:.4rem .7rem;border-radius:8px;font-size:.65rem;font-weight:500;
-        background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-        color:var(--cream);cursor:pointer;font-family:inherit;transition:all .15s;
-      }
-      .btn-small:hover { background:rgba(255,255,255,.14); }
-      .btn-small.btn-warn { border-color:rgba(200,169,110,.3);color:var(--gold); }
+      .btn-small{padding:.4rem .7rem;border-radius:8px;font-size:.65rem;font-weight:500;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--cream);cursor:pointer;font-family:inherit;transition:all .15s}
+      .btn-small:hover{background:rgba(255,255,255,.14)}
+      .btn-small.btn-warn{border-color:rgba(200,169,110,.3);color:var(--gold)}
     </style>
   </div>
 
 
-
-
-
-<!-- ═══ VIEW INSCRIPTIONS ═══ -->
 <script>
-/* === QR CODES & INSCRIPTIONS === */
-function switchTab_orig(tab) { return; } // handled by main switchTab
+/* === COMPANION STATS === */
+async function loadCompanionStats() {
+  if (!qvctSite) return;
+  var statusEl = document.getElementById('companion-load-status');
+  try {
+    var r = await fetch('/api/companion/qvct?site_slug=' + qvctSite + '&period=' + qvctPeriod, { credentials: 'include' });
+    if (!r.ok) throw new Error('API ' + r.status);
+    var d = await r.json();
+    renderCompanionStats(d);
+    if (statusEl) statusEl.textContent = '&#10003; Données Companion · ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '&#9888; Companion non disponible';
+    renderCompanionStats(null);
+  }
+}
 
+function renderCompanionStats(d) {
+  function setEl(id, val) { var el = document.getElementById(id); if(el) el.textContent = val; }
+  if (!d) { ['cp-users-actifs','cp-taux-adoption','cp-duree-totale','cp-streak-moyen'].forEach(function(id){ setEl(id,'—'); }); return; }
+  var usersActifs = d.users_actifs || 0;
+  var usersTotal  = d.users_total || 0;
+  setEl('cp-users-actifs', usersActifs);
+  setEl('cp-users-sub', usersActifs + ' / ' + usersTotal + ' inscrits');
+  setEl('cp-taux-adoption', usersTotal > 0 ? Math.round(usersActifs/usersTotal*100)+'%' : '—');
+  setEl('cp-duree-totale', (d.duree_totale_min||0) + ' min');
+  setEl('cp-streak-moyen', (d.streak_moyen||0) + ' j');
+  renderDeptWellbeing(d.dept_wellbeing||[]);
+  renderTopActivites(d.top_activites||[]);
+  renderTrendCanvas(d.trend_hebdo||[]);
+  renderAlertes(d.alertes||[]);
+}
+
+function renderDeptWellbeing(depts) {
+  var el = document.getElementById('cp-dept-wellbeing');
+  if (!el) return;
+  if (!depts.length) { el.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">Aucun check-in enregistré</div>'; return; }
+  el.innerHTML = depts.slice(0,6).map(function(dept) {
+    var score = Math.round((dept.energie_moy + (10-dept.stress_moy) + dept.focus_moy)/3*10)/10;
+    var sc = score>=7?'#10b981':score>=5?'#f5855a':'#ef4444';
+    function jauge(v,c){return '<div style="display:flex;align-items:center;gap:.4rem"><div style="flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+Math.round(v/10*100)+'%;background:'+c+';border-radius:3px"></div></div><span style="font-size:.6rem;color:'+c+';width:22px;text-align:right">'+(Math.round(v*10)/10)+'</span></div>';}
+    return '<div style="margin-bottom:.9rem"><div style="display:flex;justify-content:space-between;margin-bottom:.4rem"><span style="font-size:.72rem;color:var(--cream)">'+(dept.dept||'N/A')+'</span><span style="font-size:.6rem;color:var(--muted)">'+(dept.nb_checkins||0)+' check-in(s)</span></div>'
+      +'<div style="display:grid;grid-template-columns:40px 1fr;gap:.25rem;align-items:center"><span style="font-size:.55rem;color:var(--muted)">Énergie</span>'+jauge(dept.energie_moy,'#f5855a')+'<span style="font-size:.55rem;color:var(--muted)">Stress</span>'+jauge(dept.stress_moy,'#00b4b4')+'<span style="font-size:.55rem;color:var(--muted)">Focus</span>'+jauge(dept.focus_moy,'#a855f7')+'</div>'
+      +'<div style="text-align:right;margin-top:.2rem;font-size:.58rem;color:'+sc+'">Score : '+score+'/10</div></div>';
+  }).join('<div style="height:1px;background:rgba(255,255,255,.07);margin:.4rem 0"></div>');
+}
+
+function renderTopActivites(activites) {
+  var el = document.getElementById('cp-top-activites');
+  if (!el) return;
+  if (!activites.length) { el.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">Aucune activité enregistrée</div>'; return; }
+  var icons={checkin:'&#128147;',cc:'&#129728;',audio:'&#127911;',exercice:'&#9889;',jeu:'&#129504;',reservation:'&#128197;',sons:'&#127807;',video:'&#127916;'};
+  var colors={checkin:'#f5855a',cc:'#00b4b4',audio:'#a855f7',exercice:'#10b981',jeu:'#3b82f6',reservation:'#f59e0b',sons:'#6ee7b7',video:'#f87171'};
+  var labels={checkin:'Check-in',cc:'Cohérence cardiaque',audio:'Audio',exercice:'Exercice',jeu:'Jeu cérébral',reservation:'Réservation',sons:'Sons immersifs',video:'Vidéo'};
+  var maxPts = activites[0].total_points || 1;
+  el.innerHTML = activites.slice(0,6).map(function(a){
+    var pct=Math.round((a.total_points||0)/maxPts*100);
+    var c=colors[a.action]||'#f5855a';
+    return '<div style="margin-bottom:.7rem"><div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span style="font-size:.7rem;color:var(--cream)">'+(icons[a.action]||'•')+' '+(labels[a.action]||a.action)+'</span><span style="font-size:.65rem;color:var(--muted)">'+(a.nb_sessions||0)+' sessions · +'+(a.total_points||0)+' pts</span></div><div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+c+';border-radius:3px"></div></div></div>';
+  }).join('');
+}
+
+function renderTrendCanvas(weeks) {
+  var canvas = document.getElementById('cp-trend-canvas');
+  if (!canvas || !weeks.length) return;
+  var W = canvas.offsetWidth||400, H=120, DPR=window.devicePixelRatio||1;
+  canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');ctx.scale(DPR,DPR);
+  var PAD={top:10,right:10,bottom:28,left:28},cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom,n=weeks.length;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;
+  [0,5,10].forEach(function(v){var y=PAD.top+cH-(v/10)*cH;ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(PAD.left+cW,y);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='500 9px DM Sans,sans-serif';ctx.textAlign='right';ctx.fillText(v,PAD.left-4,y+3);});
+  function drawLine(key,color){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';weeks.forEach(function(w,i){var x=PAD.left+(n>1?i/(n-1):0.5)*cW,v=w[key]||0,y=PAD.top+cH-(v/10)*cH;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();weeks.forEach(function(w,i){var x=PAD.left+(n>1?i/(n-1):0.5)*cW,v=w[key]||0,y=PAD.top+cH-(v/10)*cH;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();});}
+  drawLine('energie_moy','#f5855a');drawLine('stress_inv','#00b4b4');drawLine('focus_moy','#a855f7');
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='500 9px DM Sans,sans-serif';ctx.textAlign='center';
+  weeks.forEach(function(w,i){if(n>6&&i%2!==0)return;var x=PAD.left+(n>1?i/(n-1):0.5)*cW;ctx.fillText('S'+(i+1),x,H-4);});
+}
+
+function renderAlertes(alertes) {
+  var el = document.getElementById('cp-alertes');
+  if (!el) return;
+  if (!alertes.length) { el.innerHTML = '<div style="display:flex;align-items:center;gap:.5rem;padding:.6rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px"><span>&#9989;</span><span style="font-size:.72rem;color:#10b981">Aucune alerte QVCT · Tout va bien !</span></div>'; return; }
+  el.innerHTML = alertes.map(function(a){
+    var bg=a.niveau==='rouge'?'rgba(239,68,68,.08)':'rgba(245,133,90,.08)',border=a.niveau==='rouge'?'rgba(239,68,68,.3)':'rgba(245,133,90,.3)',color=a.niveau==='rouge'?'#ef4444':'#f5855a';
+    return '<div style="display:flex;align-items:flex-start;gap:.5rem;padding:.6rem;background:'+bg+';border:1px solid '+border+';border-radius:8px;margin-bottom:.4rem"><span style="font-size:1rem;flex-shrink:0">'+(a.icone||'⚠')+'</span><div><div style="font-size:.7rem;color:'+color+';font-weight:600">'+(a.titre||'')+'</div><div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">'+(a.detail||'')+'</div></div></div>';
+  }).join('');
+}
+
+/* === QR CODES & INSCRIPTIONS === */
 async function loadInscriptions() {
   var grid = document.getElementById('qr-grid');
   var msg  = document.getElementById('qr-msg');
   if (!grid) return;
-  grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⏳ Chargement…</div>';
+  grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">&#9203; Chargement…</div>';
   try {
     var r = await fetch('/api/admin/sites/tokens', { credentials: 'include' });
     var tokens = r.ok ? await r.json() : [];
     renderQRGrid(tokens);
     if (msg) msg.textContent = tokens.length + ' site(s) avec lien actif';
   } catch(e) {
-    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⚠ Erreur de chargement</div>';
+    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">&#9888; Erreur de chargement</div>';
   }
 }
 
 function renderQRGrid(tokens) {
   var grid = document.getElementById('qr-grid');
   if (!grid) return;
-  if (!tokens.length) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem;grid-column:1/-1">Aucun lien actif — Cliquez "Générer" pour un site</div>';
-    return;
-  }
+  if (!tokens.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem;grid-column:1/-1">Aucun lien actif — Cliquez "Générer" pour un site</div>'; return; }
   var html = '';
   tokens.forEach(function(t) {
     var url = window.location.origin + '/join/' + t.token;
-    var siteNom = (t.site_nom || t.site_slug || '').replace(/"/g,'&quot;');
-    var clientNom = (t.client_nom || '').replace(/"/g,'&quot;');
-    var ville = t.ville ? ' · ' + t.ville : '';
+    var siteNom = (t.site_nom||t.site_slug||'').replace(/"/g,'&quot;');
     html += '<div style="background:rgba(255,255,255,.08);border:1px solid rgba(200,190,180,.2);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:.8rem">';
     html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">';
-    html += '<div>';
-    html += '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem">' + clientNom + '</div>';
-    html += '<div style="font-size:.9rem;font-weight:500;color:var(--cream)">' + siteNom + ville + '</div>';
-    html += '<div style="font-size:.62rem;color:var(--muted);margin-top:.2rem">&#128203; ' + (t.nb_inscrits||0) + ' inscription(s)</div>';
-    html += '</div>';
-    html += '<div id="qr-' + t.token + '" style="width:100px;height:100px;background:white;border-radius:8px;flex-shrink:0"></div>';
-    html += '</div>';
-    html += '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.5rem .7rem;font-size:.6rem;color:var(--muted);word-break:break-all" data-url="' + url + '">';
-    html += '&#128279; ' + url;
-    html += '</div>';
+    html += '<div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;margin-bottom:.2rem">'+(t.client_nom||'')+'</div>';
+    html += '<div style="font-size:.9rem;font-weight:500;color:var(--cream)">'+siteNom+(t.ville?' · '+t.ville:'')+'</div>';
+    html += '<div style="font-size:.62rem;color:var(--muted);margin-top:.2rem">&#128203; '+(t.nb_inscrits||0)+' inscription(s)</div></div>';
+    html += '<div id="qr-'+t.token+'" style="width:100px;height:100px;background:white;border-radius:8px;flex-shrink:0"></div></div>';
+    html += '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.5rem .7rem;font-size:.6rem;color:var(--muted);word-break:break-all">&#128279; '+url+'</div>';
     html += '<div style="display:flex;gap:.5rem">';
-    html += '<button class="btn-small" data-url="' + url + '" onclick="qrCopy(this)" style="flex:1">&#128203; Copier</button>';
-    html += '<button class="btn-small" data-token="' + t.token + '" data-nom="' + siteNom + '" onclick="qrDownload(this)" style="flex:1">&#11015; QR</button>';
-    html += '<button class="btn-small btn-warn" data-sid="' + t.site_id + '" onclick="qrRegen(this)" style="flex:1">&#8635; Régénérer</button>';
-    html += '</div>';
-    html += '</div>';
+    html += '<button class="btn-small" data-url="'+url+'" onclick="qrCopy(this)" style="flex:1">&#128203; Copier</button>';
+    html += '<button class="btn-small" data-token="'+t.token+'" data-nom="'+siteNom+'" onclick="qrDownload(this)" style="flex:1">&#11015; QR</button>';
+    html += '<button class="btn-small btn-warn" data-sid="'+t.site_id+'" onclick="qrRegen(this)" style="flex:1">&#8635; Régénérer</button>';
+    html += '</div></div>';
   });
   grid.innerHTML = html;
-  tokens.forEach(function(t) {
-    var url = window.location.origin + '/join/' + t.token;
-    setTimeout(function() { renderQRCode('qr-' + t.token, url); }, 100);
-  });
+  tokens.forEach(function(t){ var url=window.location.origin+'/join/'+t.token; setTimeout(function(){renderQRCode('qr-'+t.token,url);},100); });
 }
 
-
 function qrCopy(el) { copyLink(el.getAttribute('data-url')); }
-function qrDownload(el) { downloadQR(el.getAttribute('data-token'), el.getAttribute('data-nom')); }
+function qrDownload(el) { downloadQR(el.getAttribute('data-token'),el.getAttribute('data-nom')); }
 function qrRegen(el) { regenToken(+el.getAttribute('data-sid')); }
 
 function renderQRCode(containerId, url) {
   var container = document.getElementById(containerId);
   if (!container) return;
-  // Utiliser l'API QR code-free via canvas + qrcode.js en CDN (autorisé car même domaine non requis)
-  // On utilise une image via api.qrserver.com comme fallback propre
   var img = document.createElement('img');
-  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=0d1f1f&margin=4';
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&data='+encodeURIComponent(url)+'&bgcolor=ffffff&color=0d1f1f&margin=4';
   img.style.cssText = 'width:100px;height:100px;border-radius:6px;display:block';
-  img.alt = 'QR Code';
-  img.onerror = function() {
-    container.innerHTML = '<div style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#666;text-align:center;background:white;border-radius:6px">QR<br>hors ligne</div>';
-  };
-  container.innerHTML = '';
-  container.appendChild(img);
+  img.onerror = function(){container.innerHTML='<div style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#666;text-align:center;background:white;border-radius:6px">QR<br>hors ligne</div>';};
+  container.innerHTML='';container.appendChild(img);
 }
 
 function copyLink(url) {
-  navigator.clipboard.writeText(url).then(function() {
-    showToast('✓ Lien copié dans le presse-papiers');
-  }).catch(function() {
-    prompt('Copiez ce lien :', url);
-  });
+  navigator.clipboard.writeText(url).then(function(){showToast('&#10003; Lien copié');}).catch(function(){prompt('Copiez ce lien :',url);});
 }
 
 function downloadQR(token, nom) {
-  var url = window.location.origin + '/join/' + token;
-  var imgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=0d1f1f&margin=10';
+  var url = window.location.origin+'/join/'+token;
   var a = document.createElement('a');
-  a.href = imgUrl;
-  a.download = 'beOtop-QR-' + nom.replace(/[^a-zA-Z0-9]/g,'_') + '.png';
-  a.target = '_blank';
-  a.click();
+  a.href = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data='+encodeURIComponent(url)+'&bgcolor=ffffff&color=0d1f1f&margin=10';
+  a.download = 'beOtop-QR-'+(nom||token).replace(/[^a-zA-Z0-9]/g,'_')+'.png';
+  a.target='_blank';a.click();
 }
 
 async function regenToken(siteId) {
   if (!confirm('Régénérer le lien ? L\'ancien lien sera invalidé.')) return;
-  try {
-    var r = await fetch('/api/admin/sites/' + siteId + '/invite-token', { method: 'POST', credentials: 'include' });
-    if (r.ok) { showToast('✓ Nouveau lien généré'); loadInscriptions(); }
-    else showToast('⚠ Erreur lors de la génération');
-  } catch(e) { showToast('⚠ Erreur réseau'); }
+  var r = await fetch('/api/admin/sites/'+siteId+'/invite-token',{method:'POST',credentials:'include'});
+  if (r.ok){showToast('&#10003; Nouveau lien généré');loadInscriptions();}
+  else showToast('&#9888; Erreur');
 }
 
 async function generateAllTokens() {
-  var btn = document.getElementById('gen-all-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Génération…'; }
-  try {
-    var r = await fetch('/api/admin/sites', { credentials: 'include' });
-    var sites = r.ok ? await r.json() : [];
-    for (var i = 0; i < sites.length; i++) {
-      await fetch('/api/admin/sites/' + sites[i].id + '/invite-token', { method: 'POST', credentials: 'include' });
-    }
-    showToast('✓ Liens générés pour ' + sites.length + ' site(s)');
-    loadInscriptions();
-  } catch(e) { showToast('⚠ Erreur'); }
-  if (btn) { btn.disabled = false; btn.textContent = '⚡ Générer pour tous les sites'; }
+  var btn=document.getElementById('gen-all-btn');
+  if(btn){btn.disabled=true;btn.textContent='&#9203; Génération…';}
+  var r=await fetch('/api/admin/sites',{credentials:'include'});
+  var sites=r.ok?await r.json():[];
+  for(var i=0;i<sites.length;i++) await fetch('/api/admin/sites/'+sites[i].id+'/invite-token',{method:'POST',credentials:'include'});
+  showToast('&#10003; Liens générés pour '+sites.length+' site(s)');
+  loadInscriptions();
+  if(btn){btn.disabled=false;btn.textContent='&#9889; Générer pour tous les sites';}
 }
 
 </script>
