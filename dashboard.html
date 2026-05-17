@@ -265,7 +265,7 @@
     <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">&#128203; Analyse QVCT</div>
     <div class="tab"        id="tab-realtime" onclick="switchTab('realtime')">&#128994; Disponibilité</div>
     <div class="tab"        id="tab-companion"    onclick="switchTab('companion')">&#128241; Compagnon</div>
-    <div class="tab"        id="tab-inscriptions" onclick="switchTab('inscriptions')">&#128273; Inscriptions</div>
+    <div class="tab" id="tab-inscriptions" onclick="switchTab('inscriptions')" style="display:none">&#128273; Inscriptions</div>
   </div>
 
   <!-- ═══ STATS ═══ -->
@@ -829,6 +829,11 @@ async function init(){
     }
   },500);
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin · tous les sites':sites.length+' site(s)';
+  // Onglet Inscriptions visible uniquement pour admin
+  if (me.role === 'admin') {
+    var tabInsc = document.getElementById('tab-inscriptions');
+    if (tabInsc) tabInsc.style.display = '';
+  }
 }
 
 function buildSiteBar(){
