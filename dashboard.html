@@ -1887,25 +1887,43 @@ function showToast(msg) {
   <div class="view" id="view-inscriptions">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.8rem">
       <div>
-        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">&#128273; Inscriptions <em>Companion</em></div>
-        <div class="page-sub" style="margin-bottom:0" id="qr-msg">QR codes par site · Lien d'inscription unique par espace</div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">🔑 Inscriptions <em>Companion</em></div>
+        <div class="page-sub" style="margin-bottom:0" id="qr-msg">Générez un QR code d'inscription par site client</div>
       </div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-        <button id="gen-all-btn" onclick="generateAllTokens()" style="padding:.55rem 1.1rem;border-radius:9px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid rgba(200,169,110,.3);color:var(--gold);font-size:.75rem;cursor:pointer;font-family:inherit">
-          &#9889; Générer pour tous les sites
+    </div>
+
+    <!-- Sélecteur client + site -->
+    <div style="background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.2);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1.4rem">
+      <div style="font-size:.65rem;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem">Générer un lien d'inscription</div>
+      <div style="display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Client</div>
+          <select id="insc-client-select" onchange="onInscClientChange()" style="width:100%;padding:.55rem .8rem;border-radius:9px;background:var(--surface);border:1px solid rgba(200,190,180,.25);color:var(--cream);font-size:.8rem;font-family:inherit;cursor:pointer">
+            <option value="">— Choisir un client —</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Site</div>
+          <select id="insc-site-select" style="width:100%;padding:.55rem .8rem;border-radius:9px;background:var(--surface);border:1px solid rgba(200,190,180,.25);color:var(--cream);font-size:.8rem;font-family:inherit;cursor:pointer" disabled>
+            <option value="">— Choisir un site —</option>
+          </select>
+        </div>
+        <button onclick="generateSelectedToken()" style="padding:.55rem 1.2rem;border-radius:9px;background:linear-gradient(135deg,rgba(200,169,110,.25),rgba(200,169,110,.1));border:1px solid rgba(200,169,110,.4);color:var(--gold);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">
+          ⚡ Générer le QR
         </button>
       </div>
     </div>
-    <div style="background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.4rem;font-size:.72rem;color:var(--muted);line-height:1.8">
-      <strong style="color:var(--cream)">Comment ça marche :</strong><br>
-      1. Cliquez "Générer" pour créer un lien unique par site &nbsp;·&nbsp;
-      2. Imprimez le QR code et collez-le sur le kiosk beOtop &nbsp;·&nbsp;
-      3. Les collaborateurs scannent et créent leur compte en 30 secondes &nbsp;·&nbsp;
-      4. Leur compte est automatiquement rattaché au bon site
+
+    <!-- Explication -->
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.7">
+      Le collaborateur scanne le QR code → crée son compte en 30 secondes → accède directement au Companion beOtop.
     </div>
+
+    <!-- Grille QR codes générés -->
     <div id="qr-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem">
-      <div style="color:var(--muted);font-size:.75rem">Cliquez "Générer pour tous les sites" pour créer les liens</div>
+      <div style="color:var(--muted);font-size:.75rem">Sélectionnez un client et un site puis cliquez "Générer le QR"</div>
     </div>
+
     <style>
       .btn-small{padding:.4rem .7rem;border-radius:8px;font-size:.65rem;font-weight:500;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--cream);cursor:pointer;font-family:inherit;transition:all .15s}
       .btn-small:hover{background:rgba(255,255,255,.14)}
@@ -2014,7 +2032,7 @@ async function loadInscriptions() {
     renderQRGrid(tokens);
     if (msg) msg.textContent = tokens.length + ' site(s) avec lien actif';
   } catch(e) {
-    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">&#9888; Erreur de chargement</div>';
+    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⚠ Erreur de chargement</div>';
   }
 }
 
@@ -2058,7 +2076,7 @@ function renderQRCode(containerId, url) {
 }
 
 function copyLink(url) {
-  navigator.clipboard.writeText(url).then(function(){showToast('&#10003; Lien copié');}).catch(function(){prompt('Copiez ce lien :',url);});
+  navigator.clipboard.writeText(url).then(function(){showToast('✓ Lien copié');}).catch(function(){prompt('Copiez ce lien :',url);});
 }
 
 function downloadQR(token, nom) {
@@ -2072,19 +2090,19 @@ function downloadQR(token, nom) {
 async function regenToken(siteId) {
   if (!confirm('Régénérer le lien ? L\'ancien lien sera invalidé.')) return;
   var r = await fetch('/api/admin/sites/'+siteId+'/invite-token',{method:'POST',credentials:'include'});
-  if (r.ok){showToast('&#10003; Nouveau lien généré');loadInscriptions();}
-  else showToast('&#9888; Erreur');
+  if (r.ok){showToast('✓ Nouveau lien généré');loadInscriptions();}
+  else showToast('⚠ Erreur');
 }
 
 async function generateAllTokens() {
   var btn=document.getElementById('gen-all-btn');
   if(btn){btn.disabled=true;btn.textContent='&#9203; Génération…';}
-  var r=await fetch('/api/admin/sites',{credentials:'include'});
+  var r=await fetch('/api/client/sites',{credentials:'include'});
   var sites=r.ok?await r.json():[];
   for(var i=0;i<sites.length;i++) await fetch('/api/admin/sites/'+sites[i].id+'/invite-token',{method:'POST',credentials:'include'});
-  showToast('&#10003; Liens générés pour '+sites.length+' site(s)');
+  showToast('✓ Liens générés pour '+sites.length+' site(s)');
   loadInscriptions();
-  if(btn){btn.disabled=false;btn.textContent='&#9889; Générer pour tous les sites';}
+  if(btn){btn.disabled=false;btn.textContent='⚡ Générer pour tous les sites';}
 }
 
 </script>
