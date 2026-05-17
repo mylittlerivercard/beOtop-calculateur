@@ -275,6 +275,20 @@ def init_db():
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_checkins_user ON companion_checkins(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_checkins_date ON companion_checkins(date)')
+        # Tokens d'inscription par site
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS site_invite_tokens (
+                id          SERIAL PRIMARY KEY,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_id     INTEGER NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+                site_slug   TEXT NOT NULL,
+                token       TEXT NOT NULL UNIQUE,
+                actif       INTEGER DEFAULT 1,
+                nb_inscrits INTEGER DEFAULT 0
+            )
+        ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_tokens_token ON site_invite_tokens(token)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_tokens_site ON site_invite_tokens(site_slug)')
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS companion_cc_sessions (
@@ -627,6 +641,22 @@ def kiosk_info(site_slug):
     return jsonify(serialize_row(site))
 
 # ========== CAPTEURS — RÉCEPTION DONNÉES RPi ==========
+@app.route('/api/kiosk/<site_slug>/join-link', methods=['GET'])
+def kiosk_join_link(site_slug):
+    """Retourne le lien d'inscription Companion pour un site donné"""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT token FROM site_invite_tokens
+                WHERE site_slug=%s AND actif=1
+                ORDER BY created_at DESC LIMIT 1
+            """, [site_slug])
+            row = cur.fetchone()
+    if not row:
+        return jsonify({'url': None}), 200
+    return jsonify({'url': f'/join/{row["token"]}'})
+
+
 
 @app.route('/api/sensors/passage', methods=['POST'])
 def sensors_passage():
@@ -2061,6 +2091,258 @@ def kiosk_page(site_slug):
         html = f.read()
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
     return Response(html, mimetype='text/html; charset=utf-8')
+
+
+
+# ========== INSCRIPTION COMPANION ==========
+
+import secrets as _secrets
+
+@app.route('/api/admin/sites/<int:site_id>/invite-token', methods=['POST'])
+@login_required
+def generate_invite_token(site_id):
+    """Génère ou régénère un token d'invitation pour un site"""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Vérifier que le site existe et appartient au client de l'user
+            cur.execute("SELECT slug, nom FROM sites WHERE id=%s", [site_id])
+            site = cur.fetchone()
+            if not site:
+                return jsonify({'error': 'Site introuvable'}), 404
+            token = _secrets.token_urlsafe(24)
+            # Désactiver l'ancien token si existant
+            cur.execute("UPDATE site_invite_tokens SET actif=0 WHERE site_id=%s", [site_id])
+            cur.execute("""
+                INSERT INTO site_invite_tokens (site_id, site_slug, token, actif)
+                VALUES (%s, %s, %s, 1)
+            """, [site_id, site['slug'], token])
+            conn.commit()
+    return jsonify({
+        'token': token,
+        'url': f'/join/{token}',
+        'site_slug': site['slug'],
+        'site_nom': site['nom']
+    })
+
+@app.route('/api/admin/sites/tokens', methods=['GET'])
+@login_required
+def get_all_tokens():
+    """Liste tous les tokens actifs avec leurs sites"""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT t.token, t.site_slug, t.nb_inscrits, t.actif, t.created_at::text,
+                       s.nom AS site_nom, s.ville, c.nom AS client_nom
+                FROM site_invite_tokens t
+                JOIN sites s ON t.site_id = s.id
+                JOIN clients c ON s.client_id = c.id
+                WHERE t.actif = 1
+                ORDER BY c.nom, s.nom
+            """)
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+@app.route('/join/<token>')
+def join_page(token):
+    """Page d'inscription via token"""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT t.site_slug, t.actif, s.nom AS site_nom, s.ville, c.nom AS client_nom
+                FROM site_invite_tokens t
+                JOIN sites s ON t.site_id = s.id
+                JOIN clients c ON s.client_id = c.id
+                WHERE t.token = %s
+            """, [token])
+            row = cur.fetchone()
+
+    if not row or not row['actif']:
+        return Response('''<!DOCTYPE html><html lang="fr"><head>
+<meta charset="UTF-8"><title>Lien invalide</title>
+<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5fafa}
+.box{text-align:center;padding:2rem;background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+h2{color:#e8641e}p{color:#666}</style></head>
+<body><div class="box"><h2>Lien invalide ou expiré</h2>
+<p>Ce lien d'inscription n'est plus actif.<br>Contactez votre administrateur beOtop.</p></div></body></html>''',
+            mimetype='text/html; charset=utf-8')
+
+    # Servir la page d'inscription avec les infos du site
+    page = _build_register_page(token, row['site_nom'], row.get('ville',''), row.get('client_nom',''), row['site_slug'])
+    return Response(page, mimetype='text/html; charset=utf-8')
+
+def _build_register_page(token, site_nom, ville, client_nom, site_slug):
+    location = f"{site_nom}" + (f" · {ville}" if ville else "") + (f" — {client_nom}" if client_nom else "")
+    return f'''<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rejoindre beOtop Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:"DM Sans",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f8fafa 0%,#e8f8f8 50%,#fff5f0 100%);padding:1rem}}
+.card{{background:white;border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:420px;
+  box-shadow:0 8px 40px rgba(0,180,180,.12);border:1px solid rgba(0,180,180,.15)}}
+.logo{{text-align:center;margin-bottom:1.5rem}}
+.logo-txt{{font-size:1.8rem;font-weight:300;color:#00b4b4;letter-spacing:.08em}}
+.logo-txt span{{color:#f5855a;font-style:italic}}
+.site-badge{{display:flex;align-items:center;gap:.6rem;background:rgba(0,180,180,.08);
+  border:1px solid rgba(0,180,180,.2);border-radius:10px;padding:.7rem 1rem;margin-bottom:1.5rem}}
+.site-badge .icon{{font-size:1.4rem}}
+.site-info .label{{font-size:.58rem;color:#7a9898;text-transform:uppercase;letter-spacing:.1em;font-weight:600}}
+.site-info .name{{font-size:.88rem;color:#0d1f1f;font-weight:500;margin-top:.1rem}}
+.field{{margin-bottom:1rem}}
+label{{font-size:.62rem;color:#3a5858;text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-bottom:.4rem}}
+input{{width:100%;padding:.7rem .9rem;border:1.5px solid rgba(0,180,180,.25);border-radius:10px;
+  font-size:.9rem;font-family:inherit;color:#0d1f1f;outline:none;transition:border-color .2s;background:#fafefe}}
+input:focus{{border-color:#00b4b4;background:white}}
+.btn{{width:100%;padding:.85rem;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#f5855a,#e8641e);color:white;font-size:.9rem;
+  font-weight:600;cursor:pointer;letter-spacing:.02em;margin-top:.5rem;
+  box-shadow:0 4px 16px rgba(245,133,90,.35);transition:all .2s}}
+.btn:hover{{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,133,90,.45)}}
+.btn:disabled{{opacity:.6;cursor:not-allowed;transform:none}}
+.msg{{text-align:center;font-size:.78rem;margin-top:.8rem;min-height:1.2em}}
+.msg.ok{{color:#00b4b4;font-weight:500}}
+.msg.err{{color:#e8641e;font-weight:500}}
+.login-link{{text-align:center;margin-top:1.2rem;font-size:.72rem;color:#7a9898}}
+.login-link a{{color:#00b4b4;font-weight:500;text-decoration:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-txt">beOtop <span>Companion</span></div>
+    <div style="font-size:.7rem;color:#7a9898;margin-top:.3rem">Votre espace bien-être digital</div>
+  </div>
+
+  <div class="site-badge">
+    <div class="icon">🏢</div>
+    <div class="site-info">
+      <div class="label">Votre espace</div>
+      <div class="name">{location}</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Prénom et Nom</label>
+    <input type="text" id="reg-nom" placeholder="Marie Dupont" autocomplete="name" required>
+  </div>
+  <div class="field">
+    <label>Adresse e-mail professionnelle</label>
+    <input type="email" id="reg-email" placeholder="marie.dupont@entreprise.fr" autocomplete="email" required>
+  </div>
+  <div class="field">
+    <label>Mot de passe</label>
+    <input type="password" id="reg-pw" placeholder="8 caractères minimum" autocomplete="new-password" required>
+  </div>
+  <div class="field">
+    <label>Confirmer le mot de passe</label>
+    <input type="password" id="reg-pw2" placeholder="Répétez votre mot de passe" autocomplete="new-password" required>
+  </div>
+
+  <button class="btn" id="reg-btn" onclick="doRegister()">Créer mon compte →</button>
+  <div class="msg" id="reg-msg"></div>
+  <div class="login-link">Déjà un compte ? <a href="/companion">Se connecter</a></div>
+</div>
+
+<script>
+function doRegister() {{
+  var nom   = document.getElementById('reg-nom').value.trim();
+  var email = document.getElementById('reg-email').value.trim();
+  var pw    = document.getElementById('reg-pw').value;
+  var pw2   = document.getElementById('reg-pw2').value;
+  var msg   = document.getElementById('reg-msg');
+  var btn   = document.getElementById('reg-btn');
+
+  if (!nom || !email || !pw) {{ msg.className='msg err'; msg.textContent='Tous les champs sont requis.'; return; }}
+  if (pw.length < 8) {{ msg.className='msg err'; msg.textContent='Mot de passe trop court (8 caractères min).'; return; }}
+  if (pw !== pw2) {{ msg.className='msg err'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }}
+
+  btn.disabled = true; btn.textContent = 'Création en cours…';
+  msg.textContent = '';
+
+  fetch('/api/auth/register', {{
+    method: 'POST',
+    headers: {{'Content-Type': 'application/json'}},
+    body: JSON.stringify({{ nom: nom, email: email, password: pw, token: '{token}' }})
+  }})
+  .then(function(r) {{ return r.json().then(function(d) {{ return {{ok:r.ok, d:d}}; }}); }})
+  .then(function(res) {{
+    if (res.ok) {{
+      msg.className='msg ok';
+      msg.textContent='✓ Compte créé ! Redirection…';
+      setTimeout(function(){{ window.location.href='/companion'; }}, 1500);
+    }} else {{
+      msg.className='msg err';
+      msg.textContent = res.d.error || 'Erreur lors de l'inscription.';
+      btn.disabled=false; btn.textContent='Créer mon compte →';
+    }}
+  }})
+  .catch(function() {{
+    msg.className='msg err'; msg.textContent='Erreur réseau. Réessayez.';
+    btn.disabled=false; btn.textContent='Créer mon compte →';
+  }});
+}}
+
+// Entrée = soumettre
+document.addEventListener('keydown', function(e){{ if(e.key==='Enter') doRegister(); }});
+</script>
+</body>
+</html>'''
+
+@app.route('/api/auth/register', methods=['POST'])
+def auth_register():
+    """Inscription via token d'invitation"""
+    data = request.get_json() or {}
+    token    = (data.get('token') or '').strip()
+    nom      = (data.get('nom') or '').strip()[:100]
+    email    = (data.get('email') or '').strip().lower()[:200]
+    password = (data.get('password') or '')
+
+    if not all([token, nom, email, password]):
+        return jsonify({'error': 'Champs manquants'}), 400
+    if len(password) < 8:
+        return jsonify({'error': 'Mot de passe trop court (8 caractères min)'}), 400
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Vérifier token
+            cur.execute("""
+                SELECT t.site_id, t.site_slug, t.id AS token_id, s.client_id
+                FROM site_invite_tokens t
+                JOIN sites s ON t.site_id = s.id
+                WHERE t.token = %s AND t.actif = 1
+            """, [token])
+            tok = cur.fetchone()
+            if not tok:
+                return jsonify({'error': 'Lien invitation invalide ou expire'}), 403
+
+            # Vérifier email unique
+            cur.execute("SELECT id FROM users WHERE email=%s", [email])
+            if cur.fetchone():
+                return jsonify({'error': 'Cette adresse e-mail est deja utilisee'}), 409
+
+            # Créer l'utilisateur
+            from werkzeug.security import generate_password_hash
+            pw_hash = generate_password_hash(password)
+            cur.execute("""
+                INSERT INTO users (email, password, nom, role, client_id, actif)
+                VALUES (%s, %s, %s, 'client', %s, 1)
+                RETURNING id
+            """, [email, pw_hash, nom, tok['client_id']])
+            user_id = cur.fetchone()['id']
+
+            # Incrémenter compteur inscriptions
+            cur.execute("UPDATE site_invite_tokens SET nb_inscrits=nb_inscrits+1 WHERE id=%s", [tok['token_id']])
+            conn.commit()
+
+    # Auto-login après inscription
+    session['user_id'] = user_id
+    session['role'] = 'client'
+    return jsonify({'ok': True, 'user_id': user_id})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
