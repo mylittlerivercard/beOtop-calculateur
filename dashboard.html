@@ -252,6 +252,7 @@
   <div class="logo">beOtop</div>
   <div class="topbar-right">
     <span class="user-name" id="user-name"></span>
+    <a id="admin-link" href="/admin" style="display:none;padding:.4rem .9rem;border-radius:8px;font-size:.75rem;font-weight:500;color:var(--gold);border:1px solid rgba(200,169,110,.3);text-decoration:none;background:rgba(200,169,110,.08)">⚙ Back-office</a>
     <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
   </div>
 </div>
@@ -830,10 +831,11 @@ async function init(){
   },500);
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin · tous les sites':sites.length+' site(s)';
   window._userRole = me.role;
-  // Onglet Inscriptions visible uniquement pour admin
   if (me.role === 'admin') {
     var tabInsc = document.getElementById('tab-inscriptions');
     if (tabInsc) tabInsc.style.display = '';
+    var adminLink = document.getElementById('admin-link');
+    if (adminLink) adminLink.style.display = '';
   }
 }
 
