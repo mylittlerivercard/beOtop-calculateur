@@ -2132,7 +2132,9 @@ def generate_invite_token(site_id):
             site = cur.fetchone()
             if not site:
                 return jsonify({'error': 'Site introuvable'}), 404
-            token = _secrets.token_urlsafe(24)
+            # Générer un token sans caractères ambigus (O/0, I/l/1)
+            _alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789-_'
+            token = ''.join(_secrets.choice(_alphabet) for _ in range(32))
             # Désactiver l'ancien token si existant
             cur.execute("UPDATE site_invite_tokens SET actif=0 WHERE site_id=%s", [site_id])
             cur.execute("""
