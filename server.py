@@ -1746,28 +1746,25 @@ def companion_qvct():
     with get_db() as conn:
         with conn.cursor() as cur:
 
-            # ── Bien-être par département ──
+            # ── Bien-être global (pas de dept dans users → on regroupe par site_slug) ──
             cur.execute(
                 """
-                SELECT u.dept,
-                       COUNT(c.id)            AS nb_checkins,
-                       AVG(c.energie)         AS energie_moy,
-                       AVG(c.stress)          AS stress_moy,
-                       AVG(c.focus)           AS focus_moy
-                FROM companion_checkins c
-                JOIN users u ON c.user_id = u.id
-                WHERE c.date >= %s
-                  AND (%s IS NULL OR c.site_slug = %s)
-                GROUP BY u.dept
-                HAVING COUNT(c.id) >= 1
+                SELECT COALESCE(site_slug, 'Site principal') AS dept,
+                       COUNT(id)            AS nb_checkins,
+                       AVG(energie)         AS energie_moy,
+                       AVG(stress)          AS stress_moy,
+                       AVG(focus)           AS focus_moy
+                FROM companion_checkins
+                WHERE date >= %s
+                  AND (%s IS NULL OR site_slug = %s)
+                GROUP BY site_slug
                 ORDER BY nb_checkins DESC
                 """,
                 [date_debut, site_slug, site_slug])
-            dept_rows = cur.fetchall()
             dept_wellbeing = []
-            for r in dept_rows:
+            for r in cur.fetchall():
                 dept_wellbeing.append({
-                    'dept': r['dept'] or 'Non renseigné',
+                    'dept': r['dept'],
                     'nb_checkins': r['nb_checkins'],
                     'energie_moy': round(float(r['energie_moy'] or 0), 1),
                     'stress_moy':  round(float(r['stress_moy']  or 0), 1),
@@ -1779,21 +1776,22 @@ def companion_qvct():
                 """
                 SELECT COUNT(DISTINCT user_id) AS actifs
                 FROM companion_points
-                WHERE date >= %s
+                WHERE created_at::date >= %s
                   AND (%s IS NULL OR site_slug = %s)
                 """,
                 [date_debut, site_slug, site_slug])
-            users_actifs = (cur.fetchone() or {}).get('actifs', 0)
+            users_actifs = int((cur.fetchone() or {}).get('actifs', 0) or 0)
 
             cur.execute(
                 """
-                SELECT COUNT(id) AS total FROM users
+                SELECT COUNT(DISTINCT user_id) AS total
+                FROM companion_points
                 WHERE (%s IS NULL OR site_slug = %s)
                 """,
                 [site_slug, site_slug])
-            users_total = (cur.fetchone() or {}).get('total', 0)
+            users_total = int((cur.fetchone() or {}).get('total', 0) or 0)
 
-            # ── Durée totale engagement (CC + exercices) ──
+            # ── Durée totale CC ──
             cur.execute(
                 """
                 SELECT COALESCE(SUM(duree_min), 0) AS duree
@@ -1802,7 +1800,7 @@ def companion_qvct():
                   AND (%s IS NULL OR site_slug = %s)
                 """,
                 [date_debut, site_slug, site_slug])
-            duree_cc = (cur.fetchone() or {}).get('duree', 0)
+            duree_cc = int((cur.fetchone() or {}).get('duree', 0) or 0)
 
             # ── Top activités ──
             cur.execute(
@@ -1811,14 +1809,20 @@ def companion_qvct():
                        COUNT(*)      AS nb_sessions,
                        SUM(points)   AS total_points
                 FROM companion_points
-                WHERE date >= %s
+                WHERE created_at::date >= %s
                   AND (%s IS NULL OR site_slug = %s)
                 GROUP BY action
                 ORDER BY total_points DESC
                 LIMIT 8
                 """,
                 [date_debut, site_slug, site_slug])
-            top_activites = [serialize_row(r) for r in cur.fetchall()]
+            top_activites = []
+            for r in cur.fetchall():
+                top_activites.append({
+                    'action': r['action'],
+                    'nb_sessions': int(r['nb_sessions'] or 0),
+                    'total_points': int(r['total_points'] or 0),
+                })
 
             # ── Tendance hebdomadaire ──
             cur.execute(
@@ -1835,18 +1839,17 @@ def companion_qvct():
                 ORDER BY semaine ASC
                 """,
                 [date_debut, site_slug, site_slug])
-            trend_rows = cur.fetchall()
             trend_hebdo = []
-            for r in trend_rows:
+            for r in cur.fetchall():
                 trend_hebdo.append({
                     'semaine': str(r['semaine'])[:10] if r['semaine'] else None,
                     'energie_moy': round(float(r['energie_moy'] or 0), 1),
                     'stress_inv':  round(10 - float(r['stress_moy'] or 5), 1),
                     'focus_moy':   round(float(r['focus_moy'] or 0), 1),
-                    'nb_checkins': r['nb_checkins'],
+                    'nb_checkins': int(r['nb_checkins'] or 0),
                 })
 
-            # ── Streak moyen ──
+            # ── Streak moyen (jours avec checkin / nb users) ──
             cur.execute(
                 """
                 SELECT user_id, COUNT(DISTINCT date) AS jours
@@ -1857,64 +1860,59 @@ def companion_qvct():
                 """,
                 [date_debut, site_slug, site_slug])
             streak_rows = cur.fetchall()
-            streak_moyen = round(sum(r['jours'] for r in streak_rows) / len(streak_rows), 1) if streak_rows else 0
+            streak_moyen = round(sum(int(r['jours'] or 0) for r in streak_rows) / len(streak_rows), 1) if streak_rows else 0
 
             # ── Alertes QVCT ──
             alertes = []
             for dept in dept_wellbeing:
                 if dept['stress_moy'] >= 7:
                     alertes.append({
-                        'niveau': 'rouge',
-                        'icone': '🔴',
+                        'niveau': 'rouge', 'icone': '🔴',
                         'titre': f"Stress élevé · {dept['dept']}",
-                        'detail': f"Moyenne stress {dept['stress_moy']}/10 sur {dept['nb_checkins']} check-ins"
+                        'detail': f"Moyenne {dept['stress_moy']}/10 sur {dept['nb_checkins']} check-in(s)"
                     })
                 elif dept['stress_moy'] >= 6:
                     alertes.append({
-                        'niveau': 'orange',
-                        'icone': '🟠',
+                        'niveau': 'orange', 'icone': '🟠',
                         'titre': f"Stress modéré · {dept['dept']}",
-                        'detail': f"Moyenne stress {dept['stress_moy']}/10 — à surveiller"
+                        'detail': f"Moyenne {dept['stress_moy']}/10 — à surveiller"
                     })
-            if dept_wellbeing:
-                min_energie_dept = min(dept_wellbeing, key=lambda x: x['energie_moy'])
-                if min_energie_dept['energie_moy'] < 4:
+                if dept['energie_moy'] < 4:
                     alertes.append({
-                        'niveau': 'orange',
-                        'icone': '⚡',
-                        'titre': f"Énergie faible · {min_energie_dept['dept']}",
-                        'detail': f"Moyenne énergie {min_energie_dept['energie_moy']}/10 — envisager des actions"
+                        'niveau': 'orange', 'icone': '⚡',
+                        'titre': f"Énergie faible · {dept['dept']}",
+                        'detail': f"Moyenne {dept['energie_moy']}/10 — actions recommandées"
                     })
-            # Utilisateurs inactifs depuis 7j
             cur.execute(
                 """
-                SELECT COUNT(DISTINCT u.id) AS inactifs
-                FROM users u
-                WHERE (%s IS NULL OR u.site_slug = %s)
-                  AND u.id NOT IN (
+                SELECT COUNT(DISTINCT user_id) AS inactifs
+                FROM companion_checkins
+                WHERE (%s IS NULL OR site_slug = %s)
+                  AND user_id NOT IN (
                     SELECT DISTINCT user_id FROM companion_points
-                    WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+                    WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+                    AND user_id IS NOT NULL
                   )
+                  AND user_id IS NOT NULL
                 """,
                 [site_slug, site_slug])
-            inactifs = (cur.fetchone() or {}).get('inactifs', 0)
+            inactifs = int((cur.fetchone() or {}).get('inactifs', 0) or 0)
             if inactifs > 0:
                 alertes.append({
-                    'niveau': 'orange',
-                    'icone': '😴',
-                    'titre': f'{inactifs} utilisateur(s) inactifs depuis 7 jours',
-                    'detail': 'Aucune activité Compagnon enregistrée cette semaine'
+                    'niveau': 'orange', 'icone': '😴',
+                    'titre': f'{inactifs} utilisateur(s) sans activité depuis 7 jours',
+                    'detail': 'Aucune action Compagnon enregistrée cette semaine'
                 })
 
     return jsonify({
-        'users_actifs':    int(users_actifs or 0),
-        'users_total':     int(users_total or 0),
-        'duree_totale_min': int(duree_cc or 0),
-        'streak_moyen':    streak_moyen,
-        'dept_wellbeing':  dept_wellbeing,
-        'top_activites':   top_activites,
-        'trend_hebdo':     trend_hebdo,
-        'alertes':         alertes,
+        'users_actifs':     users_actifs,
+        'users_total':      users_total,
+        'duree_totale_min': duree_cc,
+        'streak_moyen':     streak_moyen,
+        'dept_wellbeing':   dept_wellbeing,
+        'top_activites':    top_activites,
+        'trend_hebdo':      trend_hebdo,
+        'alertes':          alertes,
     })
 
 @app.route('/api/health', methods=['GET'])
