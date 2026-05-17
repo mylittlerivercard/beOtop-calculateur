@@ -688,6 +688,10 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <span class="nav-badge" id="badge-libres">—</span>
   </div>
 
+  <div class="nav-item" onclick="switchView('intervenants')">
+    <span class="nav-icon">🎓</span><span>Intervenants</span>
+  </div>
+
   <div class="nav-section-label">Bien-être</div>
   <div class="nav-item" onclick="switchView('coherence')">
     <span class="nav-icon">💓</span><span>Respiration & Cohérence</span>
@@ -1048,6 +1052,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 </div>
 
 <!-- ══════════════ ADMIN ══════════════ -->
+<div class="view" id="view-intervenants">
+  <div class="page-header">
+    <h1>Nos <em>intervenants</em></h1>
+    <p>Experts partenaires · Contenus exclusifs beOtop</p>
+  </div>
+  <div id="intervenants-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem"></div>
+</div>
+
 <div class="view" id="view-admin">
   <div class="page-header">
     <h1>Administration <em>du contenu</em></h1>
@@ -1459,6 +1471,22 @@ var DEMO_DB = {
   reservations: [],
   cc_sessions: [],
   checkins: [],
+  intervenants: [
+    {
+      id: 1,
+      nom: 'Laurent Thiry',
+      titre: 'Expert en neurosciences cognitives',
+      specialite: 'Défis cognitifs · Performance mentale · Gestion du stress',
+      bio: "Laurent Thiry est expert en neurosciences appliquées et en développement des performances cognitives. Il accompagne dirigeants et équipes dans l'optimisation de leurs ressources mentales à travers des approches validées scientifiquement.",
+      photo_initiales: 'LT',
+      photo_couleur: '#00b4b4',
+      site_url: '',
+      linkedin_url: '',
+      tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
+      contenu_associe: 'Défis cognitifs · 5 séances audio guidées',
+      actif: true
+    }
+  ],
   videos: [
     { id:1, titre:'Sophrologie guidée 10 min', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Séance complète de sophrologie filmée · Respiration et détente', url_video:'' },
     { id:2, titre:'Yoga bureau debout', categorie:'yoga', duree:'12 min', icon:'🧘', description:'Postures debout adaptées au bureau · Sans matériel', url_video:'' },
@@ -1479,7 +1507,7 @@ function loadDB() {
     // Merger toutes les clés structurelles depuis DEMO_DB si vides ou absentes
     // On conserve les données utilisateur (checkins, sessions, points) mais on
     // recharge les contenus (videos, audios, exercices, ateliers) depuis DEMO_DB
-    var contentKeys = ['videos','audios','exercices','ateliers'];
+    var contentKeys = ['videos','audios','exercices','ateliers','intervenants'];
     contentKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k]) || stored[k].length === 0) {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
@@ -1533,6 +1561,7 @@ function switchView(id) {
   if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 200); }
   if (id === 'profil') renderProfil();
   if (id === 'admin') renderAdmin('ateliers');
+  if (id === 'intervenants') renderIntervenants();
 }
 
 /* ════════════════════════════════════════════
@@ -4543,6 +4572,58 @@ function playDefiThiry(url, titre) {
     }
   }, 400);
 }
+/* ═══ INTERVENANTS ═══ */
+function renderIntervenants() {
+  var grid = document.getElementById('intervenants-grid');
+  if (!grid) return;
+  var list = (DB.intervenants || []).filter(function(i){ return i.actif !== false; });
+  if (!list.length) {
+    grid.innerHTML = '<div style="font-size:.78rem;color:var(--text-dim);padding:2rem">Aucun intervenant enregistré.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(inv) {
+    var tags = (inv.tags||[]).map(function(t){
+      return '<span style="font-size:.58rem;padding:.2rem .6rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;color:var(--teal)">' + t + '</span>';
+    }).join('');
+    var links = '';
+    if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="font-size:.65rem;color:var(--teal);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem">🌐 Site web</a>';
+    if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="font-size:.65rem;color:#0077b5;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem">in LinkedIn</a>';
+    return '<div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:.9rem;cursor:pointer" onclick="openIntervenant(' + inv.id + ')">'
+      + '<div style="display:flex;align-items:center;gap:1rem">'
+      + '<div style="width:56px;height:56px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
+      + '<div><div style="font-size:.92rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
+      + '<div style="font-size:.65rem;color:var(--teal);margin-top:.15rem">' + (inv.titre||'') + '</div></div>'
+      + '</div>'
+      + '<div style="font-size:.68rem;color:var(--text-dim);line-height:1.6">' + (inv.specialite||'') + '</div>'
+      + (inv.contenu_associe ? '<div style="font-size:.62rem;background:rgba(0,180,180,.07);border:1px solid rgba(0,180,180,.15);border-radius:8px;padding:.4rem .7rem;color:var(--text-dim)">🎧 ' + inv.contenu_associe + '</div>' : '')
+      + '<div style="display:flex;gap:.6rem;flex-wrap:wrap">' + tags + '</div>'
+      + (links ? '<div style="display:flex;gap:.8rem;flex-wrap:wrap;padding-top:.4rem;border-top:1px solid var(--border)">' + links + '</div>' : '')
+      + '<div style="font-size:.6rem;color:var(--text-muted);text-align:right">↗ Voir la fiche complète</div>'
+      + '</div>';
+  }).join('');
+}
+
+function openIntervenant(id) {
+  var inv = (DB.intervenants||[]).find(function(i){ return i.id === id; });
+  if (!inv) return;
+  var links = '';
+  if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">🌐 Site web</a> ';
+  if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,119,181,.1);border:1px solid rgba(0,119,181,.2);border-radius:10px;color:#0077b5;font-size:.72rem;font-weight:600;text-decoration:none">in LinkedIn</a>';
+  var tags = (inv.tags||[]).map(function(t){
+    return '<span style="font-size:.62rem;padding:.25rem .7rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;color:var(--teal)">' + t + '</span>';
+  }).join(' ');
+  var body = '<div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.2rem">'
+    + '<div style="width:64px;height:64px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
+    + '<div><div style="font-size:1.05rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
+    + '<div style="font-size:.7rem;color:var(--teal);margin-top:.2rem">' + (inv.titre||'') + '</div></div>'
+    + '</div>'
+    + (inv.bio ? '<div style="font-size:.75rem;color:var(--text);line-height:1.75;margin-bottom:1rem;padding:1rem;background:var(--surface2);border-radius:10px">' + inv.bio + '</div>' : '')
+    + (tags ? '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">' + tags + '</div>' : '')
+    + (inv.contenu_associe ? '<div style="font-size:.68rem;background:rgba(0,180,180,.07);border:1px solid rgba(0,180,180,.15);border-radius:10px;padding:.6rem 1rem;color:var(--text-dim);margin-bottom:1rem">🎧 Contenu disponible : ' + inv.contenu_associe + '</div>' : '')
+    + (links ? '<div style="display:flex;gap:.8rem;flex-wrap:wrap">' + links + '</div>' : '');
+  if (typeof openModal === 'function') openModal(inv.nom, body);
+}
+
 </script>
 
 </body>
