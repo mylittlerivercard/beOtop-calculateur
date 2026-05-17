@@ -4664,8 +4664,15 @@ function _intervenantForm(inv) {
     + '<input id="f-inv-spec" value="' + (v.specialite||'') + '" placeholder="Neurosciences · Performance" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Bio</label>'
     + '<textarea id="f-inv-bio" rows="4" placeholder="Présentation de l&apos;intervenant..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.82rem;resize:vertical">' + (v.bio||'') + '</textarea></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Photo — nom du fichier dans /static/ GitHub</label>'
+    + '<div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem">'
+    + '<span style="font-size:.62rem;color:var(--text-muted);white-space:nowrap;padding:.6rem .5rem;background:var(--surface2);border-radius:9px 0 0 9px;border:1px solid var(--border2);border-right:none">static/</span>'
+    + '<input id="f-inv-photo" value="' + (v.photo_url ? v.photo_url.split('/static/').pop() : '') + '" placeholder="photo-laurent.jpg" style="flex:1;padding:.6rem .8rem;border-radius:0 9px 9px 0;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '</div>'
+    + '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.3rem">Uploadez le fichier dans /static/ sur GitHub · Formats : jpg, png, webp</div>'
+    + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
-    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Initiales</label>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Initiales (fallback si pas de photo)</label>'
     + '<input id="f-inv-init" value="' + (v.photo_initiales||'') + '" placeholder="LT" maxlength="2" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Couleur avatar</label>'
     + '<input id="f-inv-color" type="color" value="' + (v.photo_couleur||'#00b4b4') + '" style="width:100%;height:38px;margin-top:.3rem;border-radius:9px;border:1px solid var(--border2);cursor:pointer"></div>'
@@ -4700,6 +4707,8 @@ function saveIntervenant(existingId) {
       inv.bio = document.getElementById('f-inv-bio').value.trim();
       inv.photo_initiales = document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2);
       inv.photo_couleur = document.getElementById('f-inv-color').value;
+      var _pf = document.getElementById('f-inv-photo').value.trim();
+      inv.photo_url = _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : '';
       inv.site_url = document.getElementById('f-inv-site').value.trim();
       inv.linkedin_url = document.getElementById('f-inv-linkedin').value.trim();
       inv.tags = tags;
@@ -4713,6 +4722,7 @@ function saveIntervenant(existingId) {
       bio: document.getElementById('f-inv-bio').value.trim(),
       photo_initiales: document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2) || nom.slice(0,2).toUpperCase(),
       photo_couleur: document.getElementById('f-inv-color').value,
+      photo_url: (function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : ''; })(),
       site_url: document.getElementById('f-inv-site').value.trim(),
       linkedin_url: document.getElementById('f-inv-linkedin').value.trim(),
       tags: tags,
@@ -4758,6 +4768,22 @@ function _getContenus(inv) {
   return items;
 }
 
+function _avatarHtml(inv, size) {
+  var s = size + 'px';
+  var fs = size > 56 ? '1.4rem' : '1.1rem';
+  var bg = inv.photo_couleur || 'var(--teal)';
+  var initiales = inv.photo_initiales || inv.nom.slice(0,2).toUpperCase();
+  var photoUrl = inv.photo_url || '';
+  if (photoUrl) {
+    return '<div style="width:' + s + ';height:' + s + ';border-radius:50%;flex-shrink:0;overflow:hidden;background:' + bg + '">'
+      + '<img src="' + photoUrl + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block">'
+      + '</div>';
+  }
+  return '<div style="width:' + s + ';height:' + s + ';border-radius:50%;flex-shrink:0;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:' + fs + ';font-weight:700;color:white">'
+    + initiales + '</div>';
+}
+
+
 function renderIntervenants() {
   var grid = document.getElementById('intervenants-grid');
   if (!grid) return;
@@ -4778,7 +4804,7 @@ function renderIntervenants() {
       + '</div>' : '';
     return '<div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:.8rem;cursor:pointer" onclick="openIntervenant(' + inv.id + ')">'
       + '<div style="display:flex;align-items:center;gap:1rem">'
-      + '<div style="width:56px;height:56px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
+      + _avatarHtml(inv, 56)
       + '<div><div style="font-size:.92rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
       + '<div style="font-size:.65rem;color:var(--teal);margin-top:.1rem">' + (inv.titre||'') + '</div></div>'
       + '</div>'
@@ -4806,7 +4832,7 @@ function openIntervenant(id) {
   if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">🌐 Site web</a> ';
   if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,119,181,.1);border:1px solid rgba(0,119,181,.2);border-radius:10px;color:#0077b5;font-size:.72rem;font-weight:600;text-decoration:none">in LinkedIn</a>';
   var body = '<div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.2rem">'
-    + '<div style="width:64px;height:64px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
+    + _avatarHtml(inv, 64)
     + '<div><div style="font-size:1.05rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
     + '<div style="font-size:.7rem;color:var(--teal);margin-top:.2rem">' + (inv.titre||'') + '</div></div>'
     + '</div>'
