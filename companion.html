@@ -1350,7 +1350,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
 ════════════════════════════════════════════ */
-const DB_KEY = 'beotop_companion_db';
+const DB_KEY = 'beotop_companion_db_v3';
 
 const DEMO_DB = {
   user: {
@@ -1406,20 +1406,32 @@ const DEMO_DB = {
 
 function loadDB() {
   var raw = localStorage.getItem(DB_KEY);
-  if (!raw) { saveDB(DEMO_DB); return JSON.parse(JSON.stringify(DEMO_DB)); }
+  if (!raw) {
+    var fresh = JSON.parse(JSON.stringify(DEMO_DB));
+    saveDB(fresh); return fresh;
+  }
   try {
     var stored = JSON.parse(raw);
-    // Toujours merger les clés structurelles depuis DEMO_DB
-    var arrayKeys = ['videos','points','checkins','reservations','cc_sessions','sessions','ateliers','audios','exercices'];
-    arrayKeys.forEach(function(k){
-      if (!stored[k] || !stored[k].length) {
+    // Merger toutes les clés structurelles depuis DEMO_DB si vides ou absentes
+    // On conserve les données utilisateur (checkins, sessions, points) mais on
+    // recharge les contenus (videos, audios, exercices, ateliers) depuis DEMO_DB
+    var contentKeys = ['videos','audios','exercices','ateliers'];
+    contentKeys.forEach(function(k){
+      if (!stored[k] || !Array.isArray(stored[k]) || stored[k].length === 0) {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
       }
     });
-    // Merger user si incomplet
+    var dataKeys = ['points','checkins','reservations','cc_sessions','sessions'];
+    dataKeys.forEach(function(k){
+      if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
+    });
     if (!stored.user) stored.user = JSON.parse(JSON.stringify(DEMO_DB.user));
+    saveDB(stored);
     return stored;
-  } catch(e) { return JSON.parse(JSON.stringify(DEMO_DB)); }
+  } catch(e) {
+    var fresh = JSON.parse(JSON.stringify(DEMO_DB));
+    saveDB(fresh); return fresh;
+  }
 }
 
 function saveDB(db) {
@@ -2443,7 +2455,13 @@ function renderProgresData(d) {
 var _sonCtx = null, _sonNodes = {}, _sonGain = null, _sonActive = null;
 
 function getSonCtx() {
-  if (!_sonCtx) _sonCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!_sonCtx) {
+    _sonCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // Toujours résumer si suspendu (politique autoplay Chrome/Firefox)
+  if (_sonCtx.state === 'suspended') {
+    _sonCtx.resume();
+  }
   return _sonCtx;
 }
 
@@ -2764,16 +2782,16 @@ function buildSonGraph(type, masterGain) {
 
 function playSon(type) {
   stopAllSons();
-  var ctx = getSonCtx();
-  // Resume AudioContext si suspendu (règle Chrome/Firefox autoplay policy)
-  if (ctx.state === 'suspended') {
-    ctx.resume().then(function(){ _startSon(type, ctx); });
-  } else {
-    _startSon(type, ctx);
-  }
+  var ctx = getSonCtx(); // resume() appelé dans getSonCtx si suspendu
+  _startSon(type, ctx);
 }
 
 function _startSon(type, ctx) {
+  // Si encore suspendu après resume(), attendre et réessayer
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(function() { _startSon(type, ctx); });
+    return;
+  }
   _sonGain = ctx.createGain();
   var vol = (document.getElementById('son-volume') ? +document.getElementById('son-volume').value : 60) / 100 * 0.8;
   _sonGain.gain.setValueAtTime(vol * 0.5, ctx.currentTime);
