@@ -1345,6 +1345,10 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <div class="toast" id="toast"></div>
 
 <script>
+/* === beOtop Companion === */
+(function() {
+try {
+
 
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
@@ -4312,8 +4316,24 @@ function resetDB() {
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
-renderDashboard();
-renderCCStats();
+function _beotopInit() {
+  try {
+    renderDashboard();
+    renderCCStats();
+  } catch(e) {
+    console.error('beOtop init error:', e);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _beotopInit);
+} else {
+  _beotopInit();
+}
+
+} catch(e) {
+  console.error('[beOtop] Script error:', e.message, e.stack);
+}
+})();
 </script>
 </body>
 </html>
