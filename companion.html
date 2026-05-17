@@ -1409,9 +1409,15 @@ function loadDB() {
   if (!raw) { saveDB(DEMO_DB); return JSON.parse(JSON.stringify(DEMO_DB)); }
   try {
     var stored = JSON.parse(raw);
-    // Merger les clés manquantes depuis DEMO_DB (videos, points, etc.)
-    var keys = ['videos','points','checkins','reservations','cc_sessions','sessions'];
-    keys.forEach(function(k){ if (!stored[k]) stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || [])); });
+    // Toujours merger les clés structurelles depuis DEMO_DB
+    var arrayKeys = ['videos','points','checkins','reservations','cc_sessions','sessions','ateliers','audios','exercices'];
+    arrayKeys.forEach(function(k){
+      if (!stored[k] || !stored[k].length) {
+        stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
+      }
+    });
+    // Merger user si incomplet
+    if (!stored.user) stored.user = JSON.parse(JSON.stringify(DEMO_DB.user));
     return stored;
   } catch(e) { return JSON.parse(JSON.stringify(DEMO_DB)); }
 }
@@ -1905,6 +1911,7 @@ var _audioCtx = null, _audioNodes = [], _nativeSessionTimer = null, _nativeStepI
 
 function getAudioCtx() {
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
   return _audioCtx;
 }
 function stopNativeAudio() {
@@ -2756,13 +2763,21 @@ function buildSonGraph(type, masterGain) {
 
 
 function playSon(type) {
-
   stopAllSons();
   var ctx = getSonCtx();
+  // Resume AudioContext si suspendu (règle Chrome/Firefox autoplay policy)
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(function(){ _startSon(type, ctx); });
+  } else {
+    _startSon(type, ctx);
+  }
+}
+
+function _startSon(type, ctx) {
   _sonGain = ctx.createGain();
   var vol = (document.getElementById('son-volume') ? +document.getElementById('son-volume').value : 60) / 100 * 0.8;
-  _sonGain.gain.setValueAtTime(vol * 0.3, ctx.currentTime);
-  _sonGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.5);
+  _sonGain.gain.setValueAtTime(vol * 0.5, ctx.currentTime);
+  _sonGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.3);
   _sonGain.connect(ctx.destination);
   _sonNodes[type] = buildSonGraph(type, _sonGain);
   _sonActive = type;
