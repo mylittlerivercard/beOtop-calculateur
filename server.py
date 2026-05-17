@@ -24,6 +24,11 @@ CORS(app, supports_credentials=True)
 
 @app.after_request
 def add_headers(response):
+    # Pas de CSP sur les fichiers statiques/audio
+    if request.path.startswith('/audio/') or request.path.startswith('/static/'):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Accept-Ranges'] = 'bytes'
+        return response
     # Autoriser YouTube et Vimeo en iframe (contenu Compagnon)
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
