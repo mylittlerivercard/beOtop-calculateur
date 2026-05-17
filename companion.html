@@ -2123,31 +2123,37 @@ async function loadCheckinChart() {
   var periode = document.getElementById('checkin-periode');
   var p = periode ? periode.value : 'mois';
   var emptyEl = document.getElementById('checkin-chart-empty');
-  var data = [];
 
-  // Essayer API
+  // Calculer date de début
+  var now = new Date();
+  var debut;
+  if (p === 'semaine') {
+    debut = new Date(now); debut.setDate(now.getDate() - now.getDay() + 1);
+  } else if (p === 'annee') {
+    debut = new Date(now.getFullYear(), 0, 1);
+  } else {
+    debut = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  debut.setHours(0,0,0,0);
+
+  // Données localStorage (toujours disponibles)
+  var localData = (DB.checkins || [])
+    .filter(function(c){ return new Date(c.date) >= debut && c.energie && c.stress && c.focus; })
+    .map(function(c){ return { date: (c.date||'').slice(0,10), energie: +c.energie, stress: +c.stress, focus: +c.focus }; });
+
+  // Données API (si disponibles, on prend les deux et on déduplique par date)
+  var apiData = [];
   try {
     var r = await fetch('/api/companion/checkin/history?periode=' + p, { credentials: 'include' });
-    if (r.ok) data = await r.json();
+    if (r.ok) apiData = await r.json();
   } catch(e) {}
 
-  // Fallback localStorage
-  if (!data.length) {
-    var now = new Date();
-    var debut;
-    if (p === 'semaine') {
-      debut = new Date(now); debut.setDate(now.getDate() - now.getDay() + 1);
-    } else if (p === 'annee') {
-      debut = new Date(now.getFullYear(), 0, 1);
-    } else {
-      debut = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-    debut.setHours(0,0,0,0);
-    data = (DB.checkins || [])
-      .filter(function(c){ return new Date(c.date) >= debut; })
-      .sort(function(a,b){ return new Date(a.date) - new Date(b.date); })
-      .map(function(c){ return { date: c.date.slice(0,10), energie: c.energie, stress: c.stress, focus: c.focus }; });
-  }
+  // Fusionner : API en priorité, localStorage en complément
+  var merged = {};
+  localData.forEach(function(d){ if(d.date) merged[d.date] = d; });
+  apiData.forEach(function(d){ if(d.date) merged[d.date] = d; }); // écrase si doublon
+
+  var data = Object.values(merged).sort(function(a,b){ return a.date.localeCompare(b.date); });
 
   var canvas = document.getElementById('checkin-chart');
   if (!canvas) return;
