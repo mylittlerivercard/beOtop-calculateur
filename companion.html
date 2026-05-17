@@ -1161,10 +1161,75 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <div class="view" id="view-jeux">
   <div class="page-header">
     <h1>Jeux <em>cérébraux</em></h1>
-    <p>Mémoire · Réflexes · Attention · Logique · Inattention</p>
+    <p>Défis cognitifs · Mémoire · Réflexes · Attention · Logique · Inattention</p>
   </div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
-    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border)">🧠 Mémoire</div>
+    <!-- ══ DÉFIS COGNITIFS LAURENT THIRY ══ -->
+    <div style="grid-column:1/-1;margin-top:.4rem">
+      <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(245,133,90,.06));border:1px solid rgba(0,180,180,.2);border-radius:14px;margin-bottom:.8rem">
+        <div style="font-size:1.6rem">🧩</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.04em">DÉFIS COGNITIFS</div>
+          <div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Créés par <strong style="color:var(--text)">Laurent Thiry</strong> · Neurosciences appliquées · 5 séances guidées</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('https://mylittlerivercard.github.io/beOtop-calculateur/static/Defi-1-Deux-choses.mp3', 'Deux choses à la fois')">
+      <div style="display:flex;align-items:center;gap:.9rem">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🎧</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Deux choses à la fois</div>
+          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Faire deux tâches simultanément · Double attention</div>
+        </div>
+        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">Laurent Thiry · Défi audio guidé</div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('https://mylittlerivercard.github.io/beOtop-calculateur/static/Defi-2-AttentionFixeopmix_v3_24_48_.mp3', 'Attention fixe')">
+      <div style="display:flex;align-items:center;gap:.9rem">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🎧</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Attention fixe</div>
+          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Maintenir le focus sur une cible unique · Concentration</div>
+        </div>
+        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">Laurent Thiry · Défi audio guidé</div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('https://mylittlerivercard.github.io/beOtop-calculateur/static/Defi-3-AgirSousStress__opmix_v3_24_48_.mp3', 'Agir sous stress')">
+      <div style="display:flex;align-items:center;gap:.9rem">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🎧</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Agir sous stress</div>
+          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Performer malgré la pression · Régulation émotionnelle</div>
+        </div>
+        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">Laurent Thiry · Défi audio guidé</div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('https://mylittlerivercard.github.io/beOtop-calculateur/static/Defi-4-Puzzleopmix_v1_24_48_.mp3', 'Puzzle cognitif')">
+      <div style="display:flex;align-items:center;gap:.9rem">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🎧</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Puzzle cognitif</div>
+          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Résoudre un problème guidé · Flexibilité mentale</div>
+        </div>
+        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">Laurent Thiry · Défi audio guidé</div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('https://mylittlerivercard.github.io/beOtop-calculateur/static/Defi-5-NePasRepondre_opmix_v2_24_48_.mp3', 'Ne pas répondre')">
+      <div style="display:flex;align-items:center;gap:.9rem">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🎧</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Ne pas répondre</div>
+          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Inhibition de réponse automatique · Contrôle cognitif</div>
+        </div>
+        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">Laurent Thiry · Défi audio guidé</div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.8rem">🧠 Mémoire</div>
     <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
       <div style="font-size:1.8rem;margin-bottom:.4rem">🃏</div>
       <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
@@ -1492,6 +1557,7 @@ function openModal(title, bodyHtml) {
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   stopSpeech(); stopExerciceBg();
+  if (_defiAudio) { try { _defiAudio.pause(); } catch(e){} _defiAudio = null; }
 }
 
 function formatDate(iso) {
