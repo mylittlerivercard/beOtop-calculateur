@@ -2115,10 +2115,14 @@ import secrets as _secrets
 @login_required
 def generate_invite_token(site_id):
     """Génère ou régénère un token d'invitation pour un site"""
+    user = get_current_user()
     with get_db() as conn:
         with conn.cursor() as cur:
-            # Vérifier que le site existe et appartient au client de l'user
-            cur.execute("SELECT slug, nom FROM sites WHERE id=%s", [site_id])
+            # Vérifier que le site existe et appartient au client
+            if user['role'] == 'admin':
+                cur.execute("SELECT slug, nom FROM sites WHERE id=%s", [site_id])
+            else:
+                cur.execute("SELECT slug, nom FROM sites WHERE id=%s AND client_id=%s", [site_id, user['client_id']])
             site = cur.fetchone()
             if not site:
                 return jsonify({'error': 'Site introuvable'}), 404
@@ -2140,18 +2144,30 @@ def generate_invite_token(site_id):
 @app.route('/api/admin/sites/tokens', methods=['GET'])
 @login_required
 def get_all_tokens():
-    """Liste tous les tokens actifs avec leurs sites"""
+    """Liste les tokens actifs — filtrés par client si role=client"""
+    user = get_current_user()
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT t.token, t.site_slug, t.nb_inscrits, t.actif, t.created_at::text,
-                       s.nom AS site_nom, s.ville, c.nom AS client_nom
-                FROM site_invite_tokens t
-                JOIN sites s ON t.site_id = s.id
-                JOIN clients c ON s.client_id = c.id
-                WHERE t.actif = 1
-                ORDER BY c.nom, s.nom
-            """)
+            if user['role'] == 'admin':
+                cur.execute("""
+                    SELECT t.token, t.site_slug, t.nb_inscrits, t.actif, t.created_at::text,
+                           s.id AS site_id, s.nom AS site_nom, s.ville, c.nom AS client_nom
+                    FROM site_invite_tokens t
+                    JOIN sites s ON t.site_id = s.id
+                    JOIN clients c ON s.client_id = c.id
+                    WHERE t.actif = 1
+                    ORDER BY c.nom, s.nom
+                """)
+            else:
+                cur.execute("""
+                    SELECT t.token, t.site_slug, t.nb_inscrits, t.actif, t.created_at::text,
+                           s.id AS site_id, s.nom AS site_nom, s.ville, c.nom AS client_nom
+                    FROM site_invite_tokens t
+                    JOIN sites s ON t.site_id = s.id
+                    JOIN clients c ON s.client_id = c.id
+                    WHERE t.actif = 1 AND s.client_id = %s
+                    ORDER BY s.nom
+                """, [user['client_id']])
             rows = cur.fetchall()
     return jsonify([serialize_row(r) for r in rows])
 
@@ -2339,7 +2355,6 @@ def auth_register():
                 return jsonify({'error': 'Cette adresse e-mail est deja utilisee'}), 409
 
             # Créer l'utilisateur
-            from werkzeug.security import generate_password_hash
             pw_hash = generate_password_hash(password)
             cur.execute("""
                 INSERT INTO users (email, password, nom, role, client_id, actif)
@@ -2355,6 +2370,7 @@ def auth_register():
     # Auto-login après inscription
     session['user_id'] = user_id
     session['role'] = 'client'
+    session['client_id'] = tok['client_id']
     return jsonify({'ok': True, 'user_id': user_id})
 
 if __name__ == '__main__':
