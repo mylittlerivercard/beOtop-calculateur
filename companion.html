@@ -4514,5 +4514,36 @@ function resetDB() {
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_init); else _init();
 })();
 </script>
+
+<script>
+/* ═══ DÉFIS COGNITIFS LAURENT THIRY ═══ */
+var _defiAudio = null;
+
+function playDefiThiry(url, titre) {
+  if (typeof stopAllSons === 'function') stopAllSons();
+  if (_defiAudio) { try { _defiAudio.pause(); _defiAudio.src = ''; } catch(e){} _defiAudio = null; }
+
+  var modalHtml = '<div style="text-align:center;margin-bottom:1.2rem">'
+    + '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Défi cognitif · Laurent Thiry</div>'
+    + '<div style="font-size:1rem;font-weight:600;color:var(--text)">' + titre + '</div>'
+    + '</div>'
+    + '<audio id="defi-audio-el" src="' + url + '" controls preload="auto" style="width:100%;display:block;border-radius:8px;margin-bottom:1rem"></audio>'
+    + '<div style="font-size:.65rem;color:var(--text-dim);text-align:center;line-height:1.6">'
+    + '💡 Installez-vous confortablement · Casque recommandé<br>Suivez les instructions de Laurent Thiry'
+    + '</div>';
+
+  if (typeof openModal === 'function') openModal('🎧 ' + titre, modalHtml);
+
+  setTimeout(function() {
+    var el = document.getElementById('defi-audio-el');
+    if (el) {
+      _defiAudio = el;
+      el.play().catch(function(e){ console.warn('Défi audio play:', e.message); });
+      if (typeof awardPoints === 'function') awardPoints('jeu', titre);
+    }
+  }, 400);
+}
+</script>
+
 </body>
 </html>
