@@ -2086,9 +2086,22 @@ def roi_page():
 
 @app.route('/kiosk/<site_slug>')
 def kiosk_page(site_slug):
-    path = os.path.join(BASE_DIR, 'beOtop_Kiosk.html')
-    with open(path, encoding='utf-8') as f:
-        html = f.read()
+    # Chercher le fichier kiosk (plusieurs noms possibles)
+    candidates = ['beOtop_Kiosk.html', 'BeOtop_Kiosk.html', 'kiosk.html', 'Kiosk.html']
+    html = None
+    for fname in candidates:
+        path = os.path.join(BASE_DIR, fname)
+        try:
+            with open(path, encoding='utf-8') as f:
+                html = f.read()
+            break
+        except FileNotFoundError:
+            continue
+    if html is None:
+        return Response(
+            f'<h1>Kiosk introuvable</h1><p>Fichiers cherchés : {candidates}</p><p>BASE_DIR : {BASE_DIR}</p>',
+            status=404, mimetype='text/html'
+        )
     html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{site_slug}'")
     return Response(html, mimetype='text/html; charset=utf-8')
 
