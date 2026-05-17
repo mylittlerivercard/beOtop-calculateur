@@ -120,13 +120,23 @@
 </div>
 
 <!-- IDLE -->
-<div class="screen active" id="screen-idle">
+<div class="screen active" id="screen-idle" style="position:relative">
   <div class="idle-ring">
-<img src="https://mylittlerivercard.github.io/beOtop-calculateur/static/logo-beotop-baseline.svg" alt="beOtop">
+    <img src="https://mylittlerivercard.github.io/beOtop-calculateur/static/logo-beotop-baseline.svg" alt="beOtop">
   </div>
   <div class="idle-title">Vous <em>sortez</em> de l'espace <em>beOtop</em> ?</div>
   <div class="idle-sub">Dites-nous comment vous l'avez utilisé</div>
   <div class="tap-btn" onclick="goTo('screen-dept')">Commencer · 3 secondes</div>
+
+  <!-- Bloc Companion QR — visible si token actif -->
+  <div id="companion-qr-block" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:100;background:rgba(255,255,255,0.95);border-radius:14px;padding:.9rem 1rem;box-shadow:0 4px 20px rgba(0,0,0,.15);flex-direction:row;align-items:center;gap:.9rem;max-width:240px">
+    <div id="companion-qr-img" style="width:70px;height:70px;flex-shrink:0;border-radius:6px;overflow:hidden;background:#f5f5f5"></div>
+    <div>
+      <div style="font-size:.62rem;font-weight:700;color:#00b4b4;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.25rem">Companion</div>
+      <div style="font-size:.58rem;color:#555;line-height:1.4;margin-bottom:.3rem">Scannez pour rejoindre</div>
+      <div style="font-size:.55rem;color:#00b4b4;font-weight:600">Offert par votre entreprise ✓</div>
+    </div>
+  </div>
 </div>
 
 <!-- ÉCRAN 1 · DÉPARTEMENT -->
@@ -209,32 +219,8 @@
 
 <div class="admin-link" onclick="adminTap()">●</div>
 
-<!-- Bouton inscription Companion (discret, en bas) -->
-<div id="companion-join-btn" style="position:fixed;bottom:1.2rem;right:3.5rem;z-index:50;display:none">
-  <a id="companion-join-link" href="#" target="_blank"
-     style="display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;
-            background:rgba(0,180,180,.15);border:1px solid rgba(0,180,180,.3);
-            border-radius:20px;color:#00b4b4;font-size:.65rem;font-weight:500;
-            text-decoration:none;backdrop-filter:blur(8px)">
-    📱 Rejoindre le Companion
-  </a>
-</div>
-
 <script>
 var SITE_SLUG = '';   // injecté par Flask via /kiosk/<slug>
-// Fallback : extraire le slug depuis l'URL si accès direct
-(function() {
-  if (!SITE_SLUG) {
-    var path = window.location.pathname; // ex: /kiosk/dmmf-agde ou dmmf-agde.html
-    var m = path.match(/\/kiosk\/([^\/\?#]+)/);
-    if (m) { SITE_SLUG = m[1]; }
-    else {
-      // Accès fichier statique type dmmf-agde.html
-      var fname = path.split('/').pop().replace('.html','');
-      if (fname && fname !== 'index' && fname !== 'beOtop_Kiosk') SITE_SLUG = fname;
-    }
-  }
-})();
 var SITE_NAME = 'beOtop';
 
 // Nouvelle liste des départements (inchangée)
@@ -421,6 +407,30 @@ function initSite(){
       setSyncStatus('offline');
     });
 }
+
+function loadJoinLink() {
+  if (!SITE_SLUG || typeof fetch === 'undefined') return;
+  fetch('/api/kiosk/' + SITE_SLUG + '/join-link')
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if (d && d.url) {
+        var fullUrl = window.location.origin + d.url;
+        var block = document.getElementById('companion-qr-block');
+        var imgEl = document.getElementById('companion-qr-img');
+        if (block && imgEl) {
+          var img = document.createElement('img');
+          img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=70x70&data='
+            + encodeURIComponent(fullUrl) + '&bgcolor=ffffff&color=071515&margin=3';
+          img.style.cssText = 'width:70px;height:70px;display:block;border-radius:4px';
+          imgEl.innerHTML = '';
+          imgEl.appendChild(img);
+          block.style.display = 'flex';
+        }
+      }
+    })
+    .catch(function(){});
+}
+
 initSite();
 try { loadJoinLink(); } catch(e) {}
 </script>
