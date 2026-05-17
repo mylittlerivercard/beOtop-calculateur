@@ -829,6 +829,7 @@ async function init(){
     }
   },500);
   document.getElementById('page-sub').textContent=me.role==='admin'?'Vue admin · tous les sites':sites.length+' site(s)';
+  window._userRole = me.role;
   // Onglet Inscriptions visible uniquement pour admin
   if (me.role === 'admin') {
     var tabInsc = document.getElementById('tab-inscriptions');
@@ -2026,20 +2027,58 @@ function renderAlertes(alertes) {
 }
 
 /* === QR CODES & INSCRIPTIONS === */
+var _inscSites = [];
+
 async function loadInscriptions() {
+  try {
+    var apiUrl = (window._userRole === 'admin') ? '/api/admin/sites' : '/api/client/sites';
+    var r = await fetch(apiUrl, { credentials: 'include' });
+    _inscSites = r.ok ? await r.json() : [];
+  } catch(e) { _inscSites = []; }
+  var clientSel = document.getElementById('insc-client-select');
+  if (!clientSel) { loadExistingTokens(); return; }
+  var seen = {};
+  var opts = '<option value="">— Choisir un client —</option>';
+  _inscSites.forEach(function(s) {
+    var key = s.client_id;
+    var label = s.client_nom || s.nom;
+    if (key && !seen[key]) { seen[key] = true; opts += '<option value="' + key + '">' + label + '</option>'; }
+  });
+  clientSel.innerHTML = opts;
+  loadExistingTokens();
+}
+
+function onInscClientChange() {
+  var clientSel = document.getElementById('insc-client-select');
+  var siteSel   = document.getElementById('insc-site-select');
+  if (!clientSel || !siteSel) return;
+  var filtered = _inscSites.filter(function(s){ return String(s.client_id) === clientSel.value; });
+  var opts = '<option value="">— Choisir un site —</option>';
+  filtered.forEach(function(s){ opts += '<option value="' + s.id + '">' + s.nom + (s.ville?' · '+s.ville:'') + '</option>'; });
+  siteSel.innerHTML = opts;
+  siteSel.disabled = !filtered.length;
+}
+
+async function generateSelectedToken() {
+  var siteSel = document.getElementById('insc-site-select');
+  if (!siteSel || !siteSel.value) { showToast('⚠ Sélectionnez un site'); return; }
+  var r = await fetch('/api/admin/sites/' + siteSel.value + '/invite-token', { method:'POST', credentials:'include' });
+  if (r.ok) { showToast('✓ QR code généré'); loadExistingTokens(); }
+  else showToast('⚠ Erreur');
+}
+
+async function loadExistingTokens() {
   var grid = document.getElementById('qr-grid');
   var msg  = document.getElementById('qr-msg');
   if (!grid) return;
-  grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">&#9203; Chargement…</div>';
   try {
-    var r = await fetch('/api/admin/sites/tokens', { credentials: 'include' });
+    var r = await fetch('/api/admin/sites/tokens', { credentials:'include' });
     var tokens = r.ok ? await r.json() : [];
-    renderQRGrid(tokens);
-    if (msg) msg.textContent = tokens.length + ' site(s) avec lien actif';
-  } catch(e) {
-    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⚠ Erreur de chargement</div>';
-  }
+    if (tokens.length) { renderQRGrid(tokens); if(msg) msg.textContent = tokens.length+' QR code(s) actif(s)'; }
+    else { grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">Sélectionnez un client et un site puis cliquez "Générer le QR"</div>'; if(msg) msg.textContent='Aucun QR actif'; }
+  } catch(e) { if(grid) grid.innerHTML='<div style="color:var(--muted);font-size:.75rem">⚠ Erreur</div>'; }
 }
+
 
 function renderQRGrid(tokens) {
   var grid = document.getElementById('qr-grid');
