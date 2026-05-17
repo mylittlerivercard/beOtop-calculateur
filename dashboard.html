@@ -264,7 +264,8 @@
     <div class="tab"        id="tab-capteurs" onclick="switchTab('capteurs')">&#128225; Retours capteurs</div>
     <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">&#128203; Analyse QVCT</div>
     <div class="tab"        id="tab-realtime" onclick="switchTab('realtime')">&#128994; Disponibilité</div>
-    <div class="tab"        id="tab-companion" onclick="switchTab('companion')">&#128241; Compagnon</div>
+    <div class="tab"        id="tab-companion"    onclick="switchTab('companion')">&#128241; Compagnon</div>
+    <div class="tab"        id="tab-inscriptions" onclick="switchTab('inscriptions')">&#128273; Inscriptions</div>
   </div>
 
   <!-- ═══ STATS ═══ -->
@@ -806,6 +807,7 @@ function switchTab(tab){
   if(tab==='realtime'){startRealtimeRefresh();}
   else{stopRealtimeRefresh();}
   if(tab==='companion'){loadCompanion();}
+  if(tab==='inscriptions'){loadInscriptions();}
 }
 
 async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login';}
@@ -1877,6 +1879,165 @@ function showToast(msg) {
   setTimeout(function(){ t.remove(); }, 3000);
 }
 
+
+  <!-- ═══ VIEW INSCRIPTIONS QR ═══ -->
+  <div class="view" id="view-inscriptions">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.8rem">
+      <div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">&#128273; Inscriptions <em>Companion</em></div>
+        <div class="page-sub" style="margin-bottom:0" id="qr-msg">QR codes par site · Lien d'inscription unique par espace</div>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button id="gen-all-btn" onclick="generateAllTokens()" style="padding:.55rem 1.1rem;border-radius:9px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid rgba(200,169,110,.3);color:var(--gold);font-size:.75rem;cursor:pointer;font-family:inherit">
+          &#9889; Générer pour tous les sites
+        </button>
+      </div>
+    </div>
+
+    <!-- Explication -->
+    <div style="background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.4rem;font-size:.72rem;color:var(--muted);line-height:1.8">
+      <strong style="color:var(--cream)">Comment ça marche :</strong><br>
+      1. Cliquez "Générer" pour créer un lien unique par site &nbsp;·&nbsp;
+      2. Imprimez le QR code et collez-le sur le kiosk beOtop &nbsp;·&nbsp;
+      3. Les collaborateurs scannent et créent leur compte en 30 secondes &nbsp;·&nbsp;
+      4. Leur compte est automatiquement rattaché au bon site
+    </div>
+
+    <!-- Grille QR codes -->
+    <div id="qr-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem">
+      <div style="color:var(--muted);font-size:.75rem">Cliquez "Générer pour tous les sites" pour créer les liens</div>
+    </div>
+
+    <!-- Styles boutons -->
+    <style>
+      .btn-small {
+        padding:.4rem .7rem;border-radius:8px;font-size:.65rem;font-weight:500;
+        background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+        color:var(--cream);cursor:pointer;font-family:inherit;transition:all .15s;
+      }
+      .btn-small:hover { background:rgba(255,255,255,.14); }
+      .btn-small.btn-warn { border-color:rgba(200,169,110,.3);color:var(--gold); }
+    </style>
+  </div>
+
+
 </script>
+
+<!-- ═══ VIEW INSCRIPTIONS ═══ -->
+<script>
+/* === QR CODES & INSCRIPTIONS === */
+function switchTab_orig(tab) { return; } // handled by main switchTab
+
+async function loadInscriptions() {
+  var grid = document.getElementById('qr-grid');
+  var msg  = document.getElementById('qr-msg');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⏳ Chargement…</div>';
+  try {
+    var r = await fetch('/api/admin/sites/tokens', { credentials: 'include' });
+    var tokens = r.ok ? await r.json() : [];
+    renderQRGrid(tokens);
+    if (msg) msg.textContent = tokens.length + ' site(s) avec lien actif';
+  } catch(e) {
+    if (grid) grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem">⚠ Erreur de chargement</div>';
+  }
+}
+
+function renderQRGrid(tokens) {
+  var grid = document.getElementById('qr-grid');
+  if (!grid) return;
+  if (!tokens.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.75rem;grid-column:1/-1">Aucun lien actif — Cliquez "Générer" pour un site</div>';
+    return;
+  }
+  grid.innerHTML = tokens.map(function(t) {
+    var url = window.location.origin + '/join/' + t.token;
+    return '<div style="background:rgba(255,255,255,.08);border:1px solid rgba(200,190,180,.2);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:.8rem">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">'
+      + '<div>'
+      + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem">' + (t.client_nom||'') + '</div>'
+      + '<div style="font-size:.9rem;font-weight:500;color:var(--cream)">' + (t.site_nom||t.site_slug) + (t.ville ? ' · ' + t.ville : '') + '</div>'
+      + '<div style="font-size:.62rem;color:var(--muted);margin-top:.2rem">🙋 ' + (t.nb_inscrits||0) + ' inscription(s)</div>'
+      + '</div>'
+      + '<div id="qr-' + t.token + '" style="width:100px;height:100px;background:white;border-radius:8px;flex-shrink:0"></div>'
+      + '</div>'
+      + '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:.5rem .7rem;font-size:.6rem;color:var(--muted);word-break:break-all;cursor:pointer" onclick="copyLink('' + url + '')" title="Cliquer pour copier">'
+      + '🔗 ' + url
+      + '</div>'
+      + '<div style="display:flex;gap:.5rem">'
+      + '<button onclick="copyLink('' + url + '')" class="btn-small" style="flex:1">📋 Copier le lien</button>'
+      + '<button onclick="downloadQR('' + t.token + '','' + (t.site_nom||t.site_slug) + '')" class="btn-small" style="flex:1">⬇ Télécharger QR</button>'
+      + '<button onclick="regenToken(' + t.site_id + ')" class="btn-small btn-warn" style="flex:1">↺ Régénérer</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  // Générer les QR codes avec l'API QR native (canvas)
+  tokens.forEach(function(t) {
+    var url = window.location.origin + '/join/' + t.token;
+    setTimeout(function() { renderQRCode('qr-' + t.token, url); }, 100);
+  });
+}
+
+function renderQRCode(containerId, url) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  // Utiliser l'API QR code-free via canvas + qrcode.js en CDN (autorisé car même domaine non requis)
+  // On utilise une image via api.qrserver.com comme fallback propre
+  var img = document.createElement('img');
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=0d1f1f&margin=4';
+  img.style.cssText = 'width:100px;height:100px;border-radius:6px;display:block';
+  img.alt = 'QR Code';
+  img.onerror = function() {
+    container.innerHTML = '<div style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#666;text-align:center;background:white;border-radius:6px">QR<br>hors ligne</div>';
+  };
+  container.innerHTML = '';
+  container.appendChild(img);
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(function() {
+    showToastLocal('✓ Lien copié dans le presse-papiers');
+  }).catch(function() {
+    prompt('Copiez ce lien :', url);
+  });
+}
+
+function downloadQR(token, nom) {
+  var url = window.location.origin + '/join/' + token;
+  var imgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=0d1f1f&margin=10';
+  var a = document.createElement('a');
+  a.href = imgUrl;
+  a.download = 'beOtop-QR-' + nom.replace(/[^a-zA-Z0-9]/g,'_') + '.png';
+  a.target = '_blank';
+  a.click();
+}
+
+async function regenToken(siteId) {
+  if (!confirm('Régénérer le lien ? L\'ancien lien sera invalidé.')) return;
+  try {
+    var r = await fetch('/api/admin/sites/' + siteId + '/invite-token', { method: 'POST', credentials: 'include' });
+    if (r.ok) { showToastLocal('✓ Nouveau lien généré'); loadInscriptions(); }
+    else showToastLocal('⚠ Erreur lors de la génération');
+  } catch(e) { showToastLocal('⚠ Erreur réseau'); }
+}
+
+async function generateAllTokens() {
+  var btn = document.getElementById('gen-all-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Génération…'; }
+  try {
+    var r = await fetch('/api/admin/sites', { credentials: 'include' });
+    var sites = r.ok ? await r.json() : [];
+    for (var i = 0; i < sites.length; i++) {
+      await fetch('/api/admin/sites/' + sites[i].id + '/invite-token', { method: 'POST', credentials: 'include' });
+    }
+    showToastLocal('✓ Liens générés pour ' + sites.length + ' site(s)');
+    loadInscriptions();
+  } catch(e) { showToastLocal('⚠ Erreur'); }
+  if (btn) { btn.disabled = false; btn.textContent = '⚡ Générer pour tous les sites'; }
+}
+
+</script>
+
 </body>
 </html>
