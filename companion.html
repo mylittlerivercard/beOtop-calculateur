@@ -1531,6 +1531,20 @@ function loadDB() {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
       }
     });
+    // Merger contenu_ids depuis DEMO_DB dans les intervenants existants
+    if (stored.intervenants && stored.intervenants.length) {
+      stored.intervenants.forEach(function(inv) {
+        var demo = (DEMO_DB.intervenants || []).find(function(d){ return d.id === inv.id; });
+        if (demo) {
+          if (!inv.contenu_ids || Object.keys(inv.contenu_ids).length === 0) {
+            inv.contenu_ids = demo.contenu_ids;
+          }
+          if (!inv.specialite) inv.specialite = demo.specialite;
+          if (!inv.bio) inv.bio = demo.bio;
+          if (!inv.tags || !inv.tags.length) inv.tags = demo.tags;
+        }
+      });
+    }
     var dataKeys = ['points','checkins','reservations','cc_sessions','sessions'];
     dataKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
