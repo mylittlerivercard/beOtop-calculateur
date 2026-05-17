@@ -658,6 +658,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .grid-3, .atelier-grid, .audio-grid, .exercise-grid { grid-template-columns: repeat(2,1fr); }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -1269,6 +1270,29 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     </div>
   </div>
 
+  <!-- Courbe check-in -->
+  <div class="card" style="margin-bottom:1rem;padding:1.2rem 1.4rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem">
+      <div style="font-size:.6rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.15em">Courbe bien-être · Check-in</div>
+      <select id="checkin-periode" onchange="loadCheckinChart()" style="font-size:.7rem;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:.3rem .7rem;color:var(--text);cursor:pointer">
+        <option value="semaine">Cette semaine</option>
+        <option value="mois" selected>Ce mois</option>
+        <option value="annee">Cette année</option>
+      </select>
+    </div>
+    <div style="position:relative;height:200px">
+      <canvas id="checkin-chart"></canvas>
+      <div id="checkin-chart-empty" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--text-muted)">
+        Aucun check-in sur cette période
+      </div>
+    </div>
+    <div style="display:flex;gap:1.2rem;margin-top:.8rem;font-size:.62rem;font-weight:600">
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:12px;height:3px;background:#f5855a;border-radius:2px"></span>Énergie</span>
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:12px;height:3px;background:#00b4b4;border-radius:2px"></span>Stress</span>
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:12px;height:3px;background:#a855f7;border-radius:2px"></span>Concentration</span>
+    </div>
+  </div>
+
   <!-- KPIs semaine / mois / streak -->
   <div class="grid-3" style="gap:.7rem;margin-bottom:1rem">
     <div class="card" style="text-align:center;padding:1rem">
@@ -1417,7 +1441,7 @@ function switchView(id) {
   }
   if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
-  if (id === 'progres') renderProgres();
+  if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 100); }
   if (id === 'profil') renderProfil();
   if (id === 'admin') renderAdmin('ateliers');
 }
@@ -2086,6 +2110,161 @@ function buildNativeModal(firstTxt, durLabel, colorVar, hasSnd) {
 }
 
 
+
+
+
+/* ════════════════════════════════════════════
+   COURBE CHECK-IN
+════════════════════════════════════════════ */
+var _checkinChart = null;
+
+async function loadCheckinChart() {
+  var periode = document.getElementById('checkin-periode');
+  var p = periode ? periode.value : 'mois';
+  var emptyEl = document.getElementById('checkin-chart-empty');
+  var data = [];
+
+  // Essayer API
+  try {
+    var r = await fetch('/api/companion/checkin/history?periode=' + p, { credentials: 'include' });
+    if (r.ok) data = await r.json();
+  } catch(e) {}
+
+  // Fallback localStorage
+  if (!data.length) {
+    var now = new Date();
+    var debut;
+    if (p === 'semaine') {
+      debut = new Date(now); debut.setDate(now.getDate() - now.getDay() + 1);
+    } else if (p === 'annee') {
+      debut = new Date(now.getFullYear(), 0, 1);
+    } else {
+      debut = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    debut.setHours(0,0,0,0);
+    data = (DB.checkins || [])
+      .filter(function(c){ return new Date(c.date) >= debut; })
+      .sort(function(a,b){ return new Date(a.date) - new Date(b.date); })
+      .map(function(c){ return { date: c.date.slice(0,10), energie: c.energie, stress: c.stress, focus: c.focus }; });
+  }
+
+  var canvas = document.getElementById('checkin-chart');
+  if (!canvas) return;
+
+  if (!data.length) {
+    canvas.style.display = 'none';
+    if (emptyEl) { emptyEl.style.display = 'flex'; }
+    return;
+  }
+  canvas.style.display = 'block';
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Formater labels selon période
+  var labels = data.map(function(d) {
+    var dt = new Date(d.date + 'T12:00:00');
+    if (p === 'annee') return dt.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+    if (p === 'semaine') return dt.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric' });
+    return dt.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+  });
+
+  var energieData = data.map(function(d){ return d.energie; });
+  var stressData  = data.map(function(d){ return d.stress; });
+  var focusData   = data.map(function(d){ return d.focus; });
+
+  if (_checkinChart) { _checkinChart.destroy(); _checkinChart = null; }
+
+  var ctx = canvas.getContext('2d');
+  _checkinChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Énergie',
+          data: energieData,
+          borderColor: '#f5855a',
+          backgroundColor: 'rgba(245,133,90,.08)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#f5855a',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: 'Stress',
+          data: stressData,
+          borderColor: '#00b4b4',
+          backgroundColor: 'rgba(0,180,180,.06)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#00b4b4',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: 'Concentration',
+          data: focusData,
+          borderColor: '#a855f7',
+          backgroundColor: 'rgba(168,85,247,.06)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#a855f7',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.4,
+          fill: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(248,252,252,.97)',
+          borderColor: 'rgba(0,180,180,.25)',
+          borderWidth: 1,
+          titleColor: '#071515',
+          bodyColor: '#1a3535',
+          padding: 10,
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.dataset.label + ' : ' + ctx.parsed.y + '/10';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 1, max: 10,
+          ticks: {
+            stepSize: 1,
+            color: '#3a5858',
+            font: { size: 10, weight: '500' }
+          },
+          grid: {
+            color: 'rgba(0,0,0,.06)',
+          },
+          border: { dash: [3,3] }
+        },
+        x: {
+          ticks: {
+            color: '#3a5858',
+            font: { size: 10, weight: '500' },
+            maxRotation: 45,
+          },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
 
 
 /* ════════════════════════════════════════════
