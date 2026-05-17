@@ -578,7 +578,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   display: grid;
   background: var(--bg3);
   border-bottom: 1px solid var(--border2);
-  position: sticky; top: 0; z-index: 5;
+  position: sticky; top: 53px; z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 .cal-time-col {
   width: 52px; flex-shrink: 0;
@@ -863,7 +864,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <!-- Calendrier -->
-  <div style="overflow-x:auto">
+  <div id="cal-scroll-wrap" style="overflow-x:auto;overflow-y:visible">
     <div id="calendrier-wrap" style="min-width:700px"></div>
   </div>
 
