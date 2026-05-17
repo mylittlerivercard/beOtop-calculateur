@@ -578,8 +578,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   display: grid;
   background: var(--bg3);
   border-bottom: 1px solid var(--border2);
-  position: sticky; top: 53px; z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 .cal-time-col {
   width: 52px; flex-shrink: 0;
@@ -863,8 +861,11 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(90,138,106,.12);border:1px solid rgba(90,138,106,.3);vertical-align:middle;margin-right:3px"></span>Disponible</span>
   </div>
 
-  <!-- Calendrier -->
-  <div id="cal-scroll-wrap" style="overflow-x:auto;overflow-y:visible">
+  <!-- Calendrier : header fixe séparé + grille scrollable -->
+  <div id="cal-header-fixed" style="overflow-x:auto;border:1px solid var(--border2);border-radius:12px 12px 0 0;background:var(--bg3);position:sticky;top:53px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.1)">
+    <div id="cal-header-inner" style="min-width:700px"></div>
+  </div>
+  <div style="overflow-x:auto;border:1px solid var(--border2);border-top:none;border-radius:0 0 12px 12px">
     <div id="calendrier-wrap" style="min-width:700px"></div>
   </div>
 
@@ -1711,19 +1712,22 @@ async function renderCalendrier() {
 
   const nowMin = isToday ? (new Date().getHours() * 60 + new Date().getMinutes()) : -1;
 
-  /* Header */
+  /* Header séparé (sticky hors du wrapper overflow) */
   const colTpl = '52px ' + calAteliers.map(() => '1fr').join(' ');
-  let html = `<div class="cal-grid">
-    <div class="cal-header-row" style="grid-template-columns:${colTpl}">
-      <div class="cal-time-col" style="padding:.55rem .4rem"></div>`;
-
+  let headerHtml = `<div style="display:grid;grid-template-columns:${colTpl}">
+    <div class="cal-time-col" style="padding:.55rem .4rem"></div>`;
   calAteliers.forEach(a => {
     const statusCls = a.statut === 'libre' ? 'libre-now' : a.statut === 'occupe' ? 'occupe-now' : '';
-    html += `<div class="cal-at-header ${statusCls}">
+    headerHtml += `<div class="cal-at-header ${statusCls}">
       <span class="at-h-icon">${a.icon}</span>${a.nom}
     </div>`;
   });
-  html += '</div>';
+  headerHtml += '</div>';
+  const calHeaderEl = document.getElementById('cal-header-inner');
+  if (calHeaderEl) calHeaderEl.innerHTML = headerHtml;
+
+  /* Grille sans header */
+  let html = '<div class="cal-grid">';
 
   /* Lignes */
   slots.forEach(slotMin => {
@@ -1783,6 +1787,14 @@ async function renderCalendrier() {
   wrap.innerHTML = html;
 
   realtimeTimer = setTimeout(renderCalendrier, 30000);
+
+  /* Synchroniser scroll horizontal header ↔ grille */
+  const calWrap = document.querySelector('#calendrier-wrap').parentElement;
+  const calHeader = document.getElementById('cal-header-fixed');
+  if (calWrap && calHeader) {
+    calWrap.onscroll = function() { calHeader.scrollLeft = calWrap.scrollLeft; };
+    calHeader.onscroll = function() { calWrap.scrollLeft = calHeader.scrollLeft; };
+  }
 
   /* Scroll automatique à l'heure courante */
   if (isToday) {
