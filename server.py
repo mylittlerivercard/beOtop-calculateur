@@ -2312,7 +2312,7 @@ function doRegister() {{
       setTimeout(function(){{ window.location.href='/companion'; }}, 1500);
     }} else {{
       msg.className='msg err';
-      msg.textContent = res.d.error || 'Erreur lors de l'inscription.';
+      msg.textContent = res.d.error || 'Erreur lors de l\'inscription.';
       btn.disabled=false; btn.textContent='Créer mon compte →';
     }}
   }})
