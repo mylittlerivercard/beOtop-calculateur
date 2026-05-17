@@ -2876,16 +2876,54 @@ function openVideo(id) {
   var v = DB.videos.find(function(x){ return x.id === id; });
   if (!v) return;
   if (!v.url_video) {
-    showToast("URL video non renseignee — Modifiez depuis Administration");
+    showToast('URL video non renseignee — Modifiez depuis Administration');
     return;
   }
-  openModal(v.titre,
-    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
-    + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
-    + '<iframe src="' + v.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
-    + '</div>'
-    + '<div style="font-size:.78rem;color:var(--text)">' + (v.description||'') + '</div>'
-  );
+  var url = v.url_video.trim();
+  // Ajouter https:// si absent
+  if (url && !url.startsWith('http')) url = 'https://' + url;
+
+  // Détecter le type d URL
+  var isYoutube = url.indexOf('youtube.com') >= 0 || url.indexOf('youtu.be') >= 0;
+  var isVimeo   = url.indexOf('vimeo.com') >= 0;
+  var isEmbed   = url.indexOf('/embed/') >= 0 || url.indexOf('player.vimeo') >= 0;
+
+  // Convertir URLs YouTube normales en embed
+  if (isYoutube && !isEmbed) {
+    var ytId = '';
+    var m1 = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+    var m2 = url.match(/youtu\.be\/([^?]+)/);
+    if (m1) ytId = m1[1];
+    else if (m2) ytId = m2[1];
+    if (ytId) url = 'https://www.youtube.com/embed/' + ytId;
+  }
+  // Convertir URLs Vimeo normales en embed
+  if (isVimeo && !isEmbed) {
+    var vmId = url.match(/vimeo\.com\/(\d+)/);
+    if (vmId) url = 'https://player.vimeo.com/video/' + vmId[1];
+  }
+
+  var canEmbed = url.indexOf('/embed/') >= 0 || url.indexOf('player.vimeo') >= 0;
+  var bodyHtml = '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>';
+
+  if (canEmbed) {
+    bodyHtml += '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
+      + '<iframe src="' + url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+      + '</div>';
+  } else {
+    // URL directe (Pexels, etc.) : afficher un lien d ouverture
+    bodyHtml += '<div style="background:var(--surface2);border-radius:10px;padding:1.5rem;text-align:center;margin-bottom:1rem">'
+      + '<div style="font-size:2.5rem;margin-bottom:.8rem">🎬</div>'
+      + '<div style="font-size:.78rem;color:var(--text);margin-bottom:1rem">' + (v.description||'') + '</div>'
+      + '<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;padding:.65rem 1.4rem;background:linear-gradient(135deg,#f5855a,#e8641e);border-radius:10px;color:#fff;font-size:.78rem;font-weight:600;text-decoration:none">▶ Ouvrir la vidéo</a>'
+      + '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.6rem">S ouvrira dans un nouvel onglet</div>'
+      + '</div>'
+      + '<div style="font-size:.6rem;color:var(--text-muted);background:var(--surface);border-radius:8px;padding:.5rem .7rem">'
+      + '💡 Pour un lecteur intégré, utilisez une URL YouTube embed (youtube.com/embed/ID) ou Vimeo (player.vimeo.com/video/ID)'
+      + '</div>';
+  }
+  bodyHtml += '<div style="font-size:.78rem;color:var(--text)">' + (canEmbed ? v.description||'' : '') + '</div>';
+  openModal(v.titre, bodyHtml);
 }
 
 
