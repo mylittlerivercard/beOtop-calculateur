@@ -3702,20 +3702,53 @@ function getVoiceFR() {
       || null;
 }
 
+var _ttsAudio = null;
+var _ttsVoice = 'fr-FR-DeniseNeural';
+
 function speakStep(txt) {
-  if (!_voiceEnabled || !_speechSynth) return;
+  if (!_voiceEnabled) return;
+  stopSpeech();
+  // Fallback Web Speech si API indisponible
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ text: txt, voice: _ttsVoice })
+  }).then(function(r) {
+    if (!r.ok) throw new Error('TTS ' + r.status);
+    return r.blob();
+  }).then(function(blob) {
+    stopSpeech();
+    var url = URL.createObjectURL(blob);
+    _ttsAudio = new Audio(url);
+    _ttsAudio.volume = 0.92;
+    _ttsAudio.onended = function() { URL.revokeObjectURL(url); };
+    _ttsAudio.play().catch(function(e){ console.warn('Audio play:', e.message); });
+  }).catch(function(e) {
+    console.warn('TTS API indisponible, fallback Web Speech:', e.message);
+    _fallbackSpeak(txt);
+  });
+}
+
+function _fallbackSpeak(txt) {
+  if (!window.speechSynthesis) return;
   try {
-    _speechSynth.cancel();
     var utt = new SpeechSynthesisUtterance(txt);
-    utt.lang = 'fr-FR'; utt.rate = 0.88; utt.pitch = 1.0; utt.volume = 0.9;
-    var voice = getVoiceFR();
-    if (voice) utt.voice = voice;
-    _speechSynth.speak(utt);
-  } catch(e) { console.warn('Speech:', e.message); }
+    utt.lang = 'fr-FR'; utt.rate = 0.88; utt.volume = 0.9;
+    window.speechSynthesis.speak(utt);
+  } catch(e) {}
 }
 
 function stopSpeech() {
-  if (_speechSynth) { try { _speechSynth.cancel(); } catch(e){} }
+  if (_ttsAudio) {
+    try { _ttsAudio.pause(); _ttsAudio.src = ''; } catch(e){}
+    _ttsAudio = null;
+  }
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
+}
+
+function setTTSVoice(v) {
+  _ttsVoice = v;
 }
 
 function startExerciceBg(categorie) {
@@ -3762,8 +3795,13 @@ var _currentExCategorie = 'tms';
 
 function buildExerciceModal(firstTxt, durLabel, colorVar, categorie) {
   _currentExCategorie = categorie;
-  return '<div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap">'
+  return '<div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap;align-items:center">'
     + '<button id="voice-toggle" onclick="toggleVoice()" class="btn-secondary" style="font-size:.65rem;padding:.3rem .7rem">🔊 Voix activée</button>'
+    + '<select onchange="setTTSVoice(this.value)" style="font-size:.62rem;background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:.3rem .5rem;color:var(--text);cursor:pointer">'
+    + '<option value="fr-FR-DeniseNeural">Denise (FR)</option>'
+    + '<option value="fr-FR-HenriNeural">Henri (FR)</option>'
+    + '<option value="fr-FR-EloiseNeural">Éloïse (FR)</option>'
+    + '</select>'
     + '<button id="bg-toggle" onclick="toggleBg()" class="btn-secondary" style="font-size:.65rem;padding:.3rem .7rem">🎵 Fond sonore</button>'
     + '</div>'
     + '<div id="native-step" style="min-height:70px;background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7;transition:opacity .5s">' + firstTxt + '</div>'
