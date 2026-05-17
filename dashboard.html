@@ -2007,7 +2007,7 @@ function renderQRCode(containerId, url) {
 
 function copyLink(url) {
   navigator.clipboard.writeText(url).then(function() {
-    showToastLocal('✓ Lien copié dans le presse-papiers');
+    showToast('✓ Lien copié dans le presse-papiers');
   }).catch(function() {
     prompt('Copiez ce lien :', url);
   });
@@ -2027,9 +2027,9 @@ async function regenToken(siteId) {
   if (!confirm('Régénérer le lien ? L\'ancien lien sera invalidé.')) return;
   try {
     var r = await fetch('/api/admin/sites/' + siteId + '/invite-token', { method: 'POST', credentials: 'include' });
-    if (r.ok) { showToastLocal('✓ Nouveau lien généré'); loadInscriptions(); }
-    else showToastLocal('⚠ Erreur lors de la génération');
-  } catch(e) { showToastLocal('⚠ Erreur réseau'); }
+    if (r.ok) { showToast('✓ Nouveau lien généré'); loadInscriptions(); }
+    else showToast('⚠ Erreur lors de la génération');
+  } catch(e) { showToast('⚠ Erreur réseau'); }
 }
 
 async function generateAllTokens() {
@@ -2041,9 +2041,9 @@ async function generateAllTokens() {
     for (var i = 0; i < sites.length; i++) {
       await fetch('/api/admin/sites/' + sites[i].id + '/invite-token', { method: 'POST', credentials: 'include' });
     }
-    showToastLocal('✓ Liens générés pour ' + sites.length + ' site(s)');
+    showToast('✓ Liens générés pour ' + sites.length + ' site(s)');
     loadInscriptions();
-  } catch(e) { showToastLocal('⚠ Erreur'); }
+  } catch(e) { showToast('⚠ Erreur'); }
   if (btn) { btn.disabled = false; btn.textContent = '⚡ Générer pour tous les sites'; }
 }
 
