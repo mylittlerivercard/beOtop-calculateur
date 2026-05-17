@@ -1345,14 +1345,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <div class="toast" id="toast"></div>
 
 <script>
-'use strict';
 
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
 ════════════════════════════════════════════ */
-const DB_KEY = 'beotop_companion_db_v3';
+var DB_KEY = 'beotop_companion_db_v3';
 
-const DEMO_DB = {
+var DEMO_DB = {
   user: {
     prenom: 'Marie', nom: 'Roux',
     dept: 'Direction Marketing', site: 'BPCE — Paris 15e',
@@ -1607,7 +1606,7 @@ async function submitCheckin() {
    RÉSERVATION
 ════════════════════════════════════════════ */
 /* ── Méta-données ateliers côté client ── */
-const ATELIERS_META_COMPANION = {
+var ATELIERS_META_COMPANION = {
   'Méridienne P127':         { icon:'🪑', indication:'TMS · Position 127°' },
   'Cocon de Sieste':         { icon:'😴', indication:'Fatigue · Récupération profonde' },
   'Neurosonic Lit':          { icon:'🛏️', indication:'Relaxation · Vibrations sonores' },
@@ -1621,15 +1620,15 @@ const ATELIERS_META_COMPANION = {
   'Photobiomodulation':      { icon:'✨', indication:'TMS · Régénération' },
   'Lunettes Psio':           { icon:'👓', indication:'Déconnexion visuelle' },
 };
-const SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+var SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
 
 /* ════════════════════════════════════════════
    CALENDRIER DE RÉSERVATION
 ════════════════════════════════════════════ */
 
-const HEURES_DEBUT = 8, HEURES_FIN = 19;       // 08h → 19h
-const SLOT_MIN = 10;                             // granularité grille (10 min)
-const DUREES   = [10, 15, 20];
+var HEURES_DEBUT = 8, HEURES_FIN = 19;       // 08h → 19h
+var SLOT_MIN = 10;                             // granularité grille (10 min)
+var DUREES = [10, 15, 20];
 
 var calDate      = new Date();                   // date affichée
 var calAteliers  = [];                           // liste ateliers avec statut PIR
@@ -3564,7 +3563,7 @@ function renderCCStats() {
    AUDIO
 ════════════════════════════════════════════ */
 var currentAudio = null, playerTimer = null, playerSec = 0, playerTotalSec = 0, playerRunning = false;
-const CATS_AUDIO = [
+var CATS_AUDIO = [
   { id:'all', label:'Tout' }, { id:'sophrologie', label:'Sophrologie' },
   { id:'binaural', label:'Binaural' }, { id:'nsdr', label:'NSDR' },
   { id:'ciblé', label:'Ciblé' }, { id:'ambiance', label:'Ambiance' }
@@ -3572,27 +3571,25 @@ const CATS_AUDIO = [
 var currentAudioCat = 'all';
 
 function renderAudio() {
-  const catsEl = document.getElementById('audio-cats');
-  catsEl.innerHTML = CATS_AUDIO.map(c =>
-    `<div class="cat-pill${c.id === currentAudioCat ? ' active':''}" onclick="filterAudio('${c.id}')">${c.label}</div>`
-  ).join('');
-
-  const filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(a => a.categorie === currentAudioCat);
-  const grid = document.getElementById('audio-grid');
-  grid.innerHTML = filtered.map(a => {
-    const isPlaying = currentAudio && currentAudio.id === a.id;
-    const bg = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ciblé:'rgba(200,169,110,.1)', ambiance:'rgba(90,138,106,.1)' };
-    return `<div class="audio-card${isPlaying?' playing':''}" id="audio-card-${a.id}">
-      <div class="audio-thumb" style="background:${bg[a.categorie]||'var(--surface2)'}">${a.icon}</div>
-      <div class="audio-title">${a.titre}</div>
-      <div class="audio-meta">
-        <span>${a.categorie}</span>
-        <span class="audio-duration">${a.duree}</span>
-      </div>
-      <button class="audio-play-btn" onclick="playAudio(${a.id})">
-        ${isPlaying ? '⏸ En lecture' : '▶ Écouter'}
-      </button>
-    </div>`;
+  var catsEl = document.getElementById('audio-cats');
+  if (!catsEl) return;
+  catsEl.innerHTML = CATS_AUDIO.map(function(cat) {
+    var activeCls = cat.id === currentAudioCat ? ' active' : '';
+    return '<div class="cat-pill' + activeCls + '" onclick="filterAudio(&#39;' + cat.id + '&#39;)">' + cat.label + '</div>';
+  }).join('');
+  var filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(function(a){ return a.categorie === currentAudioCat; });
+  var grid = document.getElementById('audio-grid');
+  if (!grid) return;
+  var BG_AUDIO = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ambiance:'rgba(90,138,106,.1)' };
+  grid.innerHTML = filtered.map(function(a) {
+    var isPlaying = currentAudio && currentAudio.id === a.id;
+    var bgColor = BG_AUDIO[a.categorie] || 'var(--surface2)';
+    return '<div class="audio-card' + (isPlaying ? ' playing' : '') + '" id="audio-card-' + a.id + '">'
+      + '<div class="audio-thumb" style="background:' + bgColor + '">' + (a.icon || '🎵') + '</div>'
+      + '<div class="audio-title">' + a.titre + '</div>'
+      + '<div class="audio-meta"><span>' + a.categorie + '</span><span class="audio-duration">' + a.duree + '</span></div>'
+      + '<button class="audio-play-btn" onclick="playAudio(' + a.id + ')">' + (isPlaying ? '⏸ En lecture' : '▶ Écouter') + '</button>'
+      + '</div>';
   }).join('');
 }
 
@@ -3651,7 +3648,7 @@ function togglePlay() {
 /* ════════════════════════════════════════════
    EXERCICES
 ════════════════════════════════════════════ */
-const CATS_EX = [
+var CATS_EX = [
   { id:'all', label:'Tous' }, { id:'tms', label:'TMS' },
   { id:'etirements', label:'Étirements' }, { id:'workout', label:'Workout' },
   { id:'respiration', label:'Respiration' }, { id:'relaxation', label:'Relaxation' }
@@ -3659,24 +3656,26 @@ const CATS_EX = [
 var currentExCat = 'all';
 
 function renderExercices() {
-  const catsEl = document.getElementById('ex-cats');
-  catsEl.innerHTML = CATS_EX.map(c =>
-    `<div class="cat-pill${c.id === currentExCat ? ' active':''}" onclick="filterEx('${c.id}')">${c.label}</div>`
-  ).join('');
-
-  const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
-  document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
-    <div class="exercise-card" onclick="openExercice(${e.id})">
-      <div class="ex-header">
-        <div class="ex-icon" style="background:${e.bg}">${e.icon}</div>
-        <div>
-          <div class="ex-title">${e.titre}</div>
-          <div class="ex-target">${e.indication}</div>
-        </div>
-      </div>
-      <div class="ex-tags">${e.tags.map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
-      <div class="ex-duration">${e.description}</div>
-    </div>`).join('');
+  var catsEl = document.getElementById('ex-cats');
+  if (!catsEl) return;
+  catsEl.innerHTML = CATS_EX.map(function(cat) {
+    var activeCls = cat.id === currentExCat ? ' active' : '';
+    return '<div class="cat-pill' + activeCls + '" onclick="filterEx(&#39;' + cat.id + '&#39;)">' + cat.label + '</div>';
+  }).join('');
+  var filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(function(e){ return e.categorie === currentExCat; });
+  var grid = document.getElementById('exercise-grid');
+  if (!grid) return;
+  grid.innerHTML = filtered.map(function(e) {
+    var tagsHtml = (e.tags||[]).map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
+    return '<div class="exercise-card" onclick="openExercice(' + e.id + ')">'
+      + '<div class="ex-header">'
+      + '<div class="ex-icon" style="background:' + (e.bg||'var(--surface2)') + '">' + (e.icon||'⚡') + '</div>'
+      + '<div><div class="ex-title">' + e.titre + '</div><div class="ex-target">' + (e.indication||'') + '</div></div>'
+      + '</div>'
+      + '<div class="ex-tags">' + tagsHtml + '</div>'
+      + '<div class="ex-duration">' + (e.description||'') + '</div>'
+      + '</div>';
+  }).join('');
 }
 
 function filterEx(cat) {
