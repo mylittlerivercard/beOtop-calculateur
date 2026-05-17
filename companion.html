@@ -1428,7 +1428,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
 ════════════════════════════════════════════ */
-var DB_KEY = 'beotop_companion_db_v3';
+var DB_KEY = 'beotop_companion_db_v4';
 
 var DEMO_DB = {
   user: {
@@ -4805,11 +4805,7 @@ function renderIntervenants() {
         + nbContenus + ' contribution' + (nbContenus > 1 ? 's' : '') + ' dans le Companion'
         + '</span></div>'
       : '';
-    var nbContenus = contenus.length;
-    var badgeContenus = nbContenus
-      ? '<div style="margin-bottom:.5rem"><span style="font-size:.65rem;font-weight:700;color:var(--teal);background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;padding:.2rem .7rem">'
-        + nbContenus + ' contribution' + (nbContenus > 1 ? 's' : '') + ' dans le Companion</span></div>'
-      : '';
+
     var contenuHtml = contenus.length ? '<div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border)">'
       + '<div style="font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Contenus publiés</div>'
       + contenus.slice(0,3).map(function(c){ return '<div style="font-size:.65rem;color:var(--text-dim);padding:.2rem 0">' + c.icon + ' ' + c.label + '</div>'; }).join('')
