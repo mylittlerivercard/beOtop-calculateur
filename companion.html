@@ -1428,7 +1428,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 /* ════════════════════════════════════════════
    BASE DE DONNÉES LOCALE (localStorage)
 ════════════════════════════════════════════ */
-var DB_KEY = 'beotop_companion_db_v4';
+var DB_KEY = 'beotop_companion_db_v5';
 
 var DEMO_DB = {
   user: {
@@ -1493,6 +1493,7 @@ var DEMO_DB = {
       site_url: '',
       linkedin_url: '',
       tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
+      nb_contributions: 5,
       contenu_ids: { jeux: ['Deux choses à la fois','Attention fixe','Agir sous stress','Puzzle cognitif','Ne pas répondre'] },
       actif: true
     },
@@ -1508,6 +1509,7 @@ var DEMO_DB = {
       site_url: 'https://beotop.fr',
       linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
       tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
+      nb_contributions: 4,
       contenu_ids: { all: true },
       actif: true
     }
@@ -1539,6 +1541,7 @@ function loadDB() {
           if (!inv.contenu_ids || Object.keys(inv.contenu_ids).length === 0) {
             inv.contenu_ids = demo.contenu_ids;
           }
+          if (!inv.nb_contributions) inv.nb_contributions = demo.nb_contributions;
           if (!inv.specialite) inv.specialite = demo.specialite;
           if (!inv.bio) inv.bio = demo.bio;
           if (!inv.tags || !inv.tags.length) inv.tags = demo.tags;
@@ -2219,6 +2222,7 @@ var EXERCICE_STEPS = {
       site_url: '',
       linkedin_url: '',
       tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
+      nb_contributions: 5,
       contenu_ids: { jeux: ['Deux choses à la fois','Attention fixe','Agir sous stress','Puzzle cognitif','Ne pas répondre'] },
       actif: true
     },
@@ -2234,6 +2238,7 @@ var EXERCICE_STEPS = {
       site_url: 'https://beotop.fr',
       linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
       tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
+      nb_contributions: 4,
       contenu_ids: { all: true },
       actif: true
     }
@@ -4606,7 +4611,26 @@ function resetDB() {
    INIT
 ════════════════════════════════════════════ */
 (function(){
-  function _init(){ try{ renderDashboard(); renderCCStats(); }catch(e){ console.error('[beOtop]',e); } }
+  function _init(){
+    try{
+      // Charger l'utilisateur connecté depuis l'API
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(me){
+          if (me) {
+            // Mettre à jour DB.user avec les vraies données
+            var parts = (me.nom || '').trim().split(' ');
+            DB.user.prenom = parts[0] || me.nom || 'Utilisateur';
+            DB.user.nom = parts.slice(1).join(' ') || '';
+            DB.user.initiales = (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
+            saveDB(DB);
+          }
+          renderDashboard();
+          renderCCStats();
+        })
+        .catch(function(){ renderDashboard(); renderCCStats(); });
+    } catch(e){ console.error('[beOtop]',e); }
+  }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_init); else _init();
 })();
 </script>
@@ -4783,6 +4807,11 @@ function _getContenus(inv) {
       items.push({ icon:'🎵', label: a });
     });
   }
+  if (inv.contenu_ids.custom) {
+    inv.contenu_ids.custom.forEach(function(a){
+      items.push({ icon:'📌', label: a });
+    });
+  }
   return items;
 }
 
@@ -4816,14 +4845,11 @@ function renderIntervenants() {
     }).join('');
     var contenus = _getContenus(inv);
     // Badge contributions
-    var nbContenus = contenus.length;
+    var nbContenus = contenus.length || inv.nb_contributions || 0;
     var badgeContenus = nbContenus
-      ? '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem">'
-        + '<span style="font-size:.65rem;font-weight:700;color:var(--teal);background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;padding:.2rem .7rem">'
-        + nbContenus + ' contribution' + (nbContenus > 1 ? 's' : '') + ' dans le Companion'
-        + '</span></div>'
-      : '';
-
+      ? '<div style="margin-bottom:.5rem"><span style="font-size:.65rem;font-weight:700;color:var(--teal);background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;padding:.2rem .7rem">'
+        + nbContenus + ' contribution' + (nbContenus > 1 ? 's' : '') + ' dans le Companion</span></div>'
+      : ''
     var contenuHtml = contenus.length ? '<div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border)">'
       + '<div style="font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Contenus publiés</div>'
       + contenus.slice(0,3).map(function(c){ return '<div style="font-size:.65rem;color:var(--text-dim);padding:.2rem 0">' + c.icon + ' ' + c.label + '</div>'; }).join('')
