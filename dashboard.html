@@ -486,6 +486,90 @@
       <div class="am-heatmap-wrap" id="q-atelier-mood-heatmap"></div>
     </div>
   </div>
+
+  <!-- ══════════ COMPANION STATS ══════════ -->
+  <div style="margin-top:2rem;border-top:1px solid rgba(200,190,180,.2);padding-top:1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.6rem">
+      <div style="font-size:.75rem;font-weight:600;color:var(--cream);letter-spacing:.08em;text-transform:uppercase">
+        📱 Compagnon beOtop · Statistiques collaborateurs
+      </div>
+      <div id="companion-load-status" style="font-size:.6rem;color:var(--muted)">⏳ Chargement…</div>
+    </div>
+
+    <!-- KPIs Companion -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.2rem" id="companion-kpis">
+      <div class="qvct-score" style="--accent:#00b4b4">
+        <div class="qvct-score-lbl">Utilisateurs actifs</div>
+        <div class="qvct-big medium" id="cp-users-actifs">—</div>
+        <div class="qvct-sub" id="cp-users-sub">ce mois</div>
+      </div>
+      <div class="qvct-score" style="--accent:#f5855a">
+        <div class="qvct-score-lbl">Taux adoption</div>
+        <div class="qvct-big medium" id="cp-taux-adoption">—</div>
+        <div class="qvct-sub">utilisateurs / inscrits</div>
+      </div>
+      <div class="qvct-score" style="--accent:#a855f7">
+        <div class="qvct-score-lbl">Durée engagement</div>
+        <div class="qvct-big medium" id="cp-duree-totale">—</div>
+        <div class="qvct-sub">minutes CC + exercices</div>
+      </div>
+      <div class="qvct-score" style="--accent:#10b981">
+        <div class="qvct-score-lbl">Streak moyen</div>
+        <div class="qvct-big medium" id="cp-streak-moyen">—</div>
+        <div class="qvct-sub">jours consécutifs</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+
+      <!-- Bien-être par département -->
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(200,190,180,.2);border-radius:12px;padding:1.2rem">
+        <div style="font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem">
+          Bien-être moyen par département
+        </div>
+        <div id="cp-dept-wellbeing">
+          <div style="font-size:.7rem;color:var(--muted)">Aucune donnée</div>
+        </div>
+      </div>
+
+      <!-- Top activités -->
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(200,190,180,.2);border-radius:12px;padding:1.2rem">
+        <div style="font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem">
+          Top activités Compagnon
+        </div>
+        <div id="cp-top-activites">
+          <div style="font-size:.7rem;color:var(--muted)">Aucune donnée</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+
+      <!-- Tendance check-ins -->
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(200,190,180,.2);border-radius:12px;padding:1.2rem">
+        <div style="font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.8rem">
+          Tendance bien-être · check-ins hebdo
+        </div>
+        <div style="position:relative;height:120px">
+          <canvas id="cp-trend-canvas" style="display:block;width:100%;height:120px"></canvas>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:.6rem;font-size:.58rem;color:var(--muted)">
+          <span>— Énergie</span><span style="color:#00b4b4">— Stress inv.</span><span style="color:#a855f7">— Focus</span>
+        </div>
+      </div>
+
+      <!-- Alertes QVCT -->
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(200,190,180,.2);border-radius:12px;padding:1.2rem">
+        <div style="font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem">
+          Alertes QVCT Compagnon
+        </div>
+        <div id="cp-alertes">
+          <div style="font-size:.7rem;color:var(--muted)">Aucune alerte</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ═══ DISPONIBILITÉ TEMPS RÉEL ═══ -->
@@ -895,6 +979,7 @@ async function loadQvct(){
   var dk=await fetch('/api/stats?period='+qvctPeriod+'&site='+qvctSite,{credentials:'include'}).then(function(r){return r.json();}).catch(function(){return{};});
   var dc=await fetch('/api/sensors/stats?site_slug='+qvctSite+'&period='+qvctPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():{};}).catch(function(){return{};});
   _qD=dk;_qS=dc;renderQvct();
+  loadCompanionStats();
 }
 
 function renderQvct(){
@@ -1054,6 +1139,211 @@ function renderQvct(){
     '<div class="trend-row"><div class="trend-label">Mood dominant</div><div class="trend-val">'+(byMood.length?(MOOD_ICONS[byMood[0].mood]||'')+' '+byMood[0].mood:'—')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Fréquence / collaborateur</div><div class="trend-val">'+(nbSal>0&&total>0?(Math.round(total/nbSal*10)/10)+'x par période':'Effectif requis')+'</div></div>';
 }
+
+/* ══════════════════════════════════════════
+   COMPANION STATS DASHBOARD
+══════════════════════════════════════════ */
+
+async function loadCompanionStats() {
+  if (!qvctSite) return;
+  var statusEl = document.getElementById('companion-load-status');
+  try {
+    var r = await fetch('/api/companion/qvct?site_slug=' + qvctSite + '&period=' + qvctPeriod, { credentials: 'include' });
+    if (!r.ok) throw new Error('API ' + r.status);
+    var d = await r.json();
+    renderCompanionStats(d);
+    if (statusEl) statusEl.textContent = '✓ Données Companion · ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '⚠ Companion non disponible';
+    renderCompanionStats(null);
+  }
+}
+
+function renderCompanionStats(d) {
+  if (!d) {
+    ['cp-users-actifs','cp-taux-adoption','cp-duree-totale','cp-streak-moyen'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.textContent = '—';
+    });
+    return;
+  }
+
+  // KPIs
+  function setEl(id, val) { var el = document.getElementById(id); if(el) el.textContent = val; }
+
+  var usersActifs = d.users_actifs || 0;
+  var usersTotal  = d.users_total || 0;
+  var tauxAdoption = usersTotal > 0 ? Math.round(usersActifs / usersTotal * 100) + '%' : '—';
+  setEl('cp-users-actifs', usersActifs);
+  setEl('cp-users-sub', usersActifs + ' / ' + usersTotal + ' inscrits');
+  setEl('cp-taux-adoption', tauxAdoption);
+  setEl('cp-duree-totale', (d.duree_totale_min || 0) + ' min');
+  setEl('cp-streak-moyen', (d.streak_moyen || 0) + ' j');
+
+  // Couleur taux adoption
+  var tauxNum = usersTotal > 0 ? Math.round(usersActifs / usersTotal * 100) : 0;
+  var tauxEl = document.getElementById('cp-taux-adoption');
+  if (tauxEl) {
+    tauxEl.className = 'qvct-big ' + (tauxNum >= 50 ? 'good' : tauxNum >= 25 ? 'medium' : 'low');
+  }
+
+  // Bien-être par département
+  renderDeptWellbeing(d.dept_wellbeing || []);
+
+  // Top activités
+  renderTopActivites(d.top_activites || []);
+
+  // Tendance hebdo
+  renderTrendCanvas(d.trend_hebdo || []);
+
+  // Alertes
+  renderAlertes(d.alertes || []);
+}
+
+function renderDeptWellbeing(depts) {
+  var el = document.getElementById('cp-dept-wellbeing');
+  if (!el) return;
+  if (!depts.length) { el.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">Aucun check-in enregistré</div>'; return; }
+
+  function jauge(val, max, color) {
+    var pct = Math.round(val / max * 100);
+    return '<div style="display:flex;align-items:center;gap:.4rem">'
+      + '<div style="flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">'
+      + '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width .8s ease"></div>'
+      + '</div>'
+      + '<span style="font-size:.6rem;color:' + color + ';font-weight:600;width:22px;text-align:right">' + (Math.round(val * 10) / 10) + '</span>'
+      + '</div>';
+  }
+
+  el.innerHTML = depts.slice(0, 6).map(function(dept) {
+    var energie = dept.energie_moy || 0;
+    var stress  = dept.stress_moy  || 0;
+    var focus   = dept.focus_moy   || 0;
+    var score   = Math.round((energie + (10 - stress) + focus) / 3 * 10) / 10;
+    var scoreColor = score >= 7 ? '#10b981' : score >= 5 ? '#f5855a' : '#ef4444';
+
+    return '<div style="margin-bottom:.9rem">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">'
+      + '<span style="font-size:.72rem;color:var(--cream);font-weight:500">' + (dept.dept || 'N/A') + '</span>'
+      + '<span style="font-size:.6rem;color:var(--muted)">' + (dept.nb_checkins || 0) + ' check-in' + (dept.nb_checkins > 1 ? 's' : '') + '</span>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:40px 1fr;gap:.25rem;align-items:center">'
+      + '<span style="font-size:.55rem;color:var(--muted)">Énergie</span>' + jauge(energie, 10, '#f5855a')
+      + '<span style="font-size:.55rem;color:var(--muted)">Stress</span>'  + jauge(stress,  10, '#00b4b4')
+      + '<span style="font-size:.55rem;color:var(--muted)">Focus</span>'   + jauge(focus,   10, '#a855f7')
+      + '</div>'
+      + '<div style="text-align:right;margin-top:.2rem;font-size:.58rem;color:' + scoreColor + ';font-weight:600">Score global : ' + score + '/10</div>'
+      + '</div>';
+  }).join('<div style="height:1px;background:rgba(255,255,255,.07);margin:.4rem 0"></div>');
+}
+
+function renderTopActivites(activites) {
+  var el = document.getElementById('cp-top-activites');
+  if (!el) return;
+  if (!activites.length) { el.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">Aucune activité enregistrée</div>'; return; }
+
+  var icons = { checkin:'💓', cc:'🫀', audio:'🎧', exercice:'⚡', jeu:'🧠', reservation:'📅', sons:'🌿', video:'🎬' };
+  var labels = { checkin:'Check-in', cc:'Cohérence cardiaque', audio:'Audio', exercice:'Exercice', jeu:'Jeu cérébral', reservation:'Réservation', sons:'Sons immersifs', video:'Vidéo' };
+  var colors = { checkin:'#f5855a', cc:'#00b4b4', audio:'#a855f7', exercice:'#10b981', jeu:'#3b82f6', reservation:'#f59e0b', sons:'#6ee7b7', video:'#f87171' };
+
+  var maxPts = activites[0].total_points || 1;
+
+  el.innerHTML = activites.slice(0, 6).map(function(a) {
+    var pct = Math.round((a.total_points || 0) / maxPts * 100);
+    var color = colors[a.action] || '#f5855a';
+    return '<div style="margin-bottom:.7rem">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:.3rem">'
+      + '<span style="font-size:.7rem;color:var(--cream)">' + (icons[a.action] || '•') + ' ' + (labels[a.action] || a.action) + '</span>'
+      + '<span style="font-size:.65rem;color:var(--muted)">' + (a.nb_sessions || 0) + ' sessions · +' + (a.total_points || 0) + ' pts</span>'
+      + '</div>'
+      + '<div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">'
+      + '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width .8s ease"></div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderTrendCanvas(weeks) {
+  var canvas = document.getElementById('cp-trend-canvas');
+  if (!canvas || !weeks.length) return;
+  var W = canvas.offsetWidth || 400;
+  var H = 120;
+  var DPR = window.devicePixelRatio || 1;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  var PAD = { top:10, right:10, bottom:28, left:28 };
+  var cW = W - PAD.left - PAD.right;
+  var cH = H - PAD.top - PAD.bottom;
+  var n = weeks.length;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grille
+  ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;
+  [0, 5, 10].forEach(function(v) {
+    var y = PAD.top + cH - (v / 10) * cH;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '500 9px DM Sans,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(v, PAD.left - 4, y + 3);
+  });
+
+  function drawLine(key, color) {
+    ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    weeks.forEach(function(w, i) {
+      var x = PAD.left + (n > 1 ? i / (n-1) : 0.5) * cW;
+      var v = w[key] || 0;
+      var y = PAD.top + cH - (v / 10) * cH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    // Points
+    weeks.forEach(function(w, i) {
+      var x = PAD.left + (n > 1 ? i / (n-1) : 0.5) * cW;
+      var v = w[key] || 0;
+      var y = PAD.top + cH - (v / 10) * cH;
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+  }
+
+  drawLine('energie_moy', '#f5855a');
+  drawLine('stress_inv',  '#00b4b4');
+  drawLine('focus_moy',   '#a855f7');
+
+  // Labels X
+  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '500 9px DM Sans,sans-serif'; ctx.textAlign = 'center';
+  weeks.forEach(function(w, i) {
+    if (n > 6 && i % 2 !== 0) return;
+    var x = PAD.left + (n > 1 ? i / (n-1) : 0.5) * cW;
+    ctx.fillText('S' + (i + 1), x, H - 4);
+  });
+}
+
+function renderAlertes(alertes) {
+  var el = document.getElementById('cp-alertes');
+  if (!el) return;
+  if (!alertes.length) {
+    el.innerHTML = '<div style="display:flex;align-items:center;gap:.5rem;padding:.6rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px">'
+      + '<span style="font-size:1.1rem">✅</span>'
+      + '<span style="font-size:.72rem;color:#10b981">Aucune alerte QVCT · Tout va bien !</span>'
+      + '</div>';
+    return;
+  }
+  el.innerHTML = alertes.map(function(a) {
+    var bg = a.niveau === 'rouge' ? 'rgba(239,68,68,.08)' : 'rgba(245,133,90,.08)';
+    var border = a.niveau === 'rouge' ? 'rgba(239,68,68,.3)' : 'rgba(245,133,90,.3)';
+    var color = a.niveau === 'rouge' ? '#ef4444' : '#f5855a';
+    return '<div style="display:flex;align-items:flex-start;gap:.5rem;padding:.6rem;background:' + bg + ';border:1px solid ' + border + ';border-radius:8px;margin-bottom:.4rem">'
+      + '<span style="font-size:1rem;flex-shrink:0">' + (a.icone || '⚠') + '</span>'
+      + '<div><div style="font-size:.7rem;color:' + color + ';font-weight:600">' + (a.titre || '') + '</div>'
+      + '<div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">' + (a.detail || '') + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
 
 function renderQvctWeekBars(byDay){
   var bEl=document.getElementById('q-week-bars'),lEl=document.getElementById('q-week-labels'),sEl=document.getElementById('q-evolution-summary');
