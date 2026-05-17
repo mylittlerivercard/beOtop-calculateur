@@ -1405,9 +1405,15 @@ const DEMO_DB = {
 };
 
 function loadDB() {
-  const raw = localStorage.getItem(DB_KEY);
-  if (!raw) { saveDB(DEMO_DB); return DEMO_DB; }
-  try { return JSON.parse(raw); } catch(e) { return DEMO_DB; }
+  var raw = localStorage.getItem(DB_KEY);
+  if (!raw) { saveDB(DEMO_DB); return JSON.parse(JSON.stringify(DEMO_DB)); }
+  try {
+    var stored = JSON.parse(raw);
+    // Merger les clés manquantes depuis DEMO_DB (videos, points, etc.)
+    var keys = ['videos','points','checkins','reservations','cc_sessions','sessions'];
+    keys.forEach(function(k){ if (!stored[k]) stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || [])); });
+    return stored;
+  } catch(e) { return JSON.parse(JSON.stringify(DEMO_DB)); }
 }
 
 function saveDB(db) {
@@ -2491,343 +2497,263 @@ function gainNode(ctx, val) {
 function buildSonGraph(type, masterGain) {
   var ctx = getSonCtx();
   var nodes = [];
+  /* IMPORTANT : le LFO module un gain LOCAL, jamais masterGain.gain directement */
+
+  function localGainWithLfo(baseGain, lfoFreq, lfoDepth, lfoType) {
+    var g = gainNode(ctx, baseGain);
+    var o = lfo(ctx, lfoFreq, lfoType || 'sine');
+    var og = gainNode(ctx, lfoDepth);
+    o.connect(og); og.connect(g.gain);
+    g.connect(masterGain);
+    o.start();
+    nodes.push(o);
+    return g;
+  }
 
   if (type === 'foret') {
-    // Feuillage : bruit rose filtré + 3 couches de vent
+    var g1 = localGainWithLfo(0.5, 0.07, 0.2, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 6, 'pink'); src.loop = true;
-    var lp1 = lpFilter(ctx, 800);
-    var lp2 = lpFilter(ctx, 3000);
-    var mix = gainNode(ctx, 0.4);
-    // Vent grave modulé
-    var lfoWind = lfo(ctx, 0.06, 'sine');
-    var lfoG = gainNode(ctx, 0.25);
-    lfoWind.connect(lfoG); lfoG.connect(masterGain.gain);
-    // Vent aigu (feuilles)
+    var lp = lpFilter(ctx, 900);
+    src.connect(lp); lp.connect(g1);
+    // Feuilles
+    var g2 = localGainWithLfo(0.07, 0.22, 0.04, 'sine');
     var src2 = ctx.createBufferSource();
     src2.buffer = makeNoise(ctx, 3, 'white'); src2.loop = true;
     var hp = hpFilter(ctx, 4000);
-    var lp3 = lpFilter(ctx, 10000);
-    var gLeaves = gainNode(ctx, 0.06);
-    var lfoLeaves = lfo(ctx, 0.2, 'sine');
-    var lfoGL = gainNode(ctx, 0.04);
-    lfoLeaves.connect(lfoGL); lfoGL.connect(gLeaves.gain);
-    src2.connect(hp); hp.connect(lp3); lp3.connect(gLeaves); gLeaves.connect(masterGain);
-    src.connect(lp1); lp1.connect(lp2); lp2.connect(mix); mix.connect(masterGain);
-    src.start(); src2.start(); lfoWind.start(); lfoLeaves.start();
-    nodes = [src, src2, lfoWind, lfoLeaves];
+    src2.connect(hp); hp.connect(g2);
+    src.start(); src2.start();
+    nodes.push(src, src2);
 
   } else if (type === 'pluie') {
-    // Pluie dense : bruit blanc haute fréquence + gouttes + ruissellement
+    var g1 = localGainWithLfo(0.55, 0.13, 0.12, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 4, 'white'); src.loop = true;
-    var hp = hpFilter(ctx, 3000);
-    var lp = lpFilter(ctx, 12000);
-    var gRain = gainNode(ctx, 0.5);
+    var hp = hpFilter(ctx, 2500); var lp = lpFilter(ctx, 10000);
+    src.connect(hp); hp.connect(lp); lp.connect(g1);
     // Ruisseau grave
+    var g2 = localGainWithLfo(0.3, 0.10, 0.12, 'sine');
     var src2 = ctx.createBufferSource();
     src2.buffer = makeNoise(ctx, 5, 'pink'); src2.loop = true;
-    var lp2 = lpFilter(ctx, 600);
-    var gStream = gainNode(ctx, 0.3);
-    var lfoStream = lfo(ctx, 0.12, 'sine');
-    var lfoGS = gainNode(ctx, 0.15);
-    lfoStream.connect(lfoGS); lfoGS.connect(gStream.gain);
-    // Gouttes individuelles (clics périodiques)
+    var lp2 = lpFilter(ctx, 500);
+    src2.connect(lp2); lp2.connect(g2);
+    // Gouttes
     var dropInt = setInterval(function() {
       if (_sonActive !== 'pluie') { clearInterval(dropInt); return; }
       var ctx2 = getSonCtx();
       var o = ctx2.createOscillator(); o.type = 'sine';
-      o.frequency.value = 800 + Math.random() * 1200;
-      var e = gainNode(ctx2, 0);
+      o.frequency.value = 900 + Math.random() * 1400;
+      var e = gainNode(ctx2, 0.05);
       o.connect(e); e.connect(masterGain);
       var t = ctx2.currentTime;
-      e.gain.setValueAtTime(0.04, t);
-      e.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
-      o.start(t); o.stop(t + 0.09);
-    }, 80 + Math.random() * 120);
-    src.connect(hp); hp.connect(lp); lp.connect(gRain); gRain.connect(masterGain);
-    src2.connect(lp2); lp2.connect(gStream); gStream.connect(masterGain);
-    src.start(); src2.start(); lfoStream.start();
-    nodes = [src, src2, lfoStream, { stop: function(){ clearInterval(dropInt); } }];
+      e.gain.setValueAtTime(0.05, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      o.start(t); o.stop(t + 0.08);
+    }, 90 + Math.random() * 100);
+    src.start(); src2.start();
+    nodes.push(src, src2, { stop: function(){ clearInterval(dropInt); } });
 
   } else if (type === 'ocean') {
-    // Vagues : bruit brun + 2 LFOs croisés pour rythme organique
+    var g1 = localGainWithLfo(0.55, 0.14, 0.3, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 8, 'brown'); src.loop = true;
     var lp = lpFilter(ctx, 500);
-    var gBase = gainNode(ctx, 0.6);
-    // LFO vague principale (~7s)
-    var lfoWave1 = lfo(ctx, 0.14, 'sine');
-    var lfoG1 = gainNode(ctx, 0.35);
-    lfoWave1.connect(lfoG1); lfoG1.connect(gBase.gain);
-    // LFO vague secondaire (~4s décalée)
-    var lfoWave2 = lfo(ctx, 0.23, 'sine');
-    var lfoG2 = gainNode(ctx, 0.15);
-    lfoWave2.connect(lfoG2); lfoG2.connect(masterGain.gain);
-    // Écume (bruit blanc haute fréq)
+    src.connect(lp); lp.connect(g1);
+    var g2 = localGainWithLfo(0.05, 0.14, 0.03, 'sine');
     var src2 = ctx.createBufferSource();
     src2.buffer = makeNoise(ctx, 3, 'white'); src2.loop = true;
     var hp2 = hpFilter(ctx, 6000);
-    var gFoam = gainNode(ctx, 0.04);
-    var lfoFoam = lfo(ctx, 0.14, 'sine');
-    var lfoGF = gainNode(ctx, 0.03);
-    lfoFoam.connect(lfoGF); lfoGF.connect(gFoam.gain);
-    src2.connect(hp2); hp2.connect(gFoam); gFoam.connect(masterGain);
-    src.connect(lp); lp.connect(gBase); gBase.connect(masterGain);
-    src.start(); src2.start(); lfoWave1.start(); lfoWave2.start(); lfoFoam.start();
-    nodes = [src, src2, lfoWave1, lfoWave2, lfoFoam];
+    src2.connect(hp2); hp2.connect(g2);
+    src.start(); src2.start();
+    nodes.push(src, src2);
 
   } else if (type === 'cafe') {
-    // Café : murmures, vaisselle, fond chaud
+    var g1 = localGainWithLfo(0.35, 0.08, 0.06, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 5, 'pink'); src.loop = true;
-    var bp = bpFilter(ctx, 600, 0.5);
-    var lp = lpFilter(ctx, 2000);
-    var gBg = gainNode(ctx, 0.35);
-    // Tintement vaisselle (clics métalliques)
+    var bp = bpFilter(ctx, 600, 0.5); var lp = lpFilter(ctx, 2000);
+    src.connect(bp); bp.connect(lp); lp.connect(g1);
+    // Murmures
+    var g2 = localGainWithLfo(0.10, 0.07, 0.05, 'sine');
+    var src2 = ctx.createBufferSource();
+    src2.buffer = makeNoise(ctx, 4, 'pink'); src2.loop = true;
+    var bp2 = bpFilter(ctx, 400, 4);
+    src2.connect(bp2); bp2.connect(g2);
+    // Vaisselle
     var clinkInt = setInterval(function() {
       if (_sonActive !== 'cafe') { clearInterval(clinkInt); return; }
       if (Math.random() > 0.4) return;
       var ctx2 = getSonCtx();
-      var freqs = [1800, 2400, 3200];
-      freqs.forEach(function(f, fi) {
+      [1800, 2400, 3200].forEach(function(f, fi) {
         var o = ctx2.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-        var e = gainNode(ctx2, 0);
+        var e = gainNode(ctx2, 0.04);
         o.connect(e); e.connect(masterGain);
         var t = ctx2.currentTime + fi * 0.02;
-        e.gain.setValueAtTime(0.035, t);
-        e.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+        e.gain.setValueAtTime(0.04, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
         o.start(t); o.stop(t + 0.45);
       });
-    }, 3000 + Math.random() * 4000);
-    // Voix basse (formant murmure)
-    var src2 = ctx.createBufferSource();
-    src2.buffer = makeNoise(ctx, 4, 'pink'); src2.loop = true;
-    var bp2 = bpFilter(ctx, 400, 4);
-    var gVoix = gainNode(ctx, 0.12);
-    var lfoV = lfo(ctx, 0.08, 'sine');
-    var lfoGV = gainNode(ctx, 0.06);
-    lfoV.connect(lfoGV); lfoGV.connect(gVoix.gain);
-    src2.connect(bp2); bp2.connect(gVoix); gVoix.connect(masterGain);
-    src.connect(bp); bp.connect(lp); lp.connect(gBg); gBg.connect(masterGain);
-    src.start(); src2.start(); lfoV.start();
-    nodes = [src, src2, lfoV, { stop: function(){ clearInterval(clinkInt); } }];
+    }, 3500 + Math.random() * 4000);
+    src.start(); src2.start();
+    nodes.push(src, src2, { stop: function(){ clearInterval(clinkInt); } });
 
   } else if (type === 'orage') {
-    // Orage dramatique : tonnerre roulant + pluie intense + éclairs
+    var g1 = localGainWithLfo(0.65, 0.04, 0.45, 'sawtooth');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 6, 'brown'); src.loop = true;
     var lp = lpFilter(ctx, 200);
-    var gThunder = gainNode(ctx, 0.7);
-    var lfoT = lfo(ctx, 0.04, 'sawtooth');
-    var lfoGT = gainNode(ctx, 0.5);
-    lfoT.connect(lfoGT); lfoGT.connect(gThunder.gain);
+    src.connect(lp); lp.connect(g1);
     // Pluie intense
+    var gPluie = gainNode(ctx, 0.4); gPluie.connect(masterGain);
     var src2 = ctx.createBufferSource();
     src2.buffer = makeNoise(ctx, 3, 'white'); src2.loop = true;
     var hp2 = hpFilter(ctx, 2000);
-    var gPluie = gainNode(ctx, 0.4);
+    src2.connect(hp2); hp2.connect(gPluie);
     // Grondement grave
+    var gGrave = gainNode(ctx, 0.7); gGrave.connect(masterGain);
     var src3 = ctx.createBufferSource();
     src3.buffer = makeNoise(ctx, 8, 'brown'); src3.loop = true;
     var lp3 = lpFilter(ctx, 80);
-    var gGronde = gainNode(ctx, 0.8);
-    // Éclairs (boums périodiques)
+    src3.connect(lp3); lp3.connect(gGrave);
+    // Éclairs
     var boomInt = setInterval(function() {
       if (_sonActive !== 'orage') { clearInterval(boomInt); return; }
       if (Math.random() > 0.3) return;
       var ctx2 = getSonCtx();
-      var oscBoom = ctx2.createOscillator(); oscBoom.type = 'sawtooth';
-      oscBoom.frequency.value = 40 + Math.random() * 30;
-      var e = gainNode(ctx2, 0);
-      var lp4 = lpFilter(ctx2, 150);
-      oscBoom.connect(lp4); lp4.connect(e); e.connect(masterGain);
+      var o = ctx2.createOscillator(); o.type = 'sawtooth';
+      o.frequency.value = 35 + Math.random() * 25;
+      var e = gainNode(ctx2, 0.7);
+      var lpB = lpFilter(ctx2, 150);
+      o.connect(lpB); lpB.connect(e); e.connect(masterGain);
       var t = ctx2.currentTime;
-      e.gain.setValueAtTime(0.6, t);
-      e.gain.exponentialRampToValueAtTime(0.0001, t + 1.5 + Math.random());
-      oscBoom.start(t); oscBoom.stop(t + 2);
-    }, 4000 + Math.random() * 6000);
-    src.connect(lp); lp.connect(gThunder); gThunder.connect(masterGain);
-    src2.connect(hp2); hp2.connect(gPluie); gPluie.connect(masterGain);
-    src3.connect(lp3); lp3.connect(gGronde); gGronde.connect(masterGain);
-    src.start(); src2.start(); src3.start(); lfoT.start();
-    nodes = [src, src2, src3, lfoT, { stop: function(){ clearInterval(boomInt); } }];
+      e.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+      o.start(t); o.stop(t + 2);
+    }, 4000 + Math.random() * 5000);
+    src.start(); src2.start(); src3.start();
+    nodes.push(src, src2, src3, { stop: function(){ clearInterval(boomInt); } });
 
   } else if (type === 'clavier') {
-    // Clavier mécanique : claquements réalistes + fond de bureau
     var clickInt = setInterval(function() {
       if (_sonActive !== 'clavier') { clearInterval(clickInt); return; }
-      var burst = 1 + Math.floor(Math.random() * 6);
+      var burst = 1 + Math.floor(Math.random() * 5);
       for (var b = 0; b < burst; b++) {
-        (function(delay) {
-          setTimeout(function() {
-            var ctx2 = getSonCtx();
-            // Corps de la touche (click mécanique)
-            var o1 = ctx2.createOscillator(); o1.type = 'square';
-            o1.frequency.value = 600 + Math.random() * 800;
-            var e1 = gainNode(ctx2, 0);
-            o1.connect(e1); e1.connect(masterGain);
-            var t = ctx2.currentTime;
-            e1.gain.setValueAtTime(0.15, t);
-            e1.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-            o1.start(t); o1.stop(t + 0.06);
-            // Bruit de contact (texture)
-            var src = ctx2.createBufferSource();
-            src.buffer = makeNoise(ctx2, 0.1, 'white');
-            var hp = hpFilter(ctx2, 3000);
-            var e2 = gainNode(ctx2, 0.08);
-            src.connect(hp); hp.connect(e2); e2.connect(masterGain);
-            src.start(t); src.stop(t + 0.04);
-          }, delay);
-        })(b * (35 + Math.random() * 80));
+        (function(d){ setTimeout(function() {
+          var ctx2 = getSonCtx();
+          var o = ctx2.createOscillator(); o.type = 'square';
+          o.frequency.value = 700 + Math.random() * 700;
+          var e = gainNode(ctx2, 0.18);
+          var lp = lpFilter(ctx2, 3000);
+          o.connect(lp); lp.connect(e); e.connect(masterGain);
+          var t = ctx2.currentTime;
+          e.gain.setValueAtTime(0.18, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+          o.start(t); o.stop(t + 0.07);
+        }, d); })(b * (40 + Math.random() * 70));
       }
-    }, 150 + Math.random() * 200);
-    // Fond bureau (ventilation légère)
+    }, 180 + Math.random() * 220);
+    // Fond bureau
+    var gBg = gainNode(ctx, 0.06); gBg.connect(masterGain);
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 4, 'pink'); src.loop = true;
-    var bp = bpFilter(ctx, 300, 0.3);
-    var gBg = gainNode(ctx, 0.05);
-    src.connect(bp); bp.connect(gBg); gBg.connect(masterGain);
-    src.start();
-    nodes = [src, { stop: function(){ clearInterval(clickInt); } }];
+    var lp = lpFilter(ctx, 400);
+    src.connect(lp); lp.connect(gBg); src.start();
+    nodes.push(src, { stop: function(){ clearInterval(clickInt); } });
 
   } else if (type === 'creche') {
-    // Crèche : berceuse douce, respiration calme, gazouillis lointains
+    var g1 = localGainWithLfo(0.45, 0.22, 0.18, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 8, 'pink'); src.loop = true;
     var lp = lpFilter(ctx, 300);
-    var gBase = gainNode(ctx, 0.5);
-    // Respiration (LFO très lent)
-    var lfoBreath = lfo(ctx, 0.22, 'sine');
-    var lfoGB = gainNode(ctx, 0.2);
-    lfoBreath.connect(lfoGB); lfoGB.connect(gBase.gain);
-    // Mélodie berceuse (notes simples)
+    src.connect(lp); lp.connect(g1);
+    // Notes berceuse
     var noteInt = setInterval(function() {
       if (_sonActive !== 'creche') { clearInterval(noteInt); return; }
-      var notes = [262, 294, 330, 349, 392]; // do ré mi fa sol
-      var note = notes[Math.floor(Math.random() * notes.length)];
+      var notes = [262, 294, 330, 349, 392];
       var ctx2 = getSonCtx();
-      var o = ctx2.createOscillator(); o.type = 'sine'; o.frequency.value = note;
+      var o = ctx2.createOscillator(); o.type = 'sine';
+      o.frequency.value = notes[Math.floor(Math.random()*notes.length)];
       var e = gainNode(ctx2, 0);
       o.connect(e); e.connect(masterGain);
       var t = ctx2.currentTime;
-      e.gain.setValueAtTime(0, t);
-      e.gain.linearRampToValueAtTime(0.06, t + 0.1);
-      e.gain.linearRampToValueAtTime(0, t + 0.6);
-      o.start(t); o.stop(t + 0.7);
-    }, 800 + Math.random() * 1200);
-    // Gazouillis bébé (harmoniques douces)
-    var gazInt = setInterval(function() {
-      if (_sonActive !== 'creche') { clearInterval(gazInt); return; }
-      if (Math.random() > 0.3) return;
-      var ctx2 = getSonCtx();
-      var f = 600 + Math.random() * 400;
-      var o = ctx2.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      o.frequency.linearRampToValueAtTime(f * 1.2, ctx2.currentTime + 0.15);
-      var e = gainNode(ctx2, 0.04);
-      o.connect(e); e.connect(masterGain);
-      var t = ctx2.currentTime;
-      o.start(t); o.stop(t + 0.2);
-    }, 3000 + Math.random() * 5000);
-    src.connect(lp); lp.connect(gBase); gBase.connect(masterGain);
-    src.start(); lfoBreath.start();
-    nodes = [src, lfoBreath, { stop: function(){ clearInterval(noteInt); clearInterval(gazInt); } }];
+      e.gain.linearRampToValueAtTime(0.07, t + 0.12);
+      e.gain.linearRampToValueAtTime(0, t + 0.7);
+      o.start(t); o.stop(t + 0.75);
+    }, 900 + Math.random() * 1100);
+    src.start();
+    nodes.push(src, { stop: function(){ clearInterval(noteInt); } });
 
   } else if (type === 'noel') {
-    // Noël : feu crépitant + cloches + ambiance chaleureuse
+    var g1 = localGainWithLfo(0.5, 0.35, 0.2, 'sine');
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 5, 'pink'); src.loop = true;
-    var lp = lpFilter(ctx, 400);
-    var hp = hpFilter(ctx, 150);
-    var gFire = gainNode(ctx, 0.55);
-    var lfoFlame = lfo(ctx, 0.4, 'sine');
-    var lfoGF = gainNode(ctx, 0.25);
-    lfoFlame.connect(lfoGF); lfoGF.connect(gFire.gain);
-    // Crépitements (pops)
+    var hp = hpFilter(ctx, 150); var lp = lpFilter(ctx, 400);
+    src.connect(hp); hp.connect(lp); lp.connect(g1);
+    // Crépitements
     var cracInt = setInterval(function() {
       if (_sonActive !== 'noel') { clearInterval(cracInt); return; }
       var ctx2 = getSonCtx();
       var o = ctx2.createOscillator(); o.type = 'sawtooth';
-      o.frequency.value = 80 + Math.random() * 120;
-      var e = gainNode(ctx2, 0.2 + Math.random() * 0.3);
-      var lp2 = lpFilter(ctx2, 300);
+      o.frequency.value = 90 + Math.random() * 110;
+      var e = gainNode(ctx2, 0.15 + Math.random() * 0.25);
+      var lp2 = lpFilter(ctx2, 280);
       o.connect(lp2); lp2.connect(e); e.connect(masterGain);
       var t = ctx2.currentTime;
-      e.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      e.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
       o.start(t); o.stop(t + 0.05);
-    }, 300 + Math.random() * 500);
-    // Cloches harmoniques
+    }, 280 + Math.random() * 450);
+    // Cloches
     function ringBell() {
       if (_sonActive !== 'noel') return;
       var ctx2 = getSonCtx();
-      var harmonics = [880, 1320, 2200, 3080];
-      harmonics.forEach(function(f, i) {
+      [880, 1320, 2200].forEach(function(f, i) {
         var o = ctx2.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-        var e = gainNode(ctx2, 0.08 / (i + 1));
+        var e = gainNode(ctx2, 0.09 / (i+1));
         o.connect(e); e.connect(masterGain);
         var t = ctx2.currentTime;
         e.gain.setValueAtTime(e.gain.value, t);
-        e.gain.exponentialRampToValueAtTime(0.0001, t + 2.5 - i * 0.3);
-        o.start(t); o.stop(t + 2.6);
+        e.gain.exponentialRampToValueAtTime(0.0001, t + 2.2 - i * 0.3);
+        o.start(t); o.stop(t + 2.3);
       });
     }
-    var bellInt = setInterval(function(){ if(_sonActive==='noel') ringBell(); else clearInterval(bellInt); }, 5000 + Math.random() * 4000);
-    setTimeout(ringBell, 500);
-    src.connect(hp); hp.connect(lp); lp.connect(gFire); gFire.connect(masterGain);
-    src.start(); lfoFlame.start();
-    nodes = [src, lfoFlame, { stop: function(){ clearInterval(cracInt); clearInterval(bellInt); } }];
+    var bellInt = setInterval(function(){ if(_sonActive==='noel') ringBell(); else clearInterval(bellInt); }, 5000 + Math.random()*3000);
+    setTimeout(ringBell, 600);
+    src.start();
+    nodes.push(src, { stop: function(){ clearInterval(cracInt); clearInterval(bellInt); } });
 
   } else if (type === 'paques') {
-    // Pâques : oiseaux riches, brise printanière, ruisseau
+    var gBrise = gainNode(ctx, 0.3); gBrise.connect(masterGain);
     var src = ctx.createBufferSource();
     src.buffer = makeNoise(ctx, 6, 'pink'); src.loop = true;
-    var lp = lpFilter(ctx, 300);
-    var gBrise = gainNode(ctx, 0.3);
-    var lfoBrise = lfo(ctx, 0.07, 'sine');
-    var lfoGBr = gainNode(ctx, 0.12);
-    lfoBrise.connect(lfoGBr); lfoGBr.connect(gBrise.gain);
+    var lp = lpFilter(ctx, 280);
+    src.connect(lp); lp.connect(gBrise);
     // Ruisseau
+    var gRuiss = gainNode(ctx, 0.18); gRuiss.connect(masterGain);
     var src2 = ctx.createBufferSource();
     src2.buffer = makeNoise(ctx, 4, 'white'); src2.loop = true;
-    var bp2 = bpFilter(ctx, 1200, 0.4);
-    var lp2 = lpFilter(ctx, 3000);
-    var gRuiss = gainNode(ctx, 0.15);
-    src2.connect(bp2); bp2.connect(lp2); lp2.connect(gRuiss); gRuiss.connect(masterGain);
-    // Oiseaux variés (3 espèces)
-    function makeChirp(baseFreq, pattern) {
+    var bp2 = bpFilter(ctx, 1200, 0.4); var lp2 = lpFilter(ctx, 3000);
+    src2.connect(bp2); bp2.connect(lp2); lp2.connect(gRuiss);
+    // Oiseaux
+    function chirp(baseFreq, pattern) {
       if (_sonActive !== 'paques') return;
       var ctx2 = getSonCtx();
-      pattern.forEach(function(note, i) {
+      pattern.forEach(function(n, i) {
         var o = ctx2.createOscillator(); o.type = 'sine';
-        o.frequency.setValueAtTime(baseFreq * note[0], ctx2.currentTime + note[2]);
-        o.frequency.linearRampToValueAtTime(baseFreq * note[1], ctx2.currentTime + note[2] + 0.06);
+        o.frequency.setValueAtTime(baseFreq * n[0], ctx2.currentTime + n[2]);
+        o.frequency.linearRampToValueAtTime(baseFreq * n[1], ctx2.currentTime + n[2] + 0.07);
         var e = gainNode(ctx2, 0);
         o.connect(e); e.connect(masterGain);
-        var t = ctx2.currentTime + note[2];
-        e.gain.setValueAtTime(0, t);
-        e.gain.linearRampToValueAtTime(0.08, t + 0.02);
-        e.gain.linearRampToValueAtTime(0, t + 0.12);
-        o.start(t); o.stop(t + 0.14);
+        var t = ctx2.currentTime + n[2];
+        e.gain.linearRampToValueAtTime(0.09, t + 0.02);
+        e.gain.linearRampToValueAtTime(0, t + 0.13);
+        o.start(t); o.stop(t + 0.15);
       });
     }
-    var bird1Int = setInterval(function(){
-      if(_sonActive!=='paques'){clearInterval(bird1Int);return;}
-      makeChirp(2400, [[1,1.3,0],[0.9,1.1,0.15],[1.1,1.4,0.3]]);
-    }, 2000 + Math.random() * 3000);
-    var bird2Int = setInterval(function(){
-      if(_sonActive!=='paques'){clearInterval(bird2Int);return;}
-      makeChirp(1800, [[1.2,1,0],[1,0.8,0.12],[1.1,1.3,0.24],[0.9,1.1,0.36]]);
-    }, 3500 + Math.random() * 4000);
-    var bird3Int = setInterval(function(){
-      if(_sonActive!=='paques'){clearInterval(bird3Int);return;}
-      makeChirp(3200, [[1,1.2,0],[1.1,0.9,0.08]]);
-    }, 1500 + Math.random() * 2000);
-    src.connect(lp); lp.connect(gBrise); gBrise.connect(masterGain);
-    src.start(); src2.start(); lfoBrise.start();
-    nodes = [src, src2, lfoBrise, { stop: function(){ clearInterval(bird1Int); clearInterval(bird2Int); clearInterval(bird3Int); } }];
+    var b1 = setInterval(function(){ if(_sonActive!=='paques'){clearInterval(b1);return;} chirp(2400,[[1,1.3,0],[0.9,1.1,0.16],[1.1,1.4,0.32]]); }, 2200+Math.random()*2500);
+    var b2 = setInterval(function(){ if(_sonActive!=='paques'){clearInterval(b2);return;} chirp(1800,[[1.2,1,0],[1,0.8,0.13],[1.1,1.3,0.26]]); }, 3500+Math.random()*3500);
+    var b3 = setInterval(function(){ if(_sonActive!=='paques'){clearInterval(b3);return;} chirp(3200,[[1,1.2,0],[1.1,0.9,0.09]]); }, 1600+Math.random()*1800);
+    src.start(); src2.start();
+    nodes.push(src, src2, { stop: function(){ clearInterval(b1); clearInterval(b2); clearInterval(b3); } });
   }
   return nodes;
 }
+
 
 function playSon(type) {
 
@@ -2835,8 +2761,8 @@ function playSon(type) {
   var ctx = getSonCtx();
   _sonGain = ctx.createGain();
   var vol = (document.getElementById('son-volume') ? +document.getElementById('son-volume').value : 60) / 100 * 0.8;
-  _sonGain.gain.setValueAtTime(0, ctx.currentTime);
-  _sonGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 1.5);
+  _sonGain.gain.setValueAtTime(vol * 0.3, ctx.currentTime);
+  _sonGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.5);
   _sonGain.connect(ctx.destination);
   _sonNodes[type] = buildSonGraph(type, _sonGain);
   _sonActive = type;
