@@ -1439,16 +1439,25 @@ def companion_save_checkin():
 @login_required
 def companion_checkin_history():
     user_id = session.get('user_id')
-    limit   = int(request.args.get('limit', 30))
+    periode = request.args.get('periode', 'mois')
+    from datetime import date as dt, timedelta
+    today = dt.today()
+    if periode == 'semaine':
+        date_debut = today - timedelta(days=today.weekday())
+    elif periode == 'annee':
+        date_debut = dt(today.year, 1, 1)
+    else:
+        date_debut = dt(today.year, today.month, 1)
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT date::text, energie, stress, focus, created_at
+            cur.execute(
+                """
+                SELECT date::text, energie, stress, focus
                 FROM companion_checkins
-                WHERE user_id=%s
-                ORDER BY date DESC
-                LIMIT %s
-            """, [user_id, limit])
+                WHERE user_id=%s AND date >= %s
+                ORDER BY date ASC
+                """,
+                [user_id, date_debut.isoformat()])
             rows = cur.fetchall()
     return jsonify([serialize_row(r) for r in rows])
 
