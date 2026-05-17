@@ -2375,7 +2375,8 @@ def auth_register():
             cur.execute("UPDATE site_invite_tokens SET nb_inscrits=nb_inscrits+1 WHERE id=%s", [tok['token_id']])
             conn.commit()
 
-    # Auto-login après inscription
+    # Auto-login après inscription - effacer toute session existante
+    session.clear()
     session['user_id'] = user_id
     session['role'] = 'client'
     session['client_id'] = tok['client_id']
