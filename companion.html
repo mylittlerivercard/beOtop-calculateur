@@ -1071,6 +1071,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="btn-primary" onclick="openAddAudio()">+ Audio</button>
     <button class="btn-primary" onclick="openAddExercice()">+ Exercice</button>
     <button class="btn-secondary" onclick="exportDB()">⬇ Exporter JSON</button>
+    <button class="btn-primary" onclick="openAddIntervenant()">+ Intervenant</button>
     <button class="btn-ghost" onclick="resetDB()">↺ Réinitialiser démo</button>
   </div>
 
@@ -1079,6 +1080,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('audios',this)">Audios</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('videos',this)">Vidéos</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
   </div>
 
@@ -1471,6 +1473,13 @@ var DEMO_DB = {
   reservations: [],
   cc_sessions: [],
   checkins: [],
+  videos: [
+    { id:1, titre:'Sophrologie guidée 10 min', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Séance complète de sophrologie filmée · Respiration et détente', url_video:'' },
+    { id:2, titre:'Yoga bureau debout', categorie:'yoga', duree:'12 min', icon:'🧘', description:'Postures debout adaptées au bureau · Sans matériel', url_video:'' },
+    { id:3, titre:'Yoga bureau assis', categorie:'yoga', duree:'8 min', icon:'💆', description:'Étirements assis · Pour libérer les tensions du travail', url_video:'' },
+    { id:4, titre:'Cervicales & épaules guidé', categorie:'tms', duree:'7 min', icon:'🦒', description:'Programme TMS filmé · Cervicales, épaules, nuque', url_video:'' },
+    { id:5, titre:'Mindfulness 5 min', categorie:'mindfulness', duree:'5 min', icon:'🌿', description:'Méditation de pleine conscience filmée · Ancrage rapide', url_video:'' },
+  ],
   intervenants: [
     {
       id: 1,
@@ -1483,16 +1492,23 @@ var DEMO_DB = {
       site_url: '',
       linkedin_url: '',
       tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
-      contenu_associe: 'Défis cognitifs · 5 séances audio guidées',
+      contenu_ids: { jeux: ['Deux choses à la fois','Attention fixe','Agir sous stress','Puzzle cognitif','Ne pas répondre'] },
+      actif: true
+    },
+    {
+      id: 2,
+      nom: 'Nathalie Hergue-Jalenques',
+      titre: 'Fondatrice de beOtop · Experte QVCT',
+      specialite: 'Bien-être au travail · Espaces ré-énergie · Prévention RPS',
+      bio: "Nathalie Hergue-Jalenques est la fondatrice de beOtop, concept d'espaces de récupération phygitaux déployés dans les grandes entreprises. Ancienne cadre en ressources humaines, elle a développé une approche innovante combinant neurosciences, design et technologie pour permettre aux collaborateurs de recharger leurs ressources cognitives et émotionnelles au cœur de leur environnement de travail.",
+      photo_initiales: 'NH',
+      photo_couleur: '#f5855a',
+      site_url: 'https://beotop.fr',
+      linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
+      tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
+      contenu_ids: { all: true },
       actif: true
     }
-  ],
-  videos: [
-    { id:1, titre:'Sophrologie guidée 10 min', categorie:'sophrologie', duree:'10 min', icon:'🌅', description:'Séance complète de sophrologie filmée · Respiration et détente', url_video:'' },
-    { id:2, titre:'Yoga bureau debout', categorie:'yoga', duree:'12 min', icon:'🧘', description:'Postures debout adaptées au bureau · Sans matériel', url_video:'' },
-    { id:3, titre:'Yoga bureau assis', categorie:'yoga', duree:'8 min', icon:'💆', description:'Étirements assis · Pour libérer les tensions du travail', url_video:'' },
-    { id:4, titre:'Cervicales & épaules guidé', categorie:'tms', duree:'7 min', icon:'🦒', description:'Programme TMS filmé · Cervicales, épaules, nuque', url_video:'' },
-    { id:5, titre:'Mindfulness 5 min', categorie:'mindfulness', duree:'5 min', icon:'🌿', description:'Méditation de pleine conscience filmée · Ancrage rapide', url_video:'' },
   ],
 };
 
@@ -2173,6 +2189,36 @@ var EXERCICE_STEPS = {
     { t:75,  txt:"Haussez les epaules jusqu'aux oreilles... 5 secondes... Lacher tout d un coup." },
     { t:90,  txt:"Plissez le visage entier... 5 secondes... Relacher. Corps entierement detendu." },
     { t:600, txt:"Reprenez doucement contact avec votre environnement. Ouvrez les yeux." },
+  ],
+  intervenants: [
+    {
+      id: 1,
+      nom: 'Laurent Thiry',
+      titre: 'Expert en neurosciences cognitives',
+      specialite: 'Défis cognitifs · Performance mentale · Gestion du stress',
+      bio: "Laurent Thiry est expert en neurosciences appliquées et en développement des performances cognitives. Il accompagne dirigeants et équipes dans l'optimisation de leurs ressources mentales à travers des approches validées scientifiquement.",
+      photo_initiales: 'LT',
+      photo_couleur: '#00b4b4',
+      site_url: '',
+      linkedin_url: '',
+      tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
+      contenu_ids: { jeux: ['Deux choses à la fois','Attention fixe','Agir sous stress','Puzzle cognitif','Ne pas répondre'] },
+      actif: true
+    },
+    {
+      id: 2,
+      nom: 'Nathalie Hergue-Jalenques',
+      titre: 'Fondatrice de beOtop · Experte QVCT',
+      specialite: 'Bien-être au travail · Espaces ré-énergie · Prévention RPS',
+      bio: "Nathalie Hergue-Jalenques est la fondatrice de beOtop, concept d'espaces de récupération phygitaux déployés dans les grandes entreprises. Ancienne cadre en ressources humaines, elle a développé une approche innovante combinant neurosciences, design et technologie pour permettre aux collaborateurs de recharger leurs ressources cognitives et émotionnelles au cœur de leur environnement de travail.",
+      photo_initiales: 'NH',
+      photo_couleur: '#f5855a',
+      site_url: 'https://beotop.fr',
+      linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
+      tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
+      contenu_ids: { all: true },
+      actif: true
+    }
   ],
 };
 
@@ -4183,7 +4229,10 @@ function renderAdmin(tab) {
       <td><button class="btn-ghost" onclick="editAtelier(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAtelier(${a.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
-  } else if (tab === 'audios') {
+  }   if (tab === 'intervenants') {
+    el.innerHTML = renderAdminIntervenants();
+  }
+else if (tab === 'audios') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Statut</th><th>Action</th>
     </tr></thead><tbody>${DB.audios.map(a => `<tr>
@@ -4572,7 +4621,143 @@ function playDefiThiry(url, titre) {
     }
   }, 400);
 }
+</script>
+
+
+<script>
+/* ═══ ADMIN INTERVENANTS ═══ */
+
+function renderAdminIntervenants() {
+  var list = DB.intervenants || [];
+  var rows = list.map(function(inv) {
+    return '<tr>'
+      + '<td>' + inv.id + '</td>'
+      + '<td><strong>' + inv.nom + '</strong></td>'
+      + '<td style="font-size:.7rem;color:var(--text-dim)">' + (inv.titre||'') + '</td>'
+      + '<td><div style="display:flex;gap:.3rem;flex-wrap:wrap">' + (inv.tags||[]).map(function(t){ return '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(0,180,180,.1);border-radius:10px;color:var(--teal)">' + t + '</span>'; }).join('') + '</div></td>'
+      + '<td><button class="btn-ghost" onclick="editIntervenant(' + inv.id + ')">✎</button>'
+      + ' <button class="btn-ghost" onclick="deleteIntervenant(' + inv.id + ')" style="color:#e8641e">✕</button></td>'
+      + '</tr>';
+  }).join('');
+  return '<table><thead><tr><th>ID</th><th>Nom</th><th>Titre</th><th>Tags</th><th>Actions</th></tr></thead>'
+    + '<tbody>' + (rows || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun intervenant</td></tr>') + '</tbody></table>';
+}
+
+function openAddIntervenant() {
+  openModal('Nouvel intervenant', _intervenantForm(null));
+}
+
+function editIntervenant(id) {
+  var inv = (DB.intervenants||[]).find(function(i){ return i.id === id; });
+  if (!inv) return;
+  openModal('Modifier ' + inv.nom, _intervenantForm(inv));
+}
+
+function _intervenantForm(inv) {
+  var v = inv || { id:0, nom:'', titre:'', specialite:'', bio:'', photo_initiales:'', photo_couleur:'#00b4b4', site_url:'', linkedin_url:'', tags:[], contenu_ids:{}, actif:true };
+  return '<div style="display:flex;flex-direction:column;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Nom complet *</label>'
+    + '<input id="f-inv-nom" value="' + v.nom + '" placeholder="Laurent Thiry" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Titre / Fonction *</label>'
+    + '<input id="f-inv-titre" value="' + v.titre + '" placeholder="Expert en neurosciences" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Spécialité</label>'
+    + '<input id="f-inv-spec" value="' + (v.specialite||'') + '" placeholder="Neurosciences · Performance" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Bio</label>'
+    + '<textarea id="f-inv-bio" rows="4" placeholder="Présentation de l&apos;intervenant..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.82rem;resize:vertical">' + (v.bio||'') + '</textarea></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Initiales</label>'
+    + '<input id="f-inv-init" value="' + (v.photo_initiales||'') + '" placeholder="LT" maxlength="2" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Couleur avatar</label>'
+    + '<input id="f-inv-color" type="color" value="' + (v.photo_couleur||'#00b4b4') + '" style="width:100%;height:38px;margin-top:.3rem;border-radius:9px;border:1px solid var(--border2);cursor:pointer"></div>'
+    + '</div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Site web</label>'
+    + '<input id="f-inv-site" value="' + (v.site_url||'') + '" placeholder="https://..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">LinkedIn</label>'
+    + '<input id="f-inv-linkedin" value="' + (v.linkedin_url||'') + '" placeholder="https://linkedin.com/in/..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Tags (séparés par des virgules)</label>'
+    + '<input id="f-inv-tags" value="' + (v.tags||[]).join(', ') + '" placeholder="Yoga, Sophrologie, TMS" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Contenus associés (noms séparés par virgule)</label>'
+    + '<input id="f-inv-contenus" value="' + Object.values(v.contenu_ids||{}).flat().join(', ') + '" placeholder="Séance yoga 10 min, Exercice étirements..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:.6rem;margin-top:.5rem">'
+    + '<button class="btn-secondary" onclick="closeModal()">Annuler</button>'
+    + '<button class="btn-primary" onclick="saveIntervenant(' + v.id + ')">✓ Enregistrer</button>'
+    + '</div>';
+}
+
+function saveIntervenant(existingId) {
+  var nom   = document.getElementById('f-inv-nom').value.trim();
+  var titre = document.getElementById('f-inv-titre').value.trim();
+  if (!nom || !titre) { showToast('Nom et titre requis'); return; }
+  var tags = document.getElementById('f-inv-tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  var contenus = document.getElementById('f-inv-contenus').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  if (!DB.intervenants) DB.intervenants = [];
+  if (existingId) {
+    var inv = DB.intervenants.find(function(i){ return i.id === existingId; });
+    if (inv) {
+      inv.nom = nom; inv.titre = titre;
+      inv.specialite = document.getElementById('f-inv-spec').value.trim();
+      inv.bio = document.getElementById('f-inv-bio').value.trim();
+      inv.photo_initiales = document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2);
+      inv.photo_couleur = document.getElementById('f-inv-color').value;
+      inv.site_url = document.getElementById('f-inv-site').value.trim();
+      inv.linkedin_url = document.getElementById('f-inv-linkedin').value.trim();
+      inv.tags = tags;
+      inv.contenu_ids = contenus.length ? { custom: contenus } : {};
+    }
+  } else {
+    var newId = Math.max(0, ...(DB.intervenants.map(function(i){ return i.id; }))) + 1;
+    DB.intervenants.push({
+      id: newId, nom: nom, titre: titre,
+      specialite: document.getElementById('f-inv-spec').value.trim(),
+      bio: document.getElementById('f-inv-bio').value.trim(),
+      photo_initiales: document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2) || nom.slice(0,2).toUpperCase(),
+      photo_couleur: document.getElementById('f-inv-color').value,
+      site_url: document.getElementById('f-inv-site').value.trim(),
+      linkedin_url: document.getElementById('f-inv-linkedin').value.trim(),
+      tags: tags,
+      contenu_ids: contenus.length ? { custom: contenus } : {},
+      actif: true
+    });
+  }
+  saveDB(DB);
+  closeModal();
+  showToast('✓ Intervenant enregistré');
+  renderAdmin('intervenants');
+}
+
+function deleteIntervenant(id) {
+  if (!confirm('Supprimer cet intervenant ?')) return;
+  DB.intervenants = (DB.intervenants||[]).filter(function(i){ return i.id !== id; });
+  saveDB(DB);
+  showToast('Intervenant supprimé');
+  renderAdmin('intervenants');
+}
+
 /* ═══ INTERVENANTS ═══ */
+function _getContenus(inv) {
+  var items = [];
+  if (!inv.contenu_ids) return items;
+  if (inv.contenu_ids.all) {
+    // Nathalie : créatrice de tout le contenu beOtop
+    items.push({ icon:'🪑', label:'Tous les ateliers beOtop' });
+    items.push({ icon:'💓', label:'Protocoles Cohérence Cardiaque' });
+    items.push({ icon:'⚡', label:'Exercices express bien-être' });
+    items.push({ icon:'🎵', label:'Sons immersifs & ambiances' });
+  }
+  if (inv.contenu_ids.jeux) {
+    inv.contenu_ids.jeux.forEach(function(j){
+      items.push({ icon:'🎧', label: j });
+    });
+  }
+  if (inv.contenu_ids.audios) {
+    inv.contenu_ids.audios.forEach(function(a){
+      items.push({ icon:'🎵', label: a });
+    });
+  }
+  return items;
+}
+
 function renderIntervenants() {
   var grid = document.getElementById('intervenants-grid');
   if (!grid) return;
@@ -4585,20 +4770,22 @@ function renderIntervenants() {
     var tags = (inv.tags||[]).map(function(t){
       return '<span style="font-size:.58rem;padding:.2rem .6rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;color:var(--teal)">' + t + '</span>';
     }).join('');
-    var links = '';
-    if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="font-size:.65rem;color:var(--teal);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem">🌐 Site web</a>';
-    if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="font-size:.65rem;color:#0077b5;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem">in LinkedIn</a>';
-    return '<div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:.9rem;cursor:pointer" onclick="openIntervenant(' + inv.id + ')">'
+    var contenus = _getContenus(inv);
+    var contenuHtml = contenus.length ? '<div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border)">'
+      + '<div style="font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Contenus publiés</div>'
+      + contenus.slice(0,3).map(function(c){ return '<div style="font-size:.65rem;color:var(--text-dim);padding:.2rem 0">' + c.icon + ' ' + c.label + '</div>'; }).join('')
+      + (contenus.length > 3 ? '<div style="font-size:.6rem;color:var(--teal)">+ ' + (contenus.length-3) + ' autres...</div>' : '')
+      + '</div>' : '';
+    return '<div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:.8rem;cursor:pointer" onclick="openIntervenant(' + inv.id + ')">'
       + '<div style="display:flex;align-items:center;gap:1rem">'
-      + '<div style="width:56px;height:56px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
+      + '<div style="width:56px;height:56px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
       + '<div><div style="font-size:.92rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
-      + '<div style="font-size:.65rem;color:var(--teal);margin-top:.15rem">' + (inv.titre||'') + '</div></div>'
+      + '<div style="font-size:.65rem;color:var(--teal);margin-top:.1rem">' + (inv.titre||'') + '</div></div>'
       + '</div>'
       + '<div style="font-size:.68rem;color:var(--text-dim);line-height:1.6">' + (inv.specialite||'') + '</div>'
-      + (inv.contenu_associe ? '<div style="font-size:.62rem;background:rgba(0,180,180,.07);border:1px solid rgba(0,180,180,.15);border-radius:8px;padding:.4rem .7rem;color:var(--text-dim)">🎧 ' + inv.contenu_associe + '</div>' : '')
-      + '<div style="display:flex;gap:.6rem;flex-wrap:wrap">' + tags + '</div>'
-      + (links ? '<div style="display:flex;gap:.8rem;flex-wrap:wrap;padding-top:.4rem;border-top:1px solid var(--border)">' + links + '</div>' : '')
-      + '<div style="font-size:.6rem;color:var(--text-muted);text-align:right">↗ Voir la fiche complète</div>'
+      + '<div style="display:flex;gap:.4rem;flex-wrap:wrap">' + tags + '</div>'
+      + contenuHtml
+      + '<div style="font-size:.6rem;color:var(--text-muted);text-align:right;margin-top:.2rem">↗ Voir la fiche complète</div>'
       + '</div>';
   }).join('');
 }
@@ -4606,12 +4793,18 @@ function renderIntervenants() {
 function openIntervenant(id) {
   var inv = (DB.intervenants||[]).find(function(i){ return i.id === id; });
   if (!inv) return;
-  var links = '';
-  if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">🌐 Site web</a> ';
-  if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,119,181,.1);border:1px solid rgba(0,119,181,.2);border-radius:10px;color:#0077b5;font-size:.72rem;font-weight:600;text-decoration:none">in LinkedIn</a>';
+  var contenus = _getContenus(inv);
+  var contenuHtml = contenus.length ? '<div style="margin-bottom:1rem">'
+    + '<div style="font-size:.6rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem">Contenus publiés dans le Companion</div>'
+    + '<div style="display:flex;flex-direction:column;gap:.3rem">'
+    + contenus.map(function(c){ return '<div style="display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--text-dim);padding:.35rem .6rem;background:var(--surface2);border-radius:8px">' + c.icon + ' <span>' + c.label + '</span></div>'; }).join('')
+    + '</div></div>' : '';
   var tags = (inv.tags||[]).map(function(t){
     return '<span style="font-size:.62rem;padding:.25rem .7rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;color:var(--teal)">' + t + '</span>';
   }).join(' ');
+  var links = '';
+  if (inv.site_url) links += '<a href="' + inv.site_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">🌐 Site web</a> ';
+  if (inv.linkedin_url) links += '<a href="' + inv.linkedin_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;background:rgba(0,119,181,.1);border:1px solid rgba(0,119,181,.2);border-radius:10px;color:#0077b5;font-size:.72rem;font-weight:600;text-decoration:none">in LinkedIn</a>';
   var body = '<div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.2rem">'
     + '<div style="width:64px;height:64px;border-radius:50%;background:' + (inv.photo_couleur||'var(--teal)') + ';display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:white;flex-shrink:0">' + (inv.photo_initiales||inv.nom[0]) + '</div>'
     + '<div><div style="font-size:1.05rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
@@ -4619,11 +4812,10 @@ function openIntervenant(id) {
     + '</div>'
     + (inv.bio ? '<div style="font-size:.75rem;color:var(--text);line-height:1.75;margin-bottom:1rem;padding:1rem;background:var(--surface2);border-radius:10px">' + inv.bio + '</div>' : '')
     + (tags ? '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">' + tags + '</div>' : '')
-    + (inv.contenu_associe ? '<div style="font-size:.68rem;background:rgba(0,180,180,.07);border:1px solid rgba(0,180,180,.15);border-radius:10px;padding:.6rem 1rem;color:var(--text-dim);margin-bottom:1rem">🎧 Contenu disponible : ' + inv.contenu_associe + '</div>' : '')
+    + contenuHtml
     + (links ? '<div style="display:flex;gap:.8rem;flex-wrap:wrap">' + links + '</div>' : '');
   if (typeof openModal === 'function') openModal(inv.nom, body);
 }
-
 </script>
 
 </body>
