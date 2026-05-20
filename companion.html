@@ -1870,12 +1870,43 @@ function renderDashboard() {
   // Horloge
   _v3StartClock();
 
-  // Ring + Ticker + Suggestions + KPIs + Feed
+  // Ring + KPIs + Feed (ne dépendent pas du statut PIR)
   _v3Ring();
-  _v3Ticker();
-  _v3Suggested();
   _v3KPIs();
   renderHistoryRecent();
+
+  // Récupérer l'état réel des ateliers depuis l'API PIR, puis afficher
+  _v3RefreshAteliers(function() {
+    _v3Ticker();
+    _v3Suggested();
+  });
+}
+
+/* ── Synchronise DB.ateliers avec l'API PIR avant d'afficher ── */
+var _v3DashRefreshTimer = null;
+function _v3RefreshAteliers(callback) {
+  getSiteSlug().then(function(siteSlug) {
+    if (!siteSlug) { if (callback) callback(); return; }
+    fetch('/api/sensors/occupation/current?site_slug=' + siteSlug, { credentials: 'include' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(occData) {
+        if (occData && occData.ateliers && Object.keys(occData.ateliers).length > 0) {
+          /* Mettre à jour le statut de chaque atelier dans DB depuis les données PIR */
+          DB.ateliers.forEach(function(a) {
+            if (a.nom in occData.ateliers) {
+              a.statut = occData.ateliers[a.nom] ? 'occupe' : 'libre';
+            }
+          });
+        }
+        if (callback) callback();
+        /* Rafraîchissement automatique toutes les 30s */
+        clearTimeout(_v3DashRefreshTimer);
+        _v3DashRefreshTimer = setTimeout(function() {
+          _v3RefreshAteliers(function() { _v3Ticker(); _v3Suggested(); });
+        }, 30000);
+      })
+      .catch(function() { if (callback) callback(); });
+  }).catch(function() { if (callback) callback(); });
 }
 
 /* ── Horloge ── */
