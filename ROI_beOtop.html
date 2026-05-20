@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop™ — Calculateur ROI Espace de Revitalisation v6.0 inclus Usines</title>
+<title>beOtop™ — Calculateur ROI Espace de Revitalisation v5.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════
@@ -1224,7 +1224,10 @@ function calc() {
 
   // Gains
   const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable;
-  const gainBase_exact = ba_exact * sc.rate * (adoEff / 100);
+  // En mode usine/logistique : l'adoption est intégrée dans la part_adressable (44%)
+  // Ne pas multiplier par ado en plus (cf. Note ROI Usine v4.1 — gain = base × sc_rate)
+  const adoFactor = (ST.secteur !== 'siege') ? 1.0 : (adoEff / 100);
+  const gainBase_exact = ba_exact * sc.rate * adoFactor;
   const gain_exact     = gainBase_exact * formCoef * animCoef * decoCoef;
   const eco_exact      = gain_exact - CTP_exact;
 
@@ -1235,21 +1238,20 @@ function calc() {
   const pb = (cashFlow > 0 && nbPostes > 0) ? capexTotal / (cashFlow / 12) : 999;
 
   // ── Calcul supplémentaire Usine / Logistique ──
+  // Gains AT et rotation : décomposition informative de la base adressable
+  // Ils sont DÉJÀ inclus dans base × taux_dysf × part_adressable
+  // On les affiche pour transparence, mais on ne les additionne PAS au gain
   let gainAT = 0, gainRotation = 0, gainTMS = 0;
   if (ST.secteur !== 'siege') {
-    const nbAT         = nbs * ST.taux_at;
-    const partAdresAT  = sc.rate * (adoEff / 100); // même taux d'impact
-    gainAT       = nbAT * ST.cout_at * partAdresAT;
-
-    const nbDeparts    = nbs * ST.taux_rotation;
-    const coutReplace  = (ST.sal / 12) * ST.cout_rotation;
-    gainRotation = nbDeparts * coutReplace * sc.rate * (adoEff / 100);
-
-    // TMS déjà inclus dans le gain principal via taux_dysf élevé
-    // On les affiche séparément pour transparence
-    gainTMS = gain_exact * ST.taux_tms;
+    const nbAT        = nbs * ST.taux_at;
+    gainAT       = nbAT * ST.cout_at * sc.rate; // informatif — déjà dans ba_exact
+    const nbDeparts   = nbs * ST.taux_rotation;
+    const coutReplace = (ST.sal * 1.42 / 12) * ST.cout_rotation;
+    gainRotation = nbDeparts * coutReplace * sc.rate; // informatif
+    gainTMS      = ba_exact * ST.taux_tms * sc.rate;  // informatif — % TMS dans base
   }
-  const gainTotal_exact = gain_exact + gainAT + gainRotation;
+  // Le gain total = gain_exact (les AT/rotation sont déjà dedans via part_adressable)
+  const gainTotal_exact = gain_exact;
   const eco_total_exact = gainTotal_exact - CTP_exact;
   const roi_total = CTP_exact === 0 ? 0 : (eco_total_exact / CTP_exact) * 100;
   const pb_total = (cashFlow > 0 && nbPostes > 0) ? capexTotal / ((gainTotal_exact - opex) / 12) : 999;
@@ -1462,11 +1464,9 @@ function render() {
 
   // Lignes ROI
   const usineLignes = useUsine && (c.gainAT > 0 || c.gainRotation > 0)
-    ? '<div class="rli" style="color:#f59e0b"><span class="rl">&#8627; Dont évitement AT (' + Math.round(ST.taux_at*100) + '% × ' + eur(ST.cout_at) + ')</span><span class="rv">+' + eur(c.gainAT) + '</span></div>'
-    + '<div class="rli" style="color:#ef4444"><span class="rl">&#8627; Dont réduction rotation (' + Math.round(ST.taux_rotation*100) + '%)</span><span class="rv">+' + eur(c.gainRotation) + '</span></div>'
-    + '<div class="rli" style="color:#a855f7"><span class="rl">&#8627; TMS dominants (' + Math.round(ST.taux_tms*100) + '% maladies pro)</span><span class="rv">' + eur(c.gainTMS) + '</span></div>'
-    + '<div class="rli" style="background:rgba(16,185,129,.08);border-radius:6px;padding:.2rem .4rem;margin-top:.3rem"><span class="rl" style="color:#10b981">VAN 3 ans (8%)</span><span class="rv" style="color:#10b981;font-weight:700">' + (c.van3 > 0 ? '+' : '') + eur(c.van3) + '</span></div>'
-    + '<div class="rli"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv" style="color:var(--amber)">−' + (c.seuilViab*100).toFixed(2) + '% impact</span></div>'
+    ? '<div class="style="color:#f59e0b;font-size:.68rem"><span class="rl">&#8627; AT évitables (' + Math.round(ST.taux_at*100) + '% × ' + eur(ST.cout_at) + ')</span><span class="rv">~' + eur(c.gainAT) + '</span></div>'
+    + '<div class="rli" style="color:#ef4444;font-size:.68rem"><span class="rl">&#8627; Turnover (' + Math.round(ST.taux_rotation*100) + '%)</span><span class="rv">~' + eur(c.gainRotation) + '</span></div>'
+    + '<div class="rli" style="color:#a855f7;font-size:.68rem"><span class="rl">&#8627; TMS (' + Math.round(ST.taux_tms*100) + '% mal. pro)</span><span class="rv">~' + eur(c.gainTMS) + '</span></div>'    + '<div class="rli"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv" style="color:var(--amber)">−' + (c.seuilViab*100).toFixed(2) + '% impact</span></div>'
     : '';
   el('r-roi-lines').innerHTML = `
     <div class="rli"><span class="rl">Base adressable</span><span class="rv">${eur(c.ba_exact)}</span></div>
