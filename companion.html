@@ -35,7 +35,11 @@
   --text-dim:    #1a3535;
   --text-muted:  #3a5858;
   --red:         #e8641e;
-  --green:       #00b4b4;
+  --green:       #00b4b4;  --bg:           #ecf5f5;
+  --shadow-sm:    0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-md:    0 12px 28px rgba(0,180,180,0.12), 0 2px 4px rgba(0,0,0,0.02);
+  --transition-v3: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+
 }
 
 body::before {
@@ -656,6 +660,205 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .cc-container { grid-template-columns: 1fr; }
   .grid-3, .atelier-grid, .audio-grid, .exercise-grid { grid-template-columns: repeat(2,1fr); }
 }
+
+/* ════════════════════════════════════════════
+   DASHBOARD V3 — CSS MODERNE
+════════════════════════════════════════════ */
+
+/* Remplace les variables de fond */
+
+
+@keyframes fadeUp   { 0%{opacity:0;transform:translateY(16px)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes slideIn  { 0%{opacity:0;transform:translateX(-12px)} 100%{opacity:1;transform:translateX(0)} }
+@keyframes pulseDot { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.08);opacity:0} }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(125deg, #002626 0%, #004d4d 45%, #003333 100%);
+  padding: 2rem 2rem 1.8rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 90% 20%, rgba(245,133,90,.25) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 10% 90%, rgba(0,180,180,.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-inner {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; position: relative; z-index: 2; gap: 1.5rem;
+}
+.hero-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4.2rem; font-weight: 300; color: white;
+  line-height: 1; letter-spacing: -.01em;
+}
+.hero-date {
+  font-size: .7rem; color: rgba(255,255,255,.5);
+  letter-spacing: .08em; margin-top: .25rem; text-transform: capitalize;
+}
+.hero-greeting {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 300; color: rgba(255,255,255,.9); margin-top: .8rem;
+}
+.hero-greeting em { color: #f5855a; font-style: italic; }
+.hero-chips { display: flex; gap: .8rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.hero-chip {
+  backdrop-filter: blur(8px); border-radius: 40px;
+  padding: .35rem 1rem; font-size: .7rem; font-weight: 500;
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2);
+}
+.hero-chip.teal  { background: rgba(0,180,180,.2);  border-color: rgba(0,180,180,.5);  color: #a0f0f0; }
+.hero-chip.coral { background: rgba(245,133,90,.2); border-color: rgba(245,133,90,.4); color: #ffcfb3; }
+.dot-pulse {
+  width: 6px; height: 6px; background: currentColor;
+  border-radius: 50%; animation: pulseDot 1.8s infinite;
+}
+.hero-right { text-align: center; }
+.ring-lbl { font-size: .6rem; color: rgba(255,255,255,.5); margin-top: .25rem; }
+.ring-val { font-size: .8rem; font-weight: 600; color: #00b4b4; }
+.ring-track { fill: none; stroke: rgba(255,255,255,.15); stroke-width: 5; }
+.ring-fill  {
+  fill: none; stroke: #00b4b4; stroke-width: 5; stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s ease-out;
+  transform-origin: center; transform: rotate(-90deg);
+}
+
+/* ── TICKER ── */
+.ticker-bar {
+  background: #0a1a1a; border-bottom: 1px solid rgba(0,180,180,.2);
+  height: 42px; overflow: hidden; position: relative;
+}
+.ticker-bar::before, .ticker-bar::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 50px;
+  z-index: 2; pointer-events: none;
+}
+.ticker-bar::before { left: 0; background: linear-gradient(to right, #0a1a1a, transparent); }
+.ticker-bar::after  { right: 0; background: linear-gradient(to left,  #0a1a1a, transparent); }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-track {
+  display: flex; animation: ticker 28s linear infinite;
+  white-space: nowrap; align-items: center; height: 100%;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: 0 1.2rem; font-size: .7rem; font-weight: 500;
+  color: rgba(255,255,255,.5); border-right: 1px solid rgba(255,255,255,.08);
+  height: 100%; transition: color .2s;
+}
+.ticker-item:hover { color: white; }
+.ticker-item.libre  { color: #7df4f4; }
+.ticker-item.occupe { color: #ffb08c; }
+
+/* ── SECTION LABEL ── */
+.sec {
+  font-size: .6rem; font-weight: 700; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--text-muted); display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem;
+}
+.sec::after { content: ""; flex: 1; height: 1px; background: rgba(0,180,180,.2); }
+
+/* ── SUGGESTED CAROUSEL ── */
+.sug-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 1rem; margin-bottom: 2rem;
+}
+.sug-card {
+  background: rgba(255,255,255,.96); border: 1px solid rgba(0,180,180,.2);
+  border-radius: 1.25rem; padding: 1.1rem 1rem;
+  transition: var(--transition-v3); position: relative; cursor: pointer;
+  animation: fadeUp .45s ease backwards;
+}
+.sug-card:nth-child(1){animation-delay:.00s} .sug-card:nth-child(2){animation-delay:.05s}
+.sug-card:nth-child(3){animation-delay:.10s} .sug-card:nth-child(4){animation-delay:.15s}
+.sug-card:nth-child(5){animation-delay:.20s} .sug-card:nth-child(6){animation-delay:.25s}
+.sug-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: var(--shadow-md); border-color: rgba(0,180,180,.4);
+}
+.sug-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--sug-accent, #00b4b4); border-radius: 1.25rem 1.25rem 0 0; opacity: .8;
+}
+.sug-badge {
+  font-size: .55rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; margin-bottom: .6rem; color: var(--text-muted);
+}
+.sug-badge.dispo { color: #00b4b4; }
+.sug-badge.new   { color: #f5855a; }
+.sug-icon-big { font-size: 2rem; display: block; margin-bottom: .5rem; }
+.sug-title { font-size: .85rem; font-weight: 600; color: var(--text); }
+.sug-sub   { font-size: .65rem; color: var(--text-muted); margin-top: .2rem; line-height: 1.3; }
+.sug-cta   { font-size: .65rem; font-weight: 600; color: #00b4b4; margin-top: .8rem; letter-spacing: .02em; display: inline-block; }
+
+/* ── CHECK-IN V3 ── */
+.checkin-v3 {
+  background: linear-gradient(135deg, #003030, #005050);
+  border-radius: 1.5rem; padding: 1.4rem 1.8rem; margin-bottom: 2rem;
+  box-shadow: 0 12px 24px rgba(0,0,0,.1); transition: box-shadow .3s;
+}
+.checkin-v3:hover { box-shadow: 0 20px 32px rgba(0,0,0,.15); }
+.checkin-v3-label {
+  font-size: .7rem; letter-spacing: .2em; color: #00b4b4;
+  font-weight: 600; margin-bottom: .8rem; text-transform: uppercase;
+}
+.sliders-v3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-bottom: 1.2rem; }
+.sl-grp-v3 label { font-size: .7rem; color: rgba(255,255,255,.7); margin-bottom: .5rem; display: block; }
+.sl-vals-v3 {
+  display: flex; justify-content: space-between;
+  font-size: .6rem; color: rgba(255,255,255,.4); margin-top: .3rem;
+}
+.sl-vals-v3 .sl-mid { color: #f5855a; font-weight: 600; }
+.btn-cta-v3 {
+  background: linear-gradient(95deg, #f5855a, #e8641e); border: none;
+  border-radius: 2rem; padding: .7rem 1.8rem; color: white; font-weight: 600;
+  font-size: .8rem; cursor: pointer; font-family: inherit;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 6px 14px rgba(245,133,90,.3);
+}
+.btn-cta-v3:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245,133,90,.5); }
+
+/* ── KPIs V3 ── */
+.kpi-grid-v3 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 2rem; }
+.kpi-card-v3 {
+  background: white; border-radius: 1.25rem; padding: 1.2rem;
+  border: 1px solid rgba(0,180,180,.2); transition: var(--transition-v3);
+  animation: fadeUp .4s ease backwards;
+}
+.kpi-card-v3:nth-child(1){animation-delay:.10s} .kpi-card-v3:nth-child(2){animation-delay:.20s}
+.kpi-card-v3:nth-child(3){animation-delay:.30s} .kpi-card-v3:nth-child(4){animation-delay:.40s}
+.kpi-card-v3:hover { transform: translateY(-4px); box-shadow: var(--shadow-sm); }
+.kpi-label-v3 { font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: .5rem; }
+.kpi-val-v3   { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 500; color: var(--text); line-height: 1; }
+.kpi-sub-v3   { font-size: .65rem; color: var(--text-muted); margin-top: .3rem; }
+
+/* ── QUICK ACTIONS V3 ── */
+.qa-grid-v3 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 2rem; }
+.qa-card-v3 {
+  background: white; border-radius: 1.25rem; padding: 1rem;
+  text-align: center; cursor: pointer; transition: var(--transition-v3);
+  border: 1px solid rgba(0,180,180,.2); animation: fadeUp .3s ease backwards;
+}
+.qa-card-v3:nth-child(1){animation-delay:.00s} .qa-card-v3:nth-child(2){animation-delay:.05s}
+.qa-card-v3:nth-child(3){animation-delay:.10s} .qa-card-v3:nth-child(4){animation-delay:.15s}
+.qa-card-v3:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: #00b4b4; }
+.qa-icon-v3  { font-size: 1.8rem; display: block; margin-bottom: .4rem; }
+.qa-label-v3 { font-weight: 600; font-size: .75rem; color: var(--text); }
+
+/* ── FEED V3 ── */
+.feed-item-v3 {
+  display: flex; align-items: center; gap: 1rem; padding: .8rem 0;
+  border-bottom: 1px solid rgba(0,180,180,.15); animation: slideIn .3s ease backwards;
+}
+.feed-item-v3:last-child { border-bottom: none; }
+.feed-ico-v3  { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.feed-name-v3 { font-weight: 500; font-size: .8rem; color: var(--text); }
+.feed-sub-v3  { font-size: .65rem; color: var(--text-muted); }
+.feed-time-v3 { margin-left: auto; font-size: .6rem; color: var(--text-muted); white-space: nowrap; }
+.card-v3 { background: rgba(255,255,255,.9); border: 1px solid rgba(0,180,180,.15); border-radius: 14px; padding: 1.2rem 1.4rem; }
 </style>
 </head>
 <body>
@@ -734,106 +937,101 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <div class="main-content">
 
 <!-- ══════════════ DASHBOARD ══════════════ -->
+<!-- ══════════════ DASHBOARD ══════════════ -->
 <div class="view active" id="view-dashboard">
-  <div class="page-header">
-    <h1>Bonjour, <em id="dash-prenom">Marie</em></h1>
-    <p id="dash-date"></p>
-  </div>
 
-  <div class="welcome-band">
-    <div>
-      <h2>Comment vous sentez-vous <span>aujourd'hui ?</span></h2>
-      <p>Faites votre check-in matinal pour recevoir des recommandations personnalisées</p>
-    </div>
-    <div class="state-meter">
-      <div class="state-dot"></div>
-      <span class="state-label">Espace disponible</span>
-    </div>
-  </div>
-
-  <!-- Check-in -->
-  <div class="checkin-card" id="checkin-section">
-    <div style="font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem">Check-in du jour</div>
-    <div class="checkin-sliders">
-      <div class="slider-group">
-        <label>Énergie ⚡</label>
-        <input type="range" id="sl-energie" min="1" max="10" value="6" oninput="updateSlider(this,'val-energie')">
-        <div class="slider-val"><span>Épuisé</span><span id="val-energie" style="color:var(--gold)">6/10</span><span>En forme</span></div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-time" id="v3-clock">--:--</div>
+        <div class="hero-date"  id="v3-date"></div>
+        <div class="hero-greeting">Bonjour, <em id="dash-prenom">—</em></div>
+        <div class="hero-chips">
+          <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
+          <div class="hero-chip coral" id="v3-streak-chip" style="display:none">🔥 <span id="v3-streak-txt"></span></div>
+        </div>
       </div>
-      <div class="slider-group">
-        <label>Stress 🌡️</label>
-        <input type="range" id="sl-stress" min="1" max="10" value="5" oninput="updateSlider(this,'val-stress')">
-        <div class="slider-val"><span>Calme</span><span id="val-stress" style="color:var(--gold)">5/10</span><span>Saturé</span></div>
-      </div>
-      <div class="slider-group">
-        <label>Concentration 🎯</label>
-        <input type="range" id="sl-focus" min="1" max="10" value="7" oninput="updateSlider(this,'val-focus')">
-        <div class="slider-val"><span>Dispersé</span><span id="val-focus" style="color:var(--gold)">7/10</span><span>Focalisé</span></div>
+      <div class="hero-right">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle class="ring-track" cx="44" cy="44" r="36"/>
+          <circle class="ring-fill" id="v3-ring-fill" cx="44" cy="44" r="36"
+            stroke-dasharray="226" stroke-dashoffset="226"/>
+        </svg>
+        <div class="ring-lbl">Cohérence</div>
+        <div class="ring-val" id="v3-ring-val">— / 20</div>
       </div>
     </div>
-    <button class="btn-primary" onclick="submitCheckin()">✓ Valider mon check-in</button>
   </div>
 
-  <!-- Recommandation -->
-  <div class="reco-band" id="reco-band" style="display:none">
-    <div class="reco-icon" id="reco-icon">💆</div>
-    <div class="reco-text">
-      <div class="reco-title" id="reco-title">—</div>
-      <div class="reco-sub" id="reco-sub">—</div>
-    </div>
-    <div class="reco-action">
-      <button class="btn-primary" onclick="switchView('reservation')">Réserver →</button>
-    </div>
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <div class="ticker-track" id="v3-ticker"></div>
   </div>
 
-  <!-- KPIs -->
-  <div class="kpi-row">
-    <div class="kpi" style="--accent:var(--gold)">
-      <div class="kpi-label">Séances ce mois</div>
-      <div class="kpi-val" id="kpi-seances">—</div>
-      <div class="kpi-sub">sessions personnelles</div>
-    </div>
-    <div class="kpi" style="--accent:var(--sage)">
-      <div class="kpi-label">Durée totale</div>
-      <div class="kpi-val" id="kpi-duree">—</div>
-      <div class="kpi-sub">temps de récupération</div>
-    </div>
-    <div class="kpi" style="--accent:var(--mist)">
-      <div class="kpi-label">Cohérence cardiaque</div>
-      <div class="kpi-val" id="kpi-cc">—</div>
-      <div class="kpi-sub">sessions complètes</div>
-    </div>
-    <div class="kpi" style="--accent:var(--violet)">
-      <div class="kpi-label">Streak</div>
-      <div class="kpi-val" id="kpi-streak">—</div>
-      <div class="kpi-sub">jours consécutifs</div>
-    </div>
-  </div>
+  <!-- CONTENU -->
+  <div style="padding:1.8rem 2rem">
 
-  <!-- Quick actions -->
-  <div class="quick-actions">
-    <div class="qa-btn" onclick="switchView('coherence')">
-      <span class="qa-icon">💓</span>
-      <div class="qa-label">Cohérence cardiaque</div>
-    </div>
-    <div class="qa-btn" onclick="switchView('reservation')">
-      <span class="qa-icon">📅</span>
-      <div class="qa-label">Réserver un atelier</div>
-    </div>
-    <div class="qa-btn" onclick="switchView('jeux')">
-      <span class="qa-icon">🧠</span>
-      <div class="qa-label">Jeux cérébraux</div>
-    </div>
-    <div class="qa-btn" onclick="switchView('exercices')">
-      <span class="qa-icon">⚡</span>
-      <div class="qa-label">Exercice express</div>
-    </div>
-  </div>
+    <div class="sec">Suggéré pour vous</div>
+    <div class="sug-grid" id="v3-sug-grid"></div>
 
-  <!-- Historique récent -->
-  <div class="card">
-    <div class="card-title" style="color:var(--text-dim)">Activité récente</div>
-    <div id="history-recent"></div>
+    <div class="sec">Check-in du jour</div>
+    <div class="checkin-v3" id="checkin-section">
+      <div class="checkin-v3-label">Comment vous sentez-vous ?</div>
+      <div class="sliders-v3">
+        <div class="sl-grp-v3">
+          <label>Énergie ⚡</label>
+          <input type="range" id="sl-energie" min="1" max="10" value="6"
+            oninput="document.getElementById('v3-val-energie').textContent=this.value+'/10'">
+          <div class="sl-vals-v3"><span>Épuisé</span><span class="sl-mid" id="v3-val-energie">6/10</span><span>En forme</span></div>
+        </div>
+        <div class="sl-grp-v3">
+          <label>Stress 🌡️</label>
+          <input type="range" id="sl-stress" min="1" max="10" value="5"
+            oninput="document.getElementById('v3-val-stress').textContent=this.value+'/10'">
+          <div class="sl-vals-v3"><span>Calme</span><span class="sl-mid" id="v3-val-stress">5/10</span><span>Saturé</span></div>
+        </div>
+        <div class="sl-grp-v3">
+          <label>Concentration 🎯</label>
+          <input type="range" id="sl-focus" min="1" max="10" value="7"
+            oninput="document.getElementById('v3-val-focus').textContent=this.value+'/10'">
+          <div class="sl-vals-v3"><span>Dispersé</span><span class="sl-mid" id="v3-val-focus">7/10</span><span>Focalisé</span></div>
+        </div>
+      </div>
+      <button class="btn-cta-v3" onclick="submitCheckin()">✓ Valider mon check-in</button>
+    </div>
+
+    <!-- Recommandation post-checkin -->
+    <div class="reco-band" id="reco-band" style="display:none">
+      <div class="reco-icon" id="reco-icon">💆</div>
+      <div class="reco-text">
+        <div class="reco-title" id="reco-title">—</div>
+        <div class="reco-sub"   id="reco-sub">—</div>
+      </div>
+      <div class="reco-action">
+        <button class="btn-primary" onclick="switchView('reservation')">Réserver →</button>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:1rem">Ce mois</div>
+    <div class="kpi-grid-v3">
+      <div class="kpi-card-v3"><div class="kpi-label-v3">Séances</div><div class="kpi-val-v3" id="kpi-seances">—</div><div class="kpi-sub-v3">sessions personnelles</div></div>
+      <div class="kpi-card-v3"><div class="kpi-label-v3">Durée totale</div><div class="kpi-val-v3" id="kpi-duree">—</div><div class="kpi-sub-v3">récupération</div></div>
+      <div class="kpi-card-v3"><div class="kpi-label-v3">Cohérence</div><div class="kpi-val-v3" id="kpi-cc">—</div><div class="kpi-sub-v3">sessions complètes</div></div>
+      <div class="kpi-card-v3"><div class="kpi-label-v3">Streak</div><div class="kpi-val-v3" id="kpi-streak">—</div><div class="kpi-sub-v3">jours consécutifs</div></div>
+    </div>
+
+    <div class="sec">Accès rapide</div>
+    <div class="qa-grid-v3">
+      <div class="qa-card-v3" onclick="switchView('coherence')"><span class="qa-icon-v3">💓</span><div class="qa-label-v3">Cohérence cardiaque</div></div>
+      <div class="qa-card-v3" onclick="switchView('reservation')"><span class="qa-icon-v3">📅</span><div class="qa-label-v3">Réserver un atelier</div></div>
+      <div class="qa-card-v3" onclick="switchView('jeux')"><span class="qa-icon-v3">🧠</span><div class="qa-label-v3">Jeux cérébraux</div></div>
+      <div class="qa-card-v3" onclick="switchView('exercices')"><span class="qa-icon-v3">⚡</span><div class="qa-label-v3">Exercice express</div></div>
+    </div>
+
+    <div class="sec">Activité récente</div>
+    <div class="card-v3" id="history-recent"></div>
+
   </div>
 </div>
 
@@ -1635,28 +1833,150 @@ function formatDate(iso) {
    DASHBOARD
 ════════════════════════════════════════════ */
 function renderDashboard() {
-  const u = DB.user;
-  document.getElementById('dash-prenom').textContent = u.prenom;
-  const now = new Date();
-  document.getElementById('dash-date').textContent =
-    now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  var u = DB.user;
 
-  document.getElementById('user-display').textContent = u.prenom + ' ' + (u.nom||'')[0] + '.';
-  document.getElementById('user-avatar').textContent = u.initiales || (u.prenom[0] + (u.nom||'R')[0]);
+  // Topbar
+  var udEl = document.getElementById('user-display');
+  var uaEl = document.getElementById('user-avatar');
+  if (udEl) udEl.textContent = u.prenom + ' ' + (u.nom||'')[0] + '.';
+  if (uaEl) uaEl.textContent = u.initiales || (u.prenom[0] + (u.nom||'R')[0]);
 
-  const m = new Date(); m.setDate(1);
-  const sessions = DB.sessions.filter(s => new Date(s.date) >= m);
-  const dureeMin = sessions.reduce((acc,s) => acc + (s.duree || 20), 0);
-  const ccSess = DB.cc_sessions.filter(s => new Date(s.date) >= m);
+  // Prénom hero
+  var prenomEl = document.getElementById('dash-prenom');
+  if (prenomEl) prenomEl.textContent = u.prenom;
 
-  document.getElementById('kpi-seances').textContent = sessions.length;
-  document.getElementById('kpi-duree').textContent = dureeMin + ' min';
-  document.getElementById('kpi-cc').textContent = ccSess.length;
-  document.getElementById('kpi-streak').textContent = calcStreak() + ' j';
-  document.getElementById('badge-libres').textContent = DB.ateliers.filter(a => a.statut === 'libre').length;
+  // Date hero
+  var dateEl = document.getElementById('v3-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
+  // Horloge
+  _v3StartClock();
+
+  // Ring + Ticker + Suggestions + KPIs + Feed
+  _v3Ring();
+  _v3Ticker();
+  _v3Suggested();
+  _v3KPIs();
   renderHistoryRecent();
 }
+
+/* ── Horloge ── */
+var _v3ClockTimer = null;
+function _v3StartClock() {
+  function tick() {
+    var n = new Date();
+    var el = document.getElementById('v3-clock');
+    if (el) el.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    _v3ClockTimer = setTimeout(tick, (60 - n.getSeconds()) * 1000);
+  }
+  clearTimeout(_v3ClockTimer);
+  tick();
+}
+
+/* ── Ring cohérence ── */
+function _v3Ring() {
+  var m = new Date(); m.setDate(1);
+  var count = (DB.cc_sessions || []).filter(function(s){ return new Date(s.date) >= m; }).length;
+  var fill = document.getElementById('v3-ring-fill');
+  var lbl  = document.getElementById('v3-ring-val');
+  if (fill) setTimeout(function(){ fill.style.strokeDashoffset = String(226 * (1 - Math.min(count/20,1))); }, 300);
+  if (lbl)  lbl.textContent = count + ' / 20';
+}
+
+/* ── Ticker ── */
+function _v3Ticker() {
+  var track = document.getElementById('v3-ticker');
+  if (!track) return;
+  var items = [];
+  DB.ateliers.forEach(function(a) {
+    if (a.statut === 'libre')    items.push({icon:a.icon, text:a.nom+' — disponible', cls:'libre'});
+    else if (a.statut==='occupe') items.push({icon:a.icon, text:a.nom+' — occupé',    cls:'occupe'});
+    else                          items.push({icon:a.icon, text:a.nom+' — bientôt libre', cls:''});
+  });
+  DB.exercices.slice(0,4).forEach(function(e){ items.push({icon:e.icon, text:e.titre+' · '+(e.tags&&e.tags[0]||''), cls:''}); });
+  DB.audios.slice(0,3).forEach(function(a){ items.push({icon:a.icon, text:a.titre+' · '+a.duree, cls:''}); });
+  items.push({icon:'🧠', text:'Défis cognitifs · Laurent Thiry', cls:''});
+  items.push({icon:'💓', text:'Cohérence cardiaque · 5 min', cls:''});
+  var doubled = items.concat(items);
+  track.innerHTML = doubled.map(function(it){
+    return '<div class="ticker-item '+it.cls+'"><span>'+it.icon+'</span><span>'+it.text+'</span></div>';
+  }).join('');
+  track.style.animationDuration = Math.max(24, items.length * 3.2) + 's';
+  var libres = DB.ateliers.filter(function(a){ return a.statut==='libre'; }).length;
+  var chipEl = document.getElementById('v3-chip-libres');
+  if (chipEl) chipEl.textContent = libres + ' espace' + (libres>1?'s':'') + ' disponible' + (libres>1?'s':'');
+  var badgeEl = document.getElementById('badge-libres');
+  if (badgeEl) badgeEl.textContent = libres;
+}
+
+/* ── Carousel suggéré ── */
+function _v3Suggested() {
+  var grid = document.getElementById('v3-sug-grid');
+  if (!grid) return;
+  var h = new Date().getHours(), cards = [];
+  DB.ateliers.filter(function(a){ return a.statut==='libre'; }).slice(0,3).forEach(function(a){
+    cards.push({badge:'Disponible', bc:'dispo', accent:'#00b4b4',
+      icon:a.icon, title:a.nom, sub:a.indication||'',
+      action:"switchView('reservation')"});
+  });
+  var exIdx = h < 10 ? 0 : (h >= 14 && h < 16 ? 2 : 0);
+  var ex = DB.exercices[exIdx] || DB.exercices[0];
+  if (ex) cards.push({badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
+    bc:'new', accent:'#f5855a',
+    icon:ex.icon, title:ex.titre, sub:ex.indication||'',
+    action:'openExercice('+(ex.id)+')' });
+  cards.push({badge:'Son immersif', bc:'', accent:'#00c8c8',
+    icon:'🌲', title:'Sons immersifs', sub:'Forêt · Pluie · Océan · Café',
+    action:"switchView('sons')"});
+  cards.push({badge:'5 min', bc:'new', accent:'#f5855a',
+    icon:'💓', title:'Cohérence cardiaque', sub:'Protocole 365 · 6 cpm',
+    action:"switchView('coherence')"});
+  cards.push({badge:'Laurent Thiry', bc:'new', accent:'#7c5cbf',
+    icon:'🧠', title:'Défi cognitif', sub:'Neurosciences appliquées',
+    action:"switchView('jeux')"});
+  grid.innerHTML = cards.slice(0,6).map(function(c){
+    return '<div class="sug-card" style="--sug-accent:'+c.accent+'" onclick="'+c.action+'">'
+      +'<div class="sug-badge '+c.bc+'">'+c.badge+'</div>'
+      +'<span class="sug-icon-big">'+c.icon+'</span>'
+      +'<div class="sug-title">'+c.title+'</div>'
+      +'<div class="sug-sub">'+c.sub+'</div>'
+      +'<div class="sug-cta">Accéder →</div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ── KPIs avec counter-up ── */
+function _v3CountUp(id, target, suffix, delay) {
+  setTimeout(function(){
+    var el = document.getElementById(id); if (!el) return;
+    var start = Date.now(), dur = 800;
+    (function step(){
+      var t = Math.min((Date.now()-start)/dur, 1);
+      el.textContent = Math.round((1-Math.pow(1-t,3)) * target) + (suffix||'');
+      if (t < 1) requestAnimationFrame(step);
+    })();
+  }, delay||0);
+}
+
+function _v3KPIs() {
+  var mStart = new Date(); mStart.setDate(1);
+  var sessions = DB.sessions.filter(function(s){ return new Date(s.date) >= mStart; });
+  var duree    = sessions.reduce(function(a,s){ return a + (s.duree||20); }, 0);
+  var cc       = DB.cc_sessions.filter(function(s){ return new Date(s.date) >= mStart; });
+  var streak   = calcStreak ? calcStreak() : 0;
+  _v3CountUp('kpi-seances', sessions.length, '',    300);
+  _v3CountUp('kpi-duree',   duree,           ' min', 400);
+  _v3CountUp('kpi-cc',      cc.length,       '',    500);
+  var kst = document.getElementById('kpi-streak');
+  if (kst) kst.textContent = streak + ' j';
+  var sChip = document.getElementById('v3-streak-chip');
+  var sTxt  = document.getElementById('v3-streak-txt');
+  if (sChip && sTxt) {
+    sTxt.textContent = streak + ' jour' + (streak>1?'s':'') + ' consécutif' + (streak>1?'s':'');
+    sChip.style.display = streak >= 2 ? 'inline-flex' : 'none';
+  }
+}
+
 
 function calcStreak() {
   const all = [...DB.sessions, ...DB.cc_sessions]
