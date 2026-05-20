@@ -790,6 +790,24 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .sug-badge.dispo { color: #00b4b4; }
 .sug-badge.new   { color: #f5855a; }
 .sug-icon-big { font-size: 2rem; display: block; margin-bottom: .5rem; }
+/* Photo cover pour cards ateliers */
+.sug-photo {
+  width: calc(100% + 2rem);
+  height: 110px;
+  object-fit: cover;
+  border-radius: 1.1rem 1.1rem 0 0;
+  display: block;
+  margin: -1.1rem -1rem .85rem -1rem;
+}
+/* Photo cover pour cards ateliers */
+.sug-photo {
+  width: calc(100% + 2rem);
+  height: 110px;
+  object-fit: cover;
+  border-radius: 1.1rem 1.1rem 0 0;
+  display: block;
+  margin: -1.1rem -1rem .9rem -1rem;
+}
 .sug-title { font-size: .85rem; font-weight: 600; color: var(--text); }
 .sug-sub   { font-size: .65rem; color: var(--text-muted); margin-top: .2rem; line-height: 1.3; }
 .sug-cta   { font-size: .65rem; font-weight: 600; color: #00b4b4; margin-top: .8rem; letter-spacing: .02em; display: inline-block; }
@@ -1913,36 +1931,64 @@ function _v3Ticker() {
 function _v3Suggested() {
   var grid = document.getElementById('v3-sug-grid');
   if (!grid) return;
+
+  var ATELIER_PHOTOS = {
+    'Méridienne P127':         'P127.jpg',
+    'Cocon de Sieste':         'Cocon1.jpg',
+    'Neurosonic Lit':          'supersonic.jpg',
+    "Bol d'Air Jacquier":      'bol_d_air.jpg',
+    'Transat 127':             'siege.jpg',
+    'Siège Massant 0 Gravité': 'siege_massant.jpg',
+    'Siège Massant Shiatsu':   'siege_massant1.jpg',
+    'Siège Lecture':           'siège.jpg',
+    'Sensosphère':             'lb_qr.jpg',
+    'Bain de Lumière Rouge':   'lumiere_rouge.jpg',
+    'Photobiomodulation':      'lumiere_rouge1.jpg',
+    'Lunettes Psio':           'lunettes.jpg',
+  };
+
   var h = new Date().getHours(), cards = [];
+
   DB.ateliers.filter(function(a){ return a.statut==='libre'; }).slice(0,3).forEach(function(a){
-    cards.push({badge:'Disponible', bc:'dispo', accent:'#00b4b4',
-      icon:a.icon, title:a.nom, sub:a.indication||'',
-      action:"switchView('reservation')"});
+    var photo = ATELIER_PHOTOS[a.nom] || null;
+    cards.push({ badge:'Disponible', bc:'dispo', accent:'#00b4b4',
+      photo:photo, icon:a.icon, title:a.nom, sub:a.indication||'',
+      action:"switchView('reservation')" });
   });
+
   var exIdx = h < 10 ? 0 : (h >= 14 && h < 16 ? 2 : 0);
   var ex = DB.exercices[exIdx] || DB.exercices[0];
-  if (ex) cards.push({badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
-    bc:'new', accent:'#f5855a',
-    icon:ex.icon, title:ex.titre, sub:ex.indication||'',
+  if (ex) cards.push({ badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
+    bc:'new', accent:'#f5855a', icon:ex.icon, title:ex.titre, sub:ex.indication||'',
     action:'openExercice('+(ex.id)+')' });
-  cards.push({badge:'Son immersif', bc:'', accent:'#00c8c8',
+  cards.push({ badge:'Son immersif', bc:'', accent:'#00c8c8',
     icon:'🌲', title:'Sons immersifs', sub:'Forêt · Pluie · Océan · Café',
-    action:"switchView('sons')"});
-  cards.push({badge:'5 min', bc:'new', accent:'#f5855a',
+    action:"switchView('sons')" });
+  cards.push({ badge:'5 min', bc:'new', accent:'#f5855a',
     icon:'💓', title:'Cohérence cardiaque', sub:'Protocole 365 · 6 cpm',
-    action:"switchView('coherence')"});
-  cards.push({badge:'Laurent Thiry', bc:'new', accent:'#7c5cbf',
+    action:"switchView('coherence')" });
+  cards.push({ badge:'Laurent Thiry', bc:'new', accent:'#7c5cbf',
     icon:'🧠', title:'Défi cognitif', sub:'Neurosciences appliquées',
-    action:"switchView('jeux')"});
+    action:"switchView('jeux')" });
+
   grid.innerHTML = cards.slice(0,6).map(function(c){
+    var media = c.photo
+      ? '<img class="sug-photo" src="/static/'+c.photo+'" alt="" onload="" onerror="_sugImgErr(this)">'
+        + '<span class="sug-icon-big" style="display:none">'+c.icon+'</span>'
+      : '<span class="sug-icon-big">'+c.icon+'</span>';
     return '<div class="sug-card" style="--sug-accent:'+c.accent+'" onclick="'+c.action+'">'
-      +'<div class="sug-badge '+c.bc+'">'+c.badge+'</div>'
-      +'<span class="sug-icon-big">'+c.icon+'</span>'
-      +'<div class="sug-title">'+c.title+'</div>'
-      +'<div class="sug-sub">'+c.sub+'</div>'
-      +'<div class="sug-cta">Accéder →</div>'
-      +'</div>';
+      + media
+      + '<div class="sug-badge '+c.bc+'">'+c.badge+'</div>'
+      + '<div class="sug-title">'+c.title+'</div>'
+      + '<div class="sug-sub">'+c.sub+'</div>'
+      + '<div class="sug-cta">Accéder →</div>'
+      + '</div>';
   }).join('');
+}
+function _sugImgErr(img) {
+  img.style.display = 'none';
+  var next = img.nextElementSibling;
+  if (next) next.style.display = 'block';
 }
 
 /* ── KPIs avec counter-up ── */
