@@ -798,6 +798,10 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   border-radius: 1.1rem 1.1rem 0 0;
   display: block;
   margin: -1.1rem -1rem .85rem -1rem;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  filter: contrast(1.05) saturate(1.1) sharpen(0);
 }
 /* Photo cover pour cards ateliers */
 .sug-photo {
@@ -1654,11 +1658,11 @@ var DEMO_DB = {
   },
   ateliers: [
     { id:1, nom:'Méridienne P127', icon:'🪑', indication:'TMS · Position 127°', statut:'libre', couleur:'sage' },
-    { id:2, nom:'Cocon de Sieste', icon:'😴', indication:'Fatigue · Récupération profonde', statut:'occupe', couleur:'mist' },
+    { id:2, nom:'Cocon de Sieste', icon:'😴', indication:'Fatigue · Récupération profonde', statut:'libre', couleur:'mist' },
     { id:3, nom:'Neurosonic Lit', icon:'🛏️', indication:'Relaxation · Vibrations sonores', statut:'libre', couleur:'violet' },
     { id:4, nom:"Bol d'Air Jacquier", icon:'🌬️', indication:'Fatigue cognitive · Oxygénation', statut:'libre', couleur:'sage' },
-    { id:5, nom:'Transat 127°', icon:'🛋️', indication:'Détente · Anti-gravité', statut:'bientot', couleur:'gold' },
-    { id:6, nom:'Siège Massant 0G', icon:'💆', indication:'TMS · Stress · Massage', statut:'occupe', couleur:'coral' },
+    { id:5, nom:'Transat 127°', icon:'🛋️', indication:'Détente · Anti-gravité', statut:'libre', couleur:'gold' },
+    { id:6, nom:'Siège Massant 0G', icon:'💆', indication:'TMS · Stress · Massage', statut:'libre', couleur:'coral' },
     { id:7, nom:'Siège Lecture', icon:'📖', indication:'Détente · Posture balancement', statut:'libre', couleur:'mist' },
     { id:8, nom:'Sensosphère', icon:'🌟', indication:'Luminothérapie · Chromatothérapie', statut:'libre', couleur:'violet' },
     { id:9, nom:'Lunettes Psio', icon:'👓', indication:'Déconnexion · Stimulation visuelle', statut:'libre', couleur:'gold' },
@@ -1749,6 +1753,11 @@ function loadDB() {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
       }
     });
+    /* Toujours réinitialiser les statuts ateliers à 'libre' au chargement
+       — l'API PIR mettra à jour les vrais statuts ensuite */
+    if (stored.ateliers) {
+      stored.ateliers.forEach(function(a) { a.statut = 'libre'; });
+    }
     // Merger contenu_ids depuis DEMO_DB dans les intervenants existants
     if (stored.intervenants && stored.intervenants.length) {
       stored.intervenants.forEach(function(inv) {
@@ -1897,6 +1906,11 @@ function _v3RefreshAteliers(callback) {
               a.statut = occData.ateliers[a.nom] ? 'occupe' : 'libre';
             }
           });
+          saveDB(DB); /* Persister les statuts réels pour éviter le flash au rechargement */
+        } else {
+          /* Pas de données PIR — mettre tous les ateliers à libre par défaut */
+          DB.ateliers.forEach(function(a) { a.statut = 'libre'; });
+          saveDB(DB);
         }
         if (callback) callback();
         /* Rafraîchissement automatique toutes les 30s */
