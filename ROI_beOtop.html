@@ -1181,19 +1181,23 @@ function calc() {
   // intègre les curseurs AT, rotation et TMS dans le calcul réel du ROI
   let gainDetail;
   if (ST.secteur !== 'siege') {
-    // Valeurs de référence (Note ROI Usine v4.1)
-    const REF_AT  = 0.04;   // 4% AT
-    const REF_ROT = 0.20;   // 20% rotation
-    const REF_TMS = 0.90;   // 90% TMS
-    // Poids de chaque composante dans la base adressable
-    const W_AT  = 0.10;     // ~10% de la base
-    const W_ROT = 0.45;     // ~45% de la base (turnover dominant)
-    const W_TMS = 0.45;     // ~45% de la base (TMS dominant)
-    // Coefficient multiplicateur : varie autour de 1.0 selon les curseurs
-    // Si curseur AT double → coeff AT passe de 0.10 à 0.20 → gain +10%
-    const coeffUsine = W_AT  * (ST.taux_at  / REF_AT)
-                     + W_ROT * (ST.taux_rotation / REF_ROT)
-                     + W_TMS * (ST.taux_tms / REF_TMS);
+    // Valeurs de référence (Note ROI Usine v4.1) — base de normalisation
+    const REF_AT_COST  = nbs * 0.04 * 25000;                    // ref coût AT
+    const REF_ROT_COST = nbs * 0.20 * ((ST.sal * 1.42 / 12) * 6 + 280 * 22); // ref coût rotation + intérim
+    const REF_TMS_COST = ba_exact * 0.90;                        // ref coût TMS
+    const REF_TOTAL    = REF_AT_COST + REF_ROT_COST + REF_TMS_COST;
+
+    // Coûts réels selon les curseurs utilisateur
+    const REAL_AT_COST  = nbs * ST.taux_at * ST.cout_at;
+    // Coût rotation = remplacement salarial + coût intérim pendant la période de vacance
+    // Période vacance estimée = 1 mois → cout_interim_j × 22 jours ouvrés
+    const coutInterimVacance = ST.cout_interim_j * 22;
+    const REAL_ROT_COST = nbs * ST.taux_rotation * ((ST.sal * 1.42 / 12) * ST.cout_rotation + coutInterimVacance);
+    const REAL_TMS_COST = ba_exact * ST.taux_tms;
+
+    // Coefficient = ratio réel/référence, appliqué à ba_exact
+    // → les curseurs cout_at, cout_rotation, taux_at, taux_rotation, taux_tms sont tous actifs
+    const coeffUsine = (REAL_AT_COST + REAL_ROT_COST + REAL_TMS_COST) / REF_TOTAL;
     gainDetail = ba_exact * coeffUsine;
   } else {
     gainDetail = ba_exact;
