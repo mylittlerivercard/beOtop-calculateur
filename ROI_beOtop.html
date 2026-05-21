@@ -894,7 +894,7 @@ input[type=text]::placeholder { color: var(--text-muted); }
   <div class="rcard" style="background:var(--teal-dim);border-color:var(--teal-border);margin-top:0">
     <div class="rttl" style="color:var(--teal)">Surface & Capacité (1 espace)</div>
     <div class="big"><span id="r-surf">—</span><span class="bunit" style="color:var(--teal)">m²</span></div>
-    <div class="rsub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
+    <div class="rsub" id="r-postes-sub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
     <div class="sat-bar-wrap">
       <div class="sat-bar-label">
         <span>Taux d'occupation</span>
@@ -1427,9 +1427,8 @@ function render() {
   el('r-surf').textContent    = c.surfAt;
   el('r-postes').textContent  = c.nbPostes;
   el('r-duree-display').textContent = ST.duree_seance;
-  // Afficher amplitude réelle en mode posté
-  var surfCard = el('r-surf') ? el('r-surf').closest('.rcard') : null;
-  var rsubEl = surfCard ? surfCard.querySelector('.rsub') : null;
+  // Afficher amplitude réelle en mode posté dans le sous-titre
+  var rsubEl = document.getElementById('r-postes-sub');
   if (rsubEl) {
     rsubEl.textContent = c.nbPostes + ' places · ' + ST.duree_seance + ' min/séance'
       + (c.isPoste ? ' · ' + c.heuresEffectives + 'h ouverture (' + c.nbPostesPlanning + '×8)' : '');
