@@ -1322,6 +1322,7 @@ function calcRef() {
     po:'l', sc:4, deco_pm2:0, im_pm2:280, form:2000, anim:2000,
     taux_dysf:0.11, part_adressable:0.28, seances_par_semaine:2,
     duree_seance:15, heures_ouverture:8,
+    secteur:'siege', nb_postes:3,
   });
   const roi = calc().roi;
   Object.assign(ST, saved);
@@ -1340,10 +1341,12 @@ function render() {
   const refRoi = calcRef();
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
+  // Calculer roiVal ici pour rC (avant useUsine qui est défini plus bas)
+  const _roiForColor = (ST.secteur !== 'siege') ? c.roi_total : c.roi;
   const rC     = isZero  ? '#4a4a6a'
-               : c.roi > 150 ? '#10b981'
-               : c.roi > 50  ? '#3b82f6'
-               : c.roi > 0   ? '#f59e0b'
+               : _roiForColor > 150 ? '#10b981'
+               : _roiForColor > 50  ? '#3b82f6'
+               : _roiForColor > 0   ? '#f59e0b'
                : '#ef4444';
 
   // Header
@@ -1352,6 +1355,9 @@ function render() {
   // 01 Entreprise
   el('v-nbs').textContent = fnum(ST.nbs) + ' pers.';
   el('v-sal').textContent = eur(ST.sal);
+  // Syncer les sliders avec ST (au cas où setSecteur a changé ST sans toucher les sliders)
+  if (el('s-sal') && +el('s-sal').value !== ST.sal) el('s-sal').value = ST.sal;
+  if (el('s-nbs') && +el('s-nbs').value !== ST.nbs) el('s-nbs').value = ST.nbs;
 
   // 02 Mode
   el('v-nbp').textContent = c.nbp;
