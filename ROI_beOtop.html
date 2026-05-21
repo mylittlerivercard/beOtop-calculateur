@@ -1038,9 +1038,9 @@ const POSTURES = [
 
 const POSTURES_USINE = [
   { id:'h', label:'Hostile',      adopt:10, color:'#ef4444' },
-  { id:'m', label:'Mitigé',       adopt:25, color:'#f59e0b' },
-  { id:'l', label:'Libre',        adopt:50, color:'#3b82f6' },
-  { id:'e', label:'Encouragé',    adopt:75, color:'#10b981' },
+  { id:'m', label:'Mitigé',       adopt:30, color:'#f59e0b' },
+  { id:'l', label:'Libre',        adopt:65, color:'#3b82f6' },  // 65% — référence étude usine
+  { id:'e', label:'Encouragé',    adopt:80, color:'#10b981' },
   { id:'o', label:'Obligatoire',  adopt:90, color:'#a855f7' },
 ];
 
@@ -1233,7 +1233,7 @@ function calc() {
   const setup    = 2860;                 // lancement
   const deco     = surfAt * ST.deco_pm2; // décoration
   const im       = surfAt * ST.im_pm2 * 1.20; // loyer + charges
-  const maintenance = eqT * 0.11;       // maintenance annuelle
+  const maintenance = eqT * (ST.secteur !== 'siege' ? 0.12 : 0.11);  // 12% usine (Note ROI v4.1), 11% siège
 
   // Amortissements annuels
   const amortEquip = eqT   / 4;
@@ -1257,7 +1257,10 @@ function calc() {
   const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable * coeff_abs_poste;
   // En mode usine/logistique : l'adoption est intégrée dans la part_adressable (44%)
   // Ne pas multiplier par ado en plus (cf. Note ROI Usine v4.1 — gain = base × sc_rate)
-  const adoFactor = (ST.secteur !== 'siege') ? 1.0 : (adoEff / 100);
+  // Adoption réelle appliquée à tous les secteurs
+  // La part_adressable (44% usine) représente le périmètre maximum théorique,
+  // l'adoption effective vient en multiplicateur comme pour le siège
+  const adoFactor = adoEff / 100;
   const gainBase_exact = ba_exact * sc.rate * adoFactor;
   const gain_exact     = gainBase_exact * formCoef * animCoef * decoCoef;
   const eco_exact      = gain_exact - CTP_exact;
@@ -1275,11 +1278,11 @@ function calc() {
   let gainAT = 0, gainRotation = 0, gainTMS = 0;
   if (ST.secteur !== 'siege') {
     const nbAT        = nbs * ST.taux_at;
-    gainAT       = nbAT * ST.cout_at * sc.rate; // informatif — déjà dans ba_exact
+    gainAT       = nbAT * ST.cout_at * sc.rate * adoFactor; // pondéré par adoption réelle
     const nbDeparts   = nbs * ST.taux_rotation;
     const coutReplace = (ST.sal * 1.42 / 12) * ST.cout_rotation;
-    gainRotation = nbDeparts * coutReplace * sc.rate; // informatif
-    gainTMS      = ba_exact * ST.taux_tms * sc.rate;  // informatif — % TMS dans base
+    gainRotation = nbDeparts * coutReplace * sc.rate * adoFactor; // pondéré par adoption réelle
+    gainTMS      = ba_exact * ST.taux_tms * sc.rate * adoFactor;  // pondéré par adoption réelle
   }
   // Le gain total = gain_exact (les AT/rotation sont déjà dedans via part_adressable)
   const gainTotal_exact = gain_exact;
@@ -1398,7 +1401,7 @@ function render() {
 
   // 05 Scénario hint
   el('ref-roi-hint').innerHTML =
-    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). ' +
+    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude siège : 400 sal., 70 200 € brut, option B, posture Libre (60%). Référence étude usine : ROI +228% = adoption max. intégrée dans les 44% (Note ROI Usine v4.1). ' +
     '(ROI calculé : <strong>+' + refRoi + '%</strong>)';
 
   // 06 Paramètres
@@ -1619,15 +1622,21 @@ function setSecteur(s) {
     ST.taux_rotation = 0.20;
     ST.taux_tms = 0.90;
     ST.taux_at = 0.04;
+    ST.im_pm2 = 671;  // Loyer IDF usine — CTP = 33 000€ à adopt. max (Note ROI Usine v4.1)
   } else if (s === 'logistique') {
     ST.taux_rotation = 0.25;
     ST.taux_tms = 0.70;
     ST.taux_at = 0.05;
+    ST.im_pm2 = 450;
   } else {
     ST.taux_rotation = 0.15;
     ST.taux_tms = 0.40;
     ST.taux_at = 0.04;
+    ST.im_pm2 = 280;  // Loyer référence siège
   }
+  // Syncer slider loyer
+  var imSlider = document.getElementById('s-im-pm2');
+  if (imSlider) imSlider.value = ST.im_pm2;
 
   // Mettre à jour les sliders
   const salSlider = document.getElementById('s-sal');
