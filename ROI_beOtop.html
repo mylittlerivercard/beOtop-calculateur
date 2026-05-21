@@ -1181,14 +1181,22 @@ function calc() {
   // intègre les curseurs AT, rotation et TMS dans le calcul réel du ROI
   let gainDetail;
   if (ST.secteur !== 'siege') {
-    // Chaque composante représente le coût brut × sa part adressable par beOtop
-    // Les curseurs AT, rotation, TMS impactent directement gainDetail et donc le ROI
-    const gainAT_comp    = nbs * ST.taux_at * ST.cout_at * ST.part_adressable;
-    const gainRotat_comp = nbs * ST.taux_rotation * (ST.sal * 1.42 / 12) * ST.cout_rotation * ST.part_adressable;
-    const gainTMS_comp   = masseSalariale * ST.taux_dysf * ST.taux_tms * ST.part_adressable;
-    gainDetail = gainAT_comp + gainRotat_comp + gainTMS_comp;
+    // Valeurs de référence (Note ROI Usine v4.1)
+    const REF_AT  = 0.04;   // 4% AT
+    const REF_ROT = 0.20;   // 20% rotation
+    const REF_TMS = 0.90;   // 90% TMS
+    // Poids de chaque composante dans la base adressable
+    const W_AT  = 0.10;     // ~10% de la base
+    const W_ROT = 0.45;     // ~45% de la base (turnover dominant)
+    const W_TMS = 0.45;     // ~45% de la base (TMS dominant)
+    // Coefficient multiplicateur : varie autour de 1.0 selon les curseurs
+    // Si curseur AT double → coeff AT passe de 0.10 à 0.20 → gain +10%
+    const coeffUsine = W_AT  * (ST.taux_at  / REF_AT)
+                     + W_ROT * (ST.taux_rotation / REF_ROT)
+                     + W_TMS * (ST.taux_tms / REF_TMS);
+    gainDetail = ba_exact * coeffUsine;
   } else {
-    gainDetail = ba_exact;  // modèle siège inchangé
+    gainDetail = ba_exact;
   }
 
   const gainBase_exact = gainDetail * sc.rate * (adoEff / 100);
