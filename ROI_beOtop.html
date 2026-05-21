@@ -1489,7 +1489,7 @@ function renderPo() {
     btn.className = 'pos-btn' + (active ? ' active' : '');
     btn.style.borderColor = active ? p.color + '80' : 'var(--border)';
     btn.style.background  = active ? p.color + '16' : 'var(--surface)';
-    btn.onclick = () => { ST.po = p.id; renderPo(); render(); };
+    btn.onclick = (function(id) { return function() { ST.po = id; renderPo(); render(); }; })(p.id);
     btn.innerHTML = `
       <div class="pb-title" style="color:${active ? p.color : 'var(--text-muted)'}">${p.label}</div>
       <div class="pb-sub">Ambition ${p.adopt}%</div>`;
