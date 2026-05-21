@@ -618,29 +618,18 @@ input[type=text]::placeholder { color: var(--text-muted); }
   <!-- 01 ENTREPRISE -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--gold);border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div>
-
-    <!-- Sélecteur secteur -->
-    <div style="margin-bottom:1.2rem">
-      <div style="font-size:.62rem;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600">Secteur d'activité</div>
-      <div style="display:flex;gap:.5rem" id="secteur-btns">
-        <button class="mode-btn active" id="bs-siege" onclick="setSecteur('siege')" style="border-color:var(--gold)">
-          <div class="btn-title" style="color:var(--gold)">🏢 Siège / Tertiaire</div>
-          <div class="btn-sub">Stress cognitif · ANACT 11%</div>
-        </button>
-        <button class="mode-btn" id="bs-usine" onclick="setSecteur('usine')">
-          <div class="btn-title" style="color:var(--text-muted)">🏭 Usine / Production</div>
-          <div class="btn-sub">TMS + AT · 3×8 · 15%</div>
-        </button>
-        <button class="mode-btn" id="bs-logistique" onclick="setSecteur('logistique')">
-          <div class="btn-title" style="color:var(--text-muted)">📦 Logistique</div>
-          <div class="btn-sub">Port de charges · 17%</div>
-        </button>
-      </div>
-      <div id="secteur-hint" style="margin-top:.5rem;font-size:.62rem;color:var(--text-muted);background:rgba(200,169,110,.06);border-radius:8px;padding:.4rem .7rem;line-height:1.6">
-        Modèle de référence ANACT/CIPD · Travail sédentaire · Stress cognitif dominant
-      </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap" id="secteur-btns">
+      <button class="mode-btn active" id="bs-siege" onclick="setSecteur('siege')" style="border-color:var(--gold)">
+        <div class="btn-title" style="color:var(--gold)">🏢 Siège / Tertiaire</div><div class="btn-sub">ANACT 11%</div>
+      </button>
+      <button class="mode-btn" id="bs-usine" onclick="setSecteur('usine')">
+        <div class="btn-title" style="color:var(--text-muted)">🏭 Usine / Production</div><div class="btn-sub">TMS · 12,65%</div>
+      </button>
+      <button class="mode-btn" id="bs-logistique" onclick="setSecteur('logistique')">
+        <div class="btn-title" style="color:var(--text-muted)">📦 Logistique</div><div class="btn-sub">Port charges · 14%</div>
+      </button>
     </div>
-
+    <div id="secteur-hint" style="font-size:.62rem;color:var(--text-muted);background:rgba(200,169,110,.06);border-radius:8px;padding:.4rem .7rem;margin-bottom:.8rem">Modèle ANACT/CIPD · Stress cognitif · 11% dysfonctionnements</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">
       <div>
         <div class="srow"><span class="slbl">Collaborateurs</span><span class="sval" id="v-nbs">400 pers.</span></div>
@@ -656,7 +645,7 @@ input[type=text]::placeholder { color: var(--text-muted); }
   <!-- 02 MODE DE TRAVAIL -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--teal);border-color:rgba(126,184,201,.2)">02 · Mode de travail</div>
-    <div style="display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap">
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
       <button class="mode-btn" id="bm5j" onclick="setMode('5j')">
         <div class="btn-title" style="color:var(--teal)">🏢 5j / semaine</div>
         <div class="btn-sub">Flux lissé</div>
@@ -670,19 +659,12 @@ input[type=text]::placeholder { color: var(--text-muted); }
         <div class="btn-sub">2×8 / 3×8 / 4×8</div>
       </button>
     </div>
-    <!-- Panneau travail posté -->
     <div id="postepanel" style="display:none;background:rgba(240,160,96,.08);border-radius:10px;padding:.8rem;border:1px solid rgba(240,160,96,.3);margin-bottom:.8rem">
-      <div style="font-size:.68rem;color:var(--orange);font-weight:600;margin-bottom:.6rem">Configuration des postes</div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.6rem" id="poste-btns">
-        <button class="day-btn" data-p="2" onclick="setPostes(2)" style="border-color:var(--orange)">2×8<br><span style="font-size:.5rem">16h/j</span></button>
-        <button class="day-btn active" data-p="3" onclick="setPostes(3)" style="border-color:var(--orange);background:rgba(240,160,96,.15);color:var(--orange)">3×8<br><span style="font-size:.5rem;color:var(--gold)">✓ réf.</span></button>
-        <button class="day-btn" data-p="4" onclick="setPostes(4)" style="border-color:var(--orange)">4×8<br><span style="font-size:.5rem">continu</span></button>
-      </div>
-      <div id="posteinfo" style="font-size:.62rem;color:var(--text-muted);margin-bottom:.5rem"></div>
-      <div style="font-size:.6rem;color:rgba(240,160,96,.7);line-height:1.6;background:rgba(240,160,96,.05);border-radius:6px;padding:.4rem .6rem">
-        &#9888;&#65039; Travail posté 3×8 : facteur aggravant reconnu AT/MP (DARES/INRS) · 
-        Absentéisme majoré +20% · Capacité espace calculée sur amplitude réelle · 
-        Coeff. nuit/WE appliqué sur coût intérim
+      <div style="font-size:.68rem;color:var(--orange);font-weight:600;margin-bottom:.5rem">Configuration des postes (3×8 = 24h ouverture · ×3 capacité · Abs. +20%)</div>
+      <div style="display:flex;gap:.4rem" id="poste-btns">
+        <button class="day-btn" data-p="2" onclick="setPostes(2)">2×8</button>
+        <button class="day-btn active" data-p="3" onclick="setPostes(3)">3×8 <span style="font-size:.5rem;color:var(--gold)">✓</span></button>
+        <button class="day-btn" data-p="4" onclick="setPostes(4)">4×8</button>
       </div>
     </div>
     <div id="jpanel" style="display:none;background:var(--teal-dim);border-radius:10px;padding:.8rem;border:1px solid var(--teal-border);margin-bottom:.8rem">
@@ -828,41 +810,27 @@ input[type=text]::placeholder { color: var(--text-muted); }
           <div class="hint-txt">Taux de remplissage fixé à 75%</div>
         </div>
       </div>
-
-      <!-- Bloc coefficients usine -->
-      <div id="adv-usine-bloc" style="display:none;grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.8rem;margin-top:.2rem">
-        <div style="font-size:.62rem;color:#f59e0b;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:.8rem">Coefficients specifiques Usine / Logistique</div>
+      <div id="adv-usine-bloc" style="display:none;grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.8rem;margin-top:.4rem">
+        <div style="font-size:.62rem;color:#f59e0b;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Coefficients Usine / Logistique — actifs dans le calcul ROI</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
-          <div>
-            <div class="srow"><span class="slbl">Taux accidents du travail (AT)</span><span class="sval" id="v-taux_at">4%</span></div>
-            <input type="range" id="s-taux_at" min="0.01" max="0.15" step="0.005" value="0.04" style="accent-color:#f59e0b" oninput="ST.taux_at=+this.value;render()">
-            <div class="hint-txt">% des effectifs victimes d'AT / an · INRS : 4% usine</div>
-          </div>
-          <div>
-            <div class="srow"><span class="slbl">Cout moyen d'un AT</span><span class="sval" id="v-cout_at">25 000 €</span></div>
-            <input type="range" id="s-cout_at" min="5000" max="80000" step="1000" value="25000" style="accent-color:#f59e0b" oninput="ST.cout_at=+this.value;render()">
-            <div class="hint-txt">Arret + soins + remplacement · INRS : 25 000€ moy.</div>
-          </div>
-          <div>
-            <div class="srow"><span class="slbl">Taux de rotation annuel</span><span class="sval" id="v-taux_rotation">15%</span></div>
-            <input type="range" id="s-taux_rotation" min="0.05" max="0.50" step="0.01" value="0.15" style="accent-color:#ef4444" oninput="ST.taux_rotation=+this.value;render()">
-            <div class="hint-txt">% du personnel renouvelé / an · usine : 15-25%</div>
-          </div>
-          <div>
-            <div class="srow"><span class="slbl">Cout remplacement (mois salaire)</span><span class="sval" id="v-cout_rotation">6 mois</span></div>
-            <input type="range" id="s-cout_rotation" min="1" max="12" step="0.5" value="6" style="accent-color:#ef4444" oninput="ST.cout_rotation=+this.value;render()">
-            <div class="hint-txt">Recrutement + interim + formation au poste</div>
-          </div>
-          <div>
-            <div class="srow"><span class="slbl">Part des arrets TMS</span><span class="sval" id="v-taux_tms">40%</span></div>
-            <input type="range" id="s-taux_tms" min="0.10" max="0.70" step="0.05" value="0.40" style="accent-color:#a855f7" oninput="ST.taux_tms=+this.value;render()">
-            <div class="hint-txt">% des arrets maladie TMS · INRS : 40% en usine</div>
-          </div>
-          <div>
-            <div class="srow"><span class="slbl">Cout interim journalier</span><span class="sval" id="v-cout_interim_j">280 €/j</span></div>
-            <input type="range" id="s-cout_interim_j" min="100" max="600" step="10" value="280" style="accent-color:#3b82f6" oninput="ST.cout_interim_j=+this.value;render()">
-            <div class="hint-txt">Cout journalier remplacement par interimaire</div>
-          </div>
+          <div><div class="srow"><span class="slbl">Taux AT (% effectifs/an)</span><span class="sval" id="v-taux_at">4%</span></div>
+          <input type="range" id="s-taux_at" min="0.01" max="0.15" step="0.005" value="0.04" style="accent-color:#f59e0b" oninput="ST.taux_at=+this.value;render()">
+          <div class="hint-txt">INRS 2024 : 4% en usine</div></div>
+          <div><div class="srow"><span class="slbl">Coût moyen d'un AT (€)</span><span class="sval" id="v-cout_at">25 000 €</span></div>
+          <input type="range" id="s-cout_at" min="5000" max="80000" step="1000" value="25000" style="accent-color:#f59e0b" oninput="ST.cout_at=+this.value;render()">
+          <div class="hint-txt">INRS : arrêt + soins + remplacement</div></div>
+          <div><div class="srow"><span class="slbl">Taux de rotation annuel</span><span class="sval" id="v-taux_rotation">20%</span></div>
+          <input type="range" id="s-taux_rotation" min="0.05" max="0.50" step="0.01" value="0.20" style="accent-color:#ef4444" oninput="ST.taux_rotation=+this.value;render()">
+          <div class="hint-txt">DARES industrie : 15-25%/an</div></div>
+          <div><div class="srow"><span class="slbl">Coût remplacement (mois sal.)</span><span class="sval" id="v-cout_rotation">6 mois</span></div>
+          <input type="range" id="s-cout_rotation" min="1" max="12" step="0.5" value="6" style="accent-color:#ef4444" oninput="ST.cout_rotation=+this.value;render()">
+          <div class="hint-txt">Recrutement + intérim + formation</div></div>
+          <div><div class="srow"><span class="slbl">Part des arrêts TMS</span><span class="sval" id="v-taux_tms">90%</span></div>
+          <input type="range" id="s-taux_tms" min="0.10" max="0.99" step="0.05" value="0.90" style="accent-color:#a855f7" oninput="ST.taux_tms=+this.value;render()">
+          <div class="hint-txt">INRS/Ameli 2024 : 90% mal. pro.</div></div>
+          <div><div class="srow"><span class="slbl">Coût intérim journalier</span><span class="sval" id="v-cout_interim_j">280 €/j</span></div>
+          <input type="range" id="s-cout_interim_j" min="100" max="600" step="10" value="280" style="accent-color:#3b82f6" oninput="ST.cout_interim_j=+this.value;render()">
+          <div class="hint-txt">Coût journalier remplacement</div></div>
         </div>
       </div>
     </div>
@@ -894,7 +862,7 @@ input[type=text]::placeholder { color: var(--text-muted); }
   <div class="rcard" style="background:var(--teal-dim);border-color:var(--teal-border);margin-top:0">
     <div class="rttl" style="color:var(--teal)">Surface & Capacité (1 espace)</div>
     <div class="big"><span id="r-surf">—</span><span class="bunit" style="color:var(--teal)">m²</span></div>
-    <div class="rsub" id="r-postes-sub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
+    <div class="rsub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
     <div class="sat-bar-wrap">
       <div class="sat-bar-label">
         <span>Taux d'occupation</span>
@@ -1037,60 +1005,28 @@ const POSTURES = [
 ];
 
 const POSTURES_USINE = [
-  { id:'h', label:'Hostile',      adopt:10, color:'#ef4444' },
-  { id:'m', label:'Mitigé',       adopt:30, color:'#f59e0b' },
-  { id:'l', label:'Libre',        adopt:65, color:'#3b82f6' },  // 65% — référence étude usine
-  { id:'e', label:'Encouragé',    adopt:80, color:'#10b981' },
-  { id:'o', label:'Obligatoire',  adopt:90, color:'#a855f7' },
+  { id:'h', label:'Hostile',     adopt:10, color:'#ef4444' },
+  { id:'m', label:'Mitigé',      adopt:30, color:'#f59e0b' },
+  { id:'l', label:'Libre',       adopt:65, color:'#3b82f6' },
+  { id:'e', label:'Encouragé',   adopt:80, color:'#10b981' },
+  { id:'o', label:'Obligatoire', adopt:90, color:'#a855f7' },
 ];
 
-// Profils de secteur
-const SECTEURS = {
-  siege: {
-    label: 'Siège social / Tertiaire',
-    icon: '🏢',
-    sal_default: 70200,
-    taux_dysf: 0.11,
-    part_adressable: 0.28,
-    scenarios_ext: false,
-    postures: null, // utilise POSTURES standard
-    hint: 'Modèle de référence ANACT/CIPD · Travail sédentaire · Stress cognitif dominant',
-  },
-  usine: {
-    label: 'Usine / Production',
-    icon: '🏭',
-    sal_default: 34155,         // 48 500€ chargé / 1,42 = 34 155€ brut (MS 19,4M€ / 400 sal. — Note ROI Usine v4.1)
-    taux_dysf: 0.1265,          // 2 458 373€ / 19,4M€ = 12,65% (WTW Baromètre 2025)
-    part_adressable: 0.44,      // 44% du total — hypothèses conservatrices (Note synthèse)
-    absenteisme: 0.066,         // 6,6% pond. (DARES 2023)
-    part_abs_adr: 0.50,         // 50% absentéisme adressable
-    part_pres_adr: 0.45,        // 45% présentéisme adressable
-    part_turn_adr: 0.35,        // 35% turnover adressable
-    seuil_viabilite: 0.0305,    // −3,05% seuil de rentabilité
-    scenarios_ext: true,
-    postures: null,
-    hint: 'WTW 2025 · INRS/DARES · Part adressable 44% · Dysf. 12,65% · Seuil −3,05% · Payback ~4 mois (400 sal.)',
-  },
-  logistique: {
-    label: 'Logistique / Entrepôt',
-    icon: '📦',
-    sal_default: 32000,         // Transport/logistique — légèrement sup. usine
-    taux_dysf: 0.14,            // Intermédiaire usine/siège (absentéisme 7,5% DARES)
-    part_adressable: 0.40,      // TMS port de charges + RPS
-    scenarios_ext: true,
-    postures: null,
-    hint: 'Port de charges · TMS sévères · Rotation 20-30% · Coût intérim élevé · DARES 2023',
-  },
-};
-
+// SCENARIOS_EXT : 6 scénarios pour usine/logistique
 const SCENARIOS_EXT = [
-  { label:'−1% (seuil)',       rate:0.01 },
-  { label:'−3% (pessimiste)',  rate:0.03 },
-  { label:'−5%',               rate:0.05 },
-  { label:'−10% (médian)',     rate:0.10 },
-  { label:'−15% (optimiste)', rate:0.15 },
-  { label:'−20% (max AT)',    rate:0.20 },
+  { label:'-1% (seuil)',       rate:0.01 },
+  { label:'-3% (pessimiste)',  rate:0.03 },
+  { label:'-5%',               rate:0.05 },
+  { label:'-10% (médian)',     rate:0.10 },
+  { label:'-15% (optimiste)', rate:0.15 },
+  { label:'-20% (max AT)',    rate:0.20 },
 ];
+
+const SECTEURS = {
+  siege:      { label:'Siège / Tertiaire',  icon:'🏢', sal:70200, taux_dysf:0.11,   part_adr:0.28, im_pm2:280,  scenarios_ext:false, hint:'Modèle ANACT/CIPD · Stress cognitif · 11% dysfonctionnements' },
+  usine:      { label:'Usine / Production', icon:'🏭', sal:34155, taux_dysf:0.1265, part_adr:0.44, im_pm2:671,  scenarios_ext:true,  hint:'WTW 2025 · INRS · TMS 90% mal.pro · Part adressable 44% · Seuil -3,05%' },
+  logistique: { label:'Logistique',         icon:'📦', sal:32000, taux_dysf:0.14,   part_adr:0.40, im_pm2:500,  scenarios_ext:true,  hint:'Port de charges · TMS sévères · Rotation 20-30% · DARES 2023' },
+};
 
 const SCENARIOS = [
   { label:'−1% (seuil)',       rate:0.01 },
@@ -1113,20 +1049,18 @@ const DEFAULT_QTYS = {
 let ST = {
   nbs: 400, sal: 70200,
   secteur: 'siege',
-  mode: '5j', jours: 3, nb_postes: 3,
+  mode: '5j', jours: 3,
   qty: { ...DEFAULT_QTYS.B },
   po: 'l', sc: 4,
   deco_pm2: 0, im_pm2: 280,
   form: 2000, anim: 2000,
   taux_dysf: 0.11, part_adressable: 0.28,
+  // Params usine/logistique — actifs dans calc() quand secteur != siege
+  taux_at: 0.04, cout_at: 25000,
+  taux_rotation: 0.20, cout_rotation: 6,
+  taux_tms: 0.90, cout_interim_j: 280,
+  nb_postes: 3,
   seances_par_semaine: 2, duree_seance: 15, heures_ouverture: 8,
-  // Coefficients usine/logistique
-  taux_at: 0.04,          // 4% effectifs/an (INRS 2024 — usine)
-  cout_at: 25000,         // 25 000€ moy. (INRS 2024)
-  taux_rotation: 0.20,    // 20%/an (DARES — industrie)
-  cout_rotation: 6,       // 6 mois salaire (MEDEF/UIMM 2024)
-  taux_tms: 0.90,         // 90% maladies pro = TMS (INRS/Ameli 2024)
-  cout_interim_j: 280,    // 280€/j (référence marché)
   val: 30,
 };
 
@@ -1181,12 +1115,11 @@ function calc() {
   const sal   = ST.sal;
   const mode  = ST.mode;
   const jours = ST.jours;
-  const useExtSc = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
-  const scList  = useExtSc ? SCENARIOS_EXT : SCENARIOS;
-  const scIdx   = Math.min(ST.sc - 1, scList.length - 1);
-  const sc      = scList[scIdx];
-  const posturesList = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
-  const po    = posturesList.find(p => p.id === ST.po) || posturesList[2];
+  const _useExt = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
+  const _scList = _useExt ? SCENARIOS_EXT : SCENARIOS;
+  const sc      = _scList[Math.min(ST.sc - 1, _scList.length - 1)];
+  const _pList = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
+  const po    = _pList.find(p => p.id === ST.po) || _pList[2];
   const ado   = po.adopt;
 
   // Masse salariale chargée (charges patronales 42%)
@@ -1194,14 +1127,7 @@ function calc() {
   const masseSalariale = nbs * salC;
 
   // Présents par jour & demande
-  const isPoste = mode === 'poste';
-  const nbPostesPlanning = ST.nb_postes || 3;
-  // En travail posté : 1/nb_postes des effectifs présents par quart
-  const nbp     = isPoste
-    ? Math.round(nbs / nbPostesPlanning)
-    : Math.round(nbs * (mode === '5j' ? 1 : jours / 5));
-  // Majoration absentéisme 3×8 +20% (DARES/INRS)
-  const coeff_abs_poste = isPoste ? 1.20 : 1.0;
+  const nbp     = Math.round(nbs * (mode === '5j' ? 1 : jours / 5));
   const nbu     = Math.round(Math.max(1, nbp) * ado / 100);
   const picC    = mode === '5j' ? 0.20 : (jours <= 1 ? 1.00 : jours <= 2 ? 0.60 : jours <= 3 ? 0.40 : jours <= 4 ? 0.28 : 0.20);
   const nbu_tot = Math.round(nbs * ado / 100);
@@ -1219,12 +1145,8 @@ function calc() {
   const surfAt   = Math.round(surfNet * 2.0);
 
   // Capacité réelle (75% de remplissage)
-  // En travail posté : l'espace est accessible sur l'amplitude réelle (8h × nb_postes)
-  const heuresEffectives = isPoste
-    ? Math.min(ST.heures_ouverture * nbPostesPlanning, 24)
-    : ST.heures_ouverture;
   const sessionsParHeure = 60 / ST.duree_seance;
-  const cap  = Math.floor(sessionsParHeure * nbPostes * heuresEffectives * 0.75);
+  const cap  = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
   const tauxOcc  = cap === 0 ? 0 : Math.min(100, Math.round((seancesPic / cap) * 100));
   const adoEff   = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
 
@@ -1233,7 +1155,7 @@ function calc() {
   const setup    = 2860;                 // lancement
   const deco     = surfAt * ST.deco_pm2; // décoration
   const im       = surfAt * ST.im_pm2 * 1.20; // loyer + charges
-  const maintenance = eqT * (ST.secteur !== 'siege' ? 0.12 : 0.11);  // 12% usine (Note ROI v4.1), 11% siège
+  const maintenance = eqT * 0.11;       // maintenance annuelle
 
   // Amortissements annuels
   const amortEquip = eqT   / 4;
@@ -1253,15 +1175,23 @@ function calc() {
   const decoCoef = getDecoCoef(deco);
 
   // Gains
-  // En travail posté : absentéisme majoré +20% → impact sur base adressable
-  const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable * coeff_abs_poste;
-  // En mode usine/logistique : l'adoption est intégrée dans la part_adressable (44%)
-  // Ne pas multiplier par ado en plus (cf. Note ROI Usine v4.1 — gain = base × sc_rate)
-  // Adoption réelle appliquée à tous les secteurs
-  // La part_adressable (44% usine) représente le périmètre maximum théorique,
-  // l'adoption effective vient en multiplicateur comme pour le siège
-  const adoFactor = adoEff / 100;
-  const gainBase_exact = ba_exact * sc.rate * adoFactor;
+  const ba_exact = masseSalariale * ST.taux_dysf * ST.part_adressable;
+
+  // CORRECTION Deepseek : en usine/logistique, le gain détaillé
+  // intègre les curseurs AT, rotation et TMS dans le calcul réel du ROI
+  let gainDetail;
+  if (ST.secteur !== 'siege') {
+    // Chaque composante représente le coût brut × sa part adressable par beOtop
+    // Les curseurs AT, rotation, TMS impactent directement gainDetail et donc le ROI
+    const gainAT_comp    = nbs * ST.taux_at * ST.cout_at * ST.part_adressable;
+    const gainRotat_comp = nbs * ST.taux_rotation * (ST.sal * 1.42 / 12) * ST.cout_rotation * ST.part_adressable;
+    const gainTMS_comp   = masseSalariale * ST.taux_dysf * ST.taux_tms * ST.part_adressable;
+    gainDetail = gainAT_comp + gainRotat_comp + gainTMS_comp;
+  } else {
+    gainDetail = ba_exact;  // modèle siège inchangé
+  }
+
+  const gainBase_exact = gainDetail * sc.rate * (adoEff / 100);
   const gain_exact     = gainBase_exact * formCoef * animCoef * decoCoef;
   const eco_exact      = gain_exact - CTP_exact;
 
@@ -1269,39 +1199,15 @@ function calc() {
   const roi = CTP_exact === 0 ? 0 : (eco_exact / CTP_exact) * 100;
   const capexTotal = eqT + ag + setup + deco;
   const cashFlow   = gain_exact - opex;
+  // VAN 3 ans (8%)
+  let van3 = -capexTotal;
+  for (let yr = 1; yr <= 3; yr++) van3 += eco_exact / Math.pow(1.08, yr);
+  const seuilViab = SECTEURS[ST.secteur] && ST.secteur !== 'siege' ? 0.0305 : 0.0266;
   const pb = (cashFlow > 0 && nbPostes > 0) ? capexTotal / (cashFlow / 12) : 999;
-
-  // ── Calcul supplémentaire Usine / Logistique ──
-  // Gains AT et rotation : décomposition informative de la base adressable
-  // Ils sont DÉJÀ inclus dans base × taux_dysf × part_adressable
-  // On les affiche pour transparence, mais on ne les additionne PAS au gain
-  let gainAT = 0, gainRotation = 0, gainTMS = 0;
-  if (ST.secteur !== 'siege') {
-    const nbAT        = nbs * ST.taux_at;
-    gainAT       = nbAT * ST.cout_at * sc.rate * adoFactor; // pondéré par adoption réelle
-    const nbDeparts   = nbs * ST.taux_rotation;
-    const coutReplace = (ST.sal * 1.42 / 12) * ST.cout_rotation;
-    gainRotation = nbDeparts * coutReplace * sc.rate * adoFactor; // pondéré par adoption réelle
-    gainTMS      = ba_exact * ST.taux_tms * sc.rate * adoFactor;  // pondéré par adoption réelle
-  }
-  // Le gain total = gain_exact (les AT/rotation sont déjà dedans via part_adressable)
-  const gainTotal_exact = gain_exact;
-  const eco_total_exact = gainTotal_exact - CTP_exact;
-  const roi_total = CTP_exact === 0 ? 0 : (eco_total_exact / CTP_exact) * 100;
-  const pb_total = (cashFlow > 0 && nbPostes > 0) ? capexTotal / ((gainTotal_exact - opex) / 12) : 999;
-  // VAN 3 ans (taux 8% — référence étude usine)
-  const tauxActu = 0.08;
-  const fluxAnnuel = ST.secteur !== 'siege' ? eco_total_exact : eco_exact;
-  var van3 = -capexTotal;
-  for (var yr = 1; yr <= 3; yr++) van3 += fluxAnnuel / Math.pow(1 + tauxActu, yr);
-  // Seuil de viabilité
-  const sec_params = SECTEURS[ST.secteur];
-  const seuilViab = sec_params && sec_params.seuil_viabilite ? sec_params.seuil_viabilite : 0.0266;
 
   return {
     // Affichage
     nbp, nbu, seancesHebdo, seancesPic, cap, tauxOcc, adoEff, ado,
-    isPoste, nbPostesPlanning, heuresEffectives, coeff_abs_poste,
     nbPostes, surfAt,
     // Financier (exact — arrondi uniquement à l'affichage)
     eqT, ag, agAm, amortEquip, deco, decoAm, im, maintenance, su, setup,
@@ -1310,10 +1216,9 @@ function calc() {
     roi, pb,
     // Coefficients
     formCoef, animCoef, decoCoef,
-    // Usine
-    gainAT, gainRotation, gainTMS, gainTotal_exact, eco_total_exact, roi_total, pb_total, van3, seuilViab,
+    van3, seuilViab, gainDetail, ba_exact,
     // Références
-    masseSalariale, salC, sc, po,
+    masseSalariale, salC, sc, po, scRate: sc.rate,
   };
 }
 
@@ -1339,18 +1244,33 @@ function calcRef() {
 
 function render() {
   const c   = calc();
-  const postList = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
-  const po  = postList.find(p => p.id === ST.po) || postList[2];
+  const po  = POSTURES.find(p => p.id === ST.po);
   const refRoi = calcRef();
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
-  // Calculer roiVal ici pour rC (avant useUsine qui est défini plus bas)
-  const _roiForColor = (ST.secteur !== 'siege') ? c.roi_total : c.roi;
   const rC     = isZero  ? '#4a4a6a'
-               : _roiForColor > 150 ? '#10b981'
-               : _roiForColor > 50  ? '#3b82f6'
-               : _roiForColor > 0   ? '#f59e0b'
+               : c.roi > 150 ? '#10b981'
+               : c.roi > 50  ? '#3b82f6'
+               : c.roi > 0   ? '#f59e0b'
                : '#ef4444';
+
+  // Syncer boutons secteur
+  ['siege','usine','logistique'].forEach(function(id) {
+    var btn = el('bs-'+id);
+    if (!btn) return;
+    var active = id === ST.secteur;
+    var cols = {siege:'var(--gold)', usine:'#f59e0b', logistique:'#3b82f6'};
+    btn.className = 'mode-btn' + (active ? ' active' : '');
+    btn.style.borderColor = active ? cols[id] : 'var(--border)';
+    btn.querySelector('.btn-title').style.color = active ? cols[id] : 'var(--text-muted)';
+  });
+  // Hint secteur
+  if (el('secteur-hint') && SECTEURS[ST.secteur]) el('secteur-hint').textContent = SECTEURS[ST.secteur].hint;
+  // Panneau usine
+  var _ub = el('adv-usine-bloc');
+  if (_ub) _ub.style.display = (ST.secteur !== 'siege') ? 'grid' : 'none';
+  // Panneau posté
+  if (el('postepanel')) el('postepanel').style.display = (ST.mode === 'poste') ? 'block' : 'none';
 
   // Header
   el('mode-lbl').textContent = ST.mode === '5j' ? 'Modèle 5j / semaine' : 'Hybride ' + ST.jours + 'j / semaine';
@@ -1358,9 +1278,6 @@ function render() {
   // 01 Entreprise
   el('v-nbs').textContent = fnum(ST.nbs) + ' pers.';
   el('v-sal').textContent = eur(ST.sal);
-  // Syncer les sliders avec ST (au cas où setSecteur a changé ST sans toucher les sliders)
-  if (el('s-sal') && +el('s-sal').value !== ST.sal) el('s-sal').value = ST.sal;
-  if (el('s-nbs') && +el('s-nbs').value !== ST.nbs) el('s-nbs').value = ST.nbs;
 
   // 02 Mode
   el('v-nbp').textContent = c.nbp;
@@ -1374,15 +1291,16 @@ function render() {
     el('picinfo').textContent = 'Pic : ' + Math.round((c.seancesPic / Math.max(1, c.seancesHebdo)) * 100) + '% · ' + c.nbp + ' présents/jour';
   }
 
-  // Mode buttons — géré par setMode(), juste afficher les panneaux
-  if (el('jpanel'))    el('jpanel').style.display    = (ST.mode === 'hybride') ? 'block' : 'none';
-  if (el('postepanel')) el('postepanel').style.display = (ST.mode === 'poste')   ? 'block' : 'none';
-  if (ST.mode === 'poste' && el('posteinfo')) {
-    var heuresJ = Math.min(8 * c.nbPostesPlanning, 24);
-    el('posteinfo').textContent = c.nbPostesPlanning + '×8 · ' + heuresJ + 'h/j · '
-      + c.nbp + ' présents/quart · Capacité × ' + c.nbPostesPlanning + ' vs. 5j/sem.'
-      + (c.coeff_abs_poste > 1 ? ' · Abs. majoré ×' + c.coeff_abs_poste.toFixed(2) : '');
-  }
+  // Mode buttons
+  ['bm5j','bmhy','bmps'].forEach(function(id) {
+    var btn = el(id);
+    if (!btn) return;
+    var mMap = {bm5j:'5j', bmhy:'hybride', bmps:'poste'};
+    var active = mMap[id] === ST.mode;
+    btn.className = 'mode-btn' + (active ? ' active' : '');
+    btn.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
+    btn.querySelector('.btn-title').style.color = active ? 'var(--teal)' : 'var(--text-muted)';
+  });
 
   // 03 Option detection
   for (const opt of ['A','B','C']) {
@@ -1401,7 +1319,7 @@ function render() {
 
   // 05 Scénario hint
   el('ref-roi-hint').innerHTML =
-    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude siège : 400 sal., 70 200 € brut, option B, posture Libre (60%). Référence étude usine : ROI +228% = adoption max. intégrée dans les 44% (Note ROI Usine v4.1). ' +
+    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). ' +
     '(ROI calculé : <strong>+' + refRoi + '%</strong>)';
 
   // 06 Paramètres
@@ -1416,12 +1334,12 @@ function render() {
   el('v-seances_hebdo').textContent = ST.seances_par_semaine;
   el('v-duree_seance').textContent  = ST.duree_seance;
   el('v-heures').textContent        = ST.heures_ouverture + ' h';
-  // Paramètres usine
-  if (el('v-taux_at'))       el('v-taux_at').textContent       = Math.round(ST.taux_at*100) + '%';
-  if (el('v-cout_at'))       el('v-cout_at').textContent       = eur(ST.cout_at);
-  if (el('v-taux_rotation')) el('v-taux_rotation').textContent = Math.round(ST.taux_rotation*100) + '%';
-  if (el('v-cout_rotation')) el('v-cout_rotation').textContent = ST.cout_rotation + ' mois';
-  if (el('v-taux_tms'))      el('v-taux_tms').textContent      = Math.round(ST.taux_tms*100) + '%';
+  // Curseurs usine
+  if (el('v-taux_at'))        el('v-taux_at').textContent        = Math.round(ST.taux_at*100) + '%';
+  if (el('v-cout_at'))        el('v-cout_at').textContent        = eur(ST.cout_at);
+  if (el('v-taux_rotation'))  el('v-taux_rotation').textContent  = Math.round(ST.taux_rotation*100) + '%';
+  if (el('v-cout_rotation'))  el('v-cout_rotation').textContent  = ST.cout_rotation + ' mois';
+  if (el('v-taux_tms'))       el('v-taux_tms').textContent       = Math.round(ST.taux_tms*100) + '%';
   if (el('v-cout_interim_j')) el('v-cout_interim_j').textContent = ST.cout_interim_j + ' €/j';
 
   // ── Panneau droit ──
@@ -1430,12 +1348,6 @@ function render() {
   el('r-surf').textContent    = c.surfAt;
   el('r-postes').textContent  = c.nbPostes;
   el('r-duree-display').textContent = ST.duree_seance;
-  // Afficher amplitude réelle en mode posté dans le sous-titre
-  var rsubEl = document.getElementById('r-postes-sub');
-  if (rsubEl) {
-    rsubEl.textContent = c.nbPostes + ' places · ' + ST.duree_seance + ' min/séance'
-      + (c.isPoste ? ' · ' + c.heuresEffectives + 'h ouverture (' + c.nbPostesPlanning + '×8)' : '');
-  }
   el('r-dp').textContent = c.seancesPic;
   el('r-ce').textContent = c.cap;
 
@@ -1483,24 +1395,20 @@ function render() {
   roiCard.style.background = rC + '14';
   roiCard.style.borderColor = rC + '55';
   el('r-roi-ttl').style.color = rC;
-  el('r-sc-badge').textContent = SCENARIOS[ST.sc - 1].label;
-
-  const useUsine = ST.secteur !== 'siege';
-  const roiVal = useUsine ? c.roi_total : c.roi;
-  const ecoVal = useUsine ? c.eco_total_exact : c.eco_exact;
-  const pbVal  = useUsine ? c.pb_total : c.pb;
+  const _renderScList = (SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext) ? SCENARIOS_EXT : SCENARIOS;
+  el('r-sc-badge').textContent = _renderScList[Math.min(ST.sc-1, _renderScList.length-1)].label;
 
   const roiPct = el('r-roi-pct');
-  roiPct.textContent = isZero ? '—' : (roiVal > 0 ? '+' : '') + Math.round(roiVal) + '%';
+  roiPct.textContent = isZero ? '—' : (c.roi > 0 ? '+' : '') + Math.round(c.roi) + '%';
   roiPct.style.color = rC;
 
-  const pbStr = pbVal <= 0 || pbVal === 999 ? 'Jamais'
-              : pbVal < 1   ? '<1 mois'
-              : pbVal > 36  ? '36+ mois'
-              : Math.round(pbVal) + ' mois';
+  const pbStr = c.pb <= 0 || c.pb === 999 ? 'Jamais'
+              : c.pb < 1   ? '<1 mois'
+              : c.pb > 36  ? '36+ mois'
+              : Math.round(c.pb) + ' mois';
   el('r-pb').textContent = pbStr;
 
-  el('r-eco-adj').textContent = (ecoVal > 0 ? '+' : '') + eur(ecoVal);
+  el('r-eco-adj').textContent = (c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact);
   el('r-eco-adj').style.color = rC;
 
   // Badge posture + bonus
@@ -1511,21 +1419,23 @@ function render() {
   el('r-po-badge').innerHTML = 'Posture ' + po.label + ' → ambition ' + c.ado + '%' + satWarn + bonusLine;
 
   // Lignes ROI
-  const usineLignes = useUsine && (c.gainAT > 0 || c.gainRotation > 0)
-    ? '<div class="style="color:#f59e0b;font-size:.68rem"><span class="rl">&#8627; AT évitables (' + Math.round(ST.taux_at*100) + '% × ' + eur(ST.cout_at) + ')</span><span class="rv">~' + eur(c.gainAT) + '</span></div>'
-    + '<div class="rli" style="color:#ef4444;font-size:.68rem"><span class="rl">&#8627; Turnover (' + Math.round(ST.taux_rotation*100) + '%)</span><span class="rv">~' + eur(c.gainRotation) + '</span></div>'
-    + '<div class="rli" style="color:#a855f7;font-size:.68rem"><span class="rl">&#8627; TMS (' + Math.round(ST.taux_tms*100) + '% mal. pro)</span><span class="rv">~' + eur(c.gainTMS) + '</span></div>'    + '<div class="rli"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv" style="color:var(--amber)">−' + (c.seuilViab*100).toFixed(2) + '% impact</span></div>'
-    : '';
   el('r-roi-lines').innerHTML = `
     <div class="rli"><span class="rl">Base adressable</span><span class="rv">${eur(c.ba_exact)}</span></div>
-    <div class="rli"><span class="rl">Gain brut (${SCENARIOS[ST.sc-1].label} × ${c.adoEff.toFixed(1)}% réels)</span><span class="rv">${eur(c.gainBase_exact)}</span></div>
-    ${usineLignes}
+    <div class="rli"><span class="rl">Gain brut (${c.sc.label} × ${c.adoEff.toFixed(1)}% réels)</span><span class="rv">${eur(c.gainBase_exact)}</span></div>
     <div class="rli"><span class="rl">Coefficients multiplicateurs</span><span class="rv">×${(c.formCoef * c.animCoef * c.decoCoef).toFixed(2)}</span></div>
     <div class="rli"><span class="rl">Gain après bonus</span><span class="rv">${eur(c.gain_exact)}</span></div>
     <div class="rli tot" style="border-color:${rC}40">
-      <span class="rl" style="color:${rC}">Économie nette${useUsine ? ' (incl. AT + rotation)' : ''}</span>
-      <span class="rv" style="color:${rC}">${(ecoVal > 0 ? '+' : '') + eur(ecoVal)}</span>
-    </div>`;
+      <span class="rl" style="color:${rC}">Économie nette</span>
+      <span class="rv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span>
+    </div>
+    ${ST.secteur !== 'siege' ? `
+    <div style="font-size:.58rem;color:var(--text-muted);margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(255,255,255,.06)">Composantes du gain (curseurs actifs) :</div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#f59e0b">AT évitables (${Math.round(ST.taux_at*100)}% × ${eur(ST.cout_at)})</span><span class="rv">${eur(ST.nbs * ST.taux_at * ST.cout_at * (c.adoEff/100) * c.scRate)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#ef4444">Rotation (${Math.round(ST.taux_rotation*100)}% × ${ST.cout_rotation} mois)</span><span class="rv">${eur(ST.nbs * ST.taux_rotation * (ST.sal*1.42/12) * ST.cout_rotation * (c.adoEff/100) * c.scRate)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#a855f7">TMS (${Math.round(ST.taux_tms*100)}% mal.pro)</span><span class="rv">${eur(c.ba_exact * ST.taux_tms * c.scRate * (c.adoEff/100))}</span></div>
+    <div class="rli" style="font-size:.68rem;margin-top:.2rem"><span class="rl" style="color:#10b981">VAN 3 ans (8%)</span><span class="rv" style="font-weight:700">${(c.van3>0?'+':'') + eur(c.van3)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv">−${(c.seuilViab*100).toFixed(2)}%</span></div>
+    ` : ''}`;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1559,8 +1469,8 @@ function renderAt() {
 function renderPo() {
   const grid = el('pgrid');
   grid.innerHTML = '';
-  const posturesList = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
-  for (const p of posturesList) {
+  const _pRender = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
+  for (const p of _pRender) {
     const active = ST.po === p.id;
     const btn = document.createElement('button');
     btn.className = 'pos-btn' + (active ? ' active' : '');
@@ -1575,24 +1485,20 @@ function renderPo() {
 }
 
 function renderSc() {
-  const grid = el('scgrid');
+  var grid = el('scgrid');
   grid.innerHTML = '';
-  const useExt = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
-  const scList = useExt ? SCENARIOS_EXT : SCENARIOS;
-  const rates  = useExt ? ['−1%','−3%','−5%','−10%','−15%','−20%'] : ['−1%','−3%','−5%','−10%','−15%'];
-  const subs   = useExt ? ['seuil','pessim.','','médian','optim.','max AT'] : ['seuil','pessim.','','médian','optim.'];
-  // Ajuster ST.sc si hors limites
+  var useExt = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
+  var scList = useExt ? SCENARIOS_EXT : SCENARIOS;
+  var subs = ['seuil','pessim.','','médian','optim.','max AT'];
   if (ST.sc > scList.length) ST.sc = scList.length;
-  for (let i = 0; i < scList.length; i++) {
-    const active = ST.sc === i + 1;
-    const btn = document.createElement('button');
+  for (var i = 0; i < scList.length; i++) {
+    var active = ST.sc === i + 1;
+    var btn = document.createElement('button');
     btn.className = 'sc-btn' + (active ? ' active' : '');
-    btn.onclick = (function(idx){ return function(){ ST.sc = idx + 1; renderSc(); render(); }; })(i);
-    const isLast = useExt && i === scList.length - 1;
-    const color = active ? 'var(--sage)' : i===0 ? 'var(--red)' : isLast ? '#f59e0b' : 'var(--text-muted)';
-    btn.innerHTML =
-      '<div class="sc-rate" style="color:' + color + '">' + rates[i] + '</div>' +
-      '<div class="sc-sub" style="color:' + color + '">' + subs[i] + '</div>';
+    (function(idx) { btn.onclick = function() { ST.sc = idx+1; renderSc(); render(); }; })(i);
+    var rateColor = active ? 'var(--sage)' : (i===0 ? 'var(--red)' : (i===scList.length-1&&useExt ? 'var(--amber)' : 'var(--text-muted))'));
+    btn.innerHTML = '<div class="sc-rate" style="color:'+rateColor+'">'+scList[i].label.split(' ')[0]+'</div>'
+      + '<div class="sc-sub" style="color:'+rateColor+'">'+(subs[i]||'')+'</div>';
     grid.appendChild(btn);
   }
 }
@@ -1609,95 +1515,39 @@ function renderJours() {
 ═══════════════════════════════════════════════════════ */
 
 function setSecteur(s) {
-  const sec = SECTEURS[s];
-  if (!sec) return;
+  if (!SECTEURS[s]) return;
   ST.secteur = s;
-
-  // Appliquer les paramètres du secteur
-  ST.sal = sec.sal_default;
-  ST.taux_dysf = sec.taux_dysf;
-  ST.part_adressable = sec.part_adressable;
-  // Paramètres spécifiques usine
-  if (s === 'usine') {
-    ST.taux_rotation = 0.20;
-    ST.taux_tms = 0.90;
-    ST.taux_at = 0.04;
-    ST.im_pm2 = 671;  // Loyer IDF usine — CTP = 33 000€ à adopt. max (Note ROI Usine v4.1)
-  } else if (s === 'logistique') {
-    ST.taux_rotation = 0.25;
-    ST.taux_tms = 0.70;
-    ST.taux_at = 0.05;
-    ST.im_pm2 = 450;
-  } else {
-    ST.taux_rotation = 0.15;
-    ST.taux_tms = 0.40;
-    ST.taux_at = 0.04;
-    ST.im_pm2 = 280;  // Loyer référence siège
-  }
-  // Syncer slider loyer
-  var imSlider = document.getElementById('s-im-pm2');
-  if (imSlider) imSlider.value = ST.im_pm2;
-
-  // Mettre à jour les sliders
-  const salSlider = document.getElementById('s-sal');
-  if (salSlider) salSlider.value = ST.sal;
-  const dysSlider = document.getElementById('s-taux_dysf');
-  if (dysSlider) dysSlider.value = ST.taux_dysf;
-  const adrSlider = document.getElementById('s-part_adr');
-  if (adrSlider) adrSlider.value = ST.part_adressable;
-
-  // Hint secteur
-  const hint = document.getElementById('secteur-hint');
-  if (hint) hint.textContent = sec.hint;
-
-  // Mettre à jour boutons secteur
-  ['siege','usine','logistique'].forEach(function(id) {
-    const btn = document.getElementById('bs-' + id);
-    if (!btn) return;
-    const active = id === s;
-    const colors = { siege: 'var(--gold)', usine: '#f59e0b', logistique: '#3b82f6' };
-    btn.className = 'mode-btn' + (active ? ' active' : '');
-    btn.style.borderColor = active ? colors[id] : 'var(--border)';
-    btn.querySelector('.btn-title').style.color = active ? colors[id] : 'var(--text-muted)';
+  var sec = SECTEURS[s];
+  ST.sal            = sec.sal;
+  ST.taux_dysf      = sec.taux_dysf;
+  ST.part_adressable = sec.part_adr;
+  ST.im_pm2         = sec.im_pm2;
+  // Params AT/rotation selon secteur
+  if (s === 'usine')      { ST.taux_at=0.04; ST.taux_rotation=0.20; ST.taux_tms=0.90; }
+  else if (s==='logistique') { ST.taux_at=0.05; ST.taux_rotation=0.25; ST.taux_tms=0.70; }
+  else                   { ST.taux_at=0.02; ST.taux_rotation=0.10; ST.taux_tms=0.15; }
+  // Syncer sliders
+  ['s-sal','s-taux_dysf','s-part_adr','s-im-pm2','s-taux_at','s-taux_rotation','s-taux_tms'].forEach(function(id) {
+    var sl = el(id);
+    if (!sl) return;
+    var vals = {'s-sal':ST.sal,'s-taux_dysf':ST.taux_dysf,'s-part_adr':ST.part_adressable,'s-im-pm2':ST.im_pm2,'s-taux_at':ST.taux_at,'s-taux_rotation':ST.taux_rotation,'s-taux_tms':ST.taux_tms};
+    sl.value = vals[id];
   });
-
-  // Afficher le bloc usine si hors siège
-  var ub = document.getElementById('adv-usine-bloc');
-  if (ub) ub.style.display = (s !== 'siege') ? 'block' : 'none';
-  // Rendre scénarios étendus si usine/logistique
-  renderSc();
   renderPo();
-  render();
-}
-
-function setMode(m) {
-  ST.mode = m;
-  renderJours();
-  el('jpanel').style.display   = (m === 'hybride') ? 'block' : 'none';
-  el('postepanel').style.display = (m === 'poste')   ? 'block' : 'none';
-  ['bm5j','bmhy','bmps'].forEach(function(id) {
-    var btn = el(id);
-    if (!btn) return;
-    var modeMap = { bm5j:'5j', bmhy:'hybride', bmps:'poste' };
-    var active = modeMap[id] === m;
-    btn.className = 'mode-btn' + (active ? ' active' : '');
-    btn.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
-    btn.querySelector('.btn-title').style.color = active ? 'var(--teal)' : 'var(--text-muted)';
-  });
+  renderSc();
   render();
 }
 
 function setPostes(n) {
   ST.nb_postes = n;
-  document.querySelectorAll('.day-btn[data-p]').forEach(function(btn) {
+  document.querySelectorAll('[data-p]').forEach(function(btn) {
     var active = +btn.getAttribute('data-p') === n;
     btn.className = 'day-btn' + (active ? ' active' : '');
-    btn.style.borderColor = active ? 'var(--orange)' : 'var(--border)';
-    btn.style.background  = active ? 'rgba(240,160,96,.15)' : '';
-    btn.style.color       = active ? 'var(--orange)' : '';
   });
   render();
 }
+
+function setMode(m)  { ST.mode = m; renderJours(); render(); }
 function setJours(j) { ST.jours = j; renderJours(); render(); }
 
 function addQ(id, d) {
@@ -1855,7 +1705,7 @@ function dRoiSection(c, pbStr, rC) {
       </div>
     </div>
     ${dLi('Base adressable', eur(c.ba_exact))}
-    ${dLi('Gain brut (' + SCENARIOS[ST.sc-1].label + ' × ' + c.adoEff.toFixed(1) + '% adoption réelle)', eur(c.gainBase_exact))}
+    ${dLi('Gain brut (' + c.sc.label + ' × ' + c.adoEff.toFixed(1) + '% adoption réelle)', eur(c.gainBase_exact))}
     ${dLi('Coefficients bonus (formation, animation, décoration)', '×' + (c.formCoef * c.animCoef * c.decoCoef).toFixed(2))}
     ${dLi('Gain après bonus', eur(c.gain_exact))}
     ${dLi('Charge comptable totale', '− ' + eur(c.CTP_exact))}
@@ -1873,8 +1723,7 @@ function dRoiSection(c, pbStr, rC) {
 function genDevis() {
   closeModal();
   const c   = calc();
-  const postList = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
-  const po  = postList.find(p => p.id === ST.po) || postList[2];
+  const po  = POSTURES.find(p => p.id === ST.po);
   const pro = el('f-pro').value || '—';
   const con = el('f-con').value || '—';
   const com = el('f-com').value || '—';
@@ -1918,11 +1767,6 @@ function genDevis() {
           <div class="d-plbl">Contexte</div>
           <div class="d-pval">${ST.nbs} collaborateurs</div>
           <div class="d-psub">${ST.mode === '5j' ? 'Présentiel 5j/sem.' : 'Hybride ' + ST.jours + 'j/sem.'} · Posture ${po.label}</div>
-        </div>
-        <div class="d-pb">
-          <div class="d-plbl">Secteur</div>
-          <div class="d-pval">${SECTEURS[ST.secteur] ? SECTEURS[ST.secteur].icon + ' ' + SECTEURS[ST.secteur].label : 'Siège social'}</div>
-          <div class="d-psub">Dysf. ${Math.round(ST.taux_dysf*100)}% · Adressable ${Math.round(ST.part_adressable*100)}%</div>
         </div>
         <div class="d-pb">
           <div class="d-plbl">L'Espace beOtop</div>
