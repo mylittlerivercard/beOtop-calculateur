@@ -3,37 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>beOtop™ — Calculateur ROI Espace de Revitalisation v5.1</title>
+<title>beOtop™ — Calculateur ROI Espace de Revitalisation v5.1 (corrigé)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════════
-   VARIABLES & RESET
-═══════════════════════════════════════════════════════ */
+/* (tous les styles sont identiques à la version 12, aucun changement nécessaire) */
 :root {
-  --gold:       #c8a96e;
-  --gold-dim:   rgba(200,169,110,.18);
+  --gold: #c8a96e;
+  --gold-dim: rgba(200,169,110,.18);
   --gold-border:rgba(200,169,110,.35);
-  --teal:       #7eb8c9;
-  --teal-dim:   rgba(126,184,201,.13);
+  --teal: #7eb8c9;
+  --teal-dim: rgba(126,184,201,.13);
   --teal-border:rgba(126,184,201,.35);
-  --violet:     #b896e8;
+  --violet: #b896e8;
   --violet-dim: rgba(184,150,232,.1);
   --violet-border:rgba(184,150,232,.35);
-  --orange:     #f0a060;
+  --orange: #f0a060;
   --orange-dim: rgba(240,160,96,.09);
-  --green:      #10b981;
-  --green-dim:  rgba(16,185,129,.09);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,.09);
   --green-border:rgba(16,185,129,.35);
-  --red:        #ef4444;
-  --amber:      #f59e0b;
-  --sage:       #60c060;
-  --bg:         #0f0f1a;
-  --bg2:        #1a1a2e;
-  --bg3:        #16213e;
-  --surface:    rgba(255,255,255,.04);
-  --border:     rgba(255,255,255,.08);
-  --text:       #e8e0d5;
-  --text-dim:   #9090b0;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --sage: #60c060;
+  --bg: #0f0f1a;
+  --bg2: #1a1a2e;
+  --bg3: #16213e;
+  --surface: rgba(255,255,255,.04);
+  --border: rgba(255,255,255,.08);
+  --text: #e8e0d5;
+  --text-dim: #9090b0;
   --text-muted: #5a5a7a;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,8 +47,6 @@ body {
 button { font-family: inherit; cursor: pointer; transition: all .15s; border: none; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
-
-/* ═══ RANGE INPUTS ═══ */
 input[type=range] {
   -webkit-appearance: none;
   width: 100%; height: 3px;
@@ -71,8 +67,6 @@ input[type=range]::-moz-range-thumb {
   background: var(--gold);
   border: 2px solid var(--bg2);
 }
-
-/* ═══ TEXT INPUTS ═══ */
 input[type=text] {
   font-family: 'DM Sans', sans-serif;
   background: rgba(255,255,255,.06);
@@ -87,8 +81,6 @@ input[type=text] {
 }
 input[type=text]:focus { border-color: var(--gold); }
 input[type=text]::placeholder { color: var(--text-muted); }
-
-/* ═══ HEADER ═══ */
 #hdr {
   border-bottom: 1px solid var(--gold-border);
   padding: 1rem 2rem;
@@ -122,8 +114,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   color: var(--text-muted);
   letter-spacing: .1em;
 }
-
-/* ═══ LAYOUT ═══ */
 #grid {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -146,8 +136,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   #grid { grid-template-columns: 1fr; }
   #right { position: static; height: auto; border-top: 1px solid rgba(200,169,110,.1); }
 }
-
-/* ═══ SECTIONS ═══ */
 .sec { margin-bottom: 2rem; }
 .sec-ttl {
   font-size: .65rem;
@@ -173,8 +161,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   color: var(--text-muted);
   line-height: 1.5;
 }
-
-/* ═══ STAT BOXES ═══ */
 .sb-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .4rem; margin-bottom: .8rem; }
 .sb {
   background: var(--surface);
@@ -184,8 +170,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 }
 .sv { font-size: .95rem; font-weight: 600; line-height: 1.2; }
 .sl { font-size: .6rem; color: var(--text-muted); margin-top: .1rem; }
-
-/* ═══ MODE BUTTONS ═══ */
 .mode-btn {
   flex: 1;
   padding: .65rem .8rem;
@@ -197,8 +181,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .mode-btn.active { border-width: 2px; }
 .mode-btn .btn-title { font-size: .78rem; font-weight: 600; }
 .mode-btn .btn-sub { font-size: .6rem; color: var(--text-muted); margin-top: .15rem; }
-
-/* ═══ DAY BUTTONS ═══ */
 .day-btn {
   flex: 1;
   padding: .45rem 0;
@@ -215,8 +197,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   background: var(--teal-dim);
   color: var(--teal);
 }
-
-/* ═══ OPTION BUTTONS ═══ */
 .opt-btn {
   flex: 1;
   padding: .48rem;
@@ -228,8 +208,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   color: var(--violet);
 }
 .opt-btn.active { border-width: 2px; font-weight: 700; }
-
-/* ═══ EQUIPMENT CARDS ═══ */
 #agrid { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
 .acard {
   padding: .72rem;
@@ -259,8 +237,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .acard.on .qty-val { color: #d4b8f0; }
 .qty-m2 { font-size: .57rem; color: #8a7aaa; white-space: nowrap; }
 .addon-badge { font-size: .5rem; background: rgba(255,255,255,.08); padding: 1px 3px; border-radius: 3px; margin-left: 2px; vertical-align: middle; }
-
-/* ═══ POSTURE BUTTONS ═══ */
 #pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
 .pos-btn {
   padding: .7rem .8rem;
@@ -273,8 +249,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .pos-btn.active { border-width: 2px; }
 .pos-btn .pb-title { font-size: .75rem; font-weight: 700; }
 .pos-btn .pb-sub { font-size: .6rem; color: var(--text-muted); margin-top: .15rem; }
-
-/* ═══ SCENARIO BUTTONS ═══ */
 #scgrid { display: flex; gap: .3rem; }
 .sc-btn {
   flex: 1;
@@ -288,8 +262,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .sc-btn .sc-rate { font-size: .62rem; font-weight: 700; color: var(--text-muted); }
 .sc-btn.active .sc-rate { color: var(--sage); }
 .sc-btn .sc-sub { font-size: .55rem; color: var(--text-muted); }
-
-/* ═══ ADVANCED PANEL ═══ */
 .adv-panel {
   margin-top: .8rem;
   border: 1px solid var(--border);
@@ -317,8 +289,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   gap: .8rem;
 }
 .adv-body.open { display: grid; }
-
-/* ═══ WARNING / ALERT ═══ */
 .warning-box {
   background: rgba(239,68,68,.08);
   border-left: 3px solid var(--red);
@@ -342,8 +312,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   line-height: 1.4;
 }
 .tooltip { font-size: .58rem; color: var(--text-muted); margin-left: .2rem; cursor: help; }
-
-/* ═══ RIGHT PANEL ═══ */
 .rcard {
   padding: 1rem 1.1rem;
   border-radius: 12px;
@@ -354,17 +322,14 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .big { font-size: 2.6rem; font-weight: 300; line-height: 1; }
 .bunit { font-size: 1rem; margin-left: .2rem; }
 .rsub { font-size: .67rem; color: var(--text-dim); margin-top: .25rem; }
-
 .sat-bar-wrap { margin: .65rem 0 .25rem; }
 .sat-bar-label { display: flex; justify-content: space-between; font-size: .62rem; color: var(--text-dim); margin-bottom: .25rem; }
 .sat-bar-bg { height: 4px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
 .sat-bar-fill { height: 100%; border-radius: 2px; transition: width .35s, background .35s; }
-
 .cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .8rem; }
 .cap-box { background: var(--surface); border-radius: 8px; padding: .45rem .6rem; }
 .cap-val { font-size: .9rem; font-weight: 700; }
 .cap-lbl { font-size: .58rem; color: var(--text-muted); margin-top: .1rem; }
-
 .rli {
   display: flex;
   justify-content: space-between;
@@ -378,7 +343,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .rli.tot { border-top: 1px solid var(--gold-border); border-bottom: none; margin-top: 4px; padding-top: 5px; }
 .rli.tot .rl { color: var(--gold); font-weight: 700; font-size: .76rem; }
 .rli.tot .rv { color: var(--text); font-weight: 700; font-size: .76rem; }
-
 .section-sub {
   font-size: .6rem;
   letter-spacing: .1em;
@@ -390,11 +354,9 @@ input[type=text]::placeholder { color: var(--text-muted); }
   padding-bottom: .2rem;
   border-bottom: 1px solid rgba(255,255,255,.06);
 }
-
 .roi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin-bottom: .6rem; align-items: end; }
 .roi-big { font-size: 1.85rem; font-weight: 300; line-height: 1; }
 .roi-sub { font-size: .62rem; color: var(--text-dim); margin-top: .1rem; }
-
 #btn-devis {
   width: 100%;
   margin-top: 1rem;
@@ -411,8 +373,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   gap: .6rem;
 }
 #btn-devis:hover { background: linear-gradient(135deg, rgba(200,169,110,.28), rgba(200,169,110,.12)); }
-
-/* ═══ CONDITIONS BOX ═══ */
 .conditions-box {
   margin-top: .75rem;
   padding: .75rem;
@@ -426,8 +386,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .badge-crit { font-size: .55rem; color: var(--red); font-weight: 700; }
 .badge-sig  { font-size: .55rem; color: var(--amber); font-weight: 700; }
 .badge-mod  { font-size: .55rem; color: var(--text-muted); }
-
-/* ═══ SOURCES ═══ */
 .sources {
   font-size: .57rem;
   color: var(--text-muted);
@@ -435,8 +393,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   line-height: 1.7;
   margin-top: .5rem;
 }
-
-/* ═══ MODAL ═══ */
 #modal {
   display: none;
   position: fixed;
@@ -487,8 +443,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   font-size: .82rem;
   font-weight: 700;
 }
-
-/* ═══ DEVIS OVERLAY ═══ */
 #dov {
   display: none;
   position: fixed;
@@ -538,8 +492,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   color: #60c060;
 }
 #dpaper { max-width: 860px; margin: 0 auto 3rem; background: #fff; box-shadow: 0 4px 40px rgba(0,0,0,.25); overflow: hidden; }
-
-/* ═══ DEVIS STYLES (impression) ═══ */
 .dv { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a2e; font-size: 9pt; line-height: 1.5; }
 .d-strip { height: 4pt; background: linear-gradient(90deg, #c8a96e, #7eb8c9, #b896e8); }
 .d-hdr { background: linear-gradient(135deg, #0f0f1a, #1a1a2e); color: #e8e0d5; padding: 22pt 28pt 18pt; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -590,7 +542,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
 .d-fl { font-size: 7.5pt; color: #6a6a8a; line-height: 1.7; }
 .d-fr { font-size: 7pt; color: #9090b0; text-align: right; line-height: 1.7; }
 .d-section-sub { font-size: 7pt; letter-spacing: 1pt; text-transform: uppercase; color: #8a8a9a; font-weight: 600; margin-top: 10pt; margin-bottom: 4pt; padding-bottom: 2pt; border-bottom: .5pt solid #f0f0f0; }
-
 @media print {
   #hdr, #grid, #modal { display: none !important; }
   #dov { position: static !important; overflow: visible !important; background: #fff !important; display: block !important; }
@@ -602,20 +553,16 @@ input[type=text]::placeholder { color: var(--text-muted); }
 </head>
 <body>
 
-<!-- HEADER -->
 <div id="hdr">
   <span class="brand">beOtop™</span>
   <h1>Calculateur ROI — Espace de Revitalisation · Étude v5.1 · 2026</h1>
   <span id="mode-lbl">Modèle 5j / semaine</span>
 </div>
 
-<!-- MAIN GRID -->
 <div id="grid">
 
-<!-- ═══ COLONNE GAUCHE ═══ -->
 <div id="left">
 
-  <!-- 01 ENTREPRISE -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--gold);border-color:rgba(200,169,110,.2)">01 · Votre entreprise</div>
     <div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap" id="secteur-btns">
@@ -642,7 +589,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
     </div>
   </div>
 
-  <!-- 02 MODE DE TRAVAIL -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--teal);border-color:rgba(126,184,201,.2)">02 · Mode de travail</div>
     <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
@@ -689,7 +635,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
     </div>
   </div>
 
-  <!-- 03 L'ESPACE -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--violet);border-color:rgba(184,150,232,.2)">03 · L'Espace (m² conseillés)</div>
     <div style="display:flex;gap:.5rem;margin-bottom:1rem" id="opt-btns">
@@ -701,7 +646,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
     <div id="arecap" style="margin-top:.6rem;font-size:.68rem;color:var(--text-muted);background:var(--violet-dim);padding:.5rem .7rem;border-radius:8px;line-height:1.6"></div>
   </div>
 
-  <!-- 04 POSTURE -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--orange);border-color:rgba(240,160,96,.2)">04 · Posture managériale</div>
     <div id="pgrid"></div>
@@ -710,7 +654,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
     </div>
   </div>
 
-  <!-- 05 SCÉNARIO -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--sage);border-color:rgba(96,192,96,.2)">05 · Scénario d'impact</div>
     <div id="scgrid" style="margin-bottom:.65rem"></div>
@@ -719,63 +662,30 @@ input[type=text]::placeholder { color: var(--text-muted); }
     </div>
   </div>
 
-  <!-- 06 PARAMÈTRES OPTIONNELS -->
   <div class="sec">
     <div class="sec-ttl" style="color:#9b8fc4;border-color:rgba(155,143,196,.2)">06 · Paramètres optionnels</div>
-
     <div style="margin-bottom:1.2rem">
-      <div class="srow">
-        <span class="slbl">🎨 Agencement & décoration <span style="color:var(--text-muted);font-size:.6rem">€/m²</span></span>
-        <span class="sval" id="v-deco-pm2">0 €/m²</span>
-      </div>
+      <div class="srow"><span class="slbl">🎨 Agencement & décoration <span style="color:var(--text-muted);font-size:.6rem">€/m²</span></span><span class="sval" id="v-deco-pm2">0 €/m²</span></div>
       <input type="range" id="s-deco-pm2" min="0" max="1500" step="50" value="0" style="accent-color:#9b8fc4" oninput="ST.deco_pm2=+this.value;render()">
-      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
-        <span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span>
-      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem"><span>0 — Sans</span><span>750 — Standard</span><span>1 500 — Premium</span></div>
     </div>
-
     <div style="margin-bottom:1.2rem">
-      <div class="srow">
-        <span class="slbl">🏢 Coût immobilier <span style="color:var(--text-muted);font-size:.6rem">€/m²/an</span></span>
-        <span class="sval" id="v-im-pm2">280 €/m²</span>
-      </div>
+      <div class="srow"><span class="slbl">🏢 Coût immobilier <span style="color:var(--text-muted);font-size:.6rem">€/m²/an</span></span><span class="sval" id="v-im-pm2">280 €/m²</span></div>
       <input type="range" id="s-im-pm2" min="100" max="1000" step="10" value="280" style="accent-color:var(--teal)" oninput="ST.im_pm2=+this.value;render()">
-      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
-        <span>100 — Province</span><span>280 — Réf. étude</span><span>1 000 — Paris</span>
-      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem"><span>100 — Province</span><span>280 — Réf. étude</span><span>1 000 — Paris</span></div>
     </div>
-
     <div style="margin-bottom:1.2rem">
-      <div class="srow">
-        <span class="slbl">
-          🎓 Formation managers <span style="color:var(--red);font-size:.55rem;font-weight:700">● CRITIQUE</span>
-          <span style="color:var(--text-muted);font-size:.6rem">€/an</span>
-          <span class="tooltip" title="Investir dans la formation augmente le gain (coef 0,85→1,30) mais aussi le coût annuel. L'effet net dépend du niveau.">ⓘ</span>
-        </span>
-        <span class="sval" id="v-form">1 300 €</span>
-      </div>
+      <div class="srow"><span class="slbl">🎓 Formation managers <span style="color:var(--red);font-size:.55rem;font-weight:700">● CRITIQUE</span><span style="color:var(--text-muted);font-size:.6rem">€/an</span><span class="tooltip" title="Investir dans la formation augmente le gain (coef 0,85→1,30) mais aussi le coût annuel. L'effet net dépend du niveau.">ⓘ</span></span><span class="sval" id="v-form">1 300 €</span></div>
       <input type="range" id="s-form" min="0" max="10000" step="100" value="2000" style="accent-color:var(--sage)" oninput="ST.form=+this.value;render()">
-      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
-        <span>0 — Risque</span><span>1 300 — Réf.</span><span>5 000 — Renforcé</span>
-      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem"><span>0 — Risque</span><span>1 300 — Réf.</span><span>5 000 — Renforcé</span></div>
     </div>
-
     <div>
-      <div class="srow">
-        <span class="slbl">
-          ✨ Animation espace <span style="color:var(--text-muted);font-size:.6rem">€/an</span>
-          <span class="tooltip" title="L'animation améliore l'adoption (coef 0,85→1,35). L'effet net peut être positif si le gain dépasse le coût.">ⓘ</span>
-        </span>
-        <span class="sval" id="v-anim">1 100 €</span>
-      </div>
+      <div class="srow"><span class="slbl">✨ Animation espace <span style="color:var(--text-muted);font-size:.6rem">€/an</span><span class="tooltip" title="L'animation améliore l'adoption (coef 0,85→1,35). L'effet net peut être positif si le gain dépasse le coût.">ⓘ</span></span><span class="sval" id="v-anim">1 100 €</span></div>
       <input type="range" id="s-anim" min="0" max="10000" step="250" value="2000" style="accent-color:var(--gold)" oninput="ST.anim=+this.value;render()">
-      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem">
-        <span>0 — Minimal</span><span>1 100 — Réf.</span><span>5 000 — Premium</span>
-      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.57rem;color:var(--text-muted);margin-top:.2rem"><span>0 — Minimal</span><span>1 100 — Réf.</span><span>5 000 — Premium</span></div>
     </div>
   </div>
 
-  <!-- 07 PARAMÈTRES AVANCÉS -->
   <div class="sec">
     <div class="sec-ttl" style="color:#60a0c0;border-color:rgba(96,160,192,.2)">⚙️ Paramètres avancés (hypothèses du modèle)</div>
     <div class="adv-panel">
@@ -810,14 +720,8 @@ input[type=text]::placeholder { color: var(--text-muted); }
           <div class="hint-txt">Taux de remplissage fixé à 75% · Travail posté 3×8 = 24h</div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Coefficients usine — visible sans ouvrir les paramètres avancés -->
-
-      <div id="adv-usine-bloc" style="display:none;background:rgba(240,160,96,.04);border:1px solid rgba(240,160,96,.2);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
-        <div class="sec-ttl" style="color:#f59e0b;border-color:rgba(240,160,96,.2);margin-bottom:.8rem">⚙️ Coefficients Usine / Logistique</div>
-        <div style="font-size:.62rem;color:var(--text-muted);margin-bottom:.8rem">Ces paramètres sont actifs dans le calcul du ROI · Modifiez-les pour affiner la simulation</div>
+      <div id="adv-usine-bloc" style="display:none;grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.8rem;margin-top:.4rem">
+        <div style="font-size:.62rem;color:#f59e0b;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Coefficients Usine / Logistique — actifs dans le calcul ROI</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
           <div><div class="srow"><span class="slbl">Taux AT (% effectifs/an)</span><span class="sval" id="v-taux_at">4%</span></div>
           <input type="range" id="s-taux_at" min="0.01" max="0.15" step="0.005" value="0.04" style="accent-color:#f59e0b" oninput="ST.taux_at=+this.value;render()">
@@ -839,8 +743,9 @@ input[type=text]::placeholder { color: var(--text-muted); }
           <div class="hint-txt">Coût journalier remplacement</div></div>
         </div>
       </div>
+    </div>
+  </div>
 
-  <!-- AVERTISSEMENT -->
   <div class="warning-box">
     <strong>⚠️ Limites du simulateur (conforme étude)</strong><br>
     • Dimensionnement basé sur un <strong>unique espace</strong>. Si la capacité est insuffisante, l'adoption est bridée et le ROI diminue.<br>
@@ -853,25 +758,20 @@ input[type=text]::placeholder { color: var(--text-muted); }
     Sources : INRS 2022 · Assurance Maladie 2023 · Malakoff Humanis 2023 · ANACT/CIPD 2022 · Institut Sapiens 2018 · Note méthodologique beOtop 02/2026
   </div>
 
-</div><!-- /#left -->
+</div>
 
-<!-- ═══ COLONNE DROITE ═══ -->
 <div id="right">
 
   <div style="font-size:.58rem;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem;font-weight:600">
     Recommandation pour votre Espace
   </div>
 
-  <!-- Surface & capacité -->
   <div class="rcard" style="background:var(--teal-dim);border-color:var(--teal-border);margin-top:0">
     <div class="rttl" style="color:var(--teal)">Surface & Capacité (1 espace)</div>
     <div class="big"><span id="r-surf">—</span><span class="bunit" style="color:var(--teal)">m²</span></div>
     <div class="rsub"><span id="r-postes">—</span> places d'assise · <span id="r-duree-display">15</span> min / séance</div>
     <div class="sat-bar-wrap">
-      <div class="sat-bar-label">
-        <span>Taux d'occupation</span>
-        <span id="r-satp" style="font-weight:700">—</span>
-      </div>
+      <div class="sat-bar-label"><span>Taux d'occupation</span><span id="r-satp" style="font-weight:700">—</span></div>
       <div class="sat-bar-bg"><div class="sat-bar-fill" id="r-satb" style="width:0%;background:var(--teal)"></div></div>
     </div>
     <div id="r-sat-alert" class="sat-alert"></div>
@@ -881,37 +781,25 @@ input[type=text]::placeholder { color: var(--text-muted); }
     </div>
   </div>
 
-  <!-- Charge financière -->
   <div class="rcard" style="background:var(--gold-dim);border-color:var(--gold-border)">
     <div class="rttl" style="color:var(--gold)">La Charge Financière</div>
     <div id="r-ctp"></div>
   </div>
 
-  <!-- ROI -->
   <div class="rcard" id="r-roi-card" style="background:var(--green-dim);border-color:var(--green-border)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
       <div class="rttl" id="r-roi-ttl" style="color:var(--green);margin:0">Retour sur Investissement</div>
       <div id="r-sc-badge" style="font-size:.57rem;color:var(--text-muted);background:var(--surface);padding:.14rem .4rem;border-radius:4px"></div>
     </div>
     <div class="roi-grid">
-      <div>
-        <div class="roi-big" id="r-roi-pct" style="color:var(--green)">—</div>
-        <div class="roi-sub">ROI annuel net</div>
-      </div>
-      <div>
-        <div class="roi-big" id="r-pb" style="color:var(--text)">—</div>
-        <div class="roi-sub">Payback net</div>
-      </div>
-      <div style="text-align:right">
-        <div id="r-eco-adj" style="font-size:.93rem;font-weight:700;color:var(--green)">—</div>
-        <div class="roi-sub">Éco. nette / an</div>
-      </div>
+      <div><div class="roi-big" id="r-roi-pct" style="color:var(--green)">—</div><div class="roi-sub">ROI annuel net</div></div>
+      <div><div class="roi-big" id="r-pb" style="color:var(--text)">—</div><div class="roi-sub">Payback net</div></div>
+      <div style="text-align:right"><div id="r-eco-adj" style="font-size:.93rem;font-weight:700;color:var(--green)">—</div><div class="roi-sub">Éco. nette / an</div></div>
     </div>
     <div id="r-po-badge" style="font-size:.58rem;color:#7a8a7a;margin-bottom:.45rem;min-height:.8rem"></div>
     <div id="r-roi-lines"></div>
   </div>
 
-  <!-- Conditions -->
   <div class="conditions-box">
     <h4>5 conditions d'atteinte du ROI</h4>
     <ul>
@@ -930,19 +818,13 @@ input[type=text]::placeholder { color: var(--text-muted); }
     Récapitulatif complet · Numéro auto · Prêt à envoyer
   </div>
 
-</div><!-- /#right -->
-</div><!-- /#grid -->
+</div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════
-   MODAL DEVIS
-═══════════════════════════════════════════════════════ -->
 <div id="modal">
   <div id="mbox">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <div>
-        <div style="font-size:.65rem;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:.25rem">beOtop</div>
-        <div style="font-size:1.1rem;color:#f5efe6">Générer le devis</div>
-      </div>
+      <div><div style="font-size:.65rem;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:.25rem">beOtop</div><div style="font-size:1.1rem;color:#f5efe6">Générer le devis</div></div>
       <button onclick="closeModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:8px;font-size:1rem">✕</button>
     </div>
     <div class="mf-group">
@@ -966,9 +848,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-   DEVIS OVERLAY
-═══════════════════════════════════════════════════════ -->
 <div id="dov">
   <div id="dbar">
     <span class="brand" style="font-size:1rem">beOtop</span>
@@ -983,10 +862,9 @@ input[type=text]::placeholder { color: var(--text-muted); }
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════════════
-   DONNÉES RÉFÉRENCE
-═══════════════════════════════════════════════════════ */
-
+/* ============================================================
+   DONNÉES RÉFÉRENCE (inchangées)
+============================================================ */
 const AT = [
   { id:'bol_air',       label:"Bol d'Air",              icon:'🌬️', m2:1.0, prix:3990, cible:'Fatigue / Cognitif',    addon:false },
   { id:'p127',          label:'Méridienne P127',         icon:'🪑', m2:2.0, prix:2750, cible:'TMS / Lombaires',       addon:false },
@@ -1016,7 +894,6 @@ const POSTURES_USINE = [
   { id:'o', label:'Obligatoire', adopt:90, color:'#a855f7' },
 ];
 
-// SCENARIOS_EXT : 6 scénarios pour usine/logistique
 const SCENARIOS_EXT = [
   { label:'-1% (seuil)',       rate:0.01 },
   { label:'-3% (pessimiste)',  rate:0.03 },
@@ -1046,10 +923,9 @@ const DEFAULT_QTYS = {
   C: { bol_air:1, p127:1, lunettes_psio:1, cocon_sieste:1, siege_massant:2, neurosonic_f:0, neurosonic_l:1, photobio:0, transat_127:1, sensolight:1, siege_lecture:0 },
 };
 
-/* ═══════════════════════════════════════════════════════
+/* ============================================================
    ÉTAT
-═══════════════════════════════════════════════════════ */
-
+============================================================ */
 let ST = {
   nbs: 400, sal: 70200,
   secteur: 'siege',
@@ -1059,7 +935,6 @@ let ST = {
   deco_pm2: 0, im_pm2: 280,
   form: 2000, anim: 2000,
   taux_dysf: 0.11, part_adressable: 0.28,
-  // Params usine/logistique — actifs dans calc() quand secteur != siege
   taux_at: 0.04, cout_at: 25000,
   taux_rotation: 0.20, cout_rotation: 6,
   taux_tms: 0.90, cout_interim_j: 280,
@@ -1068,10 +943,9 @@ let ST = {
   val: 30,
 };
 
-/* ═══════════════════════════════════════════════════════
+/* ============================================================
    UTILITAIRES
-═══════════════════════════════════════════════════════ */
-
+============================================================ */
 function eur(n) {
   return new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n);
 }
@@ -1086,34 +960,28 @@ function devisNum() {
 }
 function el(id) { return document.getElementById(id); }
 
-/* ═══════════════════════════════════════════════════════
+/* ============================================================
    COEFFICIENTS D'IMPACT
-═══════════════════════════════════════════════════════ */
-
+============================================================ */
 function getFormCoef(form) {
   const REF = 2000;
   if (form <= REF) return 0.85 + (form / REF) * 0.15;
   return 1.0 + ((form - REF) / (5000 - REF)) * 0.30;
 }
-
 function getAnimCoef(anim) {
   const REF = 2000;
   if (anim <= REF) return 0.85 + (anim / REF) * 0.15;
   return 1.0 + ((anim - REF) / (5000 - REF)) * 0.35;
 }
-
 function getDecoCoef(decoTotal) {
   if (decoTotal <= 0)     return 1.0;
   if (decoTotal <= 10000) return 1.0 + (decoTotal / 10000) * 0.05;
   return 1.05 + (Math.min(decoTotal, 30000) - 10000) / 20000 * 0.15;
 }
 
-/* ═══════════════════════════════════════════════════════
-   CALCUL PRINCIPAL
-   Toutes les divisions utilisent CTP_exact (pas de perte de précision)
-   Les arrondis ne sont effectués qu'à l'affichage via eur()
-═══════════════════════════════════════════════════════ */
-
+/* ============================================================
+   CALCUL PRINCIPAL (corrigé)
+============================================================ */
 function calc() {
   const nbs   = Math.max(1, ST.nbs);
   const sal   = ST.sal;
@@ -1126,7 +994,6 @@ function calc() {
   const po    = _pList.find(p => p.id === ST.po) || _pList[2];
   const ado   = po.adopt;
 
-  // Masse salariale chargée (charges patronales 42%)
   const salC           = sal * 1.42;
   const masseSalariale = nbs * salC;
 
@@ -1148,61 +1015,55 @@ function calc() {
   const nbPostes = AT.reduce((s, a) => s + (a.addon ? 0 : (ST.qty[a.id] || 0)), 0);
   const surfAt   = Math.round(surfNet * 2.0);
 
-  // Capacité réelle (75% de remplissage)
+  // Capacité réelle
   const sessionsParHeure = 60 / ST.duree_seance;
   const cap  = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
   const tauxOcc  = cap === 0 ? 0 : Math.min(100, Math.round((seancesPic / cap) * 100));
   const adoEff   = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
 
-  // Coûts
-  const ag       = eqT * 0.10;          // agencement 10%
-  const setup    = 2860;                 // lancement
-  const deco     = surfAt * ST.deco_pm2; // décoration
-  const im       = surfAt * ST.im_pm2 * 1.20; // loyer + charges
-  const maintenance = eqT * 0.11;       // maintenance annuelle
-
-  // Amortissements annuels
-  const amortEquip = eqT   / 4;
-  const agAm       = ag    / 5;
+  // Coûts fixes
+  const ag       = eqT * 0.10;
+  const setup    = 2860;
+  const deco     = surfAt * ST.deco_pm2;
+  const im       = surfAt * ST.im_pm2 * 1.20;
+  const maintenance = eqT * 0.11;
+  const amortEquip = eqT / 4;
+  const agAm       = ag / 5;
   const su         = setup / 3;
-  const decoAm     = deco  / 5;
-
-  // OPEX (sorties trésorerie annuelles)
+  const decoAm     = deco / 5;
   const opex = maintenance + ST.form + ST.anim;
-
-  // CTP exact (base du ROI — aucun arrondi intermédiaire)
   const CTP_exact = amortEquip + agAm + su + decoAm + im + maintenance + ST.form + ST.anim;
-
-  // Coefficients multiplicateurs
   const formCoef = getFormCoef(ST.form);
   const animCoef = getAnimCoef(ST.anim);
   const decoCoef = getDecoCoef(deco);
 
-  // Gains
+  // Base adressable théorique (tous secteurs)
   const ba_exact = masseSalariale * ST.taux_dysf * ST.part_adressable;
 
-  // CORRECTION Deepseek : en usine/logistique, le gain détaillé
-  // intègre les curseurs AT, rotation et TMS dans le calcul réel du ROI
+  // Pour secteur tertiaire, gain = ba_exact * scénario * adoption * bonus
   let gainDetail;
   if (ST.secteur !== 'siege') {
-    // Valeurs de référence (Note ROI Usine v4.1) — base de normalisation
-    const REF_AT_COST  = nbs * 0.04 * 25000;                    // ref coût AT
-    const REF_ROT_COST = nbs * 0.20 * ((ST.sal * 1.42 / 12) * 6 + 280 * 22); // ref coût rotation + intérim
-    const REF_TMS_COST = ba_exact * 0.90;                        // ref coût TMS
-    const REF_TOTAL    = REF_AT_COST + REF_ROT_COST + REF_TMS_COST;
-
-    // Coûts réels selon les curseurs utilisateur
-    const REAL_AT_COST  = nbs * ST.taux_at * ST.cout_at;
-    // Coût rotation = remplacement salarial + coût intérim pendant la période de vacance
-    // Période vacance estimée = 1 mois → cout_interim_j × 22 jours ouvrés
-    const coutInterimVacance = ST.cout_interim_j * 22;
-    const REAL_ROT_COST = nbs * ST.taux_rotation * ((ST.sal * 1.42 / 12) * ST.cout_rotation + coutInterimVacance);
-    const REAL_TMS_COST = ba_exact * ST.taux_tms;
-
-    // Coefficient = ratio réel/référence, appliqué à ba_exact
-    // → les curseurs cout_at, cout_rotation, taux_at, taux_rotation, taux_tms sont tous actifs
-    const coeffUsine = (REAL_AT_COST + REAL_ROT_COST + REAL_TMS_COST) / REF_TOTAL;
-    gainDetail = ba_exact * coeffUsine;
+    // ==========================================================
+    // MODÈLE USINE / LOGISTIQUE CORRIGÉ
+    // On calcule le coût total des trois composantes (AT, rotation, TMS)
+    // en utilisant les curseurs (taux ET coûts unitaires)
+    // Puis on applique la part adressable (ST.part_adressable)
+    // ==========================================================
+    const monthlySalary = salC / 12;
+    // Coût des accidents du travail : nb accidents × coût moyen AT
+    const nbAT = nbs * ST.taux_at;
+    const coutAT_total = nbAT * ST.cout_at;
+    // Coût du turnover : nb départs × (coût remplacement en mois × salaire mensuel + intérim)
+    // On ajoute le coût intérim sur 30 jours (durée moyenne de remplacement)
+    const nbDeparts = nbs * ST.taux_rotation;
+    const coutRemplacement = (monthlySalary * ST.cout_rotation) + (30 * ST.cout_interim_j);
+    const coutRotation_total = nbDeparts * coutRemplacement;
+    // Coût TMS : % des arrêts maladie liés aux TMS (appliqué sur base adressable)
+    // On réutilise ba_exact comme base des dysfonctionnements, puis on prend la part TMS
+    const coutTMS_total = ba_exact * ST.taux_tms;
+    // Somme des trois composantes, puis application de la part adressable
+    // (part_adressable représente la fraction de ces coûts que beOtop peut réduire)
+    gainDetail = (coutAT_total + coutRotation_total + coutTMS_total) * ST.part_adressable;
   } else {
     gainDetail = ba_exact;
   }
@@ -1210,35 +1071,38 @@ function calc() {
   const gainBase_exact = gainDetail * sc.rate * (adoEff / 100);
   const gain_exact     = gainBase_exact * formCoef * animCoef * decoCoef;
   const eco_exact      = gain_exact - CTP_exact;
-
-  // ROI & payback (calculés sur valeurs exactes)
   const roi = CTP_exact === 0 ? 0 : (eco_exact / CTP_exact) * 100;
   const capexTotal = eqT + ag + setup + deco;
   const cashFlow   = gain_exact - opex;
-  // VAN 3 ans (8%)
   let van3 = -capexTotal;
   for (let yr = 1; yr <= 3; yr++) van3 += eco_exact / Math.pow(1.08, yr);
   const seuilViab = SECTEURS[ST.secteur] && ST.secteur !== 'siege' ? 0.0305 : 0.0266;
   const pb = (cashFlow > 0 && nbPostes > 0) ? capexTotal / (cashFlow / 12) : 999;
 
+  // Composantes informatives pour affichage (déjà dans gainDetail)
+  const monthlySalaryDisp = (salC / 12);
+  const nbAT_disp = nbs * ST.taux_at;
+  const nbDeparts_disp = nbs * ST.taux_rotation;
+  const coutRemplacement_disp = (monthlySalaryDisp * ST.cout_rotation) + (30 * ST.cout_interim_j);
+  const coutAT_disp = nbAT_disp * ST.cout_at;
+  const coutRotation_disp = nbDeparts_disp * coutRemplacement_disp;
+  const coutTMS_disp = ba_exact * ST.taux_tms;
+
   return {
-    // Affichage
     nbp, nbu, seancesHebdo, seancesPic, cap, tauxOcc, adoEff, ado,
     nbPostes, surfAt,
-    // Financier (exact — arrondi uniquement à l'affichage)
     eqT, ag, agAm, amortEquip, deco, decoAm, im, maintenance, su, setup,
     opex, CTP_exact, capexTotal, cashFlow,
     ba_exact, gainBase_exact, gain_exact, eco_exact,
     roi, pb,
-    // Coefficients
     formCoef, animCoef, decoCoef,
-    van3, seuilViab, gainDetail, ba_exact,
-    // Références
+    van3, seuilViab, gainDetail,
     masseSalariale, salC, sc, po, scRate: sc.rate,
+    // Pour affichage détaillé
+    coutAT_disp, coutRotation_disp, coutTMS_disp,
   };
 }
 
-/* Calcul de référence (400 sal., option B, posture Libre, médian) */
 function calcRef() {
   const saved = { ...ST, qty: { ...ST.qty } };
   Object.assign(ST, {
@@ -1254,13 +1118,12 @@ function calcRef() {
   return Math.round(roi);
 }
 
-/* ═══════════════════════════════════════════════════════
-   RENDU INTERFACE
-═══════════════════════════════════════════════════════ */
-
+/* ============================================================
+   RENDU INTERFACE (adapté pour afficher les bonnes valeurs)
+============================================================ */
 function render() {
   const c   = calc();
-  const po  = POSTURES.find(p => p.id === ST.po);
+  const po  = (ST.secteur !== 'siege' ? POSTURES_USINE : POSTURES).find(p => p.id === ST.po) || POSTURES[2];
   const refRoi = calcRef();
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
@@ -1270,30 +1133,29 @@ function render() {
                : c.roi > 0   ? '#f59e0b'
                : '#ef4444';
 
-  // Syncer boutons secteur
-  ['siege','usine','logistique'].forEach(function(id) {
-    var btn = el('bs-'+id);
+  // Mise à jour des boutons secteur, hints, panneaux...
+  ['siege','usine','logistique'].forEach(id => {
+    const btn = el('bs-'+id);
     if (!btn) return;
-    var active = id === ST.secteur;
-    var cols = {siege:'var(--gold)', usine:'#f59e0b', logistique:'#3b82f6'};
+    const active = id === ST.secteur;
+    const cols = {siege:'var(--gold)', usine:'#f59e0b', logistique:'#3b82f6'};
     btn.className = 'mode-btn' + (active ? ' active' : '');
     btn.style.borderColor = active ? cols[id] : 'var(--border)';
     btn.querySelector('.btn-title').style.color = active ? cols[id] : 'var(--text-muted)';
   });
-  // Hint secteur
   if (el('secteur-hint') && SECTEURS[ST.secteur]) el('secteur-hint').textContent = SECTEURS[ST.secteur].hint;
-  // Panneau usine
-  var _ub = el('adv-usine-bloc');
-  if (_ub) _ub.style.display = (ST.secteur !== 'siege') ? 'grid' : 'none';
-  // Panneau posté
+  const ub = el('adv-usine-bloc');
+  if (ub) ub.style.display = (ST.secteur !== 'siege') ? 'grid' : 'none';
   if (el('postepanel')) el('postepanel').style.display = (ST.mode === 'poste') ? 'block' : 'none';
 
-  // Header
+  // Header mode
   el('mode-lbl').textContent = ST.mode === '5j' ? 'Modèle 5j / semaine' : 'Hybride ' + ST.jours + 'j / semaine';
 
   // 01 Entreprise
   el('v-nbs').textContent = fnum(ST.nbs) + ' pers.';
   el('v-sal').textContent = eur(ST.sal);
+  if (el('s-sal') && +el('s-sal').value !== ST.sal) el('s-sal').value = ST.sal;
+  if (el('s-nbs') && +el('s-nbs').value !== ST.nbs) el('s-nbs').value = ST.nbs;
 
   // 02 Mode
   el('v-nbp').textContent = c.nbp;
@@ -1306,13 +1168,12 @@ function render() {
   if (ST.mode === 'hybride') {
     el('picinfo').textContent = 'Pic : ' + Math.round((c.seancesPic / Math.max(1, c.seancesHebdo)) * 100) + '% · ' + c.nbp + ' présents/jour';
   }
-
   // Mode buttons
-  ['bm5j','bmhy','bmps'].forEach(function(id) {
-    var btn = el(id);
+  ['bm5j','bmhy','bmps'].forEach(id => {
+    const btn = el(id);
     if (!btn) return;
-    var mMap = {bm5j:'5j', bmhy:'hybride', bmps:'poste'};
-    var active = mMap[id] === ST.mode;
+    const mMap = {bm5j:'5j', bmhy:'hybride', bmps:'poste'};
+    const active = mMap[id] === ST.mode;
     btn.className = 'mode-btn' + (active ? ' active' : '');
     btn.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
     btn.querySelector('.btn-title').style.color = active ? 'var(--teal)' : 'var(--text-muted)';
@@ -1327,20 +1188,14 @@ function render() {
       btn.style.borderWidth = match ? '2px' : '1px';
     }
   }
-  el('arecap').innerHTML =
-    '<span style="color:#d4b8f0;font-weight:700">' + c.nbPostes + '</span> place(s) d\'assise · nette ' +
-    '<span style="color:#d4b8f0">' + (c.surfAt / 2.0).toFixed(1) + ' m²</span>' +
-    '<span style="color:var(--violet)"> → ' + c.surfAt + ' m²</span>' +
-    ' (+100% circ.) · équipement : ' + eur(c.eqT);
+  el('arecap').innerHTML = `<span style="color:#d4b8f0;font-weight:700">${c.nbPostes}</span> place(s) d'assise · nette <span style="color:#d4b8f0">${(c.surfAt / 2.0).toFixed(1)} m²</span><span style="color:var(--violet)"> → ${c.surfAt} m²</span> (+100% circ.) · équipement : ${eur(c.eqT)}`;
 
   // 05 Scénario hint
-  el('ref-roi-hint').innerHTML =
-    '💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). ' +
-    '(ROI calculé : <strong>+' + refRoi + '%</strong>)';
+  el('ref-roi-hint').innerHTML = `💡 Médian (−10%) ancré ANACT/CIPD. Référence étude : 400 sal., 70 200 € brut, option B, posture Libre (60%). (ROI calculé : <strong>+${refRoi}%</strong>)`;
 
   // 06 Paramètres
   el('v-deco-pm2').textContent = ST.deco_pm2 + ' €/m²';
-  el('v-im-pm2').textContent   = ST.im_pm2   + ' €/m²';
+  el('v-im-pm2').textContent   = ST.im_pm2 + ' €/m²';
   el('v-form').textContent     = eur(ST.form);
   el('v-anim').textContent     = eur(ST.anim);
 
@@ -1351,7 +1206,6 @@ function render() {
   el('v-duree_seance').textContent  = ST.duree_seance;
   el('v-heures').textContent        = ST.heures_ouverture + ' h';
   if (el('s-heures') && +el('s-heures').value !== ST.heures_ouverture) el('s-heures').value = ST.heures_ouverture;
-  // Curseurs usine
   if (el('v-taux_at'))        el('v-taux_at').textContent        = Math.round(ST.taux_at*100) + '%';
   if (el('v-cout_at'))        el('v-cout_at').textContent        = eur(ST.cout_at);
   if (el('v-taux_rotation'))  el('v-taux_rotation').textContent  = Math.round(ST.taux_rotation*100) + '%';
@@ -1359,22 +1213,17 @@ function render() {
   if (el('v-taux_tms'))       el('v-taux_tms').textContent       = Math.round(ST.taux_tms*100) + '%';
   if (el('v-cout_interim_j')) el('v-cout_interim_j').textContent = ST.cout_interim_j + ' €/j';
 
-  // ── Panneau droit ──
-
-  // Surface
-  el('r-surf').textContent    = c.surfAt;
-  el('r-postes').textContent  = c.nbPostes;
+  // Panneau droit
+  el('r-surf').textContent = c.surfAt;
+  el('r-postes').textContent = c.nbPostes;
   el('r-duree-display').textContent = ST.duree_seance;
   el('r-dp').textContent = c.seancesPic;
   el('r-ce').textContent = c.cap;
-
-  // Barre saturation
   el('r-satp').textContent = c.tauxOcc + '%';
   el('r-satp').style.color = isSat ? 'var(--red)' : 'var(--text)';
-  el('r-satb').style.width      = Math.min(c.tauxOcc, 100) + '%';
+  el('r-satb').style.width = Math.min(c.tauxOcc, 100) + '%';
   el('r-satb').style.background = isSat ? 'var(--red)' : c.tauxOcc > 75 ? 'var(--amber)' : 'var(--teal)';
 
-  // Alerte saturation
   const satAlert = el('r-sat-alert');
   if (isZero) {
     satAlert.innerHTML = '⚠️ <strong>Aucun équipement d\'assise.</strong><br>Votre espace ne peut accueillir personne. Ajoutez du matériel.';
@@ -1386,7 +1235,6 @@ function render() {
     satAlert.style.display = 'none';
   }
 
-  // Charge financière
   const decoLine = c.deco > 0 ? `<div class="rli"><span class="rl">Décoration (amort. 5 ans)</span><span class="rv">${eur(c.decoAm)}</span></div>` : '';
   el('r-ctp').innerHTML = `
     <div class="section-sub" style="margin-top:0">Frais annuels récurrents (OPEX)</div>
@@ -1399,15 +1247,9 @@ function render() {
     <div class="rli"><span class="rl">Setup initial (amort. 3 ans)</span><span class="rv">${eur(c.su)}</span></div>
     <div class="rli"><span class="rl">Loyer + charges locatives</span><span class="rv">${eur(c.im)}</span></div>
     ${decoLine}
-    <div class="rli tot">
-      <span class="rl">Charge comptable totale / an</span>
-      <span class="rv">${eur(c.CTP_exact)}</span>
-    </div>
-    <div style="text-align:right;font-size:.58rem;color:var(--text-muted);margin-top:3px">
-      ${eur(Math.round(c.CTP_exact / ST.nbs))} / collab. / an
-    </div>`;
+    <div class="rli tot"><span class="rl">Charge comptable totale / an</span><span class="rv">${eur(c.CTP_exact)}</span></div>
+    <div style="text-align:right;font-size:.58rem;color:var(--text-muted);margin-top:3px">${eur(Math.round(c.CTP_exact / ST.nbs))} / collab. / an</div>`;
 
-  // ROI card
   const roiCard = el('r-roi-card');
   roiCard.style.background = rC + '14';
   roiCard.style.borderColor = rC + '55';
@@ -1424,20 +1266,31 @@ function render() {
               : c.pb > 36  ? '36+ mois'
               : Math.round(c.pb) + ' mois';
   el('r-pb').textContent = pbStr;
-
   el('r-eco-adj').textContent = (c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact);
   el('r-eco-adj').style.color = rC;
 
-  // Badge posture + bonus
   const satWarn = isSat ? `<br><span style="color:var(--red);font-weight:700">Adoption réelle bridée à ${c.adoEff.toFixed(1)}%</span>` : '';
   const bonusLine = (c.formCoef > 1 || c.animCoef > 1 || c.decoCoef > 1)
     ? `<br><span style="color:var(--sage);font-size:.7rem">✔ Bonus gain : formation ×${c.formCoef.toFixed(2)} · animation ×${c.animCoef.toFixed(2)} · décoration ×${c.decoCoef.toFixed(2)}</span>`
     : '';
   el('r-po-badge').innerHTML = 'Posture ' + po.label + ' → ambition ' + c.ado + '%' + satWarn + bonusLine;
 
-  // Lignes ROI
+  // Affichage détaillé des gains
+  let gainDetailsHTML = '';
+  if (ST.secteur !== 'siege') {
+    gainDetailsHTML = `
+    <div style="font-size:.58rem;color:var(--text-muted);margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(255,255,255,.06)">Composantes du gain (curseurs actifs) :</div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#f59e0b">AT évitables (${Math.round(ST.taux_at*100)}% × ${eur(ST.cout_at)})</span><span class="rv">${eur(c.coutAT_disp)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#ef4444">Rotation (${Math.round(ST.taux_rotation*100)}% × ${ST.cout_rotation} mois + intérim)</span><span class="rv">${eur(c.coutRotation_disp)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#a855f7">TMS (${Math.round(ST.taux_tms*100)}% mal.pro)</span><span class="rv">${eur(c.coutTMS_disp)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:var(--amber)">× Part adressable</span><span class="rv">× ${Math.round(ST.part_adressable*100)}%</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#10b981">VAN 3 ans (8%)</span><span class="rv" style="font-weight:700">${(c.van3>0?'+':'') + eur(c.van3)}</span></div>
+    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv">−${(c.seuilViab*100).toFixed(2)}%</span></div>
+    `;
+  }
+
   el('r-roi-lines').innerHTML = `
-    <div class="rli"><span class="rl">Base adressable</span><span class="rv">${eur(c.ba_exact)}</span></div>
+    <div class="rli"><span class="rl">Base adressable (brute)</span><span class="rv">${eur(c.ba_exact)}</span></div>
     <div class="rli"><span class="rl">Gain brut (${c.sc.label} × ${c.adoEff.toFixed(1)}% réels)</span><span class="rv">${eur(c.gainBase_exact)}</span></div>
     <div class="rli"><span class="rl">Coefficients multiplicateurs</span><span class="rv">×${(c.formCoef * c.animCoef * c.decoCoef).toFixed(2)}</span></div>
     <div class="rli"><span class="rl">Gain après bonus</span><span class="rv">${eur(c.gain_exact)}</span></div>
@@ -1445,33 +1298,23 @@ function render() {
       <span class="rl" style="color:${rC}">Économie nette</span>
       <span class="rv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span>
     </div>
-    ${ST.secteur !== 'siege' ? `
-    <div style="font-size:.58rem;color:var(--text-muted);margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(255,255,255,.06)">Composantes du gain (curseurs actifs) :</div>
-    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#f59e0b">AT évitables (${Math.round(ST.taux_at*100)}% × ${eur(ST.cout_at)})</span><span class="rv">${eur(ST.nbs * ST.taux_at * ST.cout_at * (c.adoEff/100) * c.scRate)}</span></div>
-    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#ef4444">Rotation (${Math.round(ST.taux_rotation*100)}% × ${ST.cout_rotation} mois)</span><span class="rv">${eur(ST.nbs * ST.taux_rotation * (ST.sal*1.42/12) * ST.cout_rotation * (c.adoEff/100) * c.scRate)}</span></div>
-    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:#a855f7">TMS (${Math.round(ST.taux_tms*100)}% mal.pro)</span><span class="rv">${eur(c.ba_exact * ST.taux_tms * c.scRate * (c.adoEff/100))}</span></div>
-    <div class="rli" style="font-size:.68rem;margin-top:.2rem"><span class="rl" style="color:#10b981">VAN 3 ans (8%)</span><span class="rv" style="font-weight:700">${(c.van3>0?'+':'') + eur(c.van3)}</span></div>
-    <div class="rli" style="font-size:.68rem"><span class="rl" style="color:var(--amber)">Seuil viabilité minimum</span><span class="rv">−${(c.seuilViab*100).toFixed(2)}%</span></div>
-    ` : ''}`;
+    ${gainDetailsHTML}
+  `;
 }
 
-/* ═══════════════════════════════════════════════════════
-   RENDU COMPOSANTS
-═══════════════════════════════════════════════════════ */
-
+/* ============================================================
+   RENDU COMPOSANTS (inchangé)
+============================================================ */
 function renderAt() {
   const grid = el('agrid');
   grid.innerHTML = '';
   for (const a of AT) {
-    const q  = ST.qty[a.id] || 0;
+    const q = ST.qty[a.id] || 0;
     const on = q > 0;
     const div = document.createElement('div');
     div.className = 'acard' + (on ? ' on' : '');
     div.innerHTML = `
-      <div class="acard-top">
-        <span style="font-size:.9rem">${a.icon}</span>
-        <span class="acard-label">${a.label}${a.addon ? '<span class="addon-badge">Add-on</span>' : ''}</span>
-      </div>
+      <div class="acard-top"><span style="font-size:.9rem">${a.icon}</span><span class="acard-label">${a.label}${a.addon ? '<span class="addon-badge">Add-on</span>' : ''}</span></div>
       <div class="acard-meta">${a.m2} m² · ${eur(a.prix)} HT · ${a.cible}</div>
       <div class="acard-ctrl">
         <button class="qbtn${q === 0 ? ' off' : ''}" onclick="addQ('${a.id}',-1)">−</button>
@@ -1493,29 +1336,26 @@ function renderPo() {
     btn.className = 'pos-btn' + (active ? ' active' : '');
     btn.style.borderColor = active ? p.color + '80' : 'var(--border)';
     btn.style.background  = active ? p.color + '16' : 'var(--surface)';
-    btn.onclick = (function(id) { return function() { ST.po = id; renderPo(); render(); }; })(p.id);
-    btn.innerHTML = `
-      <div class="pb-title" style="color:${active ? p.color : 'var(--text-muted)'}">${p.label}</div>
-      <div class="pb-sub">Ambition ${p.adopt}%</div>`;
+    btn.onclick = () => { ST.po = p.id; renderPo(); render(); };
+    btn.innerHTML = `<div class="pb-title" style="color:${active ? p.color : 'var(--text-muted)'}">${p.label}</div><div class="pb-sub">Ambition ${p.adopt}%</div>`;
     grid.appendChild(btn);
   }
 }
 
 function renderSc() {
-  var grid = el('scgrid');
+  const grid = el('scgrid');
   grid.innerHTML = '';
-  var useExt = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
-  var scList = useExt ? SCENARIOS_EXT : SCENARIOS;
-  var subs = ['seuil','pessim.','','médian','optim.','max AT'];
+  const useExt = SECTEURS[ST.secteur] && SECTEURS[ST.secteur].scenarios_ext;
+  const scList = useExt ? SCENARIOS_EXT : SCENARIOS;
+  const subs = ['seuil','pessim.','','médian','optim.','max AT'];
   if (ST.sc > scList.length) ST.sc = scList.length;
-  for (var i = 0; i < scList.length; i++) {
-    var active = ST.sc === i + 1;
-    var btn = document.createElement('button');
+  for (let i = 0; i < scList.length; i++) {
+    const active = ST.sc === i + 1;
+    const btn = document.createElement('button');
     btn.className = 'sc-btn' + (active ? ' active' : '');
-    (function(idx) { btn.onclick = function() { ST.sc = idx+1; renderSc(); render(); }; })(i);
-    var rateColor = active ? 'var(--sage)' : (i===0 ? 'var(--red)' : (i===scList.length-1&&useExt ? 'var(--amber)' : 'var(--text-muted))'));
-    btn.innerHTML = '<div class="sc-rate" style="color:'+rateColor+'">'+scList[i].label.split(' ')[0]+'</div>'
-      + '<div class="sc-sub" style="color:'+rateColor+'">'+(subs[i]||'')+'</div>';
+    btn.onclick = (function(idx) { return function() { ST.sc = idx+1; renderSc(); render(); }; })(i);
+    const rateColor = active ? 'var(--sage)' : (i===0 ? 'var(--red)' : (i===scList.length-1&&useExt ? 'var(--amber)' : 'var(--text-muted)'));
+    btn.innerHTML = '<div class="sc-rate" style="color:'+rateColor+'">'+scList[i].label.split(' ')[0]+'</div><div class="sc-sub" style="color:'+rateColor+'">'+(subs[i]||'')+'</div>';
     grid.appendChild(btn);
   }
 }
@@ -1527,37 +1367,31 @@ function renderJours() {
   });
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ============================================================
    ACTIONS UTILISATEUR
-═══════════════════════════════════════════════════════ */
-
+============================================================ */
 function setSecteur(s) {
   if (!SECTEURS[s]) return;
   ST.secteur = s;
-  var sec = SECTEURS[s];
+  const sec = SECTEURS[s];
   ST.sal            = sec.sal;
   ST.taux_dysf      = sec.taux_dysf;
   ST.part_adressable = sec.part_adr;
   ST.im_pm2         = sec.im_pm2;
-  // Params AT/rotation selon secteur
   if (s === 'usine')      { ST.taux_at=0.04; ST.taux_rotation=0.20; ST.taux_tms=0.90; }
   else if (s==='logistique') { ST.taux_at=0.05; ST.taux_rotation=0.25; ST.taux_tms=0.70; }
   else                   { ST.taux_at=0.02; ST.taux_rotation=0.10; ST.taux_tms=0.15; }
-  // Ajuster heures_ouverture selon secteur
   if (s === 'usine' || s === 'logistique') {
-    ST.heures_ouverture = 24; // 3×8 par défaut
-    var hSlider = el('s-heures');
-    if (hSlider) hSlider.value = 24;
+    ST.heures_ouverture = 24;
+    if (el('s-heures')) el('s-heures').value = 24;
   } else {
     ST.heures_ouverture = 8;
-    var hSlider2 = el('s-heures');
-    if (hSlider2) hSlider2.value = 8;
+    if (el('s-heures')) el('s-heures').value = 8;
   }
-  // Syncer sliders
-  ['s-sal','s-taux_dysf','s-part_adr','s-im-pm2','s-taux_at','s-taux_rotation','s-taux_tms'].forEach(function(id) {
-    var sl = el(id);
+  ['s-sal','s-taux_dysf','s-part_adr','s-im-pm2','s-taux_at','s-taux_rotation','s-taux_tms'].forEach(id => {
+    const sl = el(id);
     if (!sl) return;
-    var vals = {'s-sal':ST.sal,'s-taux_dysf':ST.taux_dysf,'s-part_adr':ST.part_adressable,'s-im-pm2':ST.im_pm2,'s-taux_at':ST.taux_at,'s-taux_rotation':ST.taux_rotation,'s-taux_tms':ST.taux_tms};
+    const vals = {'s-sal':ST.sal,'s-taux_dysf':ST.taux_dysf,'s-part_adr':ST.part_adressable,'s-im-pm2':ST.im_pm2,'s-taux_at':ST.taux_at,'s-taux_rotation':ST.taux_rotation,'s-taux_tms':ST.taux_tms};
     sl.value = vals[id];
   });
   renderPo();
@@ -1567,26 +1401,16 @@ function setSecteur(s) {
 
 function setPostes(n) {
   ST.nb_postes = n;
-  document.querySelectorAll('[data-p]').forEach(function(btn) {
-    var active = +btn.getAttribute('data-p') === n;
+  document.querySelectorAll('[data-p]').forEach(btn => {
+    const active = +btn.getAttribute('data-p') === n;
     btn.className = 'day-btn' + (active ? ' active' : '');
   });
   render();
 }
-
 function setMode(m)  { ST.mode = m; renderJours(); render(); }
 function setJours(j) { ST.jours = j; renderJours(); render(); }
-
-function addQ(id, d) {
-  ST.qty[id] = Math.max(0, Math.min(5, (ST.qty[id] || 0) + d));
-  renderAt(); render();
-}
-
-function setOption(opt) {
-  ST.qty = { ...DEFAULT_QTYS[opt] };
-  renderAt(); render();
-}
-
+function addQ(id, d) { ST.qty[id] = Math.max(0, Math.min(5, (ST.qty[id] || 0) + d)); renderAt(); render(); }
+function setOption(opt) { ST.qty = { ...DEFAULT_QTYS[opt] }; renderAt(); render(); }
 function setVal(v) {
   ST.val = v;
   document.querySelectorAll('.val-btn').forEach(btn => {
@@ -1594,33 +1418,23 @@ function setVal(v) {
     btn.className = 'val-btn' + (active ? ' active' : '');
   });
 }
-
 function toggleAdv() {
   const body = el('adv-body');
   body.classList.toggle('open');
   el('adv-arrow').textContent = body.classList.contains('open') ? '▲' : '▼';
 }
-
 function openModal()  { el('modal').classList.add('on'); }
 function closeModal() { el('modal').classList.remove('on'); }
 function closeDevis() { el('dov').classList.remove('on'); }
 
-/* ═══════════════════════════════════════════════════════
-   GÉNÉRATION DU DEVIS
-   Séparé en fonctions helper pour lisibilité et maintenabilité
-═══════════════════════════════════════════════════════ */
-
+/* ============================================================
+   GÉNÉRATION DU DEVIS (inchangée, mais réutilise calc() corrigé)
+============================================================ */
 function dLi(label, value, cls = '') {
   return `<div class="d-li${cls ? ' ' + cls : ''}"><span class="ll">${label}</span><span class="lv">${value}</span></div>`;
 }
-
-function dSttl(text) {
-  return `<div class="d-sttl">${text}</div>`;
-}
-
-function dSectionSub(text) {
-  return `<div class="d-section-sub">${text}</div>`;
-}
+function dSttl(text) { return `<div class="d-sttl">${text}</div>`; }
+function dSectionSub(text) { return `<div class="d-section-sub">${text}</div>`; }
 
 function dEquipRows(c) {
   const sel = AT.filter(a => (ST.qty[a.id] || 0) > 0);
@@ -1635,26 +1449,8 @@ function dEquipRows(c) {
       <td class="num">${eur(a.prix * q)}</td>
     </tr>`;
   }).join('');
-
-  const decoRow = c.deco > 0
-    ? `<tr><td colspan="5" style="color:#6a6a8a">Décoration (${ST.deco_pm2} €/m² × ${c.surfAt} m²)</td><td class="num" style="color:#6a6a8a">${eur(c.deco)}</td></tr>`
-    : '';
-
-  return `<table class="d-tbl">
-    <thead><tr>
-      <th style="width:30%">Équipement</th><th>Indication</th>
-      <th style="text-align:center">m²</th><th class="num">Qté</th>
-      <th class="num">Prix HT</th><th class="num">Total HT</th>
-    </tr></thead>
-    <tbody>
-      ${rows}
-      <tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT</td><td class="num" style="color:#6a6a8a">${eur(c.eqT)}</td></tr>
-      <tr><td colspan="5" style="color:#6a6a8a">Frais d'agencement (10% matériel)</td><td class="num" style="color:#6a6a8a">${eur(c.ag)}</td></tr>
-      <tr><td colspan="5" style="color:#6a6a8a">Setup initial (communication & lancement)</td><td class="num" style="color:#6a6a8a">${eur(c.setup)}</td></tr>
-      ${decoRow}
-      <tr class="st"><td colspan="5">TOTAL INVESTISSEMENT INITIAL (CAPEX)</td><td class="num">${eur(c.capexTotal)}</td></tr>
-    </tbody>
-  </table>`;
+  const decoRow = c.deco > 0 ? `<tr><td colspan="5" style="color:#6a6a8a">Décoration (${ST.deco_pm2} €/m² × ${c.surfAt} m²)</td><td class="num" style="color:#6a6a8a">${eur(c.deco)}</td>` : '';
+  return `<table class="d-tbl"><thead><tr><th style="width:30%">Équipement</th><th>Indication</th><th style="text-align:center">m²</th><th class="num">Qté</th><th class="num">Prix HT</th><th class="num">Total HT</th></tr></thead><tbody>${rows}<tr><td colspan="5" style="color:#6a6a8a">Sous-total Matériel HT</td><td class="num" style="color:#6a6a8a">${eur(c.eqT)}</td></tr><tr><td colspan="5" style="color:#6a6a8a">Frais d'agencement (10% matériel)</td><td class="num" style="color:#6a6a8a">${eur(c.ag)}</td></tr><tr><td colspan="5" style="color:#6a6a8a">Setup initial (communication & lancement)</td><td class="num" style="color:#6a6a8a">${eur(c.setup)}</td></tr>${decoRow}<tr class="st"><td colspan="5">TOTAL INVESTISSEMENT INITIAL (CAPEX)</td><td class="num">${eur(c.capexTotal)}</td></tr></tbody></table>`;
 }
 
 function dChargeSection(c) {
@@ -1664,190 +1460,76 @@ function dChargeSection(c) {
     ${dLi('Maintenance (11% équip.)', eur(c.maintenance) + '/an')}
     ${dLi('Formation continue managers', eur(ST.form) + '/an')}
     ${dLi('Animation espace', eur(ST.anim) + '/an')}
-    <div class="d-li tl" style="background:#f0faf4;border-radius:4pt;padding:5pt 8pt;margin-top:4pt">
-      <span class="ll" style="color:#3a8a5a;font-size:8pt">Sous-total OPEX récurrent</span>
-      <span class="lv" style="color:#3a8a5a">${eur(c.opex)} / an</span>
-    </div>
+    <div class="d-li tl" style="background:#f0faf4;border-radius:4pt;padding:5pt 8pt;margin-top:4pt"><span class="ll" style="color:#3a8a5a;font-size:8pt">Sous-total OPEX récurrent</span><span class="lv" style="color:#3a8a5a">${eur(c.opex)} / an</span></div>
     ${dSectionSub('Coûts indirects / Amortissements (Impact P&L)')}
     ${dLi('Amortissement matériel (4 ans)', eur(c.amortEquip) + '/an')}
     ${dLi('Amort. Agencement 10% (5 ans)', eur(c.agAm) + '/an')}
     ${dLi('Amortissement Setup initial (3 ans)', eur(c.su) + '/an')}
     ${dLi('Loyer + charges locatives', eur(c.im) + '/an')}
     ${decoLine}
-    <div class="d-li tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt">
-      <span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span>
-      <span class="lv">${eur(c.CTP_exact)} / an</span>
-    </div>`;
+    <div class="d-li tl" style="background:#f8f6f2;border-radius:4pt;padding:6pt 8pt;margin-top:8pt"><span class="ll" style="color:#c8a96e">Charge comptable totale (Base calcul ROI)</span><span class="lv">${eur(c.CTP_exact)} / an</span></div>`;
 }
 
 function dSyntheseBox(c) {
-  return `<div class="d-synthese">
-    <div style="font-size:7.5pt;font-weight:700;color:#2a4a7a;letter-spacing:1pt;text-transform:uppercase;margin-bottom:6pt">💰 Synthèse décisionnelle</div>
-    <div class="d-synthese-grid">
-      <div class="d-synthese-box">
-        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Année 1 (décaissement)</div>
-        <div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.capexTotal + c.opex)}</div>
-        <div style="font-size:7pt;color:#6a6a8a">CAPEX ${eur(c.capexTotal)} + OPEX ${eur(c.opex)}</div>
-      </div>
-      <div class="d-synthese-box">
-        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Années suivantes (récurrent)</div>
-        <div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.opex)} /an</div>
-        <div style="font-size:7pt;color:#6a6a8a">Maintenance + Formation + Animation</div>
-      </div>
-      <div class="d-synthese-box">
-        <div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Charge P&L annuelle</div>
-        <div style="font-size:14pt;font-weight:700;color:#c8a96e">${eur(c.CTP_exact)} /an</div>
-        <div style="font-size:7pt;color:#6a6a8a">OPEX + amortissements + loyer</div>
-      </div>
-    </div>
-    <div style="font-size:7pt;color:#6a6a8a;margin-top:6pt;font-style:italic">
-      * Charge calculée sur les années 1–3 (cas le plus défavorable). À partir de l'an 4, la charge diminue à mesure que les amortissements s'éteignent.
-    </div>
-  </div>`;
+  return `<div class="d-synthese"><div style="font-size:7.5pt;font-weight:700;color:#2a4a7a;letter-spacing:1pt;text-transform:uppercase;margin-bottom:6pt">💰 Synthèse décisionnelle</div><div class="d-synthese-grid"><div class="d-synthese-box"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Année 1 (décaissement)</div><div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.capexTotal + c.opex)}</div><div style="font-size:7pt;color:#6a6a8a">CAPEX ${eur(c.capexTotal)} + OPEX ${eur(c.opex)}</div></div><div class="d-synthese-box"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Années suivantes (récurrent)</div><div style="font-size:14pt;font-weight:700;color:#1a1a2e">${eur(c.opex)} /an</div><div style="font-size:7pt;color:#6a6a8a">Maintenance + Formation + Animation</div></div><div class="d-synthese-box"><div style="font-size:7pt;color:#6a6a8a;text-transform:uppercase">Charge P&L annuelle</div><div style="font-size:14pt;font-weight:700;color:#c8a96e">${eur(c.CTP_exact)} /an</div><div style="font-size:7pt;color:#6a6a8a">OPEX + amortissements + loyer</div></div></div><div style="font-size:7pt;color:#6a6a8a;margin-top:6pt;font-style:italic">* Charge calculée sur les années 1–3 (cas le plus défavorable). À partir de l'an 4, la charge diminue à mesure que les amortissements s'éteignent.</div></div>`;
 }
 
 function dRoiSection(c, pbStr, rC) {
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
   const roiVal = isZero ? '—' : (c.roi > 0 ? '+' : '') + Math.round(c.roi) + '%';
-  const awH = !c.nbPostes
-    ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>'
-    : isSat
-    ? `<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation :</strong> Capacité insuffisante. Les gains sont bridés à l'adoption réelle (${c.adoEff.toFixed(1)}%).</div>`
-    : '';
-
+  const awH = !c.nbPostes ? '<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Aucun équipement :</strong> Votre espace ne peut accueillir personne, le ROI est bloqué à zéro.</div>' : isSat ? `<div style="background:#fde8e8;border:.5pt solid rgba(239,68,68,.3);border-radius:4pt;padding:6pt 10pt;margin-top:6pt;font-size:7.5pt;color:#c0392b"><strong>⚠️ Saturation :</strong> Capacité insuffisante. Les gains sont bridés à l'adoption réelle (${c.adoEff.toFixed(1)}%).</div>` : '';
   return `
-    <div class="d-roi">
-      <div class="d-rbox ${c.roi >= 0 && !isZero ? 'pos' : 'neg'}" style="border-color:${rC}">
-        <div class="d-rbig" style="color:${rC}">${roiVal}</div>
-        <div class="d-rlbl">ROI annuel net</div>
-      </div>
-      <div class="d-rbox neu">
-        <div class="d-rbig neu">${pbStr}</div>
-        <div class="d-rlbl">Payback net</div>
-      </div>
-      <div class="d-rbox neu">
-        <div class="d-rbig neu">${eur(Math.round(c.masseSalariale * ST.taux_dysf))}</div>
-        <div class="d-rlbl">Coût dysfonctionnements</div>
-      </div>
-    </div>
+    <div class="d-roi"><div class="d-rbox ${c.roi >= 0 && !isZero ? 'pos' : 'neg'}" style="border-color:${rC}"><div class="d-rbig" style="color:${rC}">${roiVal}</div><div class="d-rlbl">ROI annuel net</div></div><div class="d-rbox neu"><div class="d-rbig neu">${pbStr}</div><div class="d-rlbl">Payback net</div></div><div class="d-rbox neu"><div class="d-rbig neu">${eur(Math.round(c.masseSalariale * ST.taux_dysf))}</div><div class="d-rlbl">Coût dysfonctionnements</div></div></div>
     ${dLi('Base adressable', eur(c.ba_exact))}
     ${dLi('Gain brut (' + c.sc.label + ' × ' + c.adoEff.toFixed(1) + '% adoption réelle)', eur(c.gainBase_exact))}
     ${dLi('Coefficients bonus (formation, animation, décoration)', '×' + (c.formCoef * c.animCoef * c.decoCoef).toFixed(2))}
     ${dLi('Gain après bonus', eur(c.gain_exact))}
     ${dLi('Charge comptable totale', '− ' + eur(c.CTP_exact))}
-    <div class="d-li tl">
-      <span class="ll" style="color:${rC}">Économie nette / an</span>
-      <span class="lv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span>
-    </div>
+    <div class="d-li tl"><span class="ll" style="color:${rC}">Économie nette / an</span><span class="lv" style="color:${rC}">${(c.eco_exact > 0 ? '+' : '') + eur(c.eco_exact)}</span></div>
     ${awH}
-    <div class="d-ctx">
-      <strong>Hypothèses :</strong> Dysf. RH : ${Math.round(ST.taux_dysf*100)}% (ANACT) · Part adressable : ${Math.round(ST.part_adressable*100)}% · Sessions/sem : ${ST.seances_par_semaine} · Durée : ${ST.duree_seance} min · Adoption : ${c.ado}% · Ouverture : ${ST.heures_ouverture}h/j (75% remplissage).
-      <strong>Réf. étude : +${calcRef()}% pour 400 sal., option B, posture Libre (60%).</strong>
-    </div>`;
+    <div class="d-ctx"><strong>Hypothèses :</strong> Dysf. RH : ${Math.round(ST.taux_dysf*100)}% (ANACT) · Part adressable : ${Math.round(ST.part_adressable*100)}% · Sessions/sem : ${ST.seances_par_semaine} · Durée : ${ST.duree_seance} min · Adoption : ${c.ado}% · Ouverture : ${ST.heures_ouverture}h/j (75% remplissage).<strong>Réf. étude : +${calcRef()}% pour 400 sal., option B, posture Libre (60%).</strong></div>`;
 }
 
 function genDevis() {
   closeModal();
   const c   = calc();
-  const po  = POSTURES.find(p => p.id === ST.po);
+  const po  = (ST.secteur !== 'siege' ? POSTURES_USINE : POSTURES).find(p => p.id === ST.po) || POSTURES[2];
   const pro = el('f-pro').value || '—';
   const con = el('f-con').value || '—';
   const com = el('f-com').value || '—';
   const dnum = devisNum();
   const today = dateStr();
-  const expiry = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() + ST.val);
-    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
-  })();
-
+  const expiry = (() => { const d = new Date(); d.setDate(d.getDate() + ST.val); return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' }); })();
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
   const rC     = isZero ? '#4a4a6a' : c.roi > 0 ? '#10b981' : '#ef4444';
   const pbStr  = c.pb <= 0 || c.pb === 999 ? 'Jamais' : c.pb < 1 ? '<1 mois' : c.pb > 36 ? '36+ mois' : Math.round(c.pb) + ' mois';
-
   el('dpaper').innerHTML = `
   <div class="dv">
     <div class="d-strip"></div>
-    <div class="d-hdr">
-      <div>
-        <div class="d-logo">beOtop</div>
-        <div class="d-title">Proposition commerciale</div>
-        <div class="d-sub">Espace de récupération unique &amp; bien-être au travail</div>
-      </div>
-      <div class="d-meta">
-        <strong>N° ${dnum}</strong>
-        Établi le ${today}<br>
-        Valable jusqu'au ${expiry}<br>
-        Commercial : ${com}
-      </div>
-    </div>
-    <div class="d-body">
-      <div class="d-pros">
-        <div class="d-pb">
-          <div class="d-plbl">Établi pour</div>
-          <div class="d-pval">${pro}</div>
-          <div class="d-psub">${con}</div>
-        </div>
-        <div class="d-pb">
-          <div class="d-plbl">Contexte</div>
-          <div class="d-pval">${ST.nbs} collaborateurs</div>
-          <div class="d-psub">${ST.mode === '5j' ? 'Présentiel 5j/sem.' : 'Hybride ' + ST.jours + 'j/sem.'} · Posture ${po.label}</div>
-        </div>
-        <div class="d-pb">
-          <div class="d-plbl">L'Espace beOtop</div>
-          <div class="d-pval">${c.nbPostes} place(s) d'assise</div>
-          <div class="d-pval" style="font-size:8pt;margin-top:2pt">${AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)} ateliers au total</div>
-          <div class="d-psub">Surface cible : ${c.surfAt} m²</div>
-        </div>
-      </div>
-
+    <div class="d-hdr"><div><div class="d-logo">beOtop</div><div class="d-title">Proposition commerciale</div><div class="d-sub">Espace de récupération unique &amp; bien-être au travail</div></div><div class="d-meta"><strong>N° ${dnum}</strong>Établi le ${today}<br>Valable jusqu'au ${expiry}<br>Commercial : ${com}</div></div>
+    <div class="d-body"><div class="d-pros"><div class="d-pb"><div class="d-plbl">Établi pour</div><div class="d-pval">${pro}</div><div class="d-psub">${con}</div></div><div class="d-pb"><div class="d-plbl">Contexte</div><div class="d-pval">${ST.nbs} collaborateurs</div><div class="d-psub">${ST.mode === '5j' ? 'Présentiel 5j/sem.' : 'Hybride ' + ST.jours + 'j/sem.'} · Posture ${po.label}</div></div><div class="d-pb"><div class="d-plbl">L'Espace beOtop</div><div class="d-pval">${c.nbPostes} place(s) d'assise</div><div class="d-pval" style="font-size:8pt;margin-top:2pt">${AT.reduce((s,a)=>s+(ST.qty[a.id]||0),0)} ateliers au total</div><div class="d-psub">Surface cible : ${c.surfAt} m²</div></div></div>
       ${dSttl('01 · Dépenses d\'investissement initial (CAPEX)')}
       ${dEquipRows(c)}
-
       ${dSttl('02 · Charge Financière Annuelle')}
       ${dChargeSection(c)}
       ${dSyntheseBox(c)}
-
       ${dSttl('03 · Retour sur investissement (ROI)')}
       ${dRoiSection(c, pbStr, rC)}
-
       ${dSttl('04 · Conditions d\'atteinte du ROI')}
-      <div class="d-cond">
-        <ul>
-          <li>Charte d'accès signée par la Direction <span class="d-badge cr">CRITIQUE</span></li>
-          <li>Formation managers avant ouverture <span class="d-badge cr">CRITIQUE</span></li>
-          <li>Protocole de mesure KPI dès J1 <span class="d-badge si">SIGNIFICATIF</span></li>
-          <li>Communication interne structurée <span class="d-badge si">SIGNIFICATIF</span></li>
-          <li>Pilote instrumenté 6 mois <span class="d-badge mo">MODÉRÉ</span></li>
-        </ul>
-      </div>
+      <div class="d-cond"><ul><li>Charte d'accès signée par la Direction <span class="d-badge cr">CRITIQUE</span></li><li>Formation managers avant ouverture <span class="d-badge cr">CRITIQUE</span></li><li>Protocole de mesure KPI dès J1 <span class="d-badge si">SIGNIFICATIF</span></li><li>Communication interne structurée <span class="d-badge si">SIGNIFICATIF</span></li><li>Pilote instrumenté 6 mois <span class="d-badge mo">MODÉRÉ</span></li></ul></div>
     </div>
-
-    <div class="d-ftr">
-      <div class="d-fl">
-        <strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>
-        ${com}<br>
-        Devis ${dnum} · Valable jusqu'au ${expiry}
-      </div>
-      <div class="d-fr">
-        ${pro} · ${ST.nbs} collab.<br>
-        ${today}<br>
-        <em>Estimations indicatives — ROI moyen simulé, non garanti</em>
-      </div>
-    </div>
+    <div class="d-ftr"><div class="d-fl"><strong style="color:#1a1a2e">beOtop</strong> — Récupération en entreprise<br>${com}<br>Devis ${dnum} · Valable jusqu'au ${expiry}</div><div class="d-fr">${pro} · ${ST.nbs} collab.<br>${today}<br><em>Estimations indicatives — ROI moyen simulé, non garanti</em></div></div>
     <div class="d-strip"></div>
   </div>`;
-
   el('dov').classList.add('on');
   el('dov').scrollTop = 0;
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ============================================================
    INITIALISATION
-═══════════════════════════════════════════════════════ */
-
+============================================================ */
 renderJours();
 renderAt();
 renderPo();
