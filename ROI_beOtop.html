@@ -656,7 +656,7 @@ input[type=text]::placeholder { color: var(--text-muted); }
   <!-- 02 MODE DE TRAVAIL -->
   <div class="sec">
     <div class="sec-ttl" style="color:var(--teal);border-color:rgba(126,184,201,.2)">02 · Mode de travail</div>
-    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap">
       <button class="mode-btn" id="bm5j" onclick="setMode('5j')">
         <div class="btn-title" style="color:var(--teal)">🏢 5j / semaine</div>
         <div class="btn-sub">Flux lissé</div>
@@ -665,6 +665,25 @@ input[type=text]::placeholder { color: var(--text-muted); }
         <div class="btn-title" style="color:var(--text-muted)">🔄 Hybride</div>
         <div class="btn-sub">Pic concentré</div>
       </button>
+      <button class="mode-btn" id="bmps" onclick="setMode('poste')">
+        <div class="btn-title" style="color:var(--text-muted)">🏭 Travail posté</div>
+        <div class="btn-sub">2×8 / 3×8 / 4×8</div>
+      </button>
+    </div>
+    <!-- Panneau travail posté -->
+    <div id="postepanel" style="display:none;background:rgba(240,160,96,.08);border-radius:10px;padding:.8rem;border:1px solid rgba(240,160,96,.3);margin-bottom:.8rem">
+      <div style="font-size:.68rem;color:var(--orange);font-weight:600;margin-bottom:.6rem">Configuration des postes</div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.6rem" id="poste-btns">
+        <button class="day-btn" data-p="2" onclick="setPostes(2)" style="border-color:var(--orange)">2×8<br><span style="font-size:.5rem">16h/j</span></button>
+        <button class="day-btn active" data-p="3" onclick="setPostes(3)" style="border-color:var(--orange);background:rgba(240,160,96,.15);color:var(--orange)">3×8<br><span style="font-size:.5rem;color:var(--gold)">✓ réf.</span></button>
+        <button class="day-btn" data-p="4" onclick="setPostes(4)" style="border-color:var(--orange)">4×8<br><span style="font-size:.5rem">continu</span></button>
+      </div>
+      <div id="posteinfo" style="font-size:.62rem;color:var(--text-muted);margin-bottom:.5rem"></div>
+      <div style="font-size:.6rem;color:rgba(240,160,96,.7);line-height:1.6;background:rgba(240,160,96,.05);border-radius:6px;padding:.4rem .6rem">
+        &#9888;&#65039; Travail posté 3×8 : facteur aggravant reconnu AT/MP (DARES/INRS) · 
+        Absentéisme majoré +20% · Capacité espace calculée sur amplitude réelle · 
+        Coeff. nuit/WE appliqué sur coût intérim
+      </div>
     </div>
     <div id="jpanel" style="display:none;background:var(--teal-dim);border-radius:10px;padding:.8rem;border:1px solid var(--teal-border);margin-bottom:.8rem">
       <div style="font-size:.68rem;color:var(--text-dim);margin-bottom:.5rem">Jours de présence / semaine</div>
@@ -1094,7 +1113,7 @@ const DEFAULT_QTYS = {
 let ST = {
   nbs: 400, sal: 70200,
   secteur: 'siege',
-  mode: '5j', jours: 3,
+  mode: '5j', jours: 3, nb_postes: 3,
   qty: { ...DEFAULT_QTYS.B },
   po: 'l', sc: 4,
   deco_pm2: 0, im_pm2: 280,
@@ -1175,7 +1194,14 @@ function calc() {
   const masseSalariale = nbs * salC;
 
   // Présents par jour & demande
-  const nbp     = Math.round(nbs * (mode === '5j' ? 1 : jours / 5));
+  const isPoste = mode === 'poste';
+  const nbPostesPlanning = ST.nb_postes || 3;
+  // En travail posté : 1/nb_postes des effectifs présents par quart
+  const nbp     = isPoste
+    ? Math.round(nbs / nbPostesPlanning)
+    : Math.round(nbs * (mode === '5j' ? 1 : jours / 5));
+  // Majoration absentéisme 3×8 +20% (DARES/INRS)
+  const coeff_abs_poste = isPoste ? 1.20 : 1.0;
   const nbu     = Math.round(Math.max(1, nbp) * ado / 100);
   const picC    = mode === '5j' ? 0.20 : (jours <= 1 ? 1.00 : jours <= 2 ? 0.60 : jours <= 3 ? 0.40 : jours <= 4 ? 0.28 : 0.20);
   const nbu_tot = Math.round(nbs * ado / 100);
@@ -1193,8 +1219,12 @@ function calc() {
   const surfAt   = Math.round(surfNet * 2.0);
 
   // Capacité réelle (75% de remplissage)
+  // En travail posté : l'espace est accessible sur l'amplitude réelle (8h × nb_postes)
+  const heuresEffectives = isPoste
+    ? Math.min(ST.heures_ouverture * nbPostesPlanning, 24)
+    : ST.heures_ouverture;
   const sessionsParHeure = 60 / ST.duree_seance;
-  const cap  = Math.floor(sessionsParHeure * nbPostes * ST.heures_ouverture * 0.75);
+  const cap  = Math.floor(sessionsParHeure * nbPostes * heuresEffectives * 0.75);
   const tauxOcc  = cap === 0 ? 0 : Math.min(100, Math.round((seancesPic / cap) * 100));
   const adoEff   = (cap === 0 || seancesPic === 0) ? 0 : (seancesPic > cap ? ado * (cap / seancesPic) : ado);
 
@@ -1223,7 +1253,8 @@ function calc() {
   const decoCoef = getDecoCoef(deco);
 
   // Gains
-  const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable;
+  // En travail posté : absentéisme majoré +20% → impact sur base adressable
+  const ba_exact      = masseSalariale * ST.taux_dysf * ST.part_adressable * coeff_abs_poste;
   // En mode usine/logistique : l'adoption est intégrée dans la part_adressable (44%)
   // Ne pas multiplier par ado en plus (cf. Note ROI Usine v4.1 — gain = base × sc_rate)
   const adoFactor = (ST.secteur !== 'siege') ? 1.0 : (adoEff / 100);
@@ -1267,6 +1298,7 @@ function calc() {
   return {
     // Affichage
     nbp, nbu, seancesHebdo, seancesPic, cap, tauxOcc, adoEff, ado,
+    isPoste, nbPostesPlanning, heuresEffectives, coeff_abs_poste,
     nbPostes, surfAt,
     // Financier (exact — arrondi uniquement à l'affichage)
     eqT, ag, agAm, amortEquip, deco, decoAm, im, maintenance, su, setup,
@@ -1333,14 +1365,15 @@ function render() {
     el('picinfo').textContent = 'Pic : ' + Math.round((c.seancesPic / Math.max(1, c.seancesHebdo)) * 100) + '% · ' + c.nbp + ' présents/jour';
   }
 
-  // Mode buttons
-  const is5j = ST.mode === '5j';
-  el('bm5j').className = 'mode-btn' + (is5j ? ' active' : '');
-  el('bm5j').style.borderColor = is5j ? 'var(--teal)' : 'var(--border)';
-  el('bm5j').querySelector('.btn-title').style.color = is5j ? 'var(--teal)' : 'var(--text-muted)';
-  el('bmhy').className = 'mode-btn' + (!is5j ? ' active' : '');
-  el('bmhy').style.borderColor = !is5j ? 'var(--teal)' : 'var(--border)';
-  el('bmhy').querySelector('.btn-title').style.color = !is5j ? 'var(--teal)' : 'var(--text-muted)';
+  // Mode buttons — géré par setMode(), juste afficher les panneaux
+  if (el('jpanel'))    el('jpanel').style.display    = (ST.mode === 'hybride') ? 'block' : 'none';
+  if (el('postepanel')) el('postepanel').style.display = (ST.mode === 'poste')   ? 'block' : 'none';
+  if (ST.mode === 'poste' && el('posteinfo')) {
+    var heuresJ = Math.min(8 * c.nbPostesPlanning, 24);
+    el('posteinfo').textContent = c.nbPostesPlanning + '×8 · ' + heuresJ + 'h/j · '
+      + c.nbp + ' présents/quart · Capacité × ' + c.nbPostesPlanning + ' vs. 5j/sem.'
+      + (c.coeff_abs_poste > 1 ? ' · Abs. majoré ×' + c.coeff_abs_poste.toFixed(2) : '');
+  }
 
   // 03 Option detection
   for (const opt of ['A','B','C']) {
@@ -1388,6 +1421,13 @@ function render() {
   el('r-surf').textContent    = c.surfAt;
   el('r-postes').textContent  = c.nbPostes;
   el('r-duree-display').textContent = ST.duree_seance;
+  // Afficher amplitude réelle en mode posté
+  var surfCard = el('r-surf') ? el('r-surf').closest('.rcard') : null;
+  var rsubEl = surfCard ? surfCard.querySelector('.rsub') : null;
+  if (rsubEl) {
+    rsubEl.textContent = c.nbPostes + ' places · ' + ST.duree_seance + ' min/séance'
+      + (c.isPoste ? ' · ' + c.heuresEffectives + 'h ouverture (' + c.nbPostesPlanning + '×8)' : '');
+  }
   el('r-dp').textContent = c.seancesPic;
   el('r-ce').textContent = c.cap;
 
@@ -1616,7 +1656,34 @@ function setSecteur(s) {
   render();
 }
 
-function setMode(m)  { ST.mode = m; renderJours(); render(); }
+function setMode(m) {
+  ST.mode = m;
+  renderJours();
+  el('jpanel').style.display   = (m === 'hybride') ? 'block' : 'none';
+  el('postepanel').style.display = (m === 'poste')   ? 'block' : 'none';
+  ['bm5j','bmhy','bmps'].forEach(function(id) {
+    var btn = el(id);
+    if (!btn) return;
+    var modeMap = { bm5j:'5j', bmhy:'hybride', bmps:'poste' };
+    var active = modeMap[id] === m;
+    btn.className = 'mode-btn' + (active ? ' active' : '');
+    btn.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
+    btn.querySelector('.btn-title').style.color = active ? 'var(--teal)' : 'var(--text-muted)';
+  });
+  render();
+}
+
+function setPostes(n) {
+  ST.nb_postes = n;
+  document.querySelectorAll('.day-btn[data-p]').forEach(function(btn) {
+    var active = +btn.getAttribute('data-p') === n;
+    btn.className = 'day-btn' + (active ? ' active' : '');
+    btn.style.borderColor = active ? 'var(--orange)' : 'var(--border)';
+    btn.style.background  = active ? 'rgba(240,160,96,.15)' : '';
+    btn.style.color       = active ? 'var(--orange)' : '';
+  });
+  render();
+}
 function setJours(j) { ST.jours = j; renderJours(); render(); }
 
 function addQ(id, d) {
