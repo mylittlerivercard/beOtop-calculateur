@@ -1279,7 +1279,8 @@ function calcRef() {
 
 function render() {
   const c   = calc();
-  const po  = POSTURES.find(p => p.id === ST.po);
+  const _pListR = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
+  const po  = _pListR.find(function(p){ return p.id === ST.po; }) || _pListR[2];
   const refRoi = calcRef();
   const isZero = c.nbPostes === 0;
   const isSat  = !isZero && c.tauxOcc > 100;
@@ -1769,7 +1770,8 @@ function dRoiSection(c, pbStr, rC) {
 function genDevis() {
   closeModal();
   const c   = calc();
-  const po  = POSTURES.find(p => p.id === ST.po);
+  const _pListR = (ST.secteur !== 'siege') ? POSTURES_USINE : POSTURES;
+  const po  = _pListR.find(function(p){ return p.id === ST.po; }) || _pListR[2];
   const pro = el('f-pro').value || '—';
   const con = el('f-con').value || '—';
   const com = el('f-com').value || '—';
