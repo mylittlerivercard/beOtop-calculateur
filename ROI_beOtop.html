@@ -810,8 +810,14 @@ input[type=text]::placeholder { color: var(--text-muted); }
           <div class="hint-txt">Taux de remplissage fixé à 75% · Travail posté 3×8 = 24h</div>
         </div>
       </div>
-      <div id="adv-usine-bloc" style="display:none;grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.8rem;margin-top:.4rem">
-        <div style="font-size:.62rem;color:#f59e0b;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Coefficients Usine / Logistique — actifs dans le calcul ROI</div>
+    </div>
+  </div>
+
+  <!-- Coefficients usine — visible sans ouvrir les paramètres avancés -->
+
+      <div id="adv-usine-bloc" style="display:none;background:rgba(240,160,96,.04);border:1px solid rgba(240,160,96,.2);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
+        <div class="sec-ttl" style="color:#f59e0b;border-color:rgba(240,160,96,.2);margin-bottom:.8rem">⚙️ Coefficients Usine / Logistique</div>
+        <div style="font-size:.62rem;color:var(--text-muted);margin-bottom:.8rem">Ces paramètres sont actifs dans le calcul du ROI · Modifiez-les pour affiner la simulation</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
           <div><div class="srow"><span class="slbl">Taux AT (% effectifs/an)</span><span class="sval" id="v-taux_at">4%</span></div>
           <input type="range" id="s-taux_at" min="0.01" max="0.15" step="0.005" value="0.04" style="accent-color:#f59e0b" oninput="ST.taux_at=+this.value;render()">
@@ -833,8 +839,6 @@ input[type=text]::placeholder { color: var(--text-muted); }
           <div class="hint-txt">Coût journalier remplacement</div></div>
         </div>
       </div>
-    </div>
-  </div>
 
   <!-- AVERTISSEMENT -->
   <div class="warning-box">
