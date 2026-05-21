@@ -806,8 +806,8 @@ input[type=text]::placeholder { color: var(--text-muted); }
         </div>
         <div>
           <div class="srow"><span class="slbl">⏰ Heures d'ouverture / jour</span><span class="sval" id="v-heures">8 h</span></div>
-          <input type="range" id="s-heures" min="4" max="12" step="1" value="8" oninput="ST.heures_ouverture=+this.value;render()">
-          <div class="hint-txt">Taux de remplissage fixé à 75%</div>
+          <input type="range" id="s-heures" min="4" max="24" step="1" value="8" oninput="ST.heures_ouverture=+this.value;render()">
+          <div class="hint-txt">Taux de remplissage fixé à 75% · Travail posté 3×8 = 24h</div>
         </div>
       </div>
       <div id="adv-usine-bloc" style="display:none;grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.8rem;margin-top:.4rem">
@@ -1334,6 +1334,7 @@ function render() {
   el('v-seances_hebdo').textContent = ST.seances_par_semaine;
   el('v-duree_seance').textContent  = ST.duree_seance;
   el('v-heures').textContent        = ST.heures_ouverture + ' h';
+  if (el('s-heures') && +el('s-heures').value !== ST.heures_ouverture) el('s-heures').value = ST.heures_ouverture;
   // Curseurs usine
   if (el('v-taux_at'))        el('v-taux_at').textContent        = Math.round(ST.taux_at*100) + '%';
   if (el('v-cout_at'))        el('v-cout_at').textContent        = eur(ST.cout_at);
@@ -1526,6 +1527,16 @@ function setSecteur(s) {
   if (s === 'usine')      { ST.taux_at=0.04; ST.taux_rotation=0.20; ST.taux_tms=0.90; }
   else if (s==='logistique') { ST.taux_at=0.05; ST.taux_rotation=0.25; ST.taux_tms=0.70; }
   else                   { ST.taux_at=0.02; ST.taux_rotation=0.10; ST.taux_tms=0.15; }
+  // Ajuster heures_ouverture selon secteur
+  if (s === 'usine' || s === 'logistique') {
+    ST.heures_ouverture = 24; // 3×8 par défaut
+    var hSlider = el('s-heures');
+    if (hSlider) hSlider.value = 24;
+  } else {
+    ST.heures_ouverture = 8;
+    var hSlider2 = el('s-heures');
+    if (hSlider2) hSlider2.value = 8;
+  }
   // Syncer sliders
   ['s-sal','s-taux_dysf','s-part_adr','s-im-pm2','s-taux_at','s-taux_rotation','s-taux_tms'].forEach(function(id) {
     var sl = el(id);
