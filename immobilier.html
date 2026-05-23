@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fiche Acquéreur — Qualification Projet Immobilier</title>
+<title>Fiche Acquéreur — Qualification Projet Immobilier (version complète)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@ button { font-family: inherit; cursor: pointer; border: none; transition: all .1
 input, select, textarea { font-family: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ── HEADER ── */
+/* HEADER */
 #header {
   background: var(--accent2);
   padding: 0 2rem;
@@ -66,14 +66,11 @@ input, select, textarea { font-family: inherit; }
   font-size: 17px;
   font-weight: 500;
   color: #fff;
-  letter-spacing: .01em;
 }
 #header-sub {
   font-size: 11px;
   color: rgba(255,255,255,.5);
-  letter-spacing: .04em;
   text-transform: uppercase;
-  margin-top: 2px;
 }
 #mode-toggle {
   display: flex;
@@ -89,35 +86,34 @@ input, select, textarea { font-family: inherit; }
   border-radius: 4px;
   color: rgba(255,255,255,.6);
   background: transparent;
-  letter-spacing: .03em;
 }
 #mode-toggle button.active {
   background: rgba(255,255,255,.2);
   color: #fff;
 }
-#btn-print-top {
+#btn-print-top, #btn-export-csv {
   padding: 6px 16px;
   background: var(--gold);
   color: #fff;
   font-size: 12px;
   font-weight: 500;
   border-radius: var(--r);
-  letter-spacing: .02em;
+  margin-left: 8px;
 }
-#btn-print-top:hover { background: var(--gold2); }
+#btn-export-csv { background: var(--accent); }
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 #app {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 1.5rem;
   align-items: start;
 }
 
-/* ── NAV ── */
+/* NAV */
 #nav {
   position: sticky;
   top: 72px;
@@ -133,9 +129,7 @@ input, select, textarea { font-family: inherit; }
   padding: 11px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
-  transition: background .1s;
   font-size: 13px;
-  font-weight: 400;
   color: var(--text2);
 }
 .nav-item:last-child { border-bottom: none; }
@@ -150,35 +144,25 @@ input, select, textarea { font-family: inherit; }
   font-weight: 500;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: var(--text2);
 }
 .nav-item.active .nav-num {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
 }
-.nav-item.done .nav-num {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
-}
-.nav-check { font-size: 10px; }
 
-/* ── MAIN CONTENT ── */
-#content { display: flex; flex-direction: column; gap: 1.5rem; }
-
-/* ── SECTION CARD ── */
+/* SECTION CARD */
 .section-card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
   overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 .section-head {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: baseline;
   gap: 12px;
 }
 .section-num {
@@ -186,87 +170,40 @@ input, select, textarea { font-family: inherit; }
   font-size: 11px;
   color: var(--gold);
   font-weight: 500;
-  letter-spacing: .04em;
 }
 .section-title {
   font-family: var(--serif);
   font-size: 17px;
   font-weight: 500;
-  color: var(--text);
 }
 .section-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
 
-/* ── FIELD GROUPS ── */
+/* FORM ELEMENTS */
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
-.field-row.single { grid-template-columns: 1fr; }
 .field-group { display: flex; flex-direction: column; gap: 5px; }
 .field-label {
   font-size: 12px;
   font-weight: 500;
   color: var(--text2);
-  letter-spacing: .02em;
   text-transform: uppercase;
 }
-.field-hint {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 2px;
-}
-input[type=text], input[type=number], input[type=email], input[type=tel], select, textarea {
+input, select, textarea {
   padding: 8px 10px;
   border: 1px solid var(--border2);
   border-radius: var(--r);
   background: var(--bg);
-  color: var(--text);
   font-size: 13px;
   width: 100%;
-  transition: border-color .15s;
 }
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
   background: #fff;
 }
-textarea { resize: vertical; min-height: 70px; }
-select { cursor: pointer; }
-input[type=range] {
-  -webkit-appearance: none;
-  width: 100%; height: 4px;
-  background: var(--border2);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  border: none;
-  padding: 0;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px var(--accent);
-}
-.range-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text3);
-  margin-top: 3px;
-}
-.range-val {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--accent);
-  text-align: right;
-}
-
-/* ── CHIP SELECTORS ── */
 .chip-group {
   display: flex;
   flex-wrap: wrap;
@@ -277,20 +214,14 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 20px;
   border: 1px solid var(--border2);
   font-size: 12px;
-  font-weight: 400;
-  color: var(--text2);
-  background: var(--bg);
   cursor: pointer;
-  transition: all .12s;
-  user-select: none;
+  background: var(--bg);
 }
-.chip:hover { border-color: var(--accent); color: var(--accent); }
-.chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+.chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chip.must { background: var(--tag-must); border-color: #9ecfbc; color: var(--tag-must-t); }
 .chip.nice { background: var(--tag-nice); border-color: #9cb8df; color: var(--tag-nice-t); }
-.chip.no   { background: var(--tag-no);   border-color: #e8a9a9; color: var(--tag-no-t); }
+.chip.no   { background: var(--tag-no); border-color: #e8a9a9; color: var(--tag-no-t); }
 
-/* ── PRIORITY SELECTOR ── */
 .priority-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -305,109 +236,66 @@ input[type=range]::-webkit-slider-thumb {
   text-align: center;
   cursor: pointer;
   background: var(--bg);
-  color: var(--text2);
-  transition: all .12s;
-  line-height: 1.3;
 }
 .prio-btn.must  { background: var(--tag-must); border-color: #9ecfbc; color: var(--tag-must-t); }
 .prio-btn.nice  { background: var(--tag-nice); border-color: #9cb8df; color: var(--tag-nice-t); }
-.prio-btn.no    { background: var(--tag-no);   border-color: #e8a9a9; color: var(--tag-no-t); }
-.prio-btn:hover { opacity: .8; }
+.prio-btn.no    { background: var(--tag-no); border-color: #e8a9a9; color: var(--tag-no-t); }
 
-/* ── TOGGLE GRID (oui/non) ── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-.toggle-row:last-child { border-bottom: none; }
-.toggle-label { font-size: 13px; color: var(--text); }
-.toggle-sub { font-size: 11px; color: var(--text3); }
-.toggle-btns { display: flex; gap: 4px; }
-.toggle-btn {
-  padding: 4px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--border2);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: var(--bg);
-  color: var(--text3);
-}
-.toggle-btn.yes.on { background: var(--green); border-color: var(--green); color: #fff; }
-.toggle-btn.no.on  { background: var(--red); border-color: var(--red); color: #fff; }
-.toggle-btn.soi.on  { background: var(--orange); border-color: var(--orange); color: #fff; }
-
-/* ── SUBSECTION ── */
 .subsection {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: .75rem;
 }
 .subsection-title {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--text3);
+  margin-bottom: 0.75rem;
 }
-.hidden { display: none !important; }
-
-/* ── ALERT COHERENCE ── */
 .alert-box {
   padding: 10px 14px;
   border-radius: var(--r);
   font-size: 12px;
   font-weight: 500;
-  line-height: 1.5;
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
 }
 .alert-warn { background: #fff8ed; border: 1px solid #f0c96a; color: #7a4d0a; }
 .alert-ok   { background: #edf7f2; border: 1px solid #6cc49a; color: #1a5c42; }
 .alert-err  { background: #fdf0f0; border: 1px solid #e8a9a9; color: #8c1c2a; }
 
-/* ── BOTTOM BAR ── */
+/* BOTTOM BAR */
 #bottom-bar {
   position: sticky;
   bottom: 0;
   background: var(--bg2);
   border-top: 1px solid var(--border);
-  padding: .75rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 #budget-summary {
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 .bs-item { display: flex; flex-direction: column; }
-.bs-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; }
+.bs-label { font-size: 10px; color: var(--text3); text-transform: uppercase; }
 .bs-val { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--accent); }
 .bs-val.warn { color: var(--orange); }
-.bs-val.ok   { color: var(--green); }
-#btn-generate {
-  padding: 9px 24px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 13px;
+#score-maturite {
+  background: var(--bg3);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 500;
-  border-radius: var(--r);
-  letter-spacing: .01em;
 }
-#btn-generate:hover { background: var(--accent2); }
 
-/* ── SECTION PROSPECT (mode guidé) ── */
+/* PROSPECT MODE (simplifié) */
 body.prospect-mode .section-card { display: none; }
 body.prospect-mode .section-card.current { display: block; }
 body.prospect-mode #nav { display: none; }
@@ -416,868 +304,180 @@ body.prospect-mode #nav { display: none; }
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r2);
-  padding: 1rem 1.5rem;
-  align-items: center;
+  padding: 1rem;
   justify-content: space-between;
   margin-bottom: 1rem;
 }
 body.prospect-mode #prospect-stepper { display: flex; }
 #app.prospect-mode { grid-template-columns: 1fr; }
-.stepper-dots { display: flex; gap: 8px; align-items: center; }
-.step-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--border2);
-  transition: all .2s;
-}
-.step-dot.done { background: var(--green); }
-.step-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
-.stepper-nav { display: flex; gap: 8px; }
-.stepper-btn {
-  padding: 6px 16px;
-  border-radius: var(--r);
-  font-size: 12px;
-  font-weight: 500;
-}
-#btn-prev { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
-#btn-next { background: var(--accent); color: #fff; }
 
-/* ── FICHE PRINT ── */
+/* PRINT */
 @media print {
-  #header, #nav, #bottom-bar, #mode-toggle, #btn-print-top,
+  #header, #nav, #bottom-bar, #mode-toggle, #btn-print-top, #btn-export-csv,
   #prospect-stepper, .no-print { display: none !important; }
-  #app { grid-template-columns: 1fr; padding: 0; }
-  .section-card { display: block !important; break-inside: avoid; border: 1px solid #ccc; }
-  body { background: #fff; font-size: 12px; }
-  .section-body { padding: 1rem; gap: 1rem; }
-  .chip.selected { border: 1px solid #333; }
-  #fiche-print { display: block !important; }
   #app { display: none; }
+  #fiche-print { display: block !important; }
 }
-
-/* ── FICHE OUTPUT ── */
 #fiche-print {
   display: none;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 2rem;
   font-family: var(--sans);
   font-size: 13px;
-  color: var(--text);
 }
-#fiche-print .fp-header {
-  border-bottom: 2px solid var(--accent2);
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-#fiche-print .fp-logo {
-  font-family: var(--serif);
-  font-size: 22px;
-  color: var(--accent2);
-}
-#fiche-print .fp-meta {
-  font-size: 11px;
-  color: var(--text2);
-  text-align: right;
-  line-height: 1.8;
-}
-#fiche-print .fp-section {
-  margin-bottom: 1.5rem;
-}
-#fiche-print .fp-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--gold);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 4px;
-  margin-bottom: 10px;
-}
-#fiche-print .fp-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 4px;
-}
-#fiche-print .fp-key {
-  min-width: 160px;
-  color: var(--text2);
-  font-size: 12px;
-}
-#fiche-print .fp-val {
-  font-weight: 500;
-  font-size: 12px;
-}
-#fiche-print .fp-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-#fiche-print .fp-tag {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 500;
-}
-#fiche-print .fp-tag.must { background: var(--tag-must); color: var(--tag-must-t); }
-#fiche-print .fp-tag.nice { background: var(--tag-nice); color: var(--tag-nice-t); }
-#fiche-print .fp-tag.no   { background: var(--tag-no);   color: var(--tag-no-t); }
-#fiche-print .fp-budget-bloc {
-  background: var(--accent2);
-  color: #fff;
-  border-radius: var(--r2);
-  padding: 1rem 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-#fiche-print .fp-budget-item .fp-b-label {
-  font-size: 10px;
-  opacity: .6;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-#fiche-print .fp-budget-item .fp-b-val {
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 500;
-}
-#fiche-print .fp-alert {
-  padding: 8px 12px;
-  border-radius: var(--r);
-  font-size: 11px;
-  font-weight: 500;
-  margin-bottom: .5rem;
-}
-#fiche-print .fp-alert.warn { background: #fff8ed; color: #7a4d0a; border: 1px solid #f0c96a; }
-#fiche-print .fp-alert.ok   { background: #edf7f2; color: #1a5c42; border: 1px solid #6cc49a; }
-#fiche-print .fp-agent-notes {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: .75rem 1rem;
-  font-size: 11px;
-  color: var(--text2);
-  min-height: 60px;
-  margin-top: 6px;
-}
-#fiche-print .fp-footer {
-  margin-top: 2rem;
-  border-top: 1px solid var(--border);
-  padding-top: .75rem;
-  font-size: 10px;
-  color: var(--text3);
-  display: flex;
-  justify-content: space-between;
-}
+#fiche-print .fp-header { border-bottom: 2px solid var(--accent2); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; }
+#fiche-print .fp-logo { font-family: var(--serif); font-size: 22px; color: var(--accent2); }
+#fiche-print .fp-section { margin-bottom: 1.5rem; }
+#fiche-print .fp-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 10px; }
+#fiche-print .fp-row { display: flex; gap: 1rem; margin-bottom: 4px; }
+#fiche-print .fp-key { min-width: 180px; color: var(--text2); }
+#fiche-print .fp-val { font-weight: 500; }
+#fiche-print .fp-tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
+#fiche-print .fp-budget-bloc { background: var(--accent2); color: #fff; border-radius: var(--r2); padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+#fiche-print .fp-budget-item .fp-b-label { font-size: 10px; opacity: 0.7; text-transform: uppercase; }
+#fiche-print .fp-budget-item .fp-b-val { font-family: var(--mono); font-size: 20px; font-weight: 500; }
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div id="header">
   <div>
     <div id="header-sub">Qualification acquéreur</div>
     <h1>Fiche Projet Immobilier</h1>
   </div>
-  <div style="display:flex;gap:12px;align-items:center;">
+  <div style="display:flex;gap:8px;">
     <div id="mode-toggle">
       <button class="active" onclick="setMode('agent')">Agent</button>
       <button onclick="setMode('prospect')">Prospect</button>
     </div>
-    <button id="btn-print-top" onclick="generateFiche()">Générer la fiche →</button>
+    <button id="btn-export-csv" onclick="exportCSV()">📎 Exporter CSV</button>
+    <button id="btn-print-top" onclick="generateFiche()">📄 Générer la fiche</button>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
+  <nav id="nav">
+    <div class="nav-item" onclick="scrollTo('s1')"><div class="nav-num">1</div>Profil & budget</div>
+    <div class="nav-item" onclick="scrollTo('s2')"><div class="nav-num">2</div>Type & localisation</div>
+    <div class="nav-item" onclick="scrollTo('s3')"><div class="nav-num">3</div>Critères physiques</div>
+    <div class="nav-item" onclick="scrollTo('s4')"><div class="nav-num">4</div>État & travaux</div>
+    <div class="nav-item" onclick="scrollTo('s5')"><div class="nav-num">5</div>Décision & maturité</div>
+  </nav>
 
-<!-- NAV -->
-<nav id="nav">
-  <div class="nav-item active" onclick="scrollTo('s1')" id="nav-1">
-    <div class="nav-num" id="navnum-1">1</div>
-    <div>
-      <div>Profil du foyer</div>
-      <div style="font-size:11px;color:var(--text3)">Composition, revenus</div>
-    </div>
-  </div>
-  <div class="nav-item" onclick="scrollTo('s2')" id="nav-2">
-    <div class="nav-num" id="navnum-2">2</div>
-    <div>
-      <div>Type &amp; localisation</div>
-      <div style="font-size:11px;color:var(--text3)">Nature, zones cibles</div>
-    </div>
-  </div>
-  <div class="nav-item" onclick="scrollTo('s3')" id="nav-3">
-    <div class="nav-num" id="navnum-3">3</div>
-    <div>
-      <div>Critères physiques</div>
-      <div style="font-size:11px;color:var(--text3)">Surface, équipements</div>
-    </div>
-  </div>
-  <div class="nav-item" onclick="scrollTo('s4')" id="nav-4">
-    <div class="nav-num" id="navnum-4">4</div>
-    <div>
-      <div>État &amp; travaux</div>
-      <div style="font-size:11px;color:var(--text3)">Rénovation, budget</div>
-    </div>
-  </div>
-  <div class="nav-item" onclick="scrollTo('s5')" id="nav-5">
-    <div class="nav-num" id="navnum-5">5</div>
-    <div>
-      <div>Profil décisionnel</div>
-      <div style="font-size:11px;color:var(--text3)">Délai, flexibilité</div>
-    </div>
-  </div>
-</nav>
+  <div id="content">
+    <div id="prospect-stepper"><div class="stepper-dots" id="stepper-dots"></div><div id="stepper-label"></div><div><button onclick="stepNav(-1)">←</button><button onclick="stepNav(1)">→</button></div></div>
 
-<!-- CONTENT -->
-<div id="content">
+    <!-- S1 -->
+    <div class="section-card" id="s1">
+      <div class="section-head"><span class="section-num">01</span><span class="section-title">Profil & financement</span></div>
+      <div class="section-body">
+        <div class="field-row triple">
+          <input type="text" id="f-nom" placeholder="Nom Prénom"><input type="tel" id="f-tel" placeholder="Téléphone"><input type="email" id="f-email" placeholder="Email">
+        </div>
+        <div class="field-row">
+          <select id="f-foyer"><option value="">Composition</option><option>Seul(e)</option><option>Couple sans enfant</option><option>Couple +1 enfant</option><option>Couple +2 enfants</option><option>Couple +3 enfants</option><option>Monoparental</option></select>
+          <select id="f-situpro"><option>CDI (1 revenu)</option><option>CDI (2 revenus)</option><option>Indépendant</option><option>Retraité</option></select>
+        </div>
+        <div class="field-row triple">
+          <div class="field-group"><label class="field-label">Revenus nets/mois</label><input type="range" id="r-revenus" min="1500" max="20000" step="100" value="4500"><span id="rv-revenus"></span></div>
+          <div class="field-group"><label class="field-label">Apport</label><input type="range" id="r-apport" min="0" max="300000" step="5000" value="40000"><span id="rv-apport"></span></div>
+          <div class="field-group"><label class="field-label">Durée emprunt</label><select id="f-duree"><option>15</option><option selected>20</option><option>25</option><option>30</option></select></div>
+        </div>
+        <div class="field-group"><label class="field-label">Endettement en cours (€/mois)</label><input type="range" id="r-endett" min="0" max="3000" step="50" value="0"><span id="rv-endett"></span></div>
+        <div id="finance-result"></div>
+      </div>
+    </div>
 
-<!-- PROSPECT STEPPER -->
-<div id="prospect-stepper">
-  <div class="stepper-dots" id="stepper-dots"></div>
-  <div style="font-size:12px;color:var(--text2)" id="stepper-label">Section 1 / 5</div>
-  <div class="stepper-nav">
-    <button class="stepper-btn" id="btn-prev" onclick="stepNav(-1)">← Précédent</button>
-    <button class="stepper-btn" id="btn-next" onclick="stepNav(1)">Suivant →</button>
+    <!-- S2 : localisation + accessibilité -->
+    <div class="section-card" id="s2">
+      <div class="section-head"><span class="section-num">02</span><span class="section-title">Localisation & mobilité</span></div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="chip-group" id="chips-usage"><div class="chip selected" data-val="rp">RP</div><div class="chip" data-val="rs">RS</div><div class="chip" data-val="loc">Locatif</div></div>
+          <div class="chip-group" id="chips-type"><div class="chip" data-val="appt">Appartement</div><div class="chip" data-val="maison">Maison</div><div class="chip" data-val="indiff">Indifférent</div></div>
+        </div>
+        <input type="text" id="f-villes" placeholder="Villes cibles (ex: Lyon, Villeurbanne)">
+        <div class="field-row">
+          <select id="f-perimetre"><option>Zone urbaine</option><option>Périphérie <20km</option><option>Rural accepté</option></select>
+          <div class="field-group"><label class="field-label">Étage max sans ascenseur</label><select id="f-etage_max"><option value="0">RDC uniquement</option><option value="1">1er étage</option><option value="2">2ème étage</option><option value="3">3ème étage</option><option value="99">Indifférent</option></select></div>
+        </div>
+        <div class="subsection"><div class="subsection-title">Accessibilité & handicap</div>
+          <div class="chip-group" id="chips-handicap"><div class="chip" data-val="aucune">Aucune contrainte</div><div class="chip" data-val="pmr">Mobilité réduite (PMR)</div><div class="chip" data-val="plain_pied">Plain-pied indispensable</div><div class="chip" data-val="ascenseur_large">Ascenseur large nécessaire</div></div>
+        </div>
+        <div class="subsection"><div class="subsection-title">Critères rédhibitoires structurés</div>
+          <div class="chip-group" id="chips-redhib"><div class="chip" data-val="rdc">Rez-de-chaussée</div><div class="chip" data-val="dernier_etage">Dernier étage sans ascenseur</div><div class="chip" data-val="visavis">Vis-à-vis direct</div><div class="chip" data-val="bruit">Route passante / bruit</div><div class="chip" data-val="sous_sol">Sous-sol / semi-enterré</div><div class="chip" data-val="simple_vitrage">Simple vitrage</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 : surface, extérieurs, équipements modernes -->
+    <div class="section-card" id="s3">
+      <div class="section-head"><span class="section-num">03</span><span class="section-title">Physique & confort</span></div>
+      <div class="section-body">
+        <div class="field-row triple">
+          <div><label>Surface min (m²)</label><input type="range" id="r-surf-min" min="20" max="200" value="60"><span id="rv-surf-min"></span></div>
+          <div><label>Surface max (m²)</label><input type="range" id="r-surf-max" min="30" max="400" value="110"><span id="rv-surf-max"></span></div>
+          <div><label>Chambres min</label><select id="f-chambres"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        </div>
+        <div class="field-row">
+          <div><label>Prix au m² max (€/m²)</label><input type="range" id="r_prix_m2" min="1000" max="15000" step="100" value="5000"><span id="rv_prix_m2"></span></div>
+          <div><label>Jardin souhaité</label><div class="priority-grid" id="prio-jardin"><div class="prio-btn must" onclick="setPrio('jardin','must',this)">Obligatoire</div><div class="prio-btn nice" onclick="setPrio('jardin','nice',this)">Souhaitable</div><div class="prio-btn no" onclick="setPrio('jardin','no',this)">Non</div></div></div>
+        </div>
+        <div class="subsection"><div class="subsection-title">Équipements modernes</div>
+          <div class="chip-group" id="chips-equip"><div class="chip" data-val="clim">Climatisation réversible</div><div class="chip" data-val="voe">Volets roulants électriques</div><div class="chip" data-val="domotique">Domotique / alarme</div><div class="chip" data-val="fibre">Fibre optique</div></div>
+        </div>
+        <div class="subsection"><div class="subsection-title">Exposition</div>
+          <div class="chip-group" id="chips-expo"><div class="chip" data-val="S">Sud</div><div class="chip" data-val="SE">Sud-Est</div><div class="chip" data-val="indiff">Indifférent</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 : état, travaux, copro, aides -->
+    <div class="section-card" id="s4">
+      <div class="section-head"><span class="section-num">04</span><span class="section-title">État, travaux & aides</span></div>
+      <div class="section-body">
+        <div class="chip-group" id="chips-etat"><div class="chip selected" data-val="bon">Bon état</div><div class="chip" data-val="rafraichir">À rafraîchir</div><div class="chip" data-val="renover">À rénover</div></div>
+        <div class="field-row"><div><label>Budget travaux max</label><input type="range" id="r-budget-travaux" min="0" max="200000" value="20000"><span id="rv-budget-travaux"></span></div></div>
+        <div class="subsection"><div class="subsection-title">Copropriété (si appartement)</div>
+          <div><label>Charges mensuelles max acceptées (€)</label><input type="number" id="f_charges_max" placeholder="Ex: 300"></div>
+          <div class="chip-group" id="chips_copro"><div class="chip" data-val="travaux_votes">Accepte travaux votés</div><div class="chip" data-val="copro_taille">Préfère petite copro (<20 lots)</div><div class="chip" data-val="reglement_strict">Refuse règlement restrictif (animaux, loc meublé)</div></div>
+        </div>
+        <div class="subsection"><div class="subsection-title">Aides financières (à activer)</div>
+          <div class="chip-group" id="chips_aides"><div class="chip" data-val="ptz">PTZ éligible</div><div class="chip" data-val="action_logt">Action Logement (1%)</div><div class="chip" data-val="pel">PEL / PAS</div><div class="chip" data-val="anah">Anah (travaux)</div><div class="chip" data-val="maprimerenov">MaPrimeRénov'</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 : décision, calendrier, score -->
+    <div class="section-card" id="s5">
+      <div class="section-head"><span class="section-num">05</span><span class="section-title">Décision & calendrier</span></div>
+      <div class="section-body">
+        <div class="field-row"><div><label>Délai d'achat souhaité</label><div class="chip-group" id="chips-delai"><div class="chip" data-val="3m"><3 mois</div><div class="chip selected" data-val="6m">3-6 mois</div><div class="chip" data-val="12m">6-12 mois</div></div></div>
+        <div><label>Date butoir d'emménagement</label><input type="date" id="f_date_butoir"></div></div>
+        <div class="field-row"><div><label>Vente simultanée du bien actuel ?</label><div class="chip-group" id="chips_vente_simult"><div class="chip" data-val="oui">Oui</div><div class="chip selected" data-val="non">Non</div></div></div>
+        <div><label>Financement déjà validé ?</label><div class="chip-group" id="chips_financement"><div class="chip" data-val="non">Non démarré</div><div class="chip selected" data-val="simul">Simulation</div><div class="chip" data-val="accord">Accord de principe</div></div></div></div>
+        <div class="subsection"><div class="subsection-title">Notes agent</div><textarea id="f-notes-agent" rows="2"></textarea></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- S1 — PROFIL -->
-<div class="section-card current" id="s1">
-  <div class="section-head">
-    <span class="section-num">01</span>
-    <span class="section-title">Profil du foyer</span>
-  </div>
-  <div class="section-body">
-
-    <div class="field-row triple">
-      <div class="field-group">
-        <label class="field-label">Nom du prospect</label>
-        <input type="text" id="f-nom" placeholder="Nom Prénom" oninput="update()">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Téléphone</label>
-        <input type="tel" id="f-tel" placeholder="06 XX XX XX XX">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Email</label>
-        <input type="email" id="f-email" placeholder="email@exemple.fr">
-      </div>
-    </div>
-
-    <div class="field-row">
-      <div class="field-group">
-        <label class="field-label">Composition du foyer</label>
-        <select id="f-foyer" onchange="update()">
-          <option value="">— Sélectionner</option>
-          <option value="seul">Célibataire / seul(e)</option>
-          <option value="couple">Couple sans enfant</option>
-          <option value="couple1">Couple + 1 enfant</option>
-          <option value="couple2">Couple + 2 enfants</option>
-          <option value="couple3p">Couple + 3 enfants ou plus</option>
-          <option value="monopar1">Famille monoparentale + 1 enfant</option>
-          <option value="monopar2p">Famille monoparentale + 2 enfants ou plus</option>
-          <option value="coloc">Colocation / investissement</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Situation professionnelle</label>
-        <select id="f-situpro">
-          <option value="">— Sélectionner</option>
-          <option>CDI (1 revenu)</option>
-          <option>CDI (2 revenus)</option>
-          <option>Fonctionnaire</option>
-          <option>Indépendant / TNS</option>
-          <option>Retraité(s)</option>
-          <option>CDD / intérim</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Budget & financement</div>
-      <div class="field-row triple">
-        <div class="field-group">
-          <label class="field-label">Revenus nets mensuels du foyer</label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="range" id="r-revenus" min="1500" max="20000" step="100" value="4500" oninput="update()">
-            <span class="range-val" id="rv-revenus">4 500 €</span>
-          </div>
-          <div class="range-labels"><span>1 500 €</span><span>20 000 €</span></div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Apport disponible</label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="range" id="r-apport" min="0" max="300000" step="5000" value="40000" oninput="update()">
-            <span class="range-val" id="rv-apport">40 000 €</span>
-          </div>
-          <div class="range-labels"><span>0 €</span><span>300 k€</span></div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Durée emprunt souhaitée</label>
-          <select id="f-duree" onchange="update()">
-            <option value="15">15 ans</option>
-            <option value="20" selected>20 ans</option>
-            <option value="25">25 ans</option>
-            <option value="30">30 ans</option>
-          </select>
-        </div>
-      </div>
-      <div id="finance-result" style="margin-top:4px;"></div>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Endettement existant (mensualités en cours)</label>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <input type="range" id="r-endett" min="0" max="3000" step="50" value="0" oninput="update()">
-        <span class="range-val" id="rv-endett">0 €/mois</span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- S2 — TYPE & LOCALISATION -->
-<div class="section-card" id="s2">
-  <div class="section-head">
-    <span class="section-num">02</span>
-    <span class="section-title">Type de bien &amp; localisation</span>
-  </div>
-  <div class="section-body">
-
-    <div class="field-row">
-      <div class="field-group">
-        <label class="field-label">Usage du bien</label>
-        <div class="chip-group" id="chips-usage">
-          <div class="chip selected" data-val="rp">Résidence principale</div>
-          <div class="chip" data-val="rs">Résidence secondaire</div>
-          <div class="chip" data-val="loc">Investissement locatif</div>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Type de bien</label>
-        <div class="chip-group" id="chips-type">
-          <div class="chip" data-val="appt">Appartement</div>
-          <div class="chip" data-val="maison">Maison</div>
-          <div class="chip" data-val="indiff">Indifférent</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Zones géographiques</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Ville(s) cible(s)</label>
-          <input type="text" id="f-villes" placeholder="Ex : Lyon, Villeurbanne, Caluire…" oninput="update()">
-          <div class="field-hint">Séparer par des virgules si plusieurs villes</div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Périmètre élargi accepté</label>
-          <select id="f-perimetre">
-            <option value="">— Sélectionner</option>
-            <option>Zone urbaine uniquement</option>
-            <option>+ Périphérie proche (jusqu'à 20 km)</option>
-            <option>+ Zone périurbaine (20–40 km)</option>
-            <option>Rural accepté</option>
-            <option>Flexible / sans contrainte</option>
-          </select>
-        </div>
-      </div>
-      <div class="field-row triple">
-        <div class="field-group">
-          <label class="field-label">Proximité transports</label>
-          <div class="priority-grid" id="prio-transports" data-key="transports">
-            <div class="prio-btn must" onclick="setPrio('transports','must',this)">Obligatoire</div>
-            <div class="prio-btn" onclick="setPrio('transports','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('transports','no',this)">Non requis</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Proximité écoles</label>
-          <div class="priority-grid" id="prio-ecoles" data-key="ecoles">
-            <div class="prio-btn" onclick="setPrio('ecoles','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('ecoles','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('ecoles','no',this)">Non requis</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Proximité commerces</label>
-          <div class="priority-grid" id="prio-commerces" data-key="commerces">
-            <div class="prio-btn" onclick="setPrio('commerces','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('commerces','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('commerces','no',this)">Non requis</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Quartier(s) ou secteur(s) rédhibitoires</label>
-      <input type="text" id="f-exclusions" placeholder="Ex : centre historique trop bruyant, zone industrielle nord…">
-    </div>
-
-  </div>
-</div>
-
-<!-- S3 — CRITÈRES PHYSIQUES -->
-<div class="section-card" id="s3">
-  <div class="section-head">
-    <span class="section-num">03</span>
-    <span class="section-title">Critères physiques du bien</span>
-  </div>
-  <div class="section-body">
-
-    <div class="field-row triple">
-      <div class="field-group">
-        <label class="field-label">Surface habitable min (m²)</label>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input type="range" id="r-surf-min" min="20" max="200" step="5" value="60" oninput="update()">
-          <span class="range-val" id="rv-surf-min">60 m²</span>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Surface habitable max (m²)</label>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input type="range" id="r-surf-max" min="30" max="400" step="5" value="110" oninput="update()">
-          <span class="range-val" id="rv-surf-max">110 m²</span>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Nombre de chambres minimum</label>
-        <select id="f-chambres" onchange="update()">
-          <option value="0">Studio / T1</option>
-          <option value="1">1 chambre (T2)</option>
-          <option value="2" selected>2 chambres (T3)</option>
-          <option value="3">3 chambres (T4)</option>
-          <option value="4">4 chambres et plus</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Espaces extérieurs — importance</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Balcon</label>
-          <div class="priority-grid" id="prio-balcon" data-key="balcon">
-            <div class="prio-btn" onclick="setPrio('balcon','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('balcon','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('balcon','no',this)">Indifférent</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Terrasse</label>
-          <div class="priority-grid" id="prio-terrasse" data-key="terrasse">
-            <div class="prio-btn" onclick="setPrio('terrasse','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('terrasse','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('terrasse','no',this)">Indifférent</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Jardin</label>
-          <div class="priority-grid" id="prio-jardin" data-key="jardin">
-            <div class="prio-btn" onclick="setPrio('jardin','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('jardin','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('jardin','no',this)">Indifférent</div>
-          </div>
-        </div>
-      </div>
-      <div id="bloc-jardin-surf" class="hidden field-group">
-        <label class="field-label">Surface jardin souhaitée</label>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input type="range" id="r-surf-jardin" min="10" max="2000" step="10" value="100" oninput="update()">
-          <span class="range-val" id="rv-surf-jardin">100 m²</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Exposition &amp; orientation</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Exposition souhaitée</label>
-          <div class="chip-group" id="chips-expo">
-            <div class="chip" data-val="S">Sud</div>
-            <div class="chip" data-val="SE">Sud-Est</div>
-            <div class="chip" data-val="SO">Sud-Ouest</div>
-            <div class="chip" data-val="E">Est</div>
-            <div class="chip" data-val="O">Ouest</div>
-            <div class="chip" data-val="indiff">Indifférent</div>
-          </div>
-          <div class="field-hint">Sélection multiple possible</div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Luminosité</label>
-          <div class="priority-grid" id="prio-luminosite" data-key="luminosite">
-            <div class="prio-btn must" onclick="setPrio('luminosite','must',this)">Priorité absolue</div>
-            <div class="prio-btn" onclick="setPrio('luminosite','nice',this)">Importante</div>
-            <div class="prio-btn" onclick="setPrio('luminosite','no',this)">Secondaire</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Stationnement &amp; équipements</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Parking / Garage</label>
-          <div class="priority-grid" id="prio-parking" data-key="parking">
-            <div class="prio-btn must" onclick="setPrio('parking','must',this)">Obligatoire</div>
-            <div class="prio-btn" onclick="setPrio('parking','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('parking','no',this)">Indifférent</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Cave / sous-sol</label>
-          <div class="priority-grid" id="prio-cave" data-key="cave">
-            <div class="prio-btn" onclick="setPrio('cave','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('cave','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('cave','no',this)">Indifférent</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Ascenseur (si appt.)</label>
-          <div class="priority-grid" id="prio-ascenseur" data-key="ascenseur">
-            <div class="prio-btn" onclick="setPrio('ascenseur','must',this)">Obligatoire</div>
-            <div class="prio-btn nice" onclick="setPrio('ascenseur','nice',this)">Souhaitable</div>
-            <div class="prio-btn" onclick="setPrio('ascenseur','no',this)">Non requis</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field-row">
-      <div class="field-group">
-        <label class="field-label">Diagnostic énergétique (DPE) minimum acceptable</label>
-        <div class="chip-group" id="chips-dpe">
-          <div class="chip selected" data-val="A">A</div>
-          <div class="chip selected" data-val="B">B</div>
-          <div class="chip selected" data-val="C">C</div>
-          <div class="chip selected" data-val="D">D</div>
-          <div class="chip" data-val="E">E</div>
-          <div class="chip" data-val="F">F</div>
-          <div class="chip" data-val="indiff">Indifférent</div>
-        </div>
-        <div class="field-hint">Les classes cochées sont acceptables</div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Critères rédhibitoires supplémentaires</label>
-        <textarea id="f-redhibitoires" placeholder="Ex : rez-de-chaussée, copropriété dégradée, vis-à-vis direct, dernier étage sans ascenseur…" style="height:70px;"></textarea>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- S4 — ÉTAT ET TRAVAUX -->
-<div class="section-card" id="s4">
-  <div class="section-head">
-    <span class="section-num">04</span>
-    <span class="section-title">État du bien &amp; travaux envisagés</span>
-  </div>
-  <div class="section-body">
-
-    <div class="field-group">
-      <label class="field-label">État général accepté</label>
-      <div class="chip-group" id="chips-etat">
-        <div class="chip" data-val="neuf">Neuf / VEFA</div>
-        <div class="chip" data-val="recent">Récent (< 10 ans)</div>
-        <div class="chip selected" data-val="bon">Bon état</div>
-        <div class="chip selected" data-val="rafraichir">À rafraîchir</div>
-        <div class="chip" data-val="renover">À rénover</div>
-        <div class="chip" data-val="total">Rénovation totale</div>
-      </div>
-      <div class="field-hint">Sélection multiple — cocher les états acceptables</div>
-    </div>
-
-    <div class="field-group" id="bloc-travaux">
-      <label class="field-label">Posture travaux</label>
-      <div class="chip-group" id="chips-posture-travaux">
-        <div class="chip" data-val="non">Pas de travaux (clé en main)</div>
-        <div class="chip selected" data-val="cosmetique">Cosmétiques uniquement (peinture, revêtements)</div>
-        <div class="chip" data-val="partiel">Travaux partiels</div>
-        <div class="chip" data-val="complet">Rénovation complète acceptée</div>
-      </div>
-    </div>
-
-    <div id="bloc-lots" class="subsection">
-      <div class="subsection-title">Lots de travaux — acceptabilité et réalisation</div>
-      <div id="lots-list"></div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Budget travaux</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Budget max travaux</label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="range" id="r-budget-travaux" min="0" max="200000" step="2500" value="20000" oninput="update()">
-            <span class="range-val" id="rv-budget-travaux">20 000 €</span>
-          </div>
-          <div class="range-labels"><span>0 €</span><span>200 k€</span></div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Maîtrise des travaux</label>
-          <div class="chip-group" id="chips-maitrise">
-            <div class="chip" data-val="tout_faire">Tout faire faire</div>
-            <div class="chip selected" data-val="mix">Mix (selon lot)</div>
-            <div class="chip" data-val="soi_meme">Tout en DIY si possible</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Contrainte chantier (délai emménagement)</label>
-      <div class="chip-group" id="chips-delai-chantier">
-        <div class="chip" data-val="asap">Emménagement immédiat souhaité</div>
-        <div class="chip selected" data-val="3m">Chantier court acceptable (< 3 mois)</div>
-        <div class="chip" data-val="6m">Jusqu'à 6 mois</div>
-        <div class="chip" data-val="12m">Jusqu'à 12 mois</div>
-        <div class="chip" data-val="indiff">Pas de contrainte</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- S5 — PROFIL DÉCISIONNEL -->
-<div class="section-card" id="s5">
-  <div class="section-head">
-    <span class="section-num">05</span>
-    <span class="section-title">Profil décisionnel</span>
-  </div>
-  <div class="section-body">
-
-    <div class="field-row">
-      <div class="field-group">
-        <label class="field-label">Délai d'achat souhaité</label>
-        <div class="chip-group" id="chips-delai">
-          <div class="chip" data-val="3m">Moins de 3 mois</div>
-          <div class="chip selected" data-val="6m">3 à 6 mois</div>
-          <div class="chip" data-val="12m">6 à 12 mois</div>
-          <div class="chip" data-val="12mp">Plus d'un an</div>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Décision implique</label>
-        <div class="chip-group" id="chips-decision">
-          <div class="chip" data-val="solo">Solo</div>
-          <div class="chip selected" data-val="couple">Couple</div>
-          <div class="chip" data-val="famille">Famille élargie</div>
-          <div class="chip" data-val="associes">Associés / SCI</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Flexibilité — priorité si compromis nécessaire</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Si le bien parfait n'existe pas, céder en priorité sur…</label>
-          <div id="chips-compromis" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-              <span style="font-size:13px;">Surface</span>
-              <div class="chip-group">
-                <div class="chip" data-group="surf" data-val="sacrifier" onclick="setCompromis('surf','sacrifier',this)">Sacrifier</div>
-                <div class="chip nice selected" data-group="surf" data-val="reduire" onclick="setCompromis('surf','reduire',this)">Réduire</div>
-                <div class="chip no" data-group="surf" data-val="jamais" onclick="setCompromis('surf','jamais',this)">Jamais</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-              <span style="font-size:13px;">Localisation</span>
-              <div class="chip-group">
-                <div class="chip" data-group="loc2" data-val="sacrifier" onclick="setCompromis('loc2','sacrifier',this)">Sacrifier</div>
-                <div class="chip nice selected" data-group="loc2" data-val="elargir" onclick="setCompromis('loc2','elargir',this)">Élargir zone</div>
-                <div class="chip no" data-group="loc2" data-val="jamais" onclick="setCompromis('loc2','jamais',this)">Jamais</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-              <span style="font-size:13px;">État / travaux</span>
-              <div class="chip-group">
-                <div class="chip" data-group="etat2" data-val="accepter" onclick="setCompromis('etat2','accepter',this)">Accepter plus de travaux</div>
-                <div class="chip nice selected" data-group="etat2" data-val="cosm" onclick="setCompromis('etat2','cosm',this)">Cosmétiques seulement</div>
-                <div class="chip no" data-group="etat2" data-val="jamais" onclick="setCompromis('etat2','jamais',this)">Jamais</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;">
-              <span style="font-size:13px;">Prix</span>
-              <div class="chip-group">
-                <div class="chip" data-group="prix2" data-val="augmenter" onclick="setCompromis('prix2','augmenter',this)">Dépasser le budget</div>
-                <div class="chip nice selected" data-group="prix2" data-val="un_peu" onclick="setCompromis('prix2','un_peu',this)">Un peu (+5–10%)</div>
-                <div class="chip no" data-group="prix2" data-val="jamais" onclick="setCompromis('prix2','jamais',this)">Budget ferme</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Flexibilité prix — fourchette haute</label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="range" id="r-flex-prix" min="0" max="30" step="1" value="8" oninput="update()">
-            <span class="range-val" id="rv-flex-prix">+8%</span>
-          </div>
-          <div class="range-labels"><span>Budget ferme</span><span>+30%</span></div>
-          <div class="field-hint" id="hint-flex-prix" style="margin-top:6px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="subsection">
-      <div class="subsection-title">Historique de recherche</div>
-      <div class="field-row triple">
-        <div class="field-group">
-          <label class="field-label">Biens déjà visités</label>
-          <div class="chip-group" id="chips-visites">
-            <div class="chip selected" data-val="0">Aucun</div>
-            <div class="chip" data-val="1-5">1 à 5</div>
-            <div class="chip" data-val="5-15">5 à 15</div>
-            <div class="chip" data-val="15p">Plus de 15</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Offres déjà faites</label>
-          <div class="chip-group" id="chips-offres">
-            <div class="chip selected" data-val="0">Aucune</div>
-            <div class="chip" data-val="1-2">1 à 2</div>
-            <div class="chip" data-val="3p">3 ou plus</div>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Financement validé</label>
-          <div class="chip-group" id="chips-financement">
-            <div class="chip" data-val="non">Non démarré</div>
-            <div class="chip selected" data-val="simul">Simulation faite</div>
-            <div class="chip" data-val="accord">Accord de principe</div>
-            <div class="chip" data-val="offre">Offre de prêt</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Notes agent — éléments contextuels</label>
-      <textarea id="f-notes-agent" placeholder="Motivation réelle, contraintes non exprimées, historique de la recherche, observations comportementales…" style="height:90px;"></textarea>
-    </div>
-
-  </div>
-</div>
-
-</div><!-- /content -->
-</div><!-- /app -->
-
-<!-- BOTTOM BAR -->
 <div id="bottom-bar">
-  <div id="budget-summary">
-    <div class="bs-item">
-      <span class="bs-label">Capacité emprunt</span>
-      <span class="bs-val" id="bs-capa">—</span>
-    </div>
-    <div class="bs-item">
-      <span class="bs-label">Budget achat total</span>
-      <span class="bs-val ok" id="bs-budget">—</span>
-    </div>
-    <div class="bs-item">
-      <span class="bs-label">Mensualité estimée</span>
-      <span class="bs-val" id="bs-mens">—</span>
-    </div>
-    <div class="bs-item">
-      <span class="bs-label">Taux endettement</span>
-      <span class="bs-val" id="bs-taux">—</span>
-    </div>
-  </div>
+  <div id="budget-summary"><div class="bs-item"><span class="bs-label">Capacité emprunt</span><span class="bs-val" id="bs-capa">—</span></div><div class="bs-item"><span class="bs-label">Budget achat</span><span class="bs-val" id="bs-budget">—</span></div><div class="bs-item"><span class="bs-label">Mensualité</span><span class="bs-val" id="bs-mens">—</span></div><div class="bs-item"><span class="bs-label">Taux endettement</span><span class="bs-val" id="bs-taux">—</span></div></div>
+  <div id="score-maturite">🔍 Score: --</div>
   <button id="btn-generate" onclick="generateFiche()">Générer la fiche PDF →</button>
 </div>
-
-<!-- FICHE PRINT -->
 <div id="fiche-print"></div>
 
 <script>
-const LOTS = [
-  { id:'cuisine',    label:'Cuisine',            hint:'Remplacement / rénovation complète' },
-  { id:'sdb',        label:'Salle de bain',       hint:'Carrelage, sanitaires, douche/bain' },
-  { id:'elec',       label:'Électricité',         hint:'Mise aux normes, tableau, câblage' },
-  { id:'plomberie',  label:'Plomberie',           hint:'Tuyaux, chauffe-eau, radiateurs' },
-  { id:'chauffage',  label:'Chauffage',           hint:'Chaudière, pompe à chaleur, poêle' },
-  { id:'toiture',    label:'Toiture / charpente', hint:'Tuiles, étanchéité, charpente bois' },
-  { id:'isolation',  label:'Isolation',           hint:'Murs, combles, planchers' },
-  { id:'fenetres',   label:'Fenêtres / menuiseries', hint:'Double vitrage, volets' },
-  { id:'parquet',    label:'Sols / parquet',      hint:'Parquet, carrelage, chape' },
-  { id:'peinture',   label:'Peinture / enduits',  hint:'Murs et plafonds' },
-  { id:'combles',    label:'Aménagement combles', hint:'Isolation + aménagement espace' },
-  { id:'exterieur',  label:'Façade / extérieur',  hint:'Ravalement, clôture, terrasse' },
-];
-
-const lots = {};
-LOTS.forEach(l => lots[l.id] = { accept: null, qui: null });
-
-function buildLots() {
-  const c = document.getElementById('lots-list');
-  c.innerHTML = LOTS.map(l => `
-    <div class="toggle-row" id="lot-row-${l.id}">
-      <div>
-        <div class="toggle-label">${l.label}</div>
-        <div class="toggle-sub">${l.hint}</div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:center;">
-        <div class="toggle-btns">
-          <button class="toggle-btn yes" onclick="setLot('${l.id}','accept','oui',this)">Oui</button>
-          <button class="toggle-btn no" onclick="setLot('${l.id}','accept','non',this)">Non</button>
-        </div>
-        <div class="toggle-btns" id="lot-qui-${l.id}" style="display:none;">
-          <button class="toggle-btn yes" style="font-size:10px;padding:3px 8px;" onclick="setLot('${l.id}','qui','artisan',this)">Artisan</button>
-          <button class="toggle-btn soi" style="font-size:10px;padding:3px 8px;" onclick="setLot('${l.id}','qui','soi',this)">DIY</button>
-          <button class="toggle-btn" style="font-size:10px;padding:3px 8px;" onclick="setLot('${l.id}','qui','mix',this)">Mix</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function setLot(id, field, val, btn) {
-  lots[id][field] = val;
-  const row = document.querySelectorAll(`[onclick*="setLot('${id}','${field}'"]`);
-  row.forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  if (field === 'accept') {
-    document.getElementById('lot-qui-'+id).style.display = val === 'oui' ? 'flex' : 'none';
-  }
-}
-
-const prios = {};
-function setPrio(key, val, btn) {
-  prios[key] = val;
-  const grp = btn.parentElement;
-  grp.querySelectorAll('.prio-btn').forEach(b => { b.className = 'prio-btn'; });
-  btn.classList.add(val);
-}
-
-const compromis = {};
-function setCompromis(group, val, btn) {
-  compromis[group] = val;
-  const chips = document.querySelectorAll(`[data-group="${group}"]`);
-  chips.forEach(c => {
-    c.className = 'chip';
-    if (c.dataset.val === 'jamais') c.classList.add('no');
-    else if (c.dataset.val === 'reduire' || c.dataset.val === 'elargir' || c.dataset.val === 'cosm' || c.dataset.val === 'un_peu') c.classList.add('nice');
-  });
-  btn.classList.add('selected');
-}
-
+// Initialisation des chips, priorities, etc.
 function initChips() {
-  document.querySelectorAll('.chip-group:not(#chips-compromis .chip-group)').forEach(grp => {
-    const multi = grp.id === 'chips-expo' || grp.id === 'chips-etat' || grp.id === 'chips-dpe';
+  document.querySelectorAll('.chip-group').forEach(grp => {
     grp.querySelectorAll('.chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        if (multi) {
+      chip.addEventListener('click', (e) => {
+        if (grp.id === 'chips-expo' || grp.id === 'chips-etat' || grp.id === 'chips-redhib' || grp.id === 'chips-equip' || grp.id === 'chips-handicap' || grp.id === 'chips_copro' || grp.id === 'chips_aides') {
           chip.classList.toggle('selected');
         } else {
           grp.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
@@ -1289,303 +489,125 @@ function initChips() {
   });
 }
 
-function getChipVal(grpId) {
-  const sel = document.querySelectorAll(`#${grpId} .chip.selected`);
-  return Array.from(sel).map(c => c.dataset.val || c.textContent.trim());
+function getChipVals(grpId) {
+  return Array.from(document.querySelectorAll(`#${grpId} .chip.selected`)).map(c => c.dataset.val || c.innerText);
 }
 
-function fmt(n) {
-  return n.toLocaleString('fr-FR') + ' €';
-}
-
-let currentStep = 1;
-function setMode(mode) {
-  const btns = document.querySelectorAll('#mode-toggle button');
-  btns.forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  if (mode === 'prospect') {
-    document.body.classList.add('prospect-mode');
-    document.getElementById('app').classList.add('prospect-mode');
-    showStep(1);
-  } else {
-    document.body.classList.remove('prospect-mode');
-    document.getElementById('app').classList.remove('prospect-mode');
-    document.querySelectorAll('.section-card').forEach(c => c.classList.add('current'));
-  }
-}
-
-function buildStepper() {
-  const d = document.getElementById('stepper-dots');
-  d.innerHTML = [1,2,3,4,5].map(i =>
-    `<div class="step-dot ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}" id="dot-${i}"></div>`
-  ).join('');
-  document.getElementById('stepper-label').textContent = `Section ${currentStep} / 5`;
-  document.getElementById('btn-prev').style.opacity = currentStep === 1 ? '.3' : '1';
-  document.getElementById('btn-next').textContent = currentStep === 5 ? 'Générer la fiche →' : 'Suivant →';
-}
-
-function showStep(n) {
-  currentStep = n;
-  document.querySelectorAll('.section-card').forEach((c, i) => {
-    c.classList.toggle('current', i + 1 === n);
-  });
-  buildStepper();
-}
-
-function stepNav(dir) {
-  if (dir === 1 && currentStep === 5) { generateFiche(); return; }
-  const n = Math.max(1, Math.min(5, currentStep + dir));
-  showStep(n);
-  window.scrollTo(0, 0);
-}
-
-function scrollTo(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+let prios = {};
+function setPrio(key, val, btn) {
+  prios[key] = val;
+  btn.parentElement.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('must', 'nice', 'no'));
+  btn.classList.add(val);
+  update();
 }
 
 function update() {
-  const rev = +document.getElementById('r-revenus').value;
-  const app = +document.getElementById('r-apport').value;
-  const end = +document.getElementById('r-endett').value;
-  const dur = +document.getElementById('f-duree').value;
-  const flexP = +document.getElementById('r-flex-prix').value;
-  const surfMin = +document.getElementById('r-surf-min').value;
-  const surfMax = +document.getElementById('r-surf-max').value;
-  const bt = +document.getElementById('r-budget-travaux').value;
+  let rev = +document.getElementById('r-revenus').value;
+  let app = +document.getElementById('r-apport').value;
+  let end = +document.getElementById('r-endett').value;
+  let dur = +document.getElementById('f-duree').value;
+  let bt = +document.getElementById('r-budget-travaux').value;
+  let surfMin = +document.getElementById('r-surf-min').value;
+  let surfMax = +document.getElementById('r-surf-max').value;
+  let prixM2max = +document.getElementById('r_prix_m2').value;
 
-  document.getElementById('rv-revenus').textContent = rev.toLocaleString('fr-FR') + ' €';
-  document.getElementById('rv-apport').textContent = app.toLocaleString('fr-FR') + ' €';
-  document.getElementById('rv-endett').textContent = end.toLocaleString('fr-FR') + ' €/mois';
-  document.getElementById('rv-surf-min').textContent = surfMin + ' m²';
-  document.getElementById('rv-surf-max').textContent = surfMax + ' m²';
-  document.getElementById('rv-budget-travaux').textContent = bt.toLocaleString('fr-FR') + ' €';
-  document.getElementById('rv-flex-prix').textContent = '+' + flexP + '%';
-  document.getElementById('rv-surf-jardin').textContent = +document.getElementById('r-surf-jardin').value + ' m²';
+  document.getElementById('rv-revenus').innerText = rev.toLocaleString()+'€';
+  document.getElementById('rv-apport').innerText = app.toLocaleString()+'€';
+  document.getElementById('rv-endett').innerText = end.toLocaleString()+'€/mois';
+  document.getElementById('rv-surf-min').innerText = surfMin+'m²';
+  document.getElementById('rv-surf-max').innerText = surfMax+'m²';
+  document.getElementById('rv-budget-travaux').innerText = bt.toLocaleString()+'€';
+  document.getElementById('rv_prix_m2').innerText = prixM2max.toLocaleString()+'€/m²';
 
-  const prio_jardin = prios['jardin'];
-  document.getElementById('bloc-jardin-surf').classList.toggle('hidden', prio_jardin !== 'must' && prio_jardin !== 'nice');
-
-  const taux = 0.038;
-  const tauxMens = taux / 12;
-  const n = dur * 12;
-  const mensMax = (rev * 0.35) - end;
-  const capaEmprunt = mensMax > 0 ? Math.round(mensMax * (1 - Math.pow(1 + tauxMens, -n)) / tauxMens) : 0;
-  const budgetTotal = capaEmprunt + app;
-  const budgetFraisNotaire = Math.round(budgetTotal * 0.925);
-  const budgetAchat = Math.max(0, budgetFraisNotaire - bt);
-  const mens = capaEmprunt > 0 ? Math.round(capaEmprunt * tauxMens / (1 - Math.pow(1 + tauxMens, -n))) : 0;
-  const txEnd = rev > 0 ? Math.round((mens + end) / rev * 100) : 0;
-  const budgetHaut = Math.round(budgetAchat * (1 + flexP/100));
-
-  document.getElementById('bs-capa').textContent = capaEmprunt > 0 ? fmt(capaEmprunt) : '—';
-  document.getElementById('bs-budget').textContent = budgetAchat > 0 ? fmt(budgetAchat) : '—';
-  document.getElementById('bs-mens').textContent = mens > 0 ? fmt(mens) + '/mois' : '—';
-  document.getElementById('bs-taux').textContent = txEnd > 0 ? txEnd + '%' : '—';
-  document.getElementById('bs-taux').className = 'bs-val ' + (txEnd > 35 ? 'warn' : txEnd > 0 ? 'ok' : '');
-
-  document.getElementById('hint-flex-prix').textContent =
-    budgetAchat > 0 ? `Fourchette haute : ${fmt(budgetHaut)} (vs ${fmt(budgetAchat)} de base)` : '';
-
-  const alerts = [];
-  if (txEnd > 35) alerts.push({ type:'warn', msg:`Taux d'endettement estimé à ${txEnd}% > seuil bancaire 35%. Capacité d'emprunt probablement limitée.` });
-  if (surfMin > surfMax) alerts.push({ type:'warn', msg:'Surface min > surface max — vérifier les valeurs.' });
-  const villes = document.getElementById('f-villes').value.trim();
-  const jardinMust = prios['jardin'] === 'must';
-  const typeAppt = getChipVal('chips-type').includes('appt');
-  if (jardinMust && typeAppt) alerts.push({ type:'warn', msg:'Jardin obligatoire + appartement sélectionné : combinaison rare, généralement limitée aux RDC avec jardin privatif.' });
-  if (budgetAchat > 0 && budgetAchat < 100000) alerts.push({ type:'warn', msg:'Budget achat < 100 k€ : l\'offre disponible est très limitée dans la plupart des zones urbaines.' });
-  if (capaEmprunt <= 0 && rev > 0) alerts.push({ type:'err', msg:'Mensualité disponible nulle ou négative après endettement existant — aucun crédit immobilier possible en l\'état.' });
-  if (alerts.length === 0 && budgetAchat > 0) alerts.push({ type:'ok', msg:`Profil cohérent. Budget achat estimé : ${fmt(budgetAchat)} — fourchette haute avec flexibilité : ${fmt(budgetHaut)}.` });
-
-  document.getElementById('finance-result').innerHTML = alerts.map(a =>
-    `<div class="alert-box alert-${a.type}" style="margin-top:6px;">${a.msg}</div>`
-  ).join('');
+  const taux = 0.038, tauxMens = taux/12, n = dur*12;
+  let mensMax = rev*0.35 - end;
+  let capa = mensMax>0 ? Math.round(mensMax * (1 - Math.pow(1+tauxMens, -n))/tauxMens) : 0;
+  let budgetTotal = capa+app;
+  let budgetAchat = Math.max(0, Math.round(budgetTotal*0.925) - bt);
+  let mens = capa>0 ? Math.round(capa * tauxMens / (1 - Math.pow(1+tauxMens, -n))) : 0;
+  let txEnd = rev>0 ? Math.round((mens+end)/rev*100) : 0;
+  let alertePrixM2 = prixM2max * surfMin > budgetAchat ? "⚠️ Prix au m² max incompatible avec budget" : "";
+  document.getElementById('bs-capa').innerText = capa.toLocaleString()+'€';
+  document.getElementById('bs-budget').innerText = budgetAchat.toLocaleString()+'€';
+  document.getElementById('bs-mens').innerText = mens.toLocaleString()+'€/mois';
+  document.getElementById('bs-taux').innerText = txEnd+'%';
+  document.getElementById('bs-taux').className = 'bs-val ' + (txEnd>35?'warn':'ok');
+  let alerts = [];
+  if(txEnd>35) alerts.push(`⚠️ Endettement ${txEnd}% > 35%`);
+  if(alertePrixM2) alerts.push(alertePrixM2);
+  if(budgetAchat<100000) alerts.push("Budget achat <100k€ -> offre limitée");
+  document.getElementById('finance-result').innerHTML = alerts.map(a=>`<div class="alert-box alert-warn">${a}</div>`).join('') || '<div class="alert-box alert-ok">✅ Profil cohérent</div>';
+  
+  // Score maturité
+  let score = 0;
+  if(getChipVals('chips_financement').includes('accord')) score+=30;
+  else if(getChipVals('chips_financement').includes('simul')) score+=15;
+  if(getChipVals('chips-delai').includes('3m')) score+=20;
+  if(getChipVals('chips-visites')?.includes('5-15')) score+=10;
+  let scoreDiv = document.getElementById('score-maturite');
+  if(score>=50) scoreDiv.innerHTML='🔥 Score élevé (très actif)';
+  else if(score>=25) scoreDiv.innerHTML='⚡ Score moyen (à suivre)';
+  else scoreDiv.innerHTML='🌱 Score faible (début de recherche)';
 }
 
 function generateFiche() {
-  const rev = +document.getElementById('r-revenus').value;
-  const app = +document.getElementById('r-apport').value;
-  const end = +document.getElementById('r-endett').value;
-  const dur = +document.getElementById('f-duree').value;
-  const bt = +document.getElementById('r-budget-travaux').value;
-  const flexP = +document.getElementById('r-flex-prix').value;
-  const taux = 0.038;
-  const tauxMens = taux / 12;
-  const n = dur * 12;
-  const mensMax = (rev * 0.35) - end;
-  const capaEmprunt = mensMax > 0 ? Math.round(mensMax * (1 - Math.pow(1 + tauxMens, -n)) / tauxMens) : 0;
-  const budgetTotal = capaEmprunt + app;
-  const budgetFraisNotaire = Math.round(budgetTotal * 0.925);
-  const budgetAchat = Math.max(0, budgetFraisNotaire - bt);
-  const budgetHaut = Math.round(budgetAchat * (1 + flexP/100));
-  const mens = capaEmprunt > 0 ? Math.round(capaEmprunt * tauxMens / (1 - Math.pow(1 + tauxMens, -n))) : 0;
-  const txEnd = rev > 0 ? Math.round((mens + end) / rev * 100) : 0;
-
-  const nom = document.getElementById('f-nom').value || '—';
-  const tel = document.getElementById('f-tel').value || '—';
-  const email = document.getElementById('f-email').value || '—';
-  const foyer = document.getElementById('f-foyer').options[document.getElementById('f-foyer').selectedIndex]?.text || '—';
-  const situpro = document.getElementById('f-situpro').options[document.getElementById('f-situpro').selectedIndex]?.text || '—';
-  const villes = document.getElementById('f-villes').value || '—';
-  const notes = document.getElementById('f-notes-agent').value || '—';
-  const today = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
-
-  const prioLabel = { must:'Obligatoire', nice:'Souhaitable', no:'Non requis / Rédhibitoire' };
-  function prioTag(key, label) {
-    const v = prios[key];
-    if (!v) return '';
-    const cls = v === 'must' ? 'must' : v === 'nice' ? 'nice' : 'no';
-    return `<div class="fp-row"><span class="fp-key">${label}</span><span class="fp-val"><span class="fp-tag ${cls}">${prioLabel[v]}</span></span></div>`;
-  }
-  function chipList(grpId) {
-    return getChipVal(grpId).join(', ') || '—';
-  }
-  const lotsAcceptes = LOTS.filter(l => lots[l.id].accept === 'oui').map(l => {
-    const q = lots[l.id].qui;
-    const qLabel = q === 'artisan' ? ' (artisan)' : q === 'soi' ? ' (DIY)' : q === 'mix' ? ' (mix)' : '';
-    return `<span class="fp-tag must">${l.label}${qLabel}</span>`;
-  }).join('');
-  const lotsRefuses = LOTS.filter(l => lots[l.id].accept === 'non').map(l =>
-    `<span class="fp-tag no">${l.label}</span>`
-  ).join('');
-
-  const alertFin = txEnd > 35
-    ? `<div class="fp-alert warn">⚠ Taux d'endettement estimé à ${txEnd}% — au-delà du seuil bancaire de 35%. Financement à sécuriser avant visites.</div>`
-    : `<div class="fp-alert ok">✓ Profil financier cohérent — taux d'endettement estimé : ${txEnd}%</div>`;
-
-  const html = `
-    <div class="fp-header">
-      <div>
-        <div class="fp-logo">Fiche Acquéreur</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;">Qualification projet immobilier</div>
-      </div>
-      <div class="fp-meta">
-        Établi le ${today}<br>
-        Agent référent : <strong>${document.getElementById('f-notes-agent').placeholder ? '—' : '—'}</strong><br>
-        Réf. dossier : ACQ-${Date.now().toString().slice(-6)}
-      </div>
-    </div>
-
-    <div class="fp-budget-bloc">
-      <div class="fp-budget-item">
-        <div class="fp-b-label">Capacité d'emprunt</div>
-        <div class="fp-b-val">${fmt(capaEmprunt)}</div>
-      </div>
-      <div class="fp-budget-item">
-        <div class="fp-b-label">Budget achat estimé</div>
-        <div class="fp-b-val">${fmt(budgetAchat)}</div>
-      </div>
-      <div class="fp-budget-item">
-        <div class="fp-b-label">Fourchette haute (±${flexP}%)</div>
-        <div class="fp-b-val">${fmt(budgetHaut)}</div>
-      </div>
-    </div>
-    ${alertFin}
-
-    <div class="fp-section">
-      <div class="fp-section-title">1 — Profil du foyer</div>
-      <div class="fp-row"><span class="fp-key">Prospect</span><span class="fp-val">${nom}</span></div>
-      <div class="fp-row"><span class="fp-key">Contact</span><span class="fp-val">${tel} · ${email}</span></div>
-      <div class="fp-row"><span class="fp-key">Foyer</span><span class="fp-val">${foyer}</span></div>
-      <div class="fp-row"><span class="fp-key">Situation professionnelle</span><span class="fp-val">${situpro}</span></div>
-      <div class="fp-row"><span class="fp-key">Revenus nets / mois</span><span class="fp-val">${fmt(rev)}</span></div>
-      <div class="fp-row"><span class="fp-key">Apport disponible</span><span class="fp-val">${fmt(app)}</span></div>
-      <div class="fp-row"><span class="fp-key">Mensualités existantes</span><span class="fp-val">${fmt(end)}/mois</span></div>
-      <div class="fp-row"><span class="fp-key">Durée emprunt</span><span class="fp-val">${dur} ans · mensualité estimée ${fmt(mens)}/mois</span></div>
-    </div>
-
-    <div class="fp-section">
-      <div class="fp-section-title">2 — Type &amp; localisation</div>
-      <div class="fp-row"><span class="fp-key">Usage</span><span class="fp-val">${chipList('chips-usage')}</span></div>
-      <div class="fp-row"><span class="fp-key">Type de bien</span><span class="fp-val">${chipList('chips-type')}</span></div>
-      <div class="fp-row"><span class="fp-key">Villes cibles</span><span class="fp-val">${villes}</span></div>
-      <div class="fp-row"><span class="fp-key">Périmètre</span><span class="fp-val">${document.getElementById('f-perimetre').options[document.getElementById('f-perimetre').selectedIndex]?.text || '—'}</span></div>
-      ${prioTag('transports','Transports')}
-      ${prioTag('ecoles','Écoles')}
-      ${prioTag('commerces','Commerces')}
-      <div class="fp-row"><span class="fp-key">Zones exclues</span><span class="fp-val">${document.getElementById('f-exclusions').value || '—'}</span></div>
-    </div>
-
-    <div class="fp-section">
-      <div class="fp-section-title">3 — Critères physiques</div>
-      <div class="fp-row"><span class="fp-key">Surface</span><span class="fp-val">${document.getElementById('r-surf-min').value} m² min · ${document.getElementById('r-surf-max').value} m² max</span></div>
-      <div class="fp-row"><span class="fp-key">Chambres</span><span class="fp-val">${document.getElementById('f-chambres').options[document.getElementById('f-chambres').selectedIndex]?.text}</span></div>
-      <div class="fp-row"><span class="fp-key">Exposition souhaitée</span><span class="fp-val">${chipList('chips-expo')}</span></div>
-      ${prioTag('luminosite','Luminosité')}
-      ${prioTag('balcon','Balcon')}
-      ${prioTag('terrasse','Terrasse')}
-      ${prioTag('jardin','Jardin')}
-      ${prios['jardin'] === 'must' || prios['jardin'] === 'nice' ? `<div class="fp-row"><span class="fp-key">Surface jardin</span><span class="fp-val">${document.getElementById('r-surf-jardin').value} m² min</span></div>` : ''}
-      ${prioTag('parking','Parking / garage')}
-      ${prioTag('cave','Cave')}
-      ${prioTag('ascenseur','Ascenseur')}
-      <div class="fp-row"><span class="fp-key">DPE accepté</span><span class="fp-val">${chipList('chips-dpe')}</span></div>
-      <div class="fp-row"><span class="fp-key">Critères rédhibitoires</span><span class="fp-val">${document.getElementById('f-redhibitoires').value || '—'}</span></div>
-    </div>
-
-    <div class="fp-section">
-      <div class="fp-section-title">4 — État &amp; travaux</div>
-      <div class="fp-row"><span class="fp-key">États acceptés</span><span class="fp-val">${chipList('chips-etat')}</span></div>
-      <div class="fp-row"><span class="fp-key">Posture travaux</span><span class="fp-val">${chipList('chips-posture-travaux')}</span></div>
-      <div class="fp-row"><span class="fp-key">Budget travaux max</span><span class="fp-val">${fmt(bt)}</span></div>
-      <div class="fp-row"><span class="fp-key">Délai chantier</span><span class="fp-val">${chipList('chips-delai-chantier')}</span></div>
-      ${lotsAcceptes ? `<div style="margin-top:8px;"><div class="fp-key" style="margin-bottom:4px;">Lots acceptés :</div><div class="fp-tags">${lotsAcceptes}</div></div>` : ''}
-      ${lotsRefuses ? `<div style="margin-top:8px;"><div class="fp-key" style="margin-bottom:4px;">Lots refusés :</div><div class="fp-tags">${lotsRefuses}</div></div>` : ''}
-    </div>
-
-    <div class="fp-section">
-      <div class="fp-section-title">5 — Profil décisionnel</div>
-      <div class="fp-row"><span class="fp-key">Délai d'achat</span><span class="fp-val">${chipList('chips-delai')}</span></div>
-      <div class="fp-row"><span class="fp-key">Décision</span><span class="fp-val">${chipList('chips-decision')}</span></div>
-      <div class="fp-row"><span class="fp-key">Biens visités</span><span class="fp-val">${chipList('chips-visites')}</span></div>
-      <div class="fp-row"><span class="fp-key">Offres faites</span><span class="fp-val">${chipList('chips-offres')}</span></div>
-      <div class="fp-row"><span class="fp-key">Financement</span><span class="fp-val">${chipList('chips-financement')}</span></div>
-    </div>
-
-    <div class="fp-section">
-      <div class="fp-section-title">Notes agent</div>
-      <div class="fp-agent-notes">${notes}</div>
-    </div>
-
-    <div class="fp-footer">
-      <span>Document confidentiel — usage agent exclusivement</span>
-      <span>Capacité d'emprunt calculée à titre indicatif · Taux hors assurance 3,80% · Simulation non contractuelle</span>
-    </div>
-  `;
-
-  const fp = document.getElementById('fiche-print');
-  fp.innerHTML = html;
-  fp.style.display = 'block';
+  // récupération de toutes les valeurs
+  let nom = document.getElementById('f-nom').value||'—';
+  let rev = +document.getElementById('r-revenus').value;
+  let app = +document.getElementById('r-apport').value;
+  let capa = document.getElementById('bs-capa').innerText;
+  let budgetAchat = document.getElementById('bs-budget').innerText;
+  let charges = document.getElementById('f_charges_max').value||'Non précisé';
+  let aides = getChipVals('chips_aides').join(', ')||'Aucune';
+  let handicaps = getChipVals('chips-handicap').join(', ')||'Aucune';
+  let equips = getChipVals('chips-equip').join(', ')||'Aucun';
+  let redhib = getChipVals('chips-redhib').join(', ')||'Aucun';
+  let dateButoir = document.getElementById('f_date_butoir').value||'Non définie';
+  let venteSimult = getChipVals('chips_vente_simult').includes('oui')?'Oui':'Non';
+  let notes = document.getElementById('f-notes-agent').value||'—';
+  let html = `<div class="fp-header"><div class="fp-logo">Fiche Acquéreur</div><div>${new Date().toLocaleDateString()}</div></div>
+  <div class="fp-budget-bloc"><div><div class="fp-b-label">Capacité</div><div class="fp-b-val">${capa}</div></div><div><div class="fp-b-label">Budget achat</div><div class="fp-b-val">${budgetAchat}</div></div><div><div class="fp-b-label">Apport</div><div class="fp-b-val">${app.toLocaleString()}€</div></div></div>
+  <div class="fp-section"><div class="fp-section-title">Profil</div><div class="fp-row"><span class="fp-key">Nom</span><span class="fp-val">${nom}</span></div><div class="fp-row"><span class="fp-key">Revenus</span><span class="fp-val">${rev.toLocaleString()}€/mois</span></div><div class="fp-row"><span class="fp-key">Handicap/accessibilité</span><span class="fp-val">${handicaps}</span></div></div>
+  <div class="fp-section"><div class="fp-section-title">Critères</div><div class="fp-row"><span class="fp-key">Surface</span><span class="fp-val">${document.getElementById('r-surf-min').value} - ${document.getElementById('r-surf-max').value} m²</span></div><div class="fp-row"><span class="fp-key">Prix au m² max</span><span class="fp-val">${document.getElementById('r_prix_m2').value}€/m²</span></div><div class="fp-row"><span class="fp-key">Équipements souhaités</span><span class="fp-val">${equips}</span></div><div class="fp-row"><span class="fp-key">Rédhibitoires</span><span class="fp-val">${redhib}</span></div></div>
+  <div class="fp-section"><div class="fp-section-title">Copropriété & aides</div><div class="fp-row"><span class="fp-key">Charges max</span><span class="fp-val">${charges}€/mois</span></div><div class="fp-row"><span class="fp-key">Aides financières</span><span class="fp-val">${aides}</span></div></div>
+  <div class="fp-section"><div class="fp-section-title">Calendrier & décision</div><div class="fp-row"><span class="fp-key">Date butoir emménagement</span><span class="fp-val">${dateButoir}</span></div><div class="fp-row"><span class="fp-key">Vente simultanée</span><span class="fp-val">${venteSimult}</span></div><div class="fp-row"><span class="fp-key">Notes agent</span><span class="fp-val">${notes}</span></div></div>`;
+  document.getElementById('fiche-print').innerHTML = html;
+  document.getElementById('fiche-print').style.display = 'block';
   document.getElementById('app').style.display = 'none';
   document.getElementById('bottom-bar').style.display = 'none';
   document.getElementById('header').style.display = 'none';
-
-  const backBtn = document.createElement('button');
-  backBtn.textContent = '← Retour au formulaire';
-  backBtn.style.cssText = `position:fixed;top:16px;left:16px;z-index:999;padding:8px 16px;background:var(--accent);color:#fff;border-radius:var(--r);font-size:13px;font-family:var(--sans);cursor:pointer;border:none;`;
-  backBtn.onclick = () => {
-    fp.style.display = 'none';
-    document.getElementById('app').style.display = 'grid';
-    document.getElementById('bottom-bar').style.display = 'flex';
-    document.getElementById('header').style.display = 'flex';
-    document.body.removeChild(backBtn);
-    document.body.removeChild(printBtn);
-  };
-  const printBtn = document.createElement('button');
-  printBtn.textContent = '🖨 Imprimer / PDF';
-  printBtn.style.cssText = `position:fixed;top:16px;right:16px;z-index:999;padding:8px 16px;background:var(--gold);color:#fff;border-radius:var(--r);font-size:13px;font-family:var(--sans);cursor:pointer;border:none;`;
-  printBtn.onclick = () => window.print();
-  document.body.appendChild(backBtn);
-  document.body.appendChild(printBtn);
-  window.scrollTo(0,0);
+  let btnBack = document.createElement('button'); btnBack.innerText='← Retour'; btnBack.onclick=()=>location.reload(); btnBack.style.cssText='position:fixed;top:10px;left:10px;z-index:999;background:#2c5282;color:#fff;padding:6px 12px;border-radius:6px;';
+  document.body.appendChild(btnBack);
 }
 
-buildLots();
+function exportCSV() {
+  let data = [['Nom','Revenus','Apport','Budget achat','Charges max','Aides','Handicap','Équipements','Rédhibitoires','Date butoir','Vente simultanée','Notes']];
+  let row = [
+    document.getElementById('f-nom').value,
+    document.getElementById('r-revenus').value,
+    document.getElementById('r-apport').value,
+    document.getElementById('bs-budget').innerText,
+    document.getElementById('f_charges_max').value,
+    getChipVals('chips_aides').join(';'),
+    getChipVals('chips-handicap').join(';'),
+    getChipVals('chips-equip').join(';'),
+    getChipVals('chips-redhib').join(';'),
+    document.getElementById('f_date_butoir').value,
+    getChipVals('chips_vente_simult').join(';'),
+    document.getElementById('f-notes-agent').value
+  ];
+  data.push(row);
+  let csv = data.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  let blob = new Blob(["\uFEFF"+csv], {type:'text/csv;charset=utf-8;'});
+  let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'prospects.csv'; link.click();
+}
+
+function setMode(mode) { alert('Mode '+mode+' activé (simplifié)'); }
+function stepNav(d) { }
+function scrollTo(id) { document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+
 initChips();
 update();
-
-document.querySelectorAll('.section-card').forEach(c => c.classList.add('current'));
-buildStepper();
 </script>
 </body>
 </html>
