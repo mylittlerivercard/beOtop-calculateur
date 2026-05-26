@@ -2003,8 +2003,8 @@ function _v3Suggested() {
 
   var exIdx = h < 10 ? 0 : (h >= 14 && h < 16 ? 2 : 0);
   var ex = DB.exercices[exIdx] || DB.exercices[0];
-  if (ex) cards.push({ badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
-    bc:'new', accent:'#f5855a', icon:ex.icon, title:ex.titre, sub:ex.indication||'',
+ if (ex) cards.push({ badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
+    bc:'new', accent:'#f5855a', photo:'cervicales.jpg', icon:ex.icon, title:ex.titre, sub:ex.indication||'',
     action:'openExercice('+(ex.id)+')' });
   cards.push({ badge:'Son immersif', bc:'', accent:'#00c8c8',
     photo:'son_immersif.jpg', icon:'🌲', title:'Sons immersifs', sub:'Forêt · Pluie · Océan · Café',
