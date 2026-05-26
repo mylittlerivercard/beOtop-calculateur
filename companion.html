@@ -881,6 +881,85 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .feed-sub-v3  { font-size: .65rem; color: var(--text-muted); }
 .feed-time-v3 { margin-left: auto; font-size: .6rem; color: var(--text-muted); white-space: nowrap; }
 .card-v3 { background: rgba(255,255,255,.9); border: 1px solid rgba(0,180,180,.15); border-radius: 14px; padding: 1.2rem 1.4rem; }
+
+/* ════════════════════════════════════════════
+   LIVRE D'OR
+════════════════════════════════════════════ */
+.ldo-form {
+  background: linear-gradient(135deg, #003030, #005050);
+  border-radius: 1.5rem;
+  padding: 1.4rem 1.8rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 12px 24px rgba(0,0,0,.1);
+}
+.ldo-form-label {
+  font-size: .7rem; letter-spacing: .2em; color: #00b4b4;
+  font-weight: 600; margin-bottom: .8rem; text-transform: uppercase;
+  display: block;
+}
+.ldo-textarea {
+  width: 100%; min-height: 100px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px; padding: .9rem 1rem;
+  color: white; font-family: inherit; font-size: .85rem;
+  resize: vertical; outline: none; transition: border-color .2s;
+  line-height: 1.6;
+}
+.ldo-textarea::placeholder { color: rgba(255,255,255,.35); }
+.ldo-textarea:focus { border-color: rgba(0,180,180,.5); }
+.ldo-btn {
+  margin-top: .9rem;
+  background: linear-gradient(95deg, #f5855a, #e8641e);
+  border: none; border-radius: 2rem; padding: .7rem 1.8rem;
+  color: white; font-weight: 600; font-size: .8rem;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 14px rgba(245,133,90,.3);
+  transition: transform .2s, box-shadow .2s;
+}
+.ldo-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245,133,90,.5); }
+.ldo-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.ldo-count {
+  font-size: .62rem; color: rgba(255,255,255,.4);
+  text-align: right; margin-top: .3rem;
+}
+.ldo-cards {
+  display: flex; flex-direction: column; gap: .9rem;
+}
+.ldo-card {
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,180,180,.15);
+  border-radius: 14px; padding: 1.1rem 1.3rem;
+  animation: fadeUp .35s ease both;
+  position: relative;
+}
+.ldo-card::before {
+  content: '"';
+  position: absolute; top: .6rem; left: 1rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem; color: rgba(0,180,180,.15);
+  line-height: 1; pointer-events: none;
+}
+.ldo-card-text {
+  font-size: .82rem; color: var(--text);
+  line-height: 1.7; padding-left: 1rem;
+}
+.ldo-card-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: .7rem; padding-top: .6rem;
+  border-top: 1px solid rgba(0,180,180,.1);
+}
+.ldo-card-author {
+  font-size: .68rem; font-weight: 600; color: #00b4b4;
+}
+.ldo-card-date {
+  font-size: .6rem; color: var(--text-muted);
+}
+.ldo-empty {
+  text-align: center; padding: 3rem 1rem;
+  font-size: .78rem; color: var(--text-muted);
+}
+.ldo-empty .ldo-empty-icon { font-size: 2.5rem; margin-bottom: .8rem; display: block; }
 </style>
 </head>
 <body>
@@ -944,6 +1023,10 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item" onclick="switchView('profil')">
     <span class="nav-icon">👤</span><span>Mon profil</span>
   </div>
+  <div class="nav-item" onclick="switchView('livreor')">
+    <span class="nav-icon">💬</span><span>Livre d'or</span>
+  </div>
+
 
   <div class="nav-section-label">Gestion</div>
   <div class="nav-item" onclick="switchView('admin')">
@@ -1305,6 +1388,33 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <div class="card db-table-wrap" id="admin-content"></div>
+</div>
+
+
+<!-- ══════════════ LIVRE D'OR ══════════════ -->
+<div class="view" id="view-livreor">
+  <div class="page-header">
+    <h1>Livre <em>d'or</em></h1>
+    <p>Partagez votre expérience avec la communauté beOtop</p>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="ldo-form">
+    <label class="ldo-form-label">✍️ Laisser un témoignage</label>
+    <textarea class="ldo-textarea" id="ldo-input" maxlength="500"
+      placeholder="Partagez votre ressenti, votre expérience dans cet espace..."></textarea>
+    <div class="ldo-count"><span id="ldo-count">0</span> / 500</div>
+    <button class="ldo-btn" id="ldo-submit" onclick="ldoSubmit()">✓ Publier mon témoignage</button>
+  </div>
+
+  <!-- Liste des témoignages -->
+  <div class="sec">Témoignages</div>
+  <div id="ldo-cards" class="ldo-cards">
+    <div class="ldo-empty">
+      <span class="ldo-empty-icon">💬</span>
+      Chargement des témoignages...
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SONS IMMERSIFS ═══ -->
@@ -1821,6 +1931,7 @@ function switchView(id) {
   if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 200); }
   if (id === 'profil') renderProfil();
   if (id === 'admin') renderAdmin('ateliers');
+  if (id === 'livreor') ldoLoad();
   if (id === 'intervenants') renderIntervenants();
 }
 
@@ -5175,7 +5286,91 @@ function saveIntervenant(existingId) {
       bio: document.getElementById('f-inv-bio').value.trim(),
       photo_initiales: document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2) || nom.slice(0,2).toUpperCase(),
       photo_couleur: document.getElementById('f-inv-color').value,
-      photo_url: (function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : ''; })(),
+      photo_url: 
+/* ════════════════════════════════════════════
+   LIVRE D'OR
+════════════════════════════════════════════ */
+
+// Compteur de caractères
+(function() {
+  document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'ldo-input') {
+      var n = e.target.value.length;
+      var el = document.getElementById('ldo-count');
+      if (el) el.textContent = n;
+    }
+  });
+})();
+
+async function ldoLoad() {
+  var container = document.getElementById('ldo-cards');
+  if (!container) return;
+  try {
+    var siteSlug = await getSiteSlug();
+    var r = await fetch('/api/companion/livreor?site_slug=' + (siteSlug||''), { credentials: 'include' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var data = await r.json();
+    if (!data.length) {
+      container.innerHTML = '<div class="ldo-empty"><span class="ldo-empty-icon">💬</span>Aucun témoignage pour le moment.<br>Soyez le premier à partager votre expérience !</div>';
+      return;
+    }
+    container.innerHTML = data.map(function(t, i) {
+      var d = new Date(t.created_at);
+      var dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      return '<div class="ldo-card" style="animation-delay:' + (i * .05) + 's">'
+        + '<div class="ldo-card-text">' + escapeHtml(t.texte) + '</div>'
+        + '<div class="ldo-card-meta">'
+        + '<span class="ldo-card-author">— ' + escapeHtml(t.prenom || 'Anonyme') + '</span>'
+        + '<span class="ldo-card-date">' + dateStr + '</span>'
+        + '</div></div>';
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="ldo-empty"><span class="ldo-empty-icon">⚠️</span>Impossible de charger les témoignages.</div>';
+  }
+}
+
+async function ldoSubmit() {
+  var input = document.getElementById('ldo-input');
+  var btn   = document.getElementById('ldo-submit');
+  if (!input || !btn) return;
+  var texte = input.value.trim();
+  if (!texte || texte.length < 10) {
+    showToast('⚠ Minimum 10 caractères');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Publication...';
+  try {
+    var siteSlug = await getSiteSlug();
+    var r = await fetch('/api/companion/livreor', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texte: texte, site_slug: siteSlug })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    input.value = '';
+    var countEl = document.getElementById('ldo-count');
+    if (countEl) countEl.textContent = '0';
+    showToast('✓ Témoignage publié — merci !');
+    ldoLoad();
+  } catch(e) {
+    showToast('❌ Erreur lors de la publication');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✓ Publier mon témoignage';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+(function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : ''; })(),
       site_url: document.getElementById('f-inv-site').value.trim(),
       linkedin_url: document.getElementById('f-inv-linkedin').value.trim(),
       tags: tags,
