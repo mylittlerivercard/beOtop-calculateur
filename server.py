@@ -1762,6 +1762,87 @@ def get_scores():
     })
 
 
+
+# ========== LIVRE D'OR ==========
+
+@app.route('/api/companion/livreor', methods=['GET'])
+@login_required
+def livreor_get():
+    """Lire les témoignages du livre d'or (partagés entre tous les users du site)"""
+    site_slug = request.args.get('site_slug')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS companion_livreor (
+                    id          SERIAL PRIMARY KEY,
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    site_slug   TEXT,
+                    prenom      TEXT,
+                    texte       TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+            if site_slug:
+                cur.execute("""
+                    SELECT id, created_at, prenom, texte
+                    FROM companion_livreor
+                    WHERE site_slug = %s
+                    ORDER BY created_at DESC
+                    LIMIT 100
+                """, [site_slug])
+            else:
+                cur.execute("""
+                    SELECT id, created_at, prenom, texte
+                    FROM companion_livreor
+                    ORDER BY created_at DESC
+                    LIMIT 100
+                """)
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/companion/livreor', methods=['POST'])
+@login_required
+def livreor_post():
+    """Publier un témoignage dans le livre d'or"""
+    data = request.get_json() or {}
+    texte = (data.get('texte') or '').strip()
+    if len(texte) < 10:
+        return jsonify({'error': 'Minimum 10 caractères'}), 400
+    if len(texte) > 500:
+        return jsonify({'error': 'Maximum 500 caractères'}), 400
+
+    user_id   = session.get('user_id')
+    site_slug = data.get('site_slug')
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT nom FROM users WHERE id=%s", [user_id])
+            user = cur.fetchone()
+            prenom = ''
+            if user and user['nom']:
+                prenom = user['nom'].strip().split()[0]
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS companion_livreor (
+                    id          SERIAL PRIMARY KEY,
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    site_slug   TEXT,
+                    prenom      TEXT,
+                    texte       TEXT NOT NULL
+                )
+            """)
+            cur.execute("""
+                INSERT INTO companion_livreor (user_id, site_slug, prenom, texte)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, [user_id, site_slug, prenom, texte])
+            new_id = cur.fetchone()['id']
+            conn.commit()
+
+    return jsonify({'ok': True, 'id': new_id}), 201
+
 # ========== HEALTH ==========
 
 
