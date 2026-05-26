@@ -762,15 +762,35 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .sec::after { content: ""; flex: 1; height: 1px; background: rgba(0,180,180,.2); }
 
 /* ── SUGGESTED CAROUSEL ── */
-.sug-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 1rem; margin-bottom: 2rem;
+.sug-grid-wrap {
+  overflow: hidden;
+  margin-bottom: 2rem;
+  position: relative;
 }
+.sug-grid-wrap::before, .sug-grid-wrap::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2; pointer-events: none;
+}
+.sug-grid-wrap::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+.sug-grid-wrap::after  { right: 0; background: linear-gradient(to left,  var(--bg), transparent); }
+@keyframes sugScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.sug-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: max-content;
+  animation: sugScroll 40s linear infinite;
+  padding-bottom: .5rem;
+}
+.sug-grid:hover { animation-play-state: paused; }
 .sug-card {
   background: rgba(255,255,255,.96); border: 1px solid rgba(0,180,180,.2);
   border-radius: 1.25rem; padding: 1.1rem 1rem;
   transition: var(--transition-v3); position: relative; cursor: pointer;
-  animation: fadeUp .45s ease backwards;
+  flex: 0 0 195px;
 }
 .sug-card:nth-child(1){animation-delay:.00s} .sug-card:nth-child(2){animation-delay:.05s}
 .sug-card:nth-child(3){animation-delay:.10s} .sug-card:nth-child(4){animation-delay:.15s}
@@ -1052,7 +1072,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div style="padding:1.8rem 2rem">
 
     <div class="sec">Suggéré pour vous</div>
-    <div class="sug-grid" id="v3-sug-grid"></div>
+    <div class="sug-grid-wrap"><div class="sug-grid" id="v3-sug-grid"></div></div>
 
     <div class="sec">Check-in du jour</div>
     <div class="checkin-v3" id="checkin-section">
@@ -2063,7 +2083,7 @@ function _v3Suggested() {
     'Cocon de Sieste':         'Cocon1.jpg',
     'Neurosonic Lit':          'supersonic.jpg',
     "Bol d'Air Jacquier":      'bol_d_air.jpg',
-    'Transat 127':             'siege.jpg',
+    'Transat 127':             'Transat.jpg',
     'Siège Massant 0 Gravité': 'siege_massant.jpg',
     'Siège Massant Shiatsu':   'siege_massant1.jpg',
     'Siège Lecture':           'siège.jpg',
@@ -2075,6 +2095,7 @@ function _v3Suggested() {
 
   var h = new Date().getHours(), cards = [];
 
+  /* Ateliers libres avec photo */
   DB.ateliers.filter(function(a){ return a.statut==='libre'; }).slice(0,3).forEach(function(a){
     var photo = ATELIER_PHOTOS[a.nom] || null;
     cards.push({ badge:'Disponible', bc:'dispo', accent:'#00b4b4',
@@ -2082,22 +2103,42 @@ function _v3Suggested() {
       action:"switchView('reservation')" });
   });
 
+  /* Exercice contextuel */
   var exIdx = h < 10 ? 0 : (h >= 14 && h < 16 ? 2 : 0);
   var ex = DB.exercices[exIdx] || DB.exercices[0];
- if (ex) cards.push({ badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
-    bc:'new', accent:'#f5855a', photo:'cervicales.jpg', icon:ex.icon, title:ex.titre, sub:ex.indication||'',
+  if (ex) cards.push({ badge:h<10?'Matin idéal':(h>=14?'Après-repas':'Recommandé'),
+    bc:'new', accent:'#f5855a', icon:ex.icon, title:ex.titre, sub:ex.indication||'',
     action:'openExercice('+(ex.id)+')' });
+
+  /* Toutes les sections */
   cards.push({ badge:'Son immersif', bc:'', accent:'#00c8c8',
-    photo:'son_immersif.jpg', icon:'🌲', title:'Sons immersifs', sub:'Forêt · Pluie · Océan · Café',
+    photo:'son_immersif.jpg', icon:'🌿', title:'Sons immersifs', sub:'Forêt · Pluie · Océan · Café',
     action:"switchView('sons')" });
-  cards.push({ badge:'5 min', bc:'new', accent:'#f5855a',
-    photo:'cardiaque.jpg', icon:'💓', title:'Cohérence cardiaque', sub:'Protocole 365 · 6 cpm',
+  cards.push({ badge:'5 min', bc:'new', accent:'#e8641e',
+    icon:'💓', title:'Cohérence cardiaque', sub:'Protocole 365 · 6 cpm',
     action:"switchView('coherence')" });
   cards.push({ badge:'Laurent Thiry', bc:'new', accent:'#7c5cbf',
     icon:'🧠', title:'Défi cognitif', sub:'Neurosciences appliquées',
     action:"switchView('jeux')" });
+  cards.push({ badge:'Témoignages', bc:'', accent:'#00b4b4',
+    icon:'💬', title:"Livre d'or", sub:'Partagez votre expérience',
+    action:"switchView('livreor')" });
+  cards.push({ badge:'Vidéos guidées', bc:'', accent:'#7c5cbf',
+    icon:'🎬', title:'Bibliothèque vidéo', sub:'Sophrologie · Yoga · TMS',
+    action:"switchView('video')" });
+  cards.push({ badge:'Audio', bc:'', accent:'#00c8c8',
+    icon:'🎧', title:'Bibliothèque audio', sub:'Binaural · NSDR · Sophrologie',
+    action:"switchView('audio')" });
+  cards.push({ badge:'Exercices', bc:'', accent:'#f5855a',
+    icon:'⚡', title:'Exercices express', sub:'TMS · Étirements · Workout',
+    action:"switchView('exercices')" });
+  cards.push({ badge:'Intervenants', bc:'', accent:'#009090',
+    icon:'🎓', title:'Nos intervenants', sub:'Experts · Neurosciences · Bien-être',
+    action:"switchView('intervenants')" });
 
-  grid.innerHTML = cards.slice(0,6).map(function(c){
+  /* Dupliquer les cards pour boucle infinie */
+  var doubled = cards.concat(cards);
+  grid.innerHTML = doubled.map(function(c){
     var media = c.photo
       ? '<img class="sug-photo" src="/static/'+c.photo+'" alt="" onload="" onerror="_sugImgErr(this)">'
         + '<span class="sug-icon-big" style="display:none">'+c.icon+'</span>'
