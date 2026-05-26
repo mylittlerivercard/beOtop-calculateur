@@ -1395,44 +1395,56 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem">
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('foret')" id="son-foret">
-<img src="/static/foret.jpg" alt="foret" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌲</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Forêt</div>
+      <img src="/static/foret.jpg" alt="foret" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌲</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Forêt</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Feuillage · Vent</div>
       <div class="son-status" id="status-foret" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('pluie')" id="son-pluie">
-<img src="/static/pluie.jpg" alt="pluie" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌧️</span>      <div style="font-size:.58rem;color:var(--text-dim)">Douce · Cocooning</div>
+      <img src="/static/pluie.jpg" alt="pluie" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌧️</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pluie</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Douce · Cocooning</div>
       <div class="son-status" id="status-pluie" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('ocean')" id="son-ocean">
-<img src="/static/ocean.jpg" alt="ocean" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌊</span>      <div style="font-size:.58rem;color:var(--text-dim)">Vagues · Détente</div>
+      <img src="/static/ocean.jpg" alt="ocean" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌊</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Océan</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Vagues · Détente</div>
       <div class="son-status" id="status-ocean" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('cafe')" id="son-cafe">
-<img src="/static/cafe.jpg" alt="cafe" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">☕</span>      <div style="font-size:.58rem;color:var(--text-dim)">Ambiance · Focus</div>
+      <img src="/static/cafe.jpg" alt="cafe" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">☕</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Café</div>
+      <div style="font-size:.58rem;color:var(--text-dim)">Ambiance · Focus</div>
       <div class="son-status" id="status-cafe" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('orage')" id="son-orage">
-<img src="/static/orage.jpg" alt="orage" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⛈️</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Orage</div>
+      <img src="/static/orage.jpg" alt="orage" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⛈️</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Orage</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Tonnerre · Intensité</div>
       <div class="son-status" id="status-orage" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('clavier')" id="son-clavier">
-<img src="/static/clavier.jpg" alt="clavier" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⌨️</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Clavier</div>
+      <img src="/static/clavier.jpg" alt="clavier" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⌨️</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Clavier</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Claquement · Flow</div>
       <div class="son-status" id="status-clavier" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('creche')" id="son-creche">
-<img src="/static/creche.jpg" alt="creche" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">👶</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Crèche</div>
+      <img src="/static/creche.jpg" alt="creche" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">👶</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Crèche</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Douceur · Sérénité</div>
       <div class="son-status" id="status-creche" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('noel')" id="son-noel">
-<img src="/static/noel.jpg" alt="noel" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🎄</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Noël</div>
+      <img src="/static/noel.jpg" alt="noel" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🎄</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Noël</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Cheminée · Cloches</div>
       <div class="son-status" id="status-noel" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('paques')" id="son-paques">
-<img src="/static/paques.jpg" alt="paques" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🐣</span>      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pâques</div>
+      <img src="/static/paques.jpg" alt="paques" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🐣</span>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pâques</div>
       <div style="font-size:.58rem;color:var(--text-dim)">Oiseaux · Printemps</div>
       <div class="son-status" id="status-paques" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
     </div>
@@ -3491,6 +3503,18 @@ var CATS_VIDEO = [
 var currentVideoCat = 'all';
 
 // Vidéos démo dans DEMO_DB déjà initialisées — on lit DB.videos
+function getYoutubeThumbnail(url) {
+  if (!url) return null;
+  var match = url.match(/(?:youtube\.com\/embed\/|youtu\.be\/)([\w-]+)/);
+  return match ? 'https://img.youtube.com/vi/' + match[1] + '/mqdefault.jpg' : null;
+}
+
+function getVimeoId(url) {
+  if (!url) return null;
+  var match = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+  return match ? match[1] : null;
+}
+
 function renderVideo() {
   if (!DB.videos) DB.videos = [];
   var catsEl = document.getElementById('video-cats');
@@ -3508,12 +3532,37 @@ function renderVideo() {
   }
   var bg = { sophrologie:'rgba(90,138,106,.15)', yoga:'rgba(90,138,170,.15)', tms:'rgba(200,169,110,.1)', mindfulness:'rgba(138,106,170,.15)' };
   grid.innerHTML = filtered.map(function(v) {
-    return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer">'
-      + '<div class="audio-thumb" style="background:' + (bg[v.categorie]||'var(--surface2)') + '">' + (v.icon||'🎬') + '</div>'
+    var thumb = getYoutubeThumbnail(v.url_video);
+    var thumbHtml;
+    if (thumb) {
+      thumbHtml = '<div class="audio-thumb" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0;height:100px;background:#000">'
+        + '<img src="' + thumb + '" alt="' + v.titre + '" '
+        + 'style="width:100%;height:100%;object-fit:cover;display:block;" '
+        + 'onerror="this.parentNode.innerHTML=\'<div style=&quot;font-size:1.5rem;display:flex;align-items:center;justify-content:center;height:100%&quot;>🎬</div>\'">'
+        + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+        + 'width:36px;height:36px;background:rgba(255,0,0,.85);border-radius:50%;'
+        + 'display:flex;align-items:center;justify-content:center;pointer-events:none">'
+        + '<span style="color:white;font-size:.8rem;margin-left:2px">▶</span></div>'
+        + '</div>';
+      thumbHtml = '<div style="position:relative;overflow:hidden;border-radius:8px 8px 0 0;height:100px;background:#000">'
+        + '<img src="' + thumb + '" alt="' + v.titre + '" '
+        + 'style="width:100%;height:100%;object-fit:cover;display:block;" '
+        + 'onerror="this.parentNode.innerHTML=\'<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:1.5rem&quot;>🎬</div>\'">'
+        + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+        + 'width:36px;height:36px;background:rgba(255,0,0,.85);border-radius:50%;'
+        + 'display:flex;align-items:center;justify-content:center">'
+        + '<span style="color:white;font-size:.8rem;margin-left:3px">▶</span></div>'
+        + '</div>';
+    } else {
+      thumbHtml = '<div class="audio-thumb" style="background:' + (bg[v.categorie]||'var(--surface2)') + '">' + (v.icon||'🎬') + '</div>';
+    }
+    return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer;padding:0;overflow:hidden">'
+      + thumbHtml
+      + '<div style="padding:.8rem 1rem">'
       + '<div class="audio-title">' + v.titre + '</div>'
       + '<div class="audio-meta"><span>' + v.categorie + '</span><span class="audio-duration">' + (v.duree||'') + '</span></div>'
-      + '<button class="audio-play-btn">▶ Regarder</button>'
-      + '</div>';
+      + '<button class="audio-play-btn" style="margin-top:.6rem">▶ Regarder</button>'
+      + '</div></div>';
   }).join('');
 }
 
