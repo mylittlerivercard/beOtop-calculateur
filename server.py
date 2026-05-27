@@ -2479,6 +2479,7 @@ def serve_audio(filename):
     return response
 
 
+
 # ========== COMPANION ANALYTICS (dashboard client) ==========
 
 @app.route('/api/dashboard/companion-analytics', methods=['GET'])
@@ -2491,33 +2492,32 @@ def companion_analytics():
     with get_db() as conn:
         with conn.cursor() as cur:
 
-            # Utilisateurs actifs sur la période
+            # Utilisateurs actifs
             cur.execute("""
-                SELECT COUNT(DISTINCT user_id) as users_actifs
+                SELECT COUNT(DISTINCT user_id) as n
                 FROM companion_points
                 WHERE site_slug = %s
                 AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
             """, [site_slug, days])
-            users_actifs = (cur.fetchone() or {}).get('users_actifs', 0)
+            users_actifs = (cur.fetchone() or {}).get('n', 0)
 
-            # Utilisateurs total du site
+            # Utilisateurs total
             cur.execute("""
-                SELECT COUNT(DISTINCT u.id) as users_total
+                SELECT COUNT(DISTINCT u.id) as n
                 FROM users u
                 JOIN clients c ON u.client_id = c.id
                 JOIN sites s ON s.client_id = c.id
                 WHERE s.slug = %s
             """, [site_slug])
-            users_total = (cur.fetchone() or {}).get('users_total', 0)
+            users_total = (cur.fetchone() or {}).get('n', 0)
 
             # Sessions totales
             cur.execute("""
-                SELECT COUNT(*) as nb
-                FROM companion_points
+                SELECT COUNT(*) as n FROM companion_points
                 WHERE site_slug = %s
                 AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
             """, [site_slug, days])
-            sessions_total = (cur.fetchone() or {}).get('nb', 0)
+            sessions_total = (cur.fetchone() or {}).get('n', 0)
 
             # Check-ins
             cur.execute("""
@@ -2529,11 +2529,11 @@ def companion_analytics():
                 WHERE site_slug = %s
                 AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
             """, [site_slug, days])
-            checkins_row = cur.fetchone() or {}
-            nb_checkins  = checkins_row.get('nb', 0)
-            avg_energie  = checkins_row.get('avg_energie', 0)
-            avg_stress   = checkins_row.get('avg_stress', 0)
-            avg_focus    = checkins_row.get('avg_focus', 0)
+            row = cur.fetchone() or {}
+            nb_checkins = row.get('nb', 0)
+            avg_energie = row.get('avg_energie', 0)
+            avg_stress  = row.get('avg_stress', 0)
+            avg_focus   = row.get('avg_focus', 0)
 
             # Cohérence cardiaque
             cur.execute("""
@@ -2554,7 +2554,7 @@ def companion_analytics():
             """, [site_slug, days])
             nb_livreor = (cur.fetchone() or {}).get('nb', 0)
 
-            # Répartition activités (donut)
+            # Répartition activités
             cur.execute("""
                 SELECT action, COUNT(*) as nb
                 FROM companion_points
@@ -2564,7 +2564,7 @@ def companion_analytics():
             """, [site_slug, days])
             actions_repartition = [serialize_row(r) for r in cur.fetchall()]
 
-            # Activité par jour de semaine (0=dim, 1=lun...)
+            # Activité par jour de semaine
             cur.execute("""
                 SELECT EXTRACT(DOW FROM created_at)::int as dow, COUNT(*) as nb
                 FROM companion_points
@@ -2586,6 +2586,74 @@ def companion_analytics():
             """, [site_slug])
             timeline = [serialize_row(r) for r in cur.fetchall()]
 
+            # ── Top contenus par type ──
+            # Audio
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'audio'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'audio'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_audio = [serialize_row(r) for r in cur.fetchall()]
+
+            # Vidéo
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'video'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'video'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_video = [serialize_row(r) for r in cur.fetchall()]
+
+            # Exercices
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'exercice'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'exercice'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_exercices = [serialize_row(r) for r in cur.fetchall()]
+
+            # Sons
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'sons'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'sons'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_sons = [serialize_row(r) for r in cur.fetchall()]
+
+            # Jeux cognitifs
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'jeu'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'jeu'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_jeux = [serialize_row(r) for r in cur.fetchall()]
+
+            # Top global toutes catégories confondues
+            cur.execute("""
+                SELECT action, label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL
+                AND label NOT IN ('audio','video','exercice','sons','jeu','checkin','cc','reservation')
+                GROUP BY action, label ORDER BY nb DESC LIMIT 10
+            """, [site_slug, days])
+            top_global = [serialize_row(r) for r in cur.fetchall()]
+
     return jsonify({
         'users_actifs':        users_actifs,
         'users_total':         users_total,
@@ -2601,7 +2669,14 @@ def companion_analytics():
         'top_actions':         actions_repartition[:6],
         'weekdays':            weekdays,
         'timeline':            timeline,
+        'top_audio':           top_audio,
+        'top_video':           top_video,
+        'top_exercices':       top_exercices,
+        'top_sons':            top_sons,
+        'top_jeux':            top_jeux,
+        'top_global':          top_global,
     })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
