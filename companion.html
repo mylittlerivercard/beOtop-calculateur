@@ -5904,9 +5904,31 @@ function renderPosts() {
   }
   grid.innerHTML = list.map(function(p) {
     var img = p.image_url ? '<img src="' + p.image_url + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:.8rem;display:block" onerror="this.style.display=\'none\'">' : '';
-    var lienBtn = p.lien ? '<a href="' + p.lien + '" target="_blank" rel="noopener" onclick="logPostClic(' + p.id + ')" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;padding:.45rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">\ud83d\udd17 Lire la suite</a>' : '';
+
+    // Détecter si le lien est une URL YouTube embed
+    var isYoutube = p.lien && (p.lien.includes('youtube.com/embed') || p.lien.includes('youtu.be'));
+    var isVimeo   = p.lien && p.lien.includes('player.vimeo.com');
+    var embedUrl  = '';
+    if (isYoutube && p.lien.includes('watch?v=')) {
+      // Convertir watch?v= en embed si nécessaire
+      embedUrl = p.lien.replace('watch?v=', 'embed/').replace('www.youtube.com', 'www.youtube.com');
+    } else if (isYoutube || isVimeo) {
+      embedUrl = p.lien;
+    }
+
+    var mediaHtml = '';
+    if (embedUrl) {
+      mediaHtml = '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:.8rem">'
+        + '<iframe src="' + embedUrl + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+        + '</div>';
+    } else if (img) {
+      mediaHtml = img;
+    }
+
+    var lienBtn = (p.lien && !embedUrl) ? '<a href="' + p.lien + '" target="_blank" rel="noopener" onclick="logPostClic(' + p.id + ')" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;padding:.45rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">\ud83d\udd17 Lire la suite</a>' : '';
+
     return '<div class="card" style="padding:1.2rem" onclick="logPostClic(' + p.id + ')">'
-      + img
+      + mediaHtml
       + '<div style="font-size:.92rem;font-weight:600;color:var(--text);margin-bottom:.4rem">' + p.titre + '</div>'
       + (p.texte ? '<div style="font-size:.75rem;color:var(--text-dim);line-height:1.7;white-space:pre-wrap">' + p.texte + '</div>' : '')
       + '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem">'
@@ -5987,7 +6009,9 @@ function deletePost(id) {
   saveDB(DB); renderAdmin('posts'); renderPosts(); showToast('\u2713 Post supprim\u00e9');
 }
 
-/* ══ HELPER — peupler un select avec la liste des intervenants ══ */ument.getElementById(selectId);
+/* ══ HELPER — peupler un select avec la liste des intervenants ══ */
+function _fillIntervenantSelect(selectId, selectedNom) {
+  var sel = document.getElementById(selectId);
   if (!sel) return;
   (DB.intervenants || []).forEach(function(inv) {
     var o = document.createElement('option');
