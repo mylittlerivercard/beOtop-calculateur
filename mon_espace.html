@@ -303,6 +303,23 @@ tr:hover td { background: var(--surface2); }
     <div class="empty"><span class="empty-icon">📊</span>Aucun semestre clôturé pour le moment.</div>
   </div>
 
+  <!-- CLIENTS APPORTÉS -->
+  <div id="section-apport" style="display:none">
+    <div class="section-title">Mes clients apportés · Commission 20%</div>
+    <div class="note" style="background:rgba(160,104,32,.06);border-color:rgba(160,104,32,.2)">
+      💼 En tant qu'apporteur d'affaire, vous percevez 20% du CA semestriel de chaque client que vous avez apporté à beOtop.
+      La part beOtop est réduite à 50% sur ces clients.
+    </div>
+    <div class="table-wrap" id="table-apport">
+      <div class="empty"><span class="empty-icon">🏢</span>Aucun client apporté sur cette période.</div>
+    </div>
+    <div class="kpi-card" id="kpi-apport-total" style="margin-top:1rem;display:none">
+      <div class="kpi-val coral" id="apport-total-val">0 €</div>
+      <div class="kpi-lbl">Commission apport d'affaire estimée · semestre</div>
+      <div class="kpi-sub">20% du CA semestriel de vos clients apportés · Versement à la clôture beOtop</div>
+    </div>
+  </div>
+
 </div>
 
 <div id="toast"></div>
@@ -431,6 +448,34 @@ function renderAll(d) {
         + '</div></div>';
     }).join('');
     document.getElementById('table-historique').innerHTML = histHtml;
+  }
+
+  // Clients apportés (V2)
+  var apports = d.clients_apportes || [];
+  var sectionApport = document.getElementById('section-apport');
+  if (apports.length) {
+    sectionApport.style.display = 'block';
+    var rows3 = apports.map(function(c) {
+      return '<tr>'
+        + '<td style="font-weight:500">' + (c.nom || '—') + '</td>'
+        + '<td style="font-size:.65rem;color:var(--text-muted)">' + (c.site_slug || '—') + '</td>'
+        + '<td style="text-align:center">' + (c.nb_actifs || 0) + '</td>'
+        + '<td style="text-align:center">' + (c.tarif_utilisateur_mensuel ? c.tarif_utilisateur_mensuel + ' \u20ac' : '—') + '</td>'
+        + '<td style="text-align:center"><strong>' + (c.ca_semestre ? c.ca_semestre + ' \u20ac' : '—') + '</strong></td>'
+        + '<td style="text-align:center"><strong style="color:var(--coral-dark)">' + (c.commission_20pct ? c.commission_20pct + ' \u20ac' : '—') + '</strong></td>'
+        + '</tr>';
+    }).join('');
+    document.getElementById('table-apport').innerHTML = '<table><thead><tr>'
+      + '<th>Client</th><th>Site</th><th>Utilisateurs actifs</th><th>Tarif/user/mois</th><th>CA s\u00e9mestriel</th><th>Votre commission 20%</th>'
+      + '</tr></thead><tbody>' + rows3 + '</tbody></table>';
+    var totalApport = d.total_commission_apport || 0;
+    if (totalApport > 0) {
+      var kpiApport = document.getElementById('kpi-apport-total');
+      kpiApport.style.display = 'block';
+      document.getElementById('apport-total-val').textContent = totalApport.toFixed(2) + ' \u20ac';
+    }
+  } else {
+    if (sectionApport) sectionApport.style.display = 'none';
   }
 }
 
