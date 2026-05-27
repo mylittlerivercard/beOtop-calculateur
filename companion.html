@@ -1379,6 +1379,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('retribution',this)" style="background:rgba(232,100,30,.12);border-color:rgba(232,100,30,.3);color:#e8641e">💰 Rétribution</button>
   </div>
 
   <div class="card db-table-wrap" id="admin-content"></div>
@@ -3616,6 +3617,7 @@ function openVideo(id) {
     showToast("URL video non renseignee — Modifiez depuis Administration");
     return;
   }
+  logPlay('video', v.titre, v.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   openModal(v.titre,
     '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
     + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
@@ -3637,6 +3639,12 @@ function startJeu(type) {
   if (!zone) return;
   if (menu) menu.style.display = 'none';
   clearInterval(_jeuTimer);
+  // Mapping nom lisible par type
+  var _jeuLabels = { memory:'Memory', calcul:'Calcul mental', simon:'Simon', stroop:'Stroop',
+    suite:'Suite logique', analogie:'Analogies', attention:'Attention sélective',
+    comptage:'Comptage sélectif', inattention:'Gorille invisible', differences:'Différences',
+    gorille:'Gorille', reflexes:'Réflexes', double:'Double tâche' };
+  logPlay('jeu', _jeuLabels[type] || type, '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   if (type === 'memory')      startMemory(zone);
   if (type === 'calcul')      startCalcul(zone);
   if (type === 'simon')       startSimon(zone);
@@ -3654,9 +3662,13 @@ function startJeu(type) {
 
 function jeuBack() {
   clearInterval(_jeuTimer);
+  // Enregistrer la durée de jeu à la sortie
+  var zone = document.getElementById('jeu-zone');
+  var titre = zone ? (zone.querySelector('[data-jeu-label]') || {}).dataset : null;
+  // logPlayEnd générique — on cherche le dernier jeu lancé dans _playTimers
+  Object.keys(_playTimers).forEach(function(k){ if (k.startsWith('jeu|')) logPlayEnd('jeu', k.slice(4)); });
   var menu = document.getElementById('jeux-menu');
   if (menu) menu.style.display = 'grid';
-  var zone = document.getElementById('jeu-zone');
   if (zone) zone.innerHTML = '';
 }
 
@@ -4340,7 +4352,7 @@ function filterAudio(cat) {
 function playAudio(id) {
   var audio = DB.audios.find(function(a){ return a.id === id; });
   if (!audio) return;
-
+  logPlay('audio', audio.titre, audio.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   DB.sessions.push({ date: new Date().toISOString(), label: audio.titre, detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60 });
   saveDB(DB);
   awardPoints('audio', audio.titre);
@@ -4585,6 +4597,7 @@ function runExercicePlayer(steps, durSec, colorVar, categorie, onEnd) {
 function openExercice(id) {
   const ex = DB.exercices.find(e => e.id === id);
   if (!ex) return;
+  logPlay('exercice', ex.titre, ex.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   DB.sessions.push({
     date: new Date().toISOString(), label: ex.titre,
     detail: ex.categorie + ' · ' + ex.tags[0], duree: parseInt(ex.tags[0]) || 10
@@ -4827,29 +4840,31 @@ function renderAdmin(tab) {
   }
 else if (tab === 'audios') {
     el.innerHTML = `<table><thead><tr>
-      <th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Statut</th><th>Action</th>
+      <th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>Action</th>
     </tr></thead><tbody>${DB.audios.map(a => `<tr>
       <td>${a.id}</td><td>${a.icon} ${a.titre}</td><td>${a.categorie}</td><td>${a.duree}</td>
-      <td><span class="status-pill active">${a.statut}</span></td>
+      <td style="font-size:.7rem;color:var(--text-dim)">${a.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editAudio(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAudio(${a.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
   } else if (tab === 'videos') {
     if (!DB.videos) DB.videos = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddVideo()">+ Vidéo</button></div>'
-      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>URL</th><th>Action</th></tr></thead><tbody>'
+      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>URL</th><th>Action</th></tr></thead><tbody>'
       + DB.videos.map(function(v) {
         return '<tr><td>' + v.id + '</td><td>' + (v.icon||'🎬') + ' ' + v.titre + '</td><td>' + v.categorie + '</td><td>' + (v.duree||'—') + '</td>'
-          + '<td style="font-size:.58rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">' + (v.url_video ? '✓ Définie' : '⚠ Vide') + '</td>'
+          + '<td style="font-size:.7rem;color:var(--text-dim)">' + (v.intervenant||'—') + '</td>'
+          + '<td style="font-size:.58rem;color:var(--text-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis">' + (v.url_video ? '✓' : '⚠ Vide') + '</td>'
           + '<td><button class="btn-ghost" onclick="editVideo(' + v.id + ')">✎</button>'
           + '<button class="btn-ghost" onclick="deleteVideo(' + v.id + ')" style="color:var(--red)">✕</button></td></tr>';
       }).join('')
       + '</tbody></table>';
   } else if (tab === 'exercices') {
     el.innerHTML = `<table><thead><tr>
-      <th>ID</th><th>Titre</th><th>Catégorie</th><th>Tags</th><th>Action</th>
+      <th>ID</th><th>Titre</th><th>Catégorie</th><th>Tags</th><th>Intervenant</th><th>Action</th>
     </tr></thead><tbody>${DB.exercices.map(e => `<tr>
       <td>${e.id}</td><td>${e.icon} ${e.titre}</td><td>${e.categorie}</td><td>${e.tags.join(', ')}</td>
+      <td style="font-size:.7rem;color:var(--text-dim)">${e.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editExercice(${e.id})">✎</button>
           <button class="btn-ghost" onclick="deleteExercice(${e.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
@@ -4861,6 +4876,20 @@ else if (tab === 'audios') {
       <td>${DB.user.dept||'—'}</td><td>${DB.user.site||'—'}</td>
       <td>${DB.sessions.length + DB.cc_sessions.length}</td>
     </tr></tbody></table>`;
+  } else if (tab === 'retribution') {
+    var today = new Date().toISOString().slice(0,10);
+    var jan   = new Date().getFullYear() + '-01-01';
+    el.innerHTML = '<div style="display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:1.2rem;padding:.8rem;background:var(--surface);border-radius:10px;border:1px solid var(--border2)">'
+      + '<div style="display:flex;flex-direction:column;gap:.2rem"><label style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)">Du</label>'
+      + '<input type="date" id="retrib-from" value="' + jan + '" style="padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border2);background:white;font-size:.82rem;color:var(--text)"></div>'
+      + '<div style="display:flex;flex-direction:column;gap:.2rem"><label style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)">Au</label>'
+      + '<input type="date" id="retrib-to" value="' + today + '" style="padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border2);background:white;font-size:.82rem;color:var(--text)"></div>'
+      + '<div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:.2rem"><label style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)">Site (optionnel)</label>'
+      + '<input type="text" id="retrib-site" placeholder="tous les sites" style="padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border2);background:white;font-size:.82rem;color:var(--text)"></div>'
+      + '<button class="btn-primary" onclick="loadRetribution()">Calculer</button>'
+      + '<button class="btn-secondary" onclick="exportRetribution()">&#11015; CSV</button>'
+      + '</div>'
+      + '<div id="retrib-result"><div style="font-size:.75rem;color:var(--text-muted);padding:1rem;text-align:center">Cliquez sur Calculer pour charger les données.</div></div>';
   }
 }
 
@@ -4880,12 +4909,17 @@ function openAddVideo() {
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" placeholder="Description courte"></div>
-    <div class="form-field"><label>URL vidéo (Vimeo embed)</label><input type="text" id="f-vi-url" placeholder="https://player.vimeo.com/video/...">
-      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Format Vimeo : https://player.vimeo.com/video/XXXXXXX</div></div>
+    <div class="form-field"><label>URL vidéo (YouTube embed ou Vimeo embed)</label><input type="text" id="f-vi-url" placeholder="https://www.youtube.com/embed/... ou https://player.vimeo.com/video/...">
+      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">YouTube : https://www.youtube.com/embed/ID · Vimeo : https://player.vimeo.com/video/ID</div></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-vi-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="saveVideo()">✓ Ajouter</button>
     </div>`);
+  _fillIntervenantSelect('f-vi-intervenant', null);
 }
 
 function saveVideo() {
@@ -4900,6 +4934,7 @@ function saveVideo() {
     icon: document.getElementById('f-vi-icon').value || '🎬',
     description: document.getElementById('f-vi-desc').value,
     url_video: document.getElementById('f-vi-url').value.trim(),
+    intervenant: document.getElementById('f-vi-intervenant') ? document.getElementById('f-vi-intervenant').value : '',
   });
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderVideo();
   showToast('Video ajoutee');
@@ -5027,10 +5062,15 @@ function openAddAudio() {
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" placeholder="Description courte"></div>
     <div class="form-field"><label>URL audio (YouTube embed)</label><input type="text" id="f-au-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible · Vimeo aussi accepté</div></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-au-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="saveAudio()">✓ Ajouter</button>
     </div>`);
+  _fillIntervenantSelect('f-au-intervenant', null);
 }
 
 function saveAudio() {
@@ -5045,6 +5085,7 @@ function saveAudio() {
     icon: document.getElementById('f-au-icon').value || '🎵',
     description: document.getElementById('f-au-desc').value,
     url_audio: document.getElementById('f-au-url').value.trim(),
+    intervenant: document.getElementById('f-au-intervenant') ? document.getElementById('f-au-intervenant').value : '',
     statut: 'active'
   });
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderAudio();
@@ -5100,10 +5141,15 @@ function openAddExercice() {
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" placeholder="Description courte"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-ex-icon" placeholder="🧘" style="width:80px"></div>
     <div class="form-field"><label>URL vidéo (YouTube/Vimeo embed)</label><input type="text" id="f-ex-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore filmé</div></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-ex-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="saveExercice()">✓ Ajouter</button>
     </div>`);
+  _fillIntervenantSelect('f-ex-intervenant', null);
 }
 
 function saveExercice() {
@@ -5118,7 +5164,8 @@ function saveExercice() {
     description: document.getElementById('f-ex-desc').value,
     icon: document.getElementById('f-ex-icon').value || '🧘',
     bg: 'rgba(90,138,106,.15)',
-    url_video: document.getElementById('f-ex-url').value.trim()
+    url_video: document.getElementById('f-ex-url').value.trim(),
+    intervenant: document.getElementById('f-ex-intervenant') ? document.getElementById('f-ex-intervenant').value : ''
   });
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
   showToast('✓ Exercice ajouté');
@@ -5134,10 +5181,15 @@ function editExercice(id) {
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" value="${e.description}"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-ex-icon" value="${e.icon}" style="width:80px"></div>
     <div class="form-field"><label>URL vidéo (YouTube/Vimeo embed)</label><input type="text" id="f-ex-url" value="${e.url_video||''}"></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-ex-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateExercice(${id})">✓ Enregistrer</button>
     </div>`);
+  _fillIntervenantSelect('f-ex-intervenant', e.intervenant || null);
 }
 
 function updateExercice(id) {
@@ -5149,6 +5201,7 @@ function updateExercice(id) {
   e.description = document.getElementById('f-ex-desc').value;
   e.icon = document.getElementById('f-ex-icon').value;
   e.url_video = document.getElementById('f-ex-url').value.trim();
+  e.intervenant = document.getElementById('f-ex-intervenant') ? document.getElementById('f-ex-intervenant').value : (e.intervenant || '');
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
   showToast('✓ Exercice mis à jour');
 }
@@ -5534,6 +5587,116 @@ function openIntervenant(id) {
     + contenuHtml
     + (links ? '<div style="display:flex;gap:.8rem;flex-wrap:wrap">' + links + '</div>' : '');
   if (typeof openModal === 'function') openModal(inv.nom, body);
+}
+
+/* ══ HELPER — peupler un select avec la liste des intervenants ══ */
+function _fillIntervenantSelect(selectId, selectedNom) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  (DB.intervenants || []).forEach(function(inv) {
+    var o = document.createElement('option');
+    o.value = inv.nom;
+    o.textContent = inv.nom;
+    if (selectedNom && inv.nom === selectedNom) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+/* ══ RÉTRIBUTION — chargement et export ══ */
+function loadRetribution() {
+  var from = (document.getElementById('retrib-from') || {}).value || '';
+  var to   = (document.getElementById('retrib-to')   || {}).value || '';
+  var site = (document.getElementById('retrib-site') || {}).value || '';
+  var res  = document.getElementById('retrib-result');
+  if (!res) return;
+  res.innerHTML = '<div style="font-size:.75rem;color:var(--text-muted);padding:1rem;text-align:center">Chargement\u2026</div>';
+  var url = '/api/admin/intervenants/stats?date_from=' + from + '&date_to=' + to + (site ? '&site_slug=' + encodeURIComponent(site) : '');
+  fetch(url, { credentials: 'include' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.par_intervenant || !d.par_intervenant.length) {
+        res.innerHTML = '<div style="font-size:.75rem;color:var(--text-muted);padding:1.5rem;text-align:center">Aucune donn\u00e9e sur cette p\u00e9riode.<br><span style="font-size:.65rem">Les lectures sont enregistr\u00e9es automatiquement d\u00e8s qu\'un utilisateur lance un contenu.</span></div>';
+        return;
+      }
+      var totalMin   = d.total_duree_min  || 0;
+      var totalClics = d.total_clics || 0;
+      var rows = d.par_intervenant.map(function(r) {
+        var pctC = Math.min(r.pct_clics, 100);
+        var pctD = Math.min(r.pct_duree,  100);
+        var barC = '<div style="height:5px;background:rgba(0,180,180,.15);border-radius:3px;margin-top:.3rem"><div style="height:5px;background:#00b4b4;border-radius:3px;width:' + pctC + '%"></div></div>';
+        var barD = '<div style="height:5px;background:rgba(245,133,90,.15);border-radius:3px;margin-top:.2rem"><div style="height:5px;background:#f5855a;border-radius:3px;width:' + pctD + '%"></div></div>';
+        return '<tr>'
+          + '<td style="font-weight:600;font-size:.82rem">' + r.intervenant + '</td>'
+          + '<td style="text-align:center"><strong>' + r.nb_clics + '</strong><br><span style="font-size:.58rem;color:var(--text-muted)">' + r.pct_clics + '%</span>' + barC + '</td>'
+          + '<td style="text-align:center"><strong>' + r.duree_totale_min + ' min</strong><br><span style="font-size:.58rem;color:var(--text-muted)">' + r.pct_duree + '%</span>' + barD + '</td>'
+          + '<td style="font-size:.65rem;color:var(--text-muted)">' + (r.premiere_lecture || '\u2014') + '</td>'
+          + '<td style="font-size:.65rem;color:var(--text-muted)">' + (r.derniere_lecture  || '\u2014') + '</td>'
+          + '</tr>';
+      }).join('');
+      res.innerHTML = '<div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.8rem">Total p\u00e9riode\u00a0: <strong>' + totalClics + ' clics</strong> \u00b7 <strong>' + totalMin + ' min</strong> d\'\u00e9coute cumul\u00e9e</div>'
+        + '<div style="overflow-x:auto"><table><thead><tr>'
+        + '<th>Intervenant</th><th style="text-align:center">Clics\u00a0\u00b7\u00a0%</th><th style="text-align:center">Dur\u00e9e\u00a0\u00b7\u00a0%</th><th>1\u00e8re lecture</th><th>Derni\u00e8re lecture</th>'
+        + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+      window._retribData = d;
+    })
+    .catch(function(e) {
+      res.innerHTML = '<div style="font-size:.75rem;color:#e8641e;padding:1rem">Erreur\u00a0: ' + e.message + '</div>';
+    });
+}
+
+function exportRetribution() {
+  if (!window._retribData) { showToast('\u26a0 Calculez d\'abord les statistiques'); return; }
+  var d = window._retribData;
+  var lines = ['Intervenant,Clics,% Clics,Dur\u00e9e (min),% Dur\u00e9e,Premi\u00e8re lecture,Derni\u00e8re lecture'];
+  (d.par_intervenant || []).forEach(function(r) {
+    lines.push([r.intervenant, r.nb_clics, r.pct_clics, r.duree_totale_min, r.pct_duree, r.premiere_lecture || '', r.derniere_lecture || ''].join(','));
+  });
+  lines.push('');
+  lines.push('Total,' + d.total_clics + ',100,' + d.total_duree_min + ',100,' + d.date_from + ',' + d.date_to);
+  var blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'retribution_intervenants_' + d.date_from + '_' + d.date_to + '.csv';
+  a.click();
+}
+
+/* ══ TRACKING LECTURES ══ */
+var _playTimers = {};
+
+function logPlay(contentType, contentLabel, intervenantNom, intervenantId, siteSlug) {
+  var key = contentType + '|' + contentLabel;
+  _playTimers[key] = Date.now();
+  fetch('/api/companion/play', {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content_type:    contentType,
+      content_label:   contentLabel,
+      intervenant_nom: intervenantNom || '',
+      intervenant_id:  intervenantId  || null,
+      site_slug:       siteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
+      duree_sec: 0
+    })
+  }).catch(function() {});
+}
+
+function logPlayEnd(contentType, contentLabel) {
+  var key = contentType + '|' + contentLabel;
+  var start = _playTimers[key];
+  if (!start) return;
+  var duree = Math.round((Date.now() - start) / 1000);
+  delete _playTimers[key];
+  if (duree < 3) return;
+  fetch('/api/companion/play', {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content_type:  contentType,
+      content_label: contentLabel,
+      site_slug:     (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
+      duree_sec:     duree
+    })
+  }).catch(function() {});
 }
 </script>
 
