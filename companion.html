@@ -5770,7 +5770,26 @@ function loadRetribution() {
           + '<td style="font-size:.65rem;color:var(--text-muted)">' + (r.derniere_lecture  || '\u2014') + '</td>'
           + '</tr>';
       }).join('');
+
+      // Tableau récapitulatif simplifié
+      var recap = '<div style="margin-bottom:1.2rem;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px">'
+        + '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.7rem">R\u00e9capitulatif \u2014 ' + totalClics + ' clics au total</div>'
+        + '<div style="display:flex;flex-direction:column;gap:.5rem">'
+        + d.par_intervenant.map(function(r) {
+            var pct = Math.min(r.pct_clics, 100);
+            return '<div style="display:flex;align-items:center;gap:.8rem">'
+              + '<div style="width:140px;font-size:.78rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + r.intervenant + '</div>'
+              + '<div style="flex:1;background:rgba(0,180,180,.12);border-radius:20px;height:8px;overflow:hidden">'
+              + '<div style="height:8px;background:linear-gradient(90deg,#00b4b4,#00d4d4);border-radius:20px;width:' + pct + '%;transition:width .4s"></div>'
+              + '</div>'
+              + '<div style="width:60px;text-align:right;font-size:.78rem;font-weight:700;color:#00b4b4">' + r.nb_clics + ' clics</div>'
+              + '<div style="width:42px;text-align:right;font-size:.72rem;color:var(--text-muted)">' + r.pct_clics + '%</div>'
+              + '</div>';
+          }).join('')
+        + '</div></div>';
+
       res.innerHTML = '<div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.8rem">Total p\u00e9riode\u00a0: <strong>' + totalClics + ' clics</strong> \u00b7 <strong>' + totalMin + ' min</strong> d\'\u00e9coute cumul\u00e9e</div>'
+        + recap
         + '<div style="overflow-x:auto"><table><thead><tr>'
         + '<th>Intervenant</th><th style="text-align:center">Clics\u00a0\u00b7\u00a0%</th><th style="text-align:center">Dur\u00e9e\u00a0\u00b7\u00a0%</th><th>1\u00e8re lecture</th><th>Derni\u00e8re lecture</th>'
         + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
