@@ -5986,9 +5986,8 @@ function deletePost(id) {
   DB.posts_internes = (DB.posts_internes||[]).filter(function(x){return x.id!==id;});
   saveDB(DB); renderAdmin('posts'); renderPosts(); showToast('\u2713 Post supprim\u00e9');
 }
-</script>
-function _fillIntervenantSelect(selectId, selectedNom) {
-  var sel = document.getElementById(selectId);
+
+/* ══ HELPER — peupler un select avec la liste des intervenants ══ */ument.getElementById(selectId);
   if (!sel) return;
   (DB.intervenants || []).forEach(function(inv) {
     var o = document.createElement('option');
