@@ -116,6 +116,8 @@
     <div class="nav-item" onclick="showPage('sites', this)"><span class="nav-icon">📍</span> Sites</div>
     <div class="nav-item" onclick="showPage('users', this)"><span class="nav-icon">👤</span> Utilisateurs</div>
     <div class="nav-item" onclick="showPage('sessions', this)"><span class="nav-icon">📋</span> Séances</div>
+    <div class="nav-item" onclick="showPage('intervenants', this)"><span class="nav-icon">🎓</span> Intervenants</div>
+    <div class="nav-item" onclick="showPage('retribution', this)"><span class="nav-icon">💰</span> Rétribution</div>
   </nav>
   <div class="sidebar-footer">
     <div style="font-size:.62rem;color:#6b6070;margin-bottom:.6rem" id="user-info"></div>
@@ -217,9 +219,67 @@
     </div>
   </div>
 
-</div>
+  <!-- INTERVENANTS -->
+  <div class="page" id="page-intervenants">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Intervenants</div>
+        <div class="page-sub">Experts Companion · Rétribution contenu</div>
+      </div>
+      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel intervenant</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="intervenants-table">
+        <tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>
+      </table>
+    </div>
+  </div>
 
-<!-- MODAL CLIENT -->
+  <!-- RÉTRIBUTION -->
+  <div class="page" id="page-retribution">
+    <div class="page-header">
+      <div class="page-title">Rétribution <em>semestrielle</em></div>
+      <div class="page-sub">Calcul automatique · Clics · Part contenu</div>
+    </div>
+
+    <!-- Paramètres calcul -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title">Paramètres du calcul</div></div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;padding:.5rem 0">
+        <div class="field" style="margin:0;min-width:120px">
+          <label>Année</label>
+          <select id="ret-annee" style="background:rgba(255,255,255,0.65);border:1px solid rgba(0,0,0,0.09);color:#1a1a2e;padding:.4rem .7rem;border-radius:7px;font-size:.72rem;font-family:'Jost',sans-serif;outline:none;width:100%"></select>
+        </div>
+        <div class="field" style="margin:0;min-width:160px">
+          <label>Semestre</label>
+          <select id="ret-semestre" style="background:rgba(255,255,255,0.65);border:1px solid rgba(0,0,0,0.09);color:#1a1a2e;padding:.4rem .7rem;border-radius:7px;font-size:.72rem;font-family:'Jost',sans-serif;outline:none;width:100%">
+            <option value="1">S1 · Janvier – Juin</option>
+            <option value="2">S2 · Juillet – Décembre</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0;min-width:180px">
+          <label>Tarif € / utilisateur actif / mois</label>
+          <input id="ret-tarif" type="number" step="0.5" min="0" value="5" placeholder="ex. 5.00" style="background:rgba(255,255,255,0.65);border:1px solid rgba(0,0,0,0.09);color:#1a1a2e;padding:.4rem .7rem;border-radius:7px;font-size:.72rem;font-family:'Jost',sans-serif;outline:none;width:100%">
+        </div>
+        <button class="btn-add" onclick="loadRetributionAdmin()">Calculer</button>
+        <button class="btn-add" style="background:rgba(0,120,100,.12);color:#007860;border:1px solid rgba(0,120,100,.25)" onclick="cloturerSemestre()">✓ Clôturer et persister</button>
+        <button class="btn-add" style="background:rgba(0,0,0,.06);color:#6b6070;border:1px solid rgba(0,0,0,.12)" onclick="exportRetributionCSV()">⬇ CSV</button>
+      </div>
+    </div>
+
+    <!-- Résultats -->
+    <div class="card" id="ret-result-card" style="display:none">
+      <div class="card-header">
+        <div class="card-title" id="ret-result-title">Résultats</div>
+      </div>
+      <div id="ret-summary" style="display:flex;gap:1.5rem;flex-wrap:wrap;padding:.8rem 0;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:.8rem"></div>
+      <table class="tbl" id="ret-table">
+        <tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
 <div class="modal-overlay" id="modal-client">
   <div class="modal">
     <h3>Nouveau client</h3>
@@ -273,6 +333,24 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL INTERVENANT -->
+<div class="modal-overlay" id="modal-intervenant">
+  <div class="modal">
+    <h3>Nouvel intervenant</h3>
+    <div class="field"><label>Nom complet *</label><input id="inv-nom" type="text" placeholder="ex. Laurent Thiry"></div>
+    <div class="field"><label>Email (crée un compte /mon-espace)</label><input id="inv-email" type="email" placeholder="laurent@exemple.fr"></div>
+    <div class="field"><label>Spécialité</label><input id="inv-spec" type="text" placeholder="ex. Neurosciences · Performance mentale"></div>
+    <div class="field"><label>Bio</label><textarea id="inv-bio" rows="3" placeholder="Présentation courte…" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem;resize:vertical"></textarea></div>
+    <div class="field"><label>URL photo</label><input id="inv-photo" type="text" placeholder="/static/photo.jpg ou https://…"></div>
+    <div class="field"><label>Taux de rétribution contenu (%)</label><input id="inv-taux" type="number" min="0" max="100" value="30" placeholder="30"></div>
+    <div class="result-box" id="inv-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-intervenant')">Annuler</button>
+      <button class="btn btn-primary" onclick="createIntervenant()">Créer l'intervenant</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var clientsList = [];
 
@@ -282,11 +360,13 @@ function showPage(id, el){
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   document.getElementById('page-' + id).classList.add('active');
   if(el) el.classList.add('active');
-  if(id === 'overview') loadOverview();
-  if(id === 'clients')  loadClients();
-  if(id === 'sites')    loadSites();
-  if(id === 'users')    loadUsers();
-  if(id === 'sessions') loadSessions();
+  if(id === 'overview')      loadOverview();
+  if(id === 'clients')       loadClients();
+  if(id === 'sites')         loadSites();
+  if(id === 'users')         loadUsers();
+  if(id === 'sessions')      loadSessions();
+  if(id === 'intervenants')  loadIntervenants();
+  if(id === 'retribution')   initRetribution();
 }
 
 // ── Modal ──
@@ -504,6 +584,174 @@ async function loadSessions(){
 function exportCSV(){
   var today = new Date().toISOString().slice(0, 10);
   window.open('/api/export?from=2025-01-01&to=' + today, '_blank');
+}
+
+// ── Intervenants ──
+async function loadIntervenants() {
+  var data = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
+  var tbl = document.getElementById('intervenants-table');
+  tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>';
+  if (!data.length) {
+    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel intervenant</td></tr>';
+    return;
+  }
+  data.forEach(function(inv) {
+    tbl.innerHTML += '<tr>' +
+      '<td class="td-main">' + inv.nom + '</td>' +
+      '<td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (inv.specialite || '—') + '</td>' +
+      '<td>' + (inv.email || inv.user_email || '—') + '</td>' +
+      '<td><strong>' + (inv.taux_contenu || 30) + '%</strong></td>' +
+      '<td>' + (inv.total_clics || 0) + ' clics · ' + (inv.total_duree_min || 0) + ' min</td>' +
+      '<td><span class="pill ' + (inv.actif ? 'ok' : 'off') + '">' + (inv.actif ? 'Actif' : 'Inactif') + '</span></td>' +
+      '<td style="display:flex;gap:.3rem">' +
+        '<button class="btn-sm" onclick="viewIntervenantStats(' + inv.id + ')">📊 Stats</button>' +
+        '<button class="btn-sm" onclick="toggleIntervenant(' + inv.id + ',' + inv.actif + ')">' + (inv.actif ? 'Désactiver' : 'Activer') + '</button>' +
+      '</td>' +
+      '</tr>';
+  });
+}
+
+async function createIntervenant() {
+  var nom = document.getElementById('inv-nom').value.trim();
+  if (!nom) { toast('Nom requis'); return; }
+  var r = await fetch('/api/admin/intervenants', {
+    method: 'POST', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      nom,
+      email:       document.getElementById('inv-email').value.trim(),
+      specialite:  document.getElementById('inv-spec').value.trim(),
+      bio:         document.getElementById('inv-bio').value.trim(),
+      photo_url:   document.getElementById('inv-photo').value.trim(),
+      taux_contenu: parseFloat(document.getElementById('inv-taux').value) || 30
+    })
+  });
+  var d = await r.json();
+  if (d.ok) {
+    var box = document.getElementById('inv-result');
+    box.innerHTML = 'Intervenant créé ✓' +
+      (d.tmp_password ? '<br><strong>Accès /mon-espace :</strong><br>Email : ' + document.getElementById('inv-email').value +
+      '<br>Mot de passe temporaire : <strong>' + d.tmp_password + '</strong>' : '<br>Aucun compte créé (email non renseigné)');
+    box.classList.add('show');
+    loadIntervenants();
+  } else { toast(d.error || 'Erreur'); }
+}
+
+async function toggleIntervenant(id, actif) {
+  await fetch('/api/admin/intervenants/' + id, {
+    method: actif ? 'DELETE' : 'PUT', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({actif: !actif})
+  });
+  loadIntervenants();
+}
+
+function viewIntervenantStats(id) {
+  window.open('/api/intervenant/stats?intervenant_id=' + id, '_blank');
+}
+
+// ── Rétribution semestrielle ──
+var _retribData = null;
+
+function initRetribution() {
+  var sel = document.getElementById('ret-annee');
+  if (sel && !sel.options.length) {
+    var y = new Date().getFullYear();
+    for (var i = 0; i <= 2; i++) {
+      var o = document.createElement('option');
+      o.value = y - i; o.textContent = y - i;
+      sel.appendChild(o);
+    }
+    document.getElementById('ret-semestre').value = new Date().getMonth() < 6 ? '1' : '2';
+  }
+}
+
+async function loadRetributionAdmin() {
+  var annee    = document.getElementById('ret-annee').value;
+  var semestre = document.getElementById('ret-semestre').value;
+  var tarif    = parseFloat(document.getElementById('ret-tarif').value) || 0;
+
+  var card = document.getElementById('ret-result-card');
+  card.style.display = 'block';
+  document.getElementById('ret-table').innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
+  document.getElementById('ret-summary').innerHTML = '<span style="font-size:.72rem;color:#6b6070">Chargement…</span>';
+
+  // Charger stats depuis tous les intervenants
+  var invData = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
+  var allRows = [];
+  var totalClics = 0;
+
+  for (var i = 0; i < invData.length; i++) {
+    var inv = invData[i];
+    var s = await fetch('/api/intervenant/stats?annee=' + annee + '&semestre=' + semestre + '&intervenant_id=' + inv.id, {credentials:'include'}).then(r => r.json());
+    if (s.error) continue;
+    totalClics = s.total_clics || totalClics;
+    var taux = (inv.taux_contenu || 30) / 100;
+    (s.clics_par_site || []).forEach(function(site) {
+      var nbActifs = 0; // non disponible directement ici
+      var caSite   = nbActifs * tarif * 6;
+      var pctSite  = s.total_clics ? (site.nb_clics_inv / s.total_clics * 100).toFixed(1) : 0;
+      var montant  = s.total_clics ? (caSite * taux * site.nb_clics_inv / s.total_clics).toFixed(2) : '—';
+      allRows.push({
+        nom:      inv.nom,
+        nb_clics: site.nb_clics_inv,
+        pct:      s.pct_global + '%',
+        site:     site.site_slug || '—',
+        ca:       tarif > 0 ? caSite.toFixed(2) + ' €' : '—',
+        montant:  tarif > 0 ? montant + ' €' : '— (tarif non saisi)'
+      });
+    });
+    if (!(s.clics_par_site || []).length && s.nb_clics > 0) {
+      allRows.push({
+        nom: inv.nom, nb_clics: s.nb_clics,
+        pct: s.pct_global + '%', site: 'tous',
+        ca: '—', montant: '—'
+      });
+    }
+  }
+
+  _retribData = { annee, semestre, tarif, rows: allRows, total_clics: totalClics };
+
+  document.getElementById('ret-result-title').textContent = 'S' + semestre + ' ' + annee + ' · ' + totalClics + ' clics totaux';
+  document.getElementById('ret-summary').innerHTML =
+    '<div style="font-size:.72rem"><strong>' + allRows.length + '</strong> lignes · <strong>' + totalClics + '</strong> clics · tarif <strong>' + (tarif || '?') + ' €</strong>/user/mois</div>';
+
+  var tbl = document.getElementById('ret-table');
+  tbl.innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
+  allRows.forEach(function(r) {
+    tbl.innerHTML += '<tr><td class="td-main">' + r.nom + '</td><td>' + r.nb_clics + '</td><td>' + r.pct + '</td><td>' + r.site + '</td><td>' + r.ca + '</td><td><strong>' + r.montant + '</strong></td></tr>';
+  });
+  if (!allRows.length) tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#6b6070;padding:1rem">Aucune donnée sur cette période</td></tr>';
+}
+
+async function cloturerSemestre() {
+  var annee    = document.getElementById('ret-annee').value;
+  var semestre = document.getElementById('ret-semestre').value;
+  var tarif    = parseFloat(document.getElementById('ret-tarif').value) || 0;
+  if (!tarif) { toast('Saisissez un tarif avant de clôturer'); return; }
+  if (!confirm('Clôturer S' + semestre + ' ' + annee + ' avec tarif ' + tarif + ' €/user/mois ?')) return;
+  var r = await fetch('/api/admin/retribution/calcul-semestre', {
+    method: 'POST', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ annee: parseInt(annee), semestre: parseInt(semestre), tarif_par_utilisateur: tarif })
+  });
+  var d = await r.json();
+  if (d.ok) toast('✓ S' + semestre + ' ' + annee + ' clôturé · ' + d.lignes + ' lignes persistées');
+  else toast(d.error || 'Erreur lors de la clôture');
+}
+
+function exportRetributionCSV() {
+  if (!_retribData || !_retribData.rows.length) { toast('Calculez d\'abord la rétribution'); return; }
+  var d = _retribData;
+  var lines = ['Intervenant,Clics,% Global,Site,CA site (€),Part contenu (€)'];
+  d.rows.forEach(function(r) {
+    lines.push([r.nom, r.nb_clics, r.pct, r.site, r.ca, r.montant].join(','));
+  });
+  var blob = new Blob([lines.join('\n')], {type: 'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'retribution_S' + d.semestre + '_' + d.annee + '.csv';
+  a.click();
 }
 
 // ── Init ──
