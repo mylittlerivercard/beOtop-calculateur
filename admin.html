@@ -333,7 +333,28 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- MODAL INTERVENANT -->
+<!-- MODAL APPORTEUR -->
+<div class="modal-overlay" id="modal-apporteur">
+  <div class="modal">
+    <h3>Apporteur d'affaire · <span id="ap-client-nom"></span></h3>
+    <div class="field">
+      <label>Intervenant apporteur</label>
+      <select id="ap-intervenant" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem">
+        <option value="">— Aucun —</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Tarif € / utilisateur actif / mois</label>
+      <input id="ap-tarif" type="number" step="0.5" min="0" placeholder="ex. 5.00">
+      <div style="font-size:.62rem;color:#6b6070;margin-top:.3rem">Utilisé pour calculer automatiquement le CA semestriel et la commission 20%</div>
+    </div>
+    <div class="result-box" id="ap-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-apporteur')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveApporteur()">Enregistrer</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-intervenant">
   <div class="modal">
     <h3>Nouvel intervenant</h3>
@@ -437,15 +458,19 @@ async function loadClients(){
   var data = await fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json());
   clientsList = data;
   var tbl = document.getElementById('clients-table');
-  tbl.innerHTML = '<tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Statut</th><th>Actions</th></tr>';
+  tbl.innerHTML = '<tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Tarif/user/mois</th><th>Apporteur</th><th>Statut</th><th>Actions</th></tr>';
   data.forEach(function(c){
     tbl.innerHTML += '<tr>' +
       '<td class="td-main">' + c.nom + '</td>' +
       '<td>' + (c.contact_nom || '—') + '<br><small style="color:#6b6070">' + (c.contact_email || '') + '</small></td>' +
       '<td>' + (c.nb_sites || 0) + '</td>' +
       '<td>' + (c.nb_sessions || 0) + '</td>' +
+      '<td>' + (c.tarif_utilisateur_mensuel ? c.tarif_utilisateur_mensuel + ' €' : '—') + '</td>' +
+      '<td>' + (c.apporteur_nom ? '<span style="font-size:.65rem;padding:.15rem .5rem;background:rgba(160,104,32,.1);border-radius:6px;color:#a06820">' + c.apporteur_nom + '</span>' : '—') + '</td>' +
       '<td><span class="pill ' + (c.actif ? 'ok' : 'off') + '">' + (c.actif ? 'Actif' : 'Inactif') + '</span></td>' +
-      '<td><button class="btn-sm" onclick="toast(\'Édition client #' + c.id + ' — à venir\')">Éditer</button></td>' +
+      '<td style="display:flex;gap:.3rem">' +
+        '<button class="btn-sm" onclick="openApporteurModal(' + c.id + ',\'' + (c.nom||'').replace(/'/g,"\\'") + '\',' + (c.apporteur_id||'null') + ',' + (c.tarif_utilisateur_mensuel||0) + ')">💰 Apporteur</button>' +
+      '</td>' +
       '</tr>';
   });
 }
@@ -593,6 +618,51 @@ async function loadSessions(){
 function exportCSV(){
   var today = new Date().toISOString().slice(0, 10);
   window.open('/api/export?from=2025-01-01&to=' + today, '_blank');
+}
+
+// ── Apporteur d'affaire ──
+var _apporteurClientId = null;
+
+async function openApporteurModal(clientId, clientNom, currentApporteurId, currentTarif) {
+  _apporteurClientId = clientId;
+  document.getElementById('ap-client-nom').textContent = clientNom;
+  document.getElementById('ap-tarif').value = currentTarif || '';
+  document.getElementById('ap-result').classList.remove('show');
+
+  // Peupler le select avec les intervenants actifs
+  var invs = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
+  var sel = document.getElementById('ap-intervenant');
+  sel.innerHTML = '<option value="">— Aucun —</option>';
+  invs.forEach(function(inv) {
+    if (!inv.actif) return;
+    var o = document.createElement('option');
+    o.value = inv.id;
+    o.textContent = inv.nom;
+    if (inv.id === currentApporteurId) o.selected = true;
+    sel.appendChild(o);
+  });
+
+  openModal('modal-apporteur');
+}
+
+async function saveApporteur() {
+  if (!_apporteurClientId) return;
+  var apporteurId = document.getElementById('ap-intervenant').value || null;
+  var tarif       = parseFloat(document.getElementById('ap-tarif').value) || 0;
+  var r = await fetch('/api/admin/clients/' + _apporteurClientId + '/apporteur', {
+    method: 'PATCH', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ apporteur_id: apporteurId ? parseInt(apporteurId) : null, tarif_utilisateur_mensuel: tarif })
+  });
+  var d = await r.json();
+  if (d.ok) {
+    var box = document.getElementById('ap-result');
+    box.innerHTML = apporteurId
+      ? 'Apporteur enregistré ✓ · Commission 20% activée · Tarif ' + tarif + ' €/user/mois'
+      : 'Apporteur supprimé ✓';
+    box.classList.add('show');
+    loadClients();
+  } else { toast(d.error || 'Erreur'); }
 }
 
 // ── Intervenants ──
