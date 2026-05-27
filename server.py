@@ -356,6 +356,7 @@ def init_db():
                 bio             TEXT,
                 photo_url       TEXT,
                 taux_contenu    NUMERIC DEFAULT 30,
+                apporteur_affaire BOOLEAN DEFAULT FALSE,
                 actif           BOOLEAN DEFAULT TRUE
             )
         """)
@@ -2273,12 +2274,13 @@ def admin_create_intervenant():
                     return jsonify({'error': 'Email déjà utilisé'}), 409
 
             cur.execute("""
-                INSERT INTO intervenants (user_id, nom, email, specialite, bio, photo_url, taux_contenu, actif)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+                INSERT INTO intervenants (user_id, nom, email, specialite, bio, photo_url, taux_contenu, apporteur_affaire, actif)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
             """, [user_id, nom, email,
                   data.get('specialite', ''), data.get('bio', ''),
                   data.get('photo_url', ''),
                   float(data.get('taux_contenu', 30)),
+                  bool(data.get('apporteur_affaire', False)),
                   True])
             inv_id = cur.fetchone()['id']
             conn.commit()
@@ -2297,11 +2299,12 @@ def admin_update_intervenant(inv_id):
             cur.execute("""
                 UPDATE intervenants
                 SET nom=%s, email=%s, specialite=%s, bio=%s, photo_url=%s,
-                    taux_contenu=%s, actif=%s
+                    taux_contenu=%s, apporteur_affaire=%s, actif=%s
                 WHERE id=%s
             """, [data.get('nom'), data.get('email'), data.get('specialite', ''),
                   data.get('bio', ''), data.get('photo_url', ''),
                   float(data.get('taux_contenu', 30)),
+                  bool(data.get('apporteur_affaire', False)),
                   bool(data.get('actif', True)), inv_id])
             conn.commit()
     return jsonify({'ok': True})
