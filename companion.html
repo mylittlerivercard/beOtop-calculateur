@@ -5312,13 +5312,13 @@ function renderDefis() {
   // Grouper par intervenant pour l'en-tête
   var intervenants = [];
   list.forEach(function(d) {
-    var inv = d.intervenant || '(sans intervenant)';
+    var inv = d.intervenant || '(beOtop)';
     if (intervenants.indexOf(inv) === -1) intervenants.push(inv);
   });
 
   var html = '';
   intervenants.forEach(function(inv) {
-    var groupe = list.filter(function(d){ return (d.intervenant||'(sans intervenant)') === inv; });
+    var groupe = list.filter(function(d){ return (d.intervenant||'(beOtop)') === inv; });
     var nbLabel = groupe.length + ' s\u00e9ance' + (groupe.length > 1 ? 's' : '') + ' guid\u00e9e' + (groupe.length > 1 ? 's' : '');
     // En-tête groupe
     html += '<div style="margin-top:.4rem;margin-bottom:.6rem">'
