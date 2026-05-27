@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Espace · beOtop Intervenant</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:        #00b4b4;
+  --teal-dim:    rgba(0,180,180,.1);
+  --teal-border: rgba(0,180,180,.25);
+  --coral:       #f5855a;
+  --coral-dark:  #e8641e;
+  --bg:          #f5fafa;
+  --surface:     #ffffff;
+  --surface2:    rgba(0,180,180,.05);
+  --border:      rgba(0,180,180,.15);
+  --border2:     rgba(0,180,180,.22);
+  --text:        #071515;
+  --text-dim:    #1a3535;
+  --text-muted:  #3a5858;
+  --shadow:      0 8px 32px rgba(0,180,180,.1), 0 2px 8px rgba(0,0,0,.04);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(230,70,0,.35) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 0% 100%, rgba(0,160,160,.25) 0%, transparent 70%);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 2rem;
+  background: rgba(245,250,250,.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 400; letter-spacing: .12em;
+  background: linear-gradient(135deg, #00b4b4, #f5855a);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo span { font-style: italic; font-weight: 300; }
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.user-badge {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--teal-dim); border: 1px solid var(--teal-border);
+  border-radius: 20px; padding: .3rem .9rem .3rem .5rem;
+  font-size: .72rem; color: var(--text-dim);
+}
+.avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--coral));
+  display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; color: white; font-weight: 600;
+}
+.btn-logout {
+  padding: .4rem .9rem; border-radius: 8px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text-muted); font-size: .72rem;
+  cursor: pointer; transition: all .2s;
+}
+.btn-logout:hover { background: var(--teal-dim); color: var(--teal); }
+
+/* ── MAIN ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; position: relative; z-index: 1; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, rgba(0,180,180,.12), rgba(245,133,90,.08));
+  border: 1px solid var(--teal-border);
+  border-radius: 20px; padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 2rem;
+}
+.hero-avatar {
+  width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--teal), var(--coral));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 700; color: white;
+  border: 3px solid rgba(255,255,255,.5);
+}
+.hero-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.hero-info h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 400; color: var(--text);
+}
+.hero-info h1 em { font-style: italic; color: var(--teal); }
+.hero-info p { font-size: .72rem; color: var(--text-muted); margin-top: .3rem; }
+.hero-stats { margin-left: auto; display: flex; gap: 2rem; flex-shrink: 0; }
+.hero-stat { text-align: center; }
+.hero-stat .val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 600; color: var(--teal); line-height: 1;
+}
+.hero-stat .lbl { font-size: .6rem; color: var(--text-muted); margin-top: .2rem; text-transform: uppercase; letter-spacing: .1em; }
+
+/* ── PERIODE SELECTOR ── */
+.periode-bar {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.periode-bar label { font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); }
+.periode-select {
+  padding: .45rem .9rem; border-radius: 10px;
+  border: 1px solid var(--border2); background: var(--surface);
+  font-size: .82rem; color: var(--text); cursor: pointer;
+}
+.btn-calcul {
+  padding: .45rem 1.2rem; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, var(--teal), #00d4d4);
+  color: white; font-size: .82rem; font-weight: 500; cursor: pointer;
+  transition: all .2s; box-shadow: 0 2px 10px rgba(0,180,180,.3);
+}
+.btn-calcul:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,180,180,.4); }
+
+/* ── CARDS GRILLE ── */
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
+
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.2rem 1.4rem;
+  box-shadow: var(--shadow);
+}
+.kpi-card .kpi-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem; font-weight: 600; color: var(--teal); line-height: 1;
+}
+.kpi-card .kpi-val.coral { color: var(--coral-dark); }
+.kpi-card .kpi-lbl { font-size: .62rem; color: var(--text-muted); margin-top: .3rem; text-transform: uppercase; letter-spacing: .1em; }
+.kpi-card .kpi-sub { font-size: .7rem; color: var(--text-dim); margin-top: .5rem; }
+
+/* ── SECTION ── */
+.section-title {
+  font-size: .6rem; text-transform: uppercase; letter-spacing: .15em;
+  color: var(--text-muted); margin-bottom: .8rem;
+  display: flex; align-items: center; gap: .6rem;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  font-size: .58rem; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-muted); padding: .7rem 1rem; text-align: left;
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+td { padding: .7rem 1rem; font-size: .78rem; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* ── BAR ── */
+.bar-wrap { height: 5px; background: var(--teal-dim); border-radius: 3px; margin-top: .3rem; }
+.bar-fill { height: 5px; background: linear-gradient(90deg, var(--teal), #00d4d4); border-radius: 3px; transition: width .6s; }
+.bar-fill.coral { background: linear-gradient(90deg, var(--coral), var(--coral-dark)); }
+
+/* ── HISTORIQUE ── */
+.hist-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .8rem 1.2rem; border-bottom: 1px solid var(--border);
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-label { font-size: .78rem; font-weight: 500; color: var(--text-dim); }
+.hist-montant { font-size: .88rem; font-weight: 600; color: var(--teal); }
+.hist-statut {
+  font-size: .58rem; padding: .2rem .6rem; border-radius: 8px;
+  background: var(--teal-dim); color: var(--teal);
+}
+
+/* ── EMPTY ── */
+.empty {
+  text-align: center; padding: 3rem; color: var(--text-muted); font-size: .78rem;
+}
+.empty-icon { font-size: 2rem; display: block; margin-bottom: .8rem; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: white; padding: .7rem 1.4rem;
+  border-radius: 10px; font-size: .78rem; opacity: 0; pointer-events: none;
+  transition: all .3s; z-index: 999;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── NOTE ── */
+.note {
+  font-size: .65rem; color: var(--text-muted);
+  background: rgba(0,180,180,.06); border: 1px solid var(--border);
+  border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">beOtop <span>Intervenant</span></div>
+  <div class="topbar-right">
+    <div class="user-badge">
+      <div class="avatar" id="topbar-avatar">?</div>
+      <span id="topbar-nom">Chargement…</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-avatar" id="hero-avatar">?</div>
+    <div class="hero-info">
+      <h1>Bonjour, <em id="hero-nom">—</em></h1>
+      <p id="hero-specialite">Intervenant beOtop Companion</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="val" id="hero-clics">—</div>
+        <div class="lbl">Clics totaux</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="hero-pct">—%</div>
+        <div class="lbl">Part globale</div>
+      </div>
+      <div class="hero-stat">
+        <div class="val" id="hero-semestres">—</div>
+        <div class="lbl">Semestres</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SÉLECTEUR PÉRIODE -->
+  <div class="periode-bar">
+    <label>Période</label>
+    <select class="periode-select" id="sel-annee"></select>
+    <select class="periode-select" id="sel-semestre">
+      <option value="1">S1 · Janvier – Juin</option>
+      <option value="2">S2 · Juillet – Décembre</option>
+    </select>
+    <button class="btn-calcul" onclick="loadStats()">Actualiser</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid-3" id="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val" id="kpi-clics">—</div>
+      <div class="kpi-lbl">Clics sur la période</div>
+      <div class="kpi-sub" id="kpi-clics-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val" id="kpi-pct">—%</div>
+      <div class="kpi-lbl">Part des clics totaux</div>
+      <div class="kpi-sub">Sur tous les sites · tous contenus</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val coral" id="kpi-taux">30%</div>
+      <div class="kpi-lbl">Taux de rétribution contenu</div>
+      <div class="kpi-sub">Appliqué sur le CA semestriel beOtop</div>
+    </div>
+  </div>
+
+  <div class="note">
+    💡 La rétribution en euros est calculée et versée semestriellement par beOtop sur la base du CA réel facturé aux clients.
+    Les chiffres affichés ici sont vos données d'usage vérifiables — même source que beOtop.
+  </div>
+
+  <!-- DÉTAIL PAR CONTENU -->
+  <div class="section-title">Mes contenus · détail des clics</div>
+  <div class="table-wrap" id="table-contenus">
+    <div class="empty"><span class="empty-icon">🎧</span>Chargement…</div>
+  </div>
+
+  <!-- DÉTAIL PAR SITE -->
+  <div class="section-title">Répartition par site</div>
+  <div class="table-wrap" id="table-sites">
+    <div class="empty"><span class="empty-icon">🏢</span>Chargement…</div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="section-title">Historique semestriel</div>
+  <div class="table-wrap" id="table-historique">
+    <div class="empty"><span class="empty-icon">📊</span>Aucun semestre clôturé pour le moment.</div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+var _stats = null;
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function doLogout() {
+  fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    .then(function(){ window.location.href = '/login'; });
+}
+
+// Peupler le sélecteur d'années (année en cours + 2 précédentes)
+(function() {
+  var sel = document.getElementById('sel-annee');
+  var y   = new Date().getFullYear();
+  for (var i = 0; i <= 2; i++) {
+    var o = document.createElement('option');
+    o.value = y - i;
+    o.textContent = y - i;
+    sel.appendChild(o);
+  }
+  // Pré-sélectionner le semestre en cours
+  var sem = new Date().getMonth() < 6 ? '1' : '2';
+  document.getElementById('sel-semestre').value = sem;
+})();
+
+function loadStats() {
+  var annee    = document.getElementById('sel-annee').value;
+  var semestre = document.getElementById('sel-semestre').value;
+  var url = '/api/intervenant/stats?annee=' + annee + '&semestre=' + semestre;
+
+  fetch(url, { credentials: 'include' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { showToast('Erreur : ' + d.error); return; }
+      _stats = d;
+      renderAll(d);
+    })
+    .catch(function(e) { showToast('Erreur réseau'); });
+}
+
+function renderAll(d) {
+  var inv = d.intervenant || {};
+
+  // Topbar & hero
+  var initiales = (inv.nom || '?').split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
+  document.getElementById('topbar-avatar').textContent = initiales;
+  document.getElementById('topbar-nom').textContent    = inv.nom || '—';
+  document.getElementById('hero-nom').textContent      = (inv.nom || '—').split(' ')[0];
+  document.getElementById('hero-avatar').textContent   = initiales;
+  if (inv.photo_url) {
+    document.getElementById('hero-avatar').innerHTML = '<img src="' + inv.photo_url + '" alt="">';
+  }
+  document.getElementById('hero-specialite').textContent = inv.specialite || 'Intervenant beOtop Companion';
+  document.getElementById('hero-clics').textContent   = d.nb_clics || 0;
+  document.getElementById('hero-pct').textContent     = (d.pct_global || 0) + '%';
+  document.getElementById('hero-semestres').textContent = (d.historique || []).length;
+
+  // KPIs
+  document.getElementById('kpi-clics').textContent     = d.nb_clics || 0;
+  document.getElementById('kpi-clics-sub').textContent = 'Sur ' + (d.total_clics || 0) + ' clics totaux cette période';
+  document.getElementById('kpi-pct').textContent       = (d.pct_global || 0) + '%';
+  document.getElementById('kpi-taux').textContent      = (d.taux_contenu || 30) + '%';
+
+  // Table contenus
+  var contenus = d.clics_detail || [];
+  if (!contenus.length) {
+    document.getElementById('table-contenus').innerHTML = '<div class="empty"><span class="empty-icon">🎧</span>Aucun clic enregistré sur cette période.</div>';
+  } else {
+    var maxC = Math.max.apply(null, contenus.map(function(r){ return r.nb_clics; }));
+    var rows = contenus.map(function(r) {
+      var pct = maxC ? Math.round(r.nb_clics / maxC * 100) : 0;
+      return '<tr>'
+        + '<td style="font-weight:500">' + r.content_label + '</td>'
+        + '<td style="font-size:.65rem;color:var(--text-muted)">' + r.content_type + '</td>'
+        + '<td style="font-size:.65rem;color:var(--text-muted)">' + (r.site_slug || '—') + '</td>'
+        + '<td><strong>' + r.nb_clics + '</strong>'
+        + '<div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div></td>'
+        + '<td style="font-size:.7rem;color:var(--text-muted)">' + r.duree_min + ' min</td>'
+        + '</tr>';
+    }).join('');
+    document.getElementById('table-contenus').innerHTML = '<table><thead><tr>'
+      + '<th>Contenu</th><th>Type</th><th>Site</th><th>Clics</th><th>Durée</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  // Table par site
+  var sites = d.clics_par_site || [];
+  if (!sites.length) {
+    document.getElementById('table-sites').innerHTML = '<div class="empty"><span class="empty-icon">🏢</span>Aucune donnée par site.</div>';
+  } else {
+    var rows2 = sites.map(function(r) {
+      var pctSite = r.nb_clics_total ? Math.round(r.nb_clics_inv / r.nb_clics_total * 100) : 0;
+      return '<tr>'
+        + '<td style="font-weight:500">' + (r.site_slug || '—') + '</td>'
+        + '<td><strong>' + r.nb_clics_inv + '</strong> / ' + r.nb_clics_total + '</td>'
+        + '<td>' + pctSite + '%'
+        + '<div class="bar-wrap"><div class="bar-fill coral" style="width:' + Math.min(pctSite,100) + '%"></div></div></td>'
+        + '</tr>';
+    }).join('');
+    document.getElementById('table-sites').innerHTML = '<table><thead><tr>'
+      + '<th>Site</th><th>Mes clics / Total</th><th>Part sur ce site</th>'
+      + '</tr></thead><tbody>' + rows2 + '</tbody></table>';
+  }
+
+  // Historique
+  var hist = d.historique || [];
+  if (!hist.length) {
+    document.getElementById('table-historique').innerHTML = '<div class="empty"><span class="empty-icon">📊</span>Aucun semestre clôturé pour le moment.</div>';
+  } else {
+    var histHtml = hist.map(function(h) {
+      return '<div class="hist-item">'
+        + '<div><div class="hist-label">S' + h.semestre + ' ' + h.annee + '</div>'
+        + '<div style="font-size:.62rem;color:var(--text-muted)">' + h.nb_clics + ' clics · ' + h.pct_clics + '% des clics</div></div>'
+        + '<div style="text-align:right">'
+        + '<div class="hist-montant">' + (h.montant_contenu ? h.montant_contenu + ' €' : '—') + '</div>'
+        + '<div class="hist-statut">' + (h.statut || 'calculé') + '</div>'
+        + '</div></div>';
+    }).join('');
+    document.getElementById('table-historique').innerHTML = histHtml;
+  }
+}
+
+// Chargement initial
+loadStats();
+</script>
+</body>
+</html>
