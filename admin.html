@@ -274,7 +274,7 @@
       </div>
       <div id="ret-summary" style="display:flex;gap:1.5rem;flex-wrap:wrap;padding:.8rem 0;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:.8rem"></div>
       <table class="tbl" id="ret-table">
-        <tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>
+        <tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu 30% (€)</th><th>Commission apport 20% (€)</th><th>Total (€)</th><th>Part beOtop</th></tr>
       </table>
     </div>
   </div>
@@ -343,6 +343,15 @@
     <div class="field"><label>Bio</label><textarea id="inv-bio" rows="3" placeholder="Présentation courte…" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem;resize:vertical"></textarea></div>
     <div class="field"><label>URL photo</label><input id="inv-photo" type="text" placeholder="/static/photo.jpg ou https://…"></div>
     <div class="field"><label>Taux de rétribution contenu (%)</label><input id="inv-taux" type="number" min="0" max="100" value="30" placeholder="30"></div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+        <input id="inv-apporteur" type="checkbox" style="width:16px;height:16px;cursor:pointer">
+        Apporteur d'affaire — commission 20% sur CA client apporté
+      </label>
+      <div style="font-size:.62rem;color:#6b6070;margin-top:.3rem;padding:.4rem .6rem;background:rgba(160,104,32,.06);border-radius:6px;border:1px solid rgba(160,104,32,.15)">
+        Si coché : beOtop reverse 20% du CA du client apporté en plus des 30% contenu. La part beOtop passe de 70% à 50%.
+      </div>
+    </div>
     <div class="result-box" id="inv-result"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-intervenant')">Annuler</button>
@@ -619,11 +628,12 @@ async function createIntervenant() {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       nom,
-      email:       document.getElementById('inv-email').value.trim(),
-      specialite:  document.getElementById('inv-spec').value.trim(),
-      bio:         document.getElementById('inv-bio').value.trim(),
-      photo_url:   document.getElementById('inv-photo').value.trim(),
-      taux_contenu: parseFloat(document.getElementById('inv-taux').value) || 30
+      email:            document.getElementById('inv-email').value.trim(),
+      specialite:       document.getElementById('inv-spec').value.trim(),
+      bio:              document.getElementById('inv-bio').value.trim(),
+      photo_url:        document.getElementById('inv-photo').value.trim(),
+      taux_contenu:     parseFloat(document.getElementById('inv-taux').value) || 30,
+      apporteur_affaire: document.getElementById('inv-apporteur').checked
     })
   });
   var d = await r.json();
@@ -687,25 +697,33 @@ async function loadRetributionAdmin() {
     if (s.error) continue;
     totalClics = s.total_clics || totalClics;
     var taux = (inv.taux_contenu || 30) / 100;
+    var estApporteur = inv.apporteur_affaire || false;
     (s.clics_par_site || []).forEach(function(site) {
-      var nbActifs = 0; // non disponible directement ici
-      var caSite   = nbActifs * tarif * 6;
-      var pctSite  = s.total_clics ? (site.nb_clics_inv / s.total_clics * 100).toFixed(1) : 0;
-      var montant  = s.total_clics ? (caSite * taux * site.nb_clics_inv / s.total_clics).toFixed(2) : '—';
+      var pctClics   = s.total_clics ? site.nb_clics_inv / s.total_clics : 0;
+      // CA site = nb_actifs × tarif × 6 mois (nb_actifs non dispo ici, affichage indicatif)
+      var montentContenu  = tarif > 0 ? (0 * tarif * 6 * taux * pctClics) : null;
+      var commissionApport = estApporteur && tarif > 0 ? (0 * tarif * 6 * 0.20) : null;
+      var partBeotop = estApporteur ? '50%' : '70%';
       allRows.push({
-        nom:      inv.nom,
-        nb_clics: site.nb_clics_inv,
-        pct:      s.pct_global + '%',
-        site:     site.site_slug || '—',
-        ca:       tarif > 0 ? caSite.toFixed(2) + ' €' : '—',
-        montant:  tarif > 0 ? montant + ' €' : '— (tarif non saisi)'
+        nom:       inv.nom,
+        nb_clics:  site.nb_clics_inv,
+        pct:       (pctClics * 100).toFixed(1) + '%',
+        site:      site.site_slug || '—',
+        ca:        tarif > 0 ? '(nb actifs requis)' : '—',
+        contenu:   tarif > 0 ? '(nb actifs requis)' : '—',
+        apport:    estApporteur ? (tarif > 0 ? '(nb actifs requis)' : '—') : '—',
+        total:     '—',
+        beotop:    partBeotop,
+        est_apporteur: estApporteur
       });
     });
     if (!(s.clics_par_site || []).length && s.nb_clics > 0) {
       allRows.push({
         nom: inv.nom, nb_clics: s.nb_clics,
         pct: s.pct_global + '%', site: 'tous',
-        ca: '—', montant: '—'
+        ca: '—', contenu: '—', apport: '—', total: '—',
+        beotop: estApporteur ? '50%' : '70%',
+        est_apporteur: estApporteur
       });
     }
   }
@@ -719,7 +737,18 @@ async function loadRetributionAdmin() {
   var tbl = document.getElementById('ret-table');
   tbl.innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
   allRows.forEach(function(r) {
-    tbl.innerHTML += '<tr><td class="td-main">' + r.nom + '</td><td>' + r.nb_clics + '</td><td>' + r.pct + '</td><td>' + r.site + '</td><td>' + r.ca + '</td><td><strong>' + r.montant + '</strong></td></tr>';
+    var apportBadge = r.est_apporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
+    tbl.innerHTML += '<tr>'
+      + '<td class="td-main">' + r.nom + apportBadge + '</td>'
+      + '<td>' + r.nb_clics + '</td>'
+      + '<td>' + r.pct + '</td>'
+      + '<td>' + r.site + '</td>'
+      + '<td>' + r.ca + '</td>'
+      + '<td>' + r.contenu + '</td>'
+      + '<td>' + (r.est_apporteur ? '<strong>' + r.apport + '</strong>' : '<span style="color:#aaa">—</span>') + '</td>'
+      + '<td>' + r.total + '</td>'
+      + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:6px;background:' + (r.est_apporteur ? 'rgba(0,120,100,.1)' : 'rgba(0,0,0,.05)') + ';color:' + (r.est_apporteur ? '#007860' : '#6b6070') + '">' + r.beotop + '</span></td>'
+      + '</tr>';
   });
   if (!allRows.length) tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#6b6070;padding:1rem">Aucune donnée sur cette période</td></tr>';
 }
