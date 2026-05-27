@@ -1600,7 +1600,7 @@ var cpRefreshTimer = null;
 
 function loadCompanion() {
   var period = (document.getElementById('ca-period') || {}).value || '30';
-  var siteSlug = getSiteSlugDashboard();
+  var siteSlug = currentSite || (sites.length ? sites[0].slug : '');
   fetch('/api/dashboard/companion-analytics?site_slug=' + siteSlug + '&days=' + period, { credentials:'include' })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
