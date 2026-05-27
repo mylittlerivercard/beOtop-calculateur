@@ -1367,6 +1367,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="btn-primary" onclick="openAddAtelier()">+ Atelier</button>
     <button class="btn-primary" onclick="openAddAudio()">+ Audio</button>
     <button class="btn-primary" onclick="openAddExercice()">+ Exercice</button>
+    <button class="btn-primary" onclick="openAddDefi()">+ Défi cognitif</button>
     <button class="btn-secondary" onclick="exportDB()">⬇ Exporter JSON</button>
     <button class="btn-primary" onclick="openAddIntervenant()">+ Intervenant</button>
     <button class="btn-ghost" onclick="resetDB()">↺ Réinitialiser démo</button>
@@ -1377,6 +1378,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('audios',this)">Audios</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('videos',this)">Vidéos</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('defis',this)">Défis cognitifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('retribution',this)" style="background:rgba(232,100,30,.12);border-color:rgba(232,100,30,.3);color:#e8641e">💰 Rétribution</button>
@@ -1499,71 +1501,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <p>Défis cognitifs · Mémoire · Réflexes · Attention · Logique · Inattention</p>
   </div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
-    <!-- ══ DÉFIS COGNITIFS LAURENT THIRY ══ -->
-    <div style="grid-column:1/-1;margin-top:.4rem">
-      <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(245,133,90,.06));border:1px solid rgba(0,180,180,.2);border-radius:14px;margin-bottom:.8rem">
-        <div style="font-size:1.6rem">🧩</div>
-        <div>
-          <div style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.04em">DÉFIS COGNITIFS</div>
-          <div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Créés par <strong style="color:var(--text)">Laurent Thiry</strong> · Neurosciences appliquées · 5 séances guidées</div>
-        </div>
-      </div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('/audio/Defi-1-Deux-choses.mp3', 'Deux choses à la fois')">
-      <div style="display:flex;align-items:center;gap:.9rem">
-        <img src="/static/photo-laurent.jpg" alt="Laurent Thiry" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.outerHTML='<div style=&quot;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0&quot;>🎧</div>'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Deux choses à la fois</div>
-          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Faire deux tâches simultanément · Double attention</div>
-        </div>
-        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem"><img src="/static/photo-laurent.jpg" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;opacity:.7">Laurent Thiry · Défi audio guidé</div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('/audio/Defi-2-AttentionFixeopmix_v3_24_48_.mp3', 'Attention fixe')">
-      <div style="display:flex;align-items:center;gap:.9rem">
-        <img src="/static/photo-laurent.jpg" alt="Laurent Thiry" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.outerHTML='<div style=&quot;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0&quot;>🎧</div>'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Attention fixe</div>
-          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Maintenir le focus sur une cible unique · Concentration</div>
-        </div>
-        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem"><img src="/static/photo-laurent.jpg" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;opacity:.7">Laurent Thiry · Défi audio guidé</div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('/audio/Defi-3-AgirSousStress__opmix_v3_24_48_.mp3', 'Agir sous stress')">
-      <div style="display:flex;align-items:center;gap:.9rem">
-        <img src="/static/photo-laurent.jpg" alt="Laurent Thiry" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.outerHTML='<div style=&quot;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0&quot;>🎧</div>'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Agir sous stress</div>
-          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Performer malgré la pression · Régulation émotionnelle</div>
-        </div>
-        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem"><img src="/static/photo-laurent.jpg" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;opacity:.7">Laurent Thiry · Défi audio guidé</div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('/audio/Defi-4-Puzzleopmix_v1_24_48_.mp3', 'Puzzle cognitif')">
-      <div style="display:flex;align-items:center;gap:.9rem">
-        <img src="/static/photo-laurent.jpg" alt="Laurent Thiry" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.outerHTML='<div style=&quot;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0&quot;>🎧</div>'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Puzzle cognitif</div>
-          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Résoudre un problème guidé · Flexibilité mentale</div>
-        </div>
-        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem"><img src="/static/photo-laurent.jpg" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;opacity:.7">Laurent Thiry · Défi audio guidé</div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="playDefiThiry('/audio/Defi-5-NePasRepondre_opmix_v2_24_48_.mp3', 'Ne pas répondre')">
-      <div style="display:flex;align-items:center;gap:.9rem">
-        <img src="/static/photo-laurent.jpg" alt="Laurent Thiry" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.outerHTML='<div style=&quot;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0&quot;>🎧</div>'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Ne pas répondre</div>
-          <div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">Inhibition de réponse automatique · Contrôle cognitif</div>
-        </div>
-        <div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">▶ Écouter</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem"><img src="/static/photo-laurent.jpg" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;opacity:.7">Laurent Thiry · Défi audio guidé</div>
-    </div>
+    <!-- ══ DÉFIS COGNITIFS — rendu dynamique depuis DB.defis ══ -->
+    <div id="defis-container" style="grid-column:1/-1"></div>
     <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.8rem">🧠 Mémoire</div>
     <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
       <div style="font-size:1.8rem;margin-bottom:.4rem">🃏</div>
@@ -1835,6 +1774,13 @@ var DEMO_DB = {
       actif: true
     }
   ],
+  defis: [
+    { id:1, titre:'Deux choses \u00e0 la fois',  description:'Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention',          url_audio:'/audio/Defi-1-Deux-choses.mp3',                          intervenant:'Laurent Thiry', duree:'~12 min', actif:true },
+    { id:2, titre:'Attention fixe',         description:'Maintenir le focus sur une cible unique \u00b7 Concentration',    url_audio:'/audio/Defi-2-AttentionFixeopmix_v3_24_48_.mp3',          intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
+    { id:3, titre:'Agir sous stress',       description:'Performer malgr\u00e9 la pression \u00b7 R\u00e9gulation \u00e9motionnelle',     url_audio:'/audio/Defi-3-AgirSousStress__opmix_v3_24_48_.mp3',       intervenant:'Laurent Thiry', duree:'~12 min', actif:true },
+    { id:4, titre:'Puzzle cognitif',        description:'R\u00e9soudre un probl\u00e8me guid\u00e9 \u00b7 Flexibilit\u00e9 mentale',           url_audio:'/audio/Defi-4-Puzzleopmix_v1_24_48_.mp3',                 intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
+    { id:5, titre:'Ne pas r\u00e9pondre',        description:'Inhibition de r\u00e9ponse automatique \u00b7 Contr\u00f4le cognitif',      url_audio:'/audio/Defi-5-NePasRepondre_opmix_v2_24_48_.mp3',         intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
+  ],
 };
 
 function loadDB() {
@@ -1848,7 +1794,7 @@ function loadDB() {
     // Merger toutes les clés structurelles depuis DEMO_DB si vides ou absentes
     // On conserve les données utilisateur (checkins, sessions, points) mais on
     // recharge les contenus (videos, audios, exercices, ateliers) depuis DEMO_DB
-    var contentKeys = ['videos','audios','exercices','ateliers','intervenants'];
+    var contentKeys = ['videos','audios','exercices','ateliers','intervenants','defis'];
     contentKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k]) || stored[k].length === 0) {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
@@ -1916,6 +1862,7 @@ function switchView(id) {
     if (menu) menu.style.display = 'grid';
     if (zone) zone.innerHTML = '';
     clearInterval(_jeuTimer);
+    renderDefis();
   }
   if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
@@ -4835,6 +4782,25 @@ function renderAdmin(tab) {
       <td><button class="btn-ghost" onclick="editAtelier(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAtelier(${a.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
+  }   if (tab === 'defis') {
+    if (!DB.defis) DB.defis = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddDefi()">\u002b D\u00e9fi cognitif</button></div>'
+      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Description</th><th>Intervenant</th><th>Dur\u00e9e</th><th>Audio</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
+      + (DB.defis.length ? DB.defis.map(function(d) {
+          return '<tr>'
+            + '<td>' + d.id + '</td>'
+            + '<td style="font-weight:600;font-size:.82rem">' + d.titre + '</td>'
+            + '<td style="font-size:.65rem;color:var(--text-dim);max-width:180px">' + (d.description||'') + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (d.intervenant||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem">' + (d.duree||'\u2014') + '</td>'
+            + '<td style="font-size:.58rem;color:var(--text-muted)">' + (d.url_audio ? '\u2713 D\u00e9finie' : '\u26a0 Vide') + '</td>'
+            + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:8px;background:' + (d.actif!==false ? 'rgba(0,180,180,.12)' : 'rgba(232,100,30,.12)') + ';color:' + (d.actif!==false ? '#00b4b4' : '#e8641e') + '">' + (d.actif!==false ? 'actif' : 'inactif') + '</span></td>'
+            + '<td><button class="btn-ghost" onclick="editDefi(' + d.id + ')">&#x270e;</button>'
+            + ' <button class="btn-ghost" onclick="deleteDefi(' + d.id + ')" style="color:var(--red)">\u00d7</button></td>'
+            + '</tr>';
+        }).join('')
+        : '<tr><td colspan="8" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun d\u00e9fi enregistr\u00e9</td></tr>')
+      + '</tbody></table>';
   }   if (tab === 'intervenants') {
     el.innerHTML = renderAdminIntervenants();
   }
@@ -5328,32 +5294,198 @@ function ldoEscape(str) {
 </script>
 
 <script>
-/* ═══ DÉFIS COGNITIFS LAURENT THIRY ═══ */
+/* ═══ DÉFIS COGNITIFS — DB dynamique ═══ */
 var _defiAudio = null;
 
-function playDefiThiry(url, titre) {
+/* Rendu dynamique du bloc défis dans view-jeux */
+function renderDefis() {
+  var container = document.getElementById('defis-container');
+  if (!container) return;
+  var list = (DB.defis || []).filter(function(d){ return d.actif !== false; });
+  if (!list.length) { container.innerHTML = ''; return; }
+
+  // Grouper par intervenant pour l'en-tête
+  var intervenants = [];
+  list.forEach(function(d) {
+    var inv = d.intervenant || '(sans intervenant)';
+    if (intervenants.indexOf(inv) === -1) intervenants.push(inv);
+  });
+
+  var html = '';
+  intervenants.forEach(function(inv) {
+    var groupe = list.filter(function(d){ return (d.intervenant||'(sans intervenant)') === inv; });
+    var nbLabel = groupe.length + ' s\u00e9ance' + (groupe.length > 1 ? 's' : '') + ' guid\u00e9e' + (groupe.length > 1 ? 's' : '');
+    // En-tête groupe
+    html += '<div style="margin-top:.4rem;margin-bottom:.6rem">'
+      + '<div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(245,133,90,.06));border:1px solid rgba(0,180,180,.2);border-radius:14px">'
+      + '<div style="font-size:1.6rem">\ud83e\udde9</div>'
+      + '<div><div style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.04em">D\u00c9FIS COGNITIFS</div>'
+      + '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Cr\u00e9\u00e9s par <strong style="color:var(--text)">' + inv + '</strong> \u00b7 Neurosciences appliqu\u00e9es \u00b7 ' + nbLabel + '</div>'
+      + '</div></div></div>';
+    // Cartes
+    groupe.forEach(function(d) {
+      var invPhoto = _getIntervenantPhoto(inv);
+      html += '<div class="card" style="cursor:pointer;padding:1rem;margin-bottom:.6rem" onclick="playDefi(' + d.id + ')">'
+        + '<div style="display:flex;align-items:center;gap:.9rem">'
+        + invPhoto
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">' + d.titre + '</div>'
+        + '<div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">' + (d.description||'') + '</div>'
+        + '</div>'
+        + '<div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">\u25b6 \u00c9couter</div>'
+        + '</div>'
+        + '<div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem">'
+        + '<span>' + inv + ' \u00b7 D\u00e9fi audio guid\u00e9' + (d.duree ? ' \u00b7 ' + d.duree : '') + '</span>'
+        + '</div></div>';
+    });
+  });
+  container.innerHTML = html;
+}
+
+function _getIntervenantPhoto(nom) {
+  var inv = (DB.intervenants||[]).find(function(i){ return i.nom === nom; });
+  if (inv && inv.photo_url) {
+    return '<img src="' + inv.photo_url + '" alt="' + nom + '" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.style.display=\'none\'">';
+  }
+  var init = nom ? nom.slice(0,2).toUpperCase() : '?';
+  var col = inv ? (inv.photo_couleur||'#00b4b4') : '#00b4b4';
+  return '<div style="width:44px;height:44px;border-radius:12px;background:' + col + ';display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:white;flex-shrink:0">' + init + '</div>';
+}
+
+function playDefi(id) {
+  if (!DB.defis) return;
+  var d = DB.defis.find(function(x){ return x.id === id; });
+  if (!d) return;
+  if (!d.url_audio) { showToast('\u26a0 URL audio non renseign\u00e9e \u2014 Modifiez depuis Administration'); return; }
+
+  logPlay('defi', d.titre, d.intervenant||'', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   if (typeof stopAllSons === 'function') stopAllSons();
   if (_defiAudio) { try { _defiAudio.pause(); _defiAudio.src = ''; } catch(e){} _defiAudio = null; }
 
   var modalHtml = '<div style="text-align:center;margin-bottom:1.2rem">'
-    + '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Défi cognitif · Laurent Thiry</div>'
-    + '<div style="font-size:1rem;font-weight:600;color:var(--text)">' + titre + '</div>'
+    + '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">D\u00e9fi cognitif \u00b7 ' + (d.intervenant||'') + '</div>'
+    + '<div style="font-size:1rem;font-weight:600;color:var(--text)">' + d.titre + '</div>'
     + '</div>'
-    + '<audio id="defi-audio-el" src="' + url + '" controls preload="auto" style="width:100%;display:block;border-radius:8px;margin-bottom:1rem"></audio>'
+    + '<audio id="defi-audio-el" src="' + d.url_audio + '" controls preload="auto" style="width:100%;display:block;border-radius:8px;margin-bottom:1rem"></audio>'
     + '<div style="font-size:.65rem;color:var(--text-dim);text-align:center;line-height:1.6">'
-    + '💡 Installez-vous confortablement · Casque recommandé<br>Suivez les instructions de Laurent Thiry'
+    + '\ud83d\udca1 Installez-vous confortablement \u00b7 Casque recommand\u00e9<br>Suivez les instructions de ' + (d.intervenant||'l\'intervenant')
     + '</div>';
 
-  if (typeof openModal === 'function') openModal('🎧 ' + titre, modalHtml);
-
+  if (typeof openModal === 'function') openModal('\ud83c\udfa7 ' + d.titre, modalHtml);
   setTimeout(function() {
     var el = document.getElementById('defi-audio-el');
     if (el) {
       _defiAudio = el;
-      el.play().catch(function(e){ console.warn('Défi audio play:', e.message); });
-      if (typeof awardPoints === 'function') awardPoints('jeu', titre);
+      el.play().catch(function(e){ console.warn('D\u00e9fi audio play:', e.message); });
+      if (typeof awardPoints === 'function') awardPoints('jeu', d.titre);
+      el.addEventListener('ended', function(){ logPlayEnd('defi', d.titre); }, { once: true });
     }
   }, 400);
+}
+
+/* Rétrocompatibilité — ancienne signature hardcodée */
+function playDefiThiry(url, titre) {
+  var d = (DB.defis||[]).find(function(x){ return x.url_audio === url; });
+  if (d) { playDefi(d.id); return; }
+  // Fallback si le défi n'est pas encore en DB
+  logPlay('defi', titre, 'Laurent Thiry', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  if (typeof stopAllSons === 'function') stopAllSons();
+  if (_defiAudio) { try { _defiAudio.pause(); _defiAudio.src = ''; } catch(e){} _defiAudio = null; }
+  var modalHtml = '<div style="text-align:center;margin-bottom:1.2rem">'
+    + '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">D\u00e9fi cognitif \u00b7 Laurent Thiry</div>'
+    + '<div style="font-size:1rem;font-weight:600;color:var(--text)">' + titre + '</div>'
+    + '</div>'
+    + '<audio id="defi-audio-el" src="' + url + '" controls preload="auto" style="width:100%;display:block;border-radius:8px;margin-bottom:1rem"></audio>'
+    + '<div style="font-size:.65rem;color:var(--text-dim);text-align:center;line-height:1.6">'
+    + '\ud83d\udca1 Installez-vous confortablement \u00b7 Casque recommand\u00e9<br>Suivez les instructions de Laurent Thiry'
+    + '</div>';
+  if (typeof openModal === 'function') openModal('\ud83c\udfa7 ' + titre, modalHtml);
+  setTimeout(function() {
+    var el = document.getElementById('defi-audio-el');
+    if (el) { _defiAudio = el; el.play().catch(function(){}); if (typeof awardPoints === 'function') awardPoints('jeu', titre); }
+  }, 400);
+}
+
+/* ══ CRUD Défis ══ */
+function _defiForm(d) {
+  var v = d || { id:0, titre:'', description:'', url_audio:'', intervenant:'', duree:'', actif:true };
+  return '<div style="display:flex;flex-direction:column;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Titre *</label>'
+    + '<input id="f-df-titre" value="' + (v.titre||'') + '" placeholder="Deux choses \u00e0 la fois" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Description</label>'
+    + '<input id="f-df-desc" value="' + (v.description||'') + '" placeholder="Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL audio (chemin /audio/...)</label>'
+    + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
+    + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<option value="">— Aucun —</option></select></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
+    + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
+    + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
+    + '<option value="0"' + (v.actif===false?' selected':'') + '>Inactif</option>'
+    + '</select></div></div>'
+    + '<div style="display:flex;gap:.6rem;margin-top:.4rem">'
+    + '<button class="btn-secondary" onclick="closeModal()">Annuler</button>'
+    + '<button class="btn-primary" onclick="saveDefi(' + v.id + ')">&#10003; Enregistrer</button>'
+    + '</div></div>';
+}
+
+function openAddDefi() {
+  openModal('Nouveau d\u00e9fi cognitif', _defiForm(null));
+  _fillIntervenantSelect('f-df-intervenant', null);
+}
+
+function editDefi(id) {
+  var d = (DB.defis||[]).find(function(x){ return x.id === id; });
+  if (!d) return;
+  openModal('Modifier \u00ab\u202f' + d.titre + '\u202f\u00bb', _defiForm(d));
+  _fillIntervenantSelect('f-df-intervenant', d.intervenant||null);
+}
+
+function saveDefi(existingId) {
+  var titre = (document.getElementById('f-df-titre')||{}).value;
+  if (!titre || !titre.trim()) { showToast('\u26a0 Titre requis'); return; }
+  if (!DB.defis) DB.defis = [];
+  var actif = document.getElementById('f-df-actif') ? document.getElementById('f-df-actif').value !== '0' : true;
+  if (existingId) {
+    var d = DB.defis.find(function(x){ return x.id === existingId; });
+    if (d) {
+      d.titre       = titre.trim();
+      d.description = (document.getElementById('f-df-desc')||{}).value||'';
+      d.url_audio   = ((document.getElementById('f-df-url')||{}).value||'').trim();
+      d.intervenant = (document.getElementById('f-df-intervenant')||{}).value||'';
+      d.duree       = (document.getElementById('f-df-duree')||{}).value||'';
+      d.actif       = actif;
+    }
+  } else {
+    var newId = DB.defis.length ? Math.max.apply(null, DB.defis.map(function(x){ return x.id; })) + 1 : 1;
+    DB.defis.push({
+      id:          newId,
+      titre:       titre.trim(),
+      description: (document.getElementById('f-df-desc')||{}).value||'',
+      url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
+      intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
+      duree:       (document.getElementById('f-df-duree')||{}).value||'',
+      actif:       actif
+    });
+  }
+  saveDB(DB);
+  closeModal();
+  renderAdmin('defis');
+  renderDefis();
+  showToast('\u2713 D\u00e9fi enregistr\u00e9');
+}
+
+function deleteDefi(id) {
+  if (!confirm('Supprimer ce d\u00e9fi ?')) return;
+  DB.defis = (DB.defis||[]).filter(function(x){ return x.id !== id; });
+  saveDB(DB);
+  renderAdmin('defis');
+  renderDefis();
+  showToast('\u2713 D\u00e9fi supprim\u00e9');
 }
 </script>
 
