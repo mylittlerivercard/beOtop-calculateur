@@ -245,6 +245,32 @@
     .drh-grid,.context-grid{grid-template-columns:1fr 1fr}
     .mf-grid{grid-template-columns:1fr}
   }
+
+/* ════ COMPANION ANALYTICS ════ */
+.ca-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:.9rem; margin-bottom:1.5rem; }
+.ca-kpi  { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem 1.1rem; text-align:center; }
+.ca-kpi-val { font-size:1.8rem; font-weight:700; color:var(--gold); font-family:'Cormorant Garamond',serif; display:block; }
+.ca-kpi-lbl { font-size:.62rem; color:var(--text-muted); margin-top:.2rem; text-transform:uppercase; letter-spacing:.1em; }
+.ca-charts  { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+.ca-chart   { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem 1.2rem; }
+.ca-chart-title { font-size:.68rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--text-muted); margin-bottom:1rem; }
+.ca-bar-row { display:flex; align-items:center; gap:.7rem; margin-bottom:.55rem; }
+.ca-bar-label { font-size:.62rem; color:var(--text); width:90px; flex-shrink:0; text-align:right; }
+.ca-bar-track { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.ca-bar-fill  { height:100%; border-radius:4px; transition:width .6s ease; }
+.ca-bar-count { font-size:.6rem; color:var(--text-muted); width:28px; text-align:right; flex-shrink:0; }
+.ca-donut-wrap { display:flex; align-items:center; gap:1.2rem; }
+.ca-legend { display:flex; flex-direction:column; gap:.4rem; }
+.ca-legend-item { display:flex; align-items:center; gap:.5rem; font-size:.62rem; color:var(--text); }
+.ca-legend-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.ca-trend { display:grid; grid-template-columns:1fr; gap:.8rem; margin-bottom:1.5rem; }
+.ca-sparkline { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem 1.2rem; }
+.ca-top-list { list-style:none; padding:0; margin:0; }
+.ca-top-item { display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; border-bottom:1px solid var(--border); font-size:.7rem; }
+.ca-top-item:last-child { border-bottom:none; }
+.ca-top-rank { font-size:.65rem; color:var(--text-muted); width:20px; }
+.ca-top-badge { font-size:.6rem; padding:.15rem .5rem; border-radius:20px; background:rgba(201,169,110,.1); color:var(--gold); }
+@media(max-width:700px){ .ca-charts{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -623,106 +649,84 @@
 
 <!-- ═══ COMPAGNON ═══ -->
   <div class="view" id="view-companion">
+<div id="view-companion">
 
     <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6rem;flex-wrap:wrap;gap:.8rem">
       <div>
-        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">beOtop <em>Compagnon</em></div>
-        <div class="page-sub" style="margin-bottom:0">Application bien-être · Réservation · Cohérence cardiaque · Exercices · Audio</div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">beOtop <em>Compagnon</em> — Analytics</div>
+        <div class="page-sub" style="margin-bottom:0">Utilisation de l'application · Engagement · Contenus</div>
       </div>
-      <a href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
-        ↗ Ouvrir l'app complète
-      </a>
-    </div>
-
-    <!-- KPIs utilisateur -->
-    <div class="kpi-row" style="margin-bottom:1.2rem">
-      <div class="kpi" style="--accent:var(--gold)">
-        <div class="kpi-label">Séances ce mois</div>
-        <div class="kpi-val" id="cp-kpi-seances">—</div>
-        <div class="kpi-sub">sessions enregistrées</div>
-      </div>
-      <div class="kpi" style="--accent:var(--sage)">
-        <div class="kpi-label">Durée totale</div>
-        <div class="kpi-val" id="cp-kpi-duree">—</div>
-        <div class="kpi-sub">minutes de récupération</div>
-      </div>
-      <div class="kpi" style="--accent:var(--mist)">
-        <div class="kpi-label">Cohérence cardiaque</div>
-        <div class="kpi-val" id="cp-kpi-cc">—</div>
-        <div class="kpi-sub">sessions ce mois</div>
-      </div>
-      <div class="kpi" style="--accent:#9b8fc4">
-        <div class="kpi-label">Streak</div>
-        <div class="kpi-val" id="cp-kpi-streak">—</div>
-        <div class="kpi-sub">jours consécutifs</div>
+      <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap">
+        <select id="ca-period" onchange="loadCompanion()" style="font-size:.68rem;padding:.4rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+          <option value="30">30 derniers jours</option>
+          <option value="7">7 derniers jours</option>
+          <option value="90">3 derniers mois</option>
+          <option value="365">12 derniers mois</option>
+        </select>
+        <a href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
+          ↗ Ouvrir l'app
+        </a>
       </div>
     </div>
 
-    <!-- Disponibilité ateliers temps réel + accès rapide -->
-    <div class="grid-2" style="gap:1rem;margin-bottom:1rem">
+    <!-- KPIs -->
+    <div class="ca-grid" id="ca-kpis">
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-users-actifs">—</span><span class="ca-kpi-lbl">Utilisateurs actifs</span></div>
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-users-total">—</span><span class="ca-kpi-lbl">Utilisateurs total</span></div>
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-sessions-total">—</span><span class="ca-kpi-lbl">Sessions totales</span></div>
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-checkins">—</span><span class="ca-kpi-lbl">Check-ins</span></div>
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-coherence">—</span><span class="ca-kpi-lbl">Sessions cohérence</span></div>
+      <div class="ca-kpi"><span class="ca-kpi-val" id="ca-livreor">—</span><span class="ca-kpi-lbl">Témoignages</span></div>
+    </div>
 
-      <!-- Disponibilité -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
-          <div class="card-title" style="margin-bottom:0">Ateliers · Disponibilité</div>
-          <div id="cp-src-badge" style="font-size:.58rem;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid rgba(0,0,0,.1);padding:.15rem .5rem;border-radius:6px">⏳</div>
+    <!-- Charts row 1 -->
+    <div class="ca-charts">
+      <!-- Répartition activités -->
+      <div class="ca-chart">
+        <div class="ca-chart-title">Répartition des activités</div>
+        <div class="ca-donut-wrap">
+          <canvas id="ca-donut" width="120" height="120"></canvas>
+          <div class="ca-legend" id="ca-donut-legend"></div>
         </div>
-        <div id="cp-ateliers-list"></div>
-        <div style="margin-top:.8rem;font-size:.58rem;color:var(--muted)">Rafraîchissement auto · 30s</div>
       </div>
-
-      <!-- Accès rapides -->
-      <div style="display:flex;flex-direction:column;gap:.8rem">
-        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
-          <div style="display:flex;align-items:center;gap:.9rem">
-            <div style="font-size:1.6rem">💓</div>
-            <div>
-              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Cohérence cardiaque</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Protocole 365 · 5 min</div>
-            </div>
-            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
-          </div>
+      <!-- Bien-être moyen -->
+      <div class="ca-chart">
+        <div class="ca-chart-title">Score bien-être moyen (check-ins)</div>
+        <div id="ca-wellbeing">
+          <div class="ca-bar-row"><span class="ca-bar-label">Énergie ⚡</span><div class="ca-bar-track"><div class="ca-bar-fill" id="ca-bar-energie" style="width:0%;background:#f5855a"></div></div><span class="ca-bar-count" id="ca-val-energie">—</span></div>
+          <div class="ca-bar-row"><span class="ca-bar-label">Stress 🌡</span><div class="ca-bar-track"><div class="ca-bar-fill" id="ca-bar-stress" style="width:0%;background:#e8641e"></div></div><span class="ca-bar-count" id="ca-val-stress">—</span></div>
+          <div class="ca-bar-row"><span class="ca-bar-label">Focus 🎯</span><div class="ca-bar-track"><div class="ca-bar-fill" id="ca-bar-focus" style="width:0%;background:#00b4b4"></div></div><span class="ca-bar-count" id="ca-val-focus">—</span></div>
         </div>
-        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
-          <div style="display:flex;align-items:center;gap:.9rem">
-            <div style="font-size:1.6rem">🎧</div>
-            <div>
-              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Bibliothèque audio</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Sophrologie · NSDR · Binaural</div>
-            </div>
-            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
-          <div style="display:flex;align-items:center;gap:.9rem">
-            <div style="font-size:1.6rem">🧘</div>
-            <div>
-              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Exercices physiques</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">TMS · Étirements · Workout</div>
-            </div>
-            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer" onclick="window.open('/companion','_blank')">
-          <div style="display:flex;align-items:center;gap:.9rem">
-            <div style="font-size:1.6rem">📝</div>
-            <div>
-              <div style="font-size:.82rem;color:var(--cream);font-weight:500">Check-in du jour</div>
-              <div style="font-size:.62rem;color:var(--muted);margin-top:.1rem">Énergie · Stress · Focus</div>
-            </div>
-            <div style="margin-left:auto;font-size:.7rem;color:var(--gold)">→</div>
-          </div>
+        <div style="margin-top:1rem">
+          <div class="ca-chart-title">Minutes cohérence cardiaque</div>
+          <div style="font-size:1.6rem;font-weight:700;color:var(--gold);font-family:'Cormorant Garamond',serif" id="ca-cc-minutes">—</div>
+          <div style="font-size:.6rem;color:var(--text-muted)">sur la période sélectionnée</div>
         </div>
       </div>
     </div>
 
-    <!-- Historique récent compagnon -->
-    <div class="card">
-      <div class="card-title">Activité récente (Compagnon)</div>
-      <div id="cp-history" style="font-size:.7rem;color:var(--muted)">Ouvrez le Compagnon pour enregistrer vos premières sessions.</div>
+    <!-- Charts row 2 -->
+    <div class="ca-charts">
+      <!-- Top contenus utilisés -->
+      <div class="ca-chart">
+        <div class="ca-chart-title">Top activités utilisées</div>
+        <ul class="ca-top-list" id="ca-top-actions"></ul>
+      </div>
+      <!-- Engagement par jour de semaine -->
+      <div class="ca-chart">
+        <div class="ca-chart-title">Activité par jour de semaine</div>
+        <div id="ca-weekdays"></div>
+      </div>
     </div>
 
+    <!-- Évolution mensuelle -->
+    <div class="ca-sparkline">
+      <div class="ca-chart-title">Évolution des sessions — 12 derniers mois</div>
+      <canvas id="ca-timeline" height="80"></canvas>
+    </div>
+
+  </div>
   </div>
 
 <!-- ═══ MODAL ═══ -->
@@ -1680,45 +1684,165 @@ function calcROI(){
 
 var cpRefreshTimer = null;
 
-function loadCompanion(){
-  /* ── KPIs depuis localStorage du Compagnon ── */
-  try {
-    var raw = localStorage.getItem('beotop_companion_db');
-    if(raw){
-      var db = JSON.parse(raw);
-      var now = new Date(); var m = new Date(now.getFullYear(), now.getMonth(), 1);
-      var sess = (db.sessions||[]).filter(function(s){return new Date(s.date)>=m;});
-      var ccSess = (db.cc_sessions||[]).filter(function(s){return new Date(s.date)>=m;});
-      var dureeMin = sess.reduce(function(a,s){return a+(s.duree||0);},0);
-      document.getElementById('cp-kpi-seances').textContent = sess.length;
-      document.getElementById('cp-kpi-duree').textContent = dureeMin+' min';
-      document.getElementById('cp-kpi-cc').textContent = ccSess.length;
-      /* Streak */
-      var all = sess.concat(ccSess).map(function(s){return s.date?s.date.slice(0,10):null;}).filter(Boolean);
-      var unique = all.filter(function(v,i,a){return a.indexOf(v)===i;}).sort().reverse();
-      var streak=0,today=new Date().toISOString().slice(0,10),cur=today;
-      unique.forEach(function(d){if(d===cur){streak++;var dt=new Date(cur);dt.setDate(dt.getDate()-1);cur=dt.toISOString().slice(0,10);}});
-      document.getElementById('cp-kpi-streak').textContent = streak+' j';
-      /* Historique récent */
-      var hist = sess.concat(ccSess).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6);
-      var icons = {'Cohérence cardiaque':'💓'};
-      document.getElementById('cp-history').innerHTML = hist.length ? hist.map(function(s){
-        var icon = icons[s.label]||'🪑';
-        var d = new Date(s.date);
-        var df = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-        return '<div style="display:flex;align-items:center;gap:.7rem;padding:.55rem 0;border-bottom:1px solid rgba(0,0,0,.07)">'+
-          '<div style="width:30px;height:30px;border-radius:8px;background:rgba(201,169,110,.1);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">'+icon+'</div>'+
-          '<div style="flex:1"><div style="font-size:.75rem;color:var(--cream)">'+s.label+'</div><div style="font-size:.6rem;color:var(--muted)">'+s.detail+'</div></div>'+
-          '<div style="font-size:.58rem;color:var(--muted)">'+df+'</div></div>';
-      }).join('') : '<div style="color:var(--muted);padding:.5rem 0">Aucune activité enregistrée dans le Compagnon.</div>';
-    }
-  } catch(e){}
 
-  /* ── Disponibilité ateliers temps réel ── */
-  loadCompanionAteliers();
-  clearInterval(cpRefreshTimer);
-  cpRefreshTimer = setInterval(loadCompanionAteliers, 30000);
+function loadCompanion() {
+  var period = (document.getElementById('ca-period') || {}).value || '30';
+  var siteSlug = getSiteSlugDashboard();
+  fetch('/api/dashboard/companion-analytics?site_slug=' + siteSlug + '&days=' + period, { credentials:'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if (!d) { console.warn('companion analytics: no data'); return; }
+
+      /* KPIs */
+      setText('ca-users-actifs',  d.users_actifs  || 0);
+      setText('ca-users-total',   d.users_total   || 0);
+      setText('ca-sessions-total',d.sessions_total|| 0);
+      setText('ca-checkins',      d.nb_checkins   || 0);
+      setText('ca-coherence',     d.nb_cc         || 0);
+      setText('ca-livreor',       d.nb_livreor    || 0);
+
+      /* Bien-être */
+      if (d.avg_energie) {
+        setBar('ca-bar-energie', 'ca-val-energie', d.avg_energie, 10);
+        setBar('ca-bar-stress',  'ca-val-stress',  d.avg_stress,  10);
+        setBar('ca-bar-focus',   'ca-val-focus',   d.avg_focus,   10);
+      }
+      setText('ca-cc-minutes', (d.cc_minutes || 0) + ' min');
+
+      /* Donut activités */
+      if (d.actions_repartition && d.actions_repartition.length) {
+        drawDonut(d.actions_repartition);
+      }
+
+      /* Top actions */
+      var topEl = document.getElementById('ca-top-actions');
+      if (topEl && d.top_actions) {
+        topEl.innerHTML = d.top_actions.map(function(a, i) {
+          var labels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo' };
+          return '<li class="ca-top-item">'
+            + '<span class="ca-top-rank">' + (i+1) + '</span>'
+            + '<span style="flex:1">' + (labels[a.action] || a.action) + '</span>'
+            + '<span class="ca-top-badge">' + a.nb + ' fois</span>'
+            + '</li>';
+        }).join('');
+      }
+
+      /* Jours de semaine */
+      if (d.weekdays) drawWeekdays(d.weekdays);
+
+      /* Timeline */
+      if (d.timeline) drawTimeline(d.timeline);
+    })
+    .catch(function(e){ console.error('companion analytics', e); });
 }
+
+function setText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setBar(barId, valId, val, max) {
+  var bar = document.getElementById(barId);
+  var lbl = document.getElementById(valId);
+  if (bar) bar.style.width = Math.round(val / max * 100) + '%';
+  if (lbl) lbl.textContent = parseFloat(val).toFixed(1);
+}
+
+function drawDonut(data) {
+  var canvas = document.getElementById('ca-donut');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var colors = ['#00b4b4','#f5855a','#7c5cbf','#e8641e','#c9a96e','#009090','#e84e4e','#50a0c8'];
+  var labels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Résa', sons:'Sons', video:'Vidéo' };
+  var total = data.reduce(function(s,d){ return s + d.nb; }, 0);
+  var startAngle = -Math.PI / 2;
+  ctx.clearRect(0, 0, 120, 120);
+  data.forEach(function(d, i) {
+    var slice = (d.nb / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(60, 60);
+    ctx.arc(60, 60, 50, startAngle, startAngle + slice);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+    startAngle += slice;
+  });
+  /* Trou donut */
+  ctx.beginPath();
+  ctx.arc(60, 60, 28, 0, 2 * Math.PI);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--surface') || '#fff';
+  ctx.fill();
+  /* Total au centre */
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#333';
+  ctx.font = 'bold 14px Jost';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(total, 60, 60);
+  /* Légende */
+  var leg = document.getElementById('ca-donut-legend');
+  if (leg) {
+    leg.innerHTML = data.slice(0,5).map(function(d,i){
+      return '<div class="ca-legend-item"><div class="ca-legend-dot" style="background:'+colors[i % colors.length]+'"></div>'
+        + (labels[d.action]||d.action) + ' <span style="color:var(--text-muted);margin-left:auto;padding-left:.4rem">'+d.nb+'</span></div>';
+    }).join('');
+  }
+}
+
+function drawWeekdays(data) {
+  var el = document.getElementById('ca-weekdays');
+  if (!el) return;
+  var jours = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  var max = Math.max.apply(null, data.map(function(d){ return d.nb; })) || 1;
+  el.innerHTML = data.map(function(d, i) {
+    return '<div class="ca-bar-row">'
+      + '<span class="ca-bar-label">' + (jours[d.dow] || d.dow) + '</span>'
+      + '<div class="ca-bar-track"><div class="ca-bar-fill" style="width:' + Math.round(d.nb/max*100) + '%;background:#00b4b4"></div></div>'
+      + '<span class="ca-bar-count">' + d.nb + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function drawTimeline(data) {
+  var canvas = document.getElementById('ca-timeline');
+  if (!canvas) return;
+  canvas.width = canvas.parentElement.clientWidth - 40;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = 80;
+  var max = Math.max.apply(null, data.map(function(d){ return d.nb; })) || 1;
+  var step = w / (data.length - 1 || 1);
+  ctx.clearRect(0, 0, w, h);
+  /* Aire */
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  data.forEach(function(d, i) {
+    var x = i * step;
+    var y = h - (d.nb / max) * (h - 10);
+    i === 0 ? ctx.lineTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo((data.length - 1) * step, h);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0,180,180,.15)';
+  ctx.fill();
+  /* Ligne */
+  ctx.beginPath();
+  data.forEach(function(d, i) {
+    var x = i * step;
+    var y = h - (d.nb / max) * (h - 10);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#00b4b4';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  /* Labels mois */
+  ctx.fillStyle = 'rgba(150,150,150,.7)';
+  ctx.font = '9px Jost';
+  ctx.textAlign = 'center';
+  data.forEach(function(d, i) {
+    var x = i * step;
+    ctx.fillText(d.label || '', x, h - 2);
+  });
+}
+
 
 async function loadCompanionAteliers(){
   var site = currentSite||(sites.length?sites[0].slug:null);
