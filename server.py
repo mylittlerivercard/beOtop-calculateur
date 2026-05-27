@@ -326,6 +326,24 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_pts_user ON companion_points(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_pts_date ON companion_points(date)')
 
+        # Tracking lectures par contenu/intervenant (rétribution)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_content_plays (
+                id              SERIAL PRIMARY KEY,
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                site_slug       TEXT,
+                user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                content_type    TEXT NOT NULL,
+                content_label   TEXT NOT NULL,
+                intervenant_id  INTEGER,
+                intervenant_nom TEXT,
+                duree_sec       INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_plays_intervenant ON companion_content_plays(intervenant_nom)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_plays_date        ON companion_content_plays(created_at)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_plays_site        ON companion_content_plays(site_slug)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -1843,7 +1861,123 @@ def livreor_post():
 
     return jsonify({'ok': True, 'id': new_id}), 201
 
-# ========== HEALTH ==========
+
+# ========== COMPANION — TRACKING LECTURES (rétribution intervenants) ==========
+
+@app.route('/api/companion/play', methods=['POST'])
+@login_required
+def companion_log_play():
+    """
+    Enregistre un clic de lecture et la durée d'écoute pour un contenu.
+    Appelé par le front à l'ouverture (duree_sec=0) puis à la fermeture (duree_sec réelle).
+    """
+    data = request.get_json() or {}
+    content_type    = data.get('content_type', '')
+    content_label   = data.get('content_label', '')
+    intervenant_nom = data.get('intervenant_nom', '') or ''
+    intervenant_id  = data.get('intervenant_id')
+    duree_sec       = int(data.get('duree_sec', 0))
+    site_slug       = data.get('site_slug', '')
+    user_id         = session.get('user_id')
+
+    if not content_type or not content_label:
+        return jsonify({'error': 'content_type et content_label requis'}), 400
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO companion_content_plays
+                    (site_slug, user_id, content_type, content_label, intervenant_id, intervenant_nom, duree_sec)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, [site_slug, user_id, content_type, content_label,
+                  intervenant_id, intervenant_nom, duree_sec])
+            new_id = cur.fetchone()['id']
+            conn.commit()
+    return jsonify({'ok': True, 'id': new_id}), 201
+
+
+@app.route('/api/admin/intervenants/stats', methods=['GET'])
+@login_required
+@admin_required
+def admin_intervenants_stats():
+    """
+    Statistiques de rétribution par intervenant.
+    Params : date_from, date_to (YYYY-MM-DD), site_slug (optionnel)
+    Retourne : par intervenant — nb_clics, duree_totale_sec, duree_totale_min,
+               pct_clics, pct_duree (part relative sur la période)
+    """
+    from datetime import date as dt
+    date_from = request.args.get('date_from', dt(dt.today().year, 1, 1).isoformat())
+    date_to   = request.args.get('date_to',   dt.today().isoformat())
+    site_slug = request.args.get('site_slug')
+
+    site_clause = "AND site_slug = %s" if site_slug else ""
+    params_base = [date_from, date_to] + ([site_slug] if site_slug else [])
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute(f"""
+                SELECT
+                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
+                    content_type,
+                    COUNT(*)                          AS nb_clics,
+                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(created_at)::date::text       AS premiere_lecture,
+                    MAX(created_at)::date::text       AS derniere_lecture
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  {site_clause}
+                GROUP BY intervenant, content_type
+                ORDER BY intervenant, nb_clics DESC
+            """, params_base)
+            rows_detail = [serialize_row(r) for r in cur.fetchall()]
+
+            cur.execute(f"""
+                SELECT
+                    COUNT(*)                    AS total_clics,
+                    COALESCE(SUM(duree_sec), 0) AS total_duree_sec
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  {site_clause}
+            """, params_base)
+            totaux = cur.fetchone() or {}
+            total_clics = int(totaux.get('total_clics', 0) or 0)
+            total_duree = int(totaux.get('total_duree_sec', 0) or 0)
+
+            cur.execute(f"""
+                SELECT
+                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
+                    COUNT(*)                          AS nb_clics,
+                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(created_at)::date::text       AS premiere_lecture,
+                    MAX(created_at)::date::text       AS derniere_lecture
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  {site_clause}
+                GROUP BY intervenant
+                ORDER BY nb_clics DESC
+            """, params_base)
+            rows_global = []
+            for r in cur.fetchall():
+                sr = serialize_row(r)
+                sr['pct_clics'] = round(int(sr['nb_clics']) / total_clics * 100, 1) if total_clics else 0
+                sr['pct_duree'] = round(int(sr['duree_totale_sec']) / total_duree * 100, 1) if total_duree else 0
+                rows_global.append(sr)
+
+    return jsonify({
+        'date_from':       date_from,
+        'date_to':         date_to,
+        'site_slug':       site_slug,
+        'total_clics':     total_clics,
+        'total_duree_sec': total_duree,
+        'total_duree_min': round(total_duree / 60, 1),
+        'par_intervenant': rows_global,
+        'detail_par_type': rows_detail,
+    })
 
 
 @app.route('/api/companion/qvct', methods=['GET'])
@@ -2032,8 +2166,7 @@ def companion_qvct():
         'alertes':          alertes,
     })
 
-@app.route('/api/health', methods=['GET'])
-def health():
+# ========== HEALTH ==========
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute('SELECT COUNT(*) as n FROM sessions')
