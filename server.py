@@ -344,6 +344,44 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_plays_date        ON companion_content_plays(created_at)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_plays_site        ON companion_content_plays(site_slug)')
 
+        # ── Table intervenants (V1 rétribution) ──────────────────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS intervenants (
+                id              SERIAL PRIMARY KEY,
+                created_at      TIMESTAMP DEFAULT NOW(),
+                user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                nom             TEXT NOT NULL,
+                email           TEXT,
+                specialite      TEXT,
+                bio             TEXT,
+                photo_url       TEXT,
+                taux_contenu    NUMERIC DEFAULT 30,
+                actif           BOOLEAN DEFAULT TRUE
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_user  ON intervenants(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_email ON intervenants(email)')
+
+        # ── Semestres de rétribution ──────────────────────────────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS retribution_semestres (
+                id                  SERIAL PRIMARY KEY,
+                created_at          TIMESTAMP DEFAULT NOW(),
+                annee               INTEGER NOT NULL,
+                semestre            SMALLINT NOT NULL CHECK (semestre IN (1,2)),
+                intervenant_id      INTEGER NOT NULL REFERENCES intervenants(id) ON DELETE CASCADE,
+                site_slug           TEXT,
+                nb_clics            INTEGER DEFAULT 0,
+                pct_clics           NUMERIC DEFAULT 0,
+                ca_site             NUMERIC DEFAULT 0,
+                montant_contenu     NUMERIC DEFAULT 0,
+                statut              TEXT DEFAULT 'calcule',
+                UNIQUE (annee, semestre, intervenant_id, site_slug)
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_intervenant ON retribution_semestres(intervenant_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_periode     ON retribution_semestres(annee, semestre)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -384,6 +422,15 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def intervenant_required(f):
+    """Autorise admin ET intervenant."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') not in ('admin', 'intervenant'):
+            return jsonify({'error': 'Acces refuse'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
 def get_current_user():
     if 'user_id' not in session:
         return None
@@ -412,7 +459,7 @@ def auth_login():
     session['nom']       = user['nom']
     return jsonify({
         'ok': True, 'role': user['role'], 'nom': user['nom'],
-        'redirect': '/admin' if user['role'] == 'admin' else '/dashboard'
+        'redirect': '/admin' if user['role'] == 'admin' else ('/mon-espace' if user['role'] == 'intervenant' else '/dashboard')
     })
 
 @app.route('/api/auth/logout', methods=['POST'])
@@ -2169,7 +2216,311 @@ def companion_qvct():
         'alertes':          alertes,
     })
 
-# ========== HEALTH ==========
+# ========== ADMIN — INTERVENANTS (base PostgreSQL) ==========
+
+@app.route('/api/admin/intervenants', methods=['GET'])
+@login_required
+@admin_required
+def admin_get_intervenants():
+    """Liste tous les intervenants avec leurs stats globales de clics."""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT i.*,
+                       u.email as user_email,
+                       COALESCE(p.nb_clics, 0)    as total_clics,
+                       COALESCE(p.duree_min, 0)   as total_duree_min
+                FROM intervenants i
+                LEFT JOIN users u ON i.user_id = u.id
+                LEFT JOIN (
+                    SELECT intervenant_nom,
+                           COUNT(*) as nb_clics,
+                           ROUND(COALESCE(SUM(duree_sec),0)/60.0,1) as duree_min
+                    FROM companion_content_plays
+                    WHERE content_type != 'post_interne'
+                    GROUP BY intervenant_nom
+                ) p ON p.intervenant_nom = i.nom
+                ORDER BY i.created_at DESC
+            """)
+            rows = cur.fetchall()
+    return jsonify([serialize_row(r) for r in rows])
+
+
+@app.route('/api/admin/intervenants', methods=['POST'])
+@login_required
+@admin_required
+def admin_create_intervenant():
+    """Crée un intervenant + son compte user avec role='intervenant'."""
+    data = request.get_json() or {}
+    nom   = (data.get('nom') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+    if not nom:
+        return jsonify({'error': 'Nom requis'}), 400
+
+    tmp_pw = secrets.token_urlsafe(10)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Créer le compte user si email fourni
+            user_id = None
+            if email:
+                try:
+                    cur.execute("""
+                        INSERT INTO users (email, password, nom, role, actif)
+                        VALUES (%s, %s, %s, 'intervenant', 1) RETURNING id
+                    """, [email, generate_password_hash(tmp_pw), nom])
+                    user_id = cur.fetchone()['id']
+                except psycopg2.IntegrityError:
+                    return jsonify({'error': 'Email déjà utilisé'}), 409
+
+            cur.execute("""
+                INSERT INTO intervenants (user_id, nom, email, specialite, bio, photo_url, taux_contenu, actif)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            """, [user_id, nom, email,
+                  data.get('specialite', ''), data.get('bio', ''),
+                  data.get('photo_url', ''),
+                  float(data.get('taux_contenu', 30)),
+                  True])
+            inv_id = cur.fetchone()['id']
+            conn.commit()
+
+    return jsonify({'ok': True, 'id': inv_id,
+                    'tmp_password': tmp_pw if email else None}), 201
+
+
+@app.route('/api/admin/intervenants/<int:inv_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_intervenant(inv_id):
+    data = request.get_json() or {}
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE intervenants
+                SET nom=%s, email=%s, specialite=%s, bio=%s, photo_url=%s,
+                    taux_contenu=%s, actif=%s
+                WHERE id=%s
+            """, [data.get('nom'), data.get('email'), data.get('specialite', ''),
+                  data.get('bio', ''), data.get('photo_url', ''),
+                  float(data.get('taux_contenu', 30)),
+                  bool(data.get('actif', True)), inv_id])
+            conn.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/admin/intervenants/<int:inv_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_intervenant(inv_id):
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE intervenants SET actif=FALSE WHERE id=%s", [inv_id])
+            conn.commit()
+    return jsonify({'ok': True})
+
+
+# ========== ESPACE INTERVENANT — Stats & Rétribution ==========
+
+def _get_semestre_clause(annee, semestre):
+    """Retourne la clause SQL pour un semestre donné sur companion_content_plays."""
+    if semestre == 1:
+        return f"created_at >= '{annee}-01-01' AND created_at < '{annee}-07-01'"
+    else:
+        return f"created_at >= '{annee}-07-01' AND created_at < '{annee+1}-01-01'"
+
+
+@app.route('/api/intervenant/stats', methods=['GET'])
+@login_required
+@intervenant_required
+def intervenant_stats():
+    """
+    Stats de clics et rétribution estimée pour l'intervenant connecté.
+    Admin peut passer ?intervenant_id=X pour voir n'importe quel intervenant.
+    """
+    user_id = session.get('user_id')
+    role    = session.get('role')
+
+    # Admin peut consulter n'importe quel intervenant
+    if role == 'admin' and request.args.get('intervenant_id'):
+        inv_id = int(request.args.get('intervenant_id'))
+    else:
+        # Trouver l'intervenant lié au user connecté
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM intervenants WHERE user_id=%s AND actif=TRUE", [user_id])
+                row = cur.fetchone()
+        if not row:
+            return jsonify({'error': 'Intervenant introuvable'}), 404
+        inv_id = row['id']
+
+    # Période : semestre en cours par défaut
+    today = date.today()
+    annee    = int(request.args.get('annee',    today.year))
+    semestre = int(request.args.get('semestre', 1 if today.month <= 6 else 2))
+    sem_clause = _get_semestre_clause(annee, semestre)
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Infos intervenant
+            cur.execute("SELECT * FROM intervenants WHERE id=%s", [inv_id])
+            inv = serialize_row(cur.fetchone())
+            if not inv:
+                return jsonify({'error': 'Intervenant introuvable'}), 404
+
+            # Clics par contenu sur la période
+            cur.execute(f"""
+                SELECT content_type, content_label, site_slug,
+                       COUNT(*) as nb_clics,
+                       ROUND(COALESCE(SUM(duree_sec),0)/60.0,1) as duree_min
+                FROM companion_content_plays
+                WHERE intervenant_nom = %s
+                  AND content_type != 'post_interne'
+                  AND {sem_clause}
+                GROUP BY content_type, content_label, site_slug
+                ORDER BY nb_clics DESC
+            """, [inv['nom']])
+            clics_detail = [serialize_row(r) for r in cur.fetchall()]
+
+            # Total clics intervenant sur la période
+            nb_clics_inv = sum(r['nb_clics'] for r in clics_detail)
+
+            # Total clics toutes périodes (tous intervenants confondus) pour % global
+            cur.execute(f"""
+                SELECT COUNT(*) as total
+                FROM companion_content_plays
+                WHERE content_type != 'post_interne'
+                  AND {sem_clause}
+            """)
+            total_clics = (cur.fetchone() or {}).get('total', 0) or 0
+
+            # Clics par site pour calcul rétribution
+            cur.execute(f"""
+                SELECT site_slug,
+                       COUNT(*) as nb_clics_inv,
+                       (SELECT COUNT(*) FROM companion_content_plays cp2
+                        WHERE cp2.site_slug = cp.site_slug
+                        AND cp2.content_type != 'post_interne'
+                        AND {sem_clause}) as nb_clics_total
+                FROM companion_content_plays cp
+                WHERE intervenant_nom = %s
+                  AND content_type != 'post_interne'
+                  AND {sem_clause}
+                GROUP BY site_slug
+            """, [inv['nom']])
+            clics_par_site = [serialize_row(r) for r in cur.fetchall()]
+
+            # Historique semestres précédents
+            cur.execute("""
+                SELECT annee, semestre, nb_clics, pct_clics,
+                       ca_site, montant_contenu, statut
+                FROM retribution_semestres
+                WHERE intervenant_id = %s
+                ORDER BY annee DESC, semestre DESC
+                LIMIT 10
+            """, [inv_id])
+            historique = [serialize_row(r) for r in cur.fetchall()]
+
+    # Calcul rétribution estimée (basé sur clics, sans CA réel disponible)
+    pct_global = round(nb_clics_inv / total_clics * 100, 1) if total_clics else 0
+    taux       = float(inv.get('taux_contenu') or 30) / 100
+
+    return jsonify({
+        'intervenant':    inv,
+        'annee':          annee,
+        'semestre':       semestre,
+        'nb_clics':       nb_clics_inv,
+        'total_clics':    int(total_clics),
+        'pct_global':     pct_global,
+        'taux_contenu':   float(inv.get('taux_contenu') or 30),
+        'clics_detail':   clics_detail,
+        'clics_par_site': clics_par_site,
+        'historique':     historique,
+        'note':           'Rétribution en € calculée lors de la clôture semestrielle par beOtop',
+    })
+
+
+@app.route('/api/admin/retribution/calcul-semestre', methods=['POST'])
+@login_required
+@admin_required
+def admin_calcul_semestre():
+    """
+    Calcule et persiste la rétribution semestrielle pour tous les intervenants.
+    Corps JSON : { annee: 2026, semestre: 1, tarif_par_utilisateur: 5.0 }
+    """
+    data      = request.get_json() or {}
+    annee     = int(data.get('annee',    date.today().year))
+    semestre  = int(data.get('semestre', 1 if date.today().month <= 6 else 2))
+    tarif     = float(data.get('tarif_par_utilisateur', 0))
+    sem_clause = _get_semestre_clause(annee, semestre)
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Total clics période
+            cur.execute(f"""
+                SELECT COUNT(*) as total FROM companion_content_plays
+                WHERE content_type != 'post_interne' AND {sem_clause}
+            """)
+            total_clics = int((cur.fetchone() or {}).get('total', 0) or 0)
+
+            # Utilisateurs actifs par site sur la période
+            cur.execute(f"""
+                SELECT site_slug, COUNT(DISTINCT user_id) as nb_actifs
+                FROM companion_content_plays
+                WHERE {sem_clause} AND user_id IS NOT NULL
+                GROUP BY site_slug
+            """)
+            actifs_par_site = {r['site_slug']: int(r['nb_actifs']) for r in cur.fetchall()}
+
+            # Clics par intervenant et par site
+            cur.execute(f"""
+                SELECT intervenant_nom, site_slug, COUNT(*) as nb_clics
+                FROM companion_content_plays
+                WHERE content_type != 'post_interne'
+                  AND intervenant_nom IS NOT NULL
+                  AND intervenant_nom != ''
+                  AND {sem_clause}
+                GROUP BY intervenant_nom, site_slug
+            """)
+            clics_rows = cur.fetchall()
+
+            # Intervenants actifs
+            cur.execute("SELECT id, nom, taux_contenu FROM intervenants WHERE actif=TRUE")
+            intervenants = {r['nom']: r for r in cur.fetchall()}
+
+            inserted = 0
+            for row in clics_rows:
+                nom      = row['intervenant_nom']
+                slug     = row['site_slug']
+                nb_clics = int(row['nb_clics'])
+                inv      = intervenants.get(nom)
+                if not inv:
+                    continue
+
+                pct      = round(nb_clics / total_clics * 100, 2) if total_clics else 0
+                nb_actifs = actifs_par_site.get(slug, 0)
+                ca_site   = nb_actifs * tarif * 6  # 6 mois
+                taux      = float(inv['taux_contenu'] or 30) / 100
+                montant   = round(ca_site * taux * (nb_clics / total_clics), 2) if total_clics else 0
+
+                cur.execute("""
+                    INSERT INTO retribution_semestres
+                        (annee, semestre, intervenant_id, site_slug, nb_clics,
+                         pct_clics, ca_site, montant_contenu, statut)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'calcule')
+                    ON CONFLICT (annee, semestre, intervenant_id, site_slug)
+                    DO UPDATE SET nb_clics=%s, pct_clics=%s, ca_site=%s,
+                                  montant_contenu=%s, statut='calcule'
+                """, [annee, semestre, inv['id'], slug, nb_clics,
+                      pct, ca_site, montant,
+                      nb_clics, pct, ca_site, montant])
+                inserted += 1
+
+            conn.commit()
+
+    return jsonify({'ok': True, 'annee': annee, 'semestre': semestre,
+                    'lignes': inserted, 'total_clics': total_clics})
+
+
+# ========== PAGES HTML — Espace intervenant ==========
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute('SELECT COUNT(*) as n FROM sessions')
@@ -2277,9 +2628,20 @@ def realtime_page(site_slug):
 def index():
     if 'user_id' not in session:
         return redirect('/login')
-    if session.get('role') == 'admin':
+    role = session.get('role')
+    if role == 'admin':
         return redirect('/admin')
+    if role == 'intervenant':
+        return redirect('/mon-espace')
     return redirect('/dashboard')
+
+@app.route('/mon-espace')
+def mon_espace_page():
+    if 'user_id' not in session:
+        return redirect('/login')
+    if session.get('role') not in ('admin', 'intervenant'):
+        return redirect('/dashboard')
+    return serve_html('mon_espace.html')
 
 @app.route('/login')
 def login_page():
