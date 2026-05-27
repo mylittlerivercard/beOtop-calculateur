@@ -1010,6 +1010,12 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item" onclick="switchView('jeux')">
     <span class="nav-icon">🧠</span><span>Jeux cérébraux</span>
   </div>
+  <div class="nav-item" onclick="switchView('podcasts')">
+    <span class="nav-icon">🎙️</span><span>Podcasts</span>
+  </div>
+  <div class="nav-item" onclick="switchView('posts')">
+    <span class="nav-icon">📋</span><span>Posts internes</span>
+  </div>
 
   <div class="nav-section-label">Suivi</div>
   <div class="nav-item" onclick="switchView('progres')">
@@ -1368,6 +1374,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="btn-primary" onclick="openAddAudio()">+ Audio</button>
     <button class="btn-primary" onclick="openAddExercice()">+ Exercice</button>
     <button class="btn-primary" onclick="openAddDefi()">+ Défi cognitif</button>
+    <button class="btn-primary" onclick="openAddPodcast()">+ Podcast</button>
+    <button class="btn-primary" onclick="openAddPost()">+ Post interne</button>
     <button class="btn-secondary" onclick="exportDB()">⬇ Exporter JSON</button>
     <button class="btn-primary" onclick="openAddIntervenant()">+ Intervenant</button>
     <button class="btn-ghost" onclick="resetDB()">↺ Réinitialiser démo</button>
@@ -1379,6 +1387,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('videos',this)">Vidéos</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('defis',this)">Défis cognitifs</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('podcasts',this)">Podcasts</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('posts',this)">Posts internes</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('retribution',this)" style="background:rgba(232,100,30,.12);border-color:rgba(232,100,30,.3);color:#e8641e">💰 Rétribution</button>
@@ -1494,7 +1504,24 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 </div>
 
-<!-- ═══ JEUX CÉRÉBRAUX ═══ -->
+<!-- ═══ PODCASTS ═══ -->
+<div class="view" id="view-podcasts">
+  <div class="page-header">
+    <h1>Pod<em>casts</em></h1>
+    <p>Épisodes audio · Experts · Neurosciences · Bien-être au travail</p>
+  </div>
+  <div id="podcasts-cats" class="audio-categories"></div>
+  <div id="podcasts-grid"></div>
+</div>
+
+<!-- ═══ POSTS INTERNES ═══ -->
+<div class="view" id="view-posts">
+  <div class="page-header">
+    <h1>Posts <em>internes</em></h1>
+    <p>Communications · Actualités · Ressources de l'entreprise</p>
+  </div>
+  <div id="posts-grid" style="display:flex;flex-direction:column;gap:1rem"></div>
+</div>
 <div class="view" id="view-jeux">
   <div class="page-header">
     <h1>Jeux <em>cérébraux</em></h1>
@@ -1774,13 +1801,14 @@ var DEMO_DB = {
       actif: true
     }
   ],
-  defis: [
-    { id:1, titre:'Deux choses \u00e0 la fois',  description:'Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention',          url_audio:'/audio/Defi-1-Deux-choses.mp3',                          intervenant:'Laurent Thiry', duree:'~12 min', actif:true },
+  defis: [ \u00e0 la fois',  description:'Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention',          url_audio:'/audio/Defi-1-Deux-choses.mp3',                          intervenant:'Laurent Thiry', duree:'~12 min', actif:true },
     { id:2, titre:'Attention fixe',         description:'Maintenir le focus sur une cible unique \u00b7 Concentration',    url_audio:'/audio/Defi-2-AttentionFixeopmix_v3_24_48_.mp3',          intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
     { id:3, titre:'Agir sous stress',       description:'Performer malgr\u00e9 la pression \u00b7 R\u00e9gulation \u00e9motionnelle',     url_audio:'/audio/Defi-3-AgirSousStress__opmix_v3_24_48_.mp3',       intervenant:'Laurent Thiry', duree:'~12 min', actif:true },
     { id:4, titre:'Puzzle cognitif',        description:'R\u00e9soudre un probl\u00e8me guid\u00e9 \u00b7 Flexibilit\u00e9 mentale',           url_audio:'/audio/Defi-4-Puzzleopmix_v1_24_48_.mp3',                 intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
     { id:5, titre:'Ne pas r\u00e9pondre',        description:'Inhibition de r\u00e9ponse automatique \u00b7 Contr\u00f4le cognitif',      url_audio:'/audio/Defi-5-NePasRepondre_opmix_v2_24_48_.mp3',         intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
   ],
+  podcasts: [],
+  posts_internes: [],
 };
 
 function loadDB() {
@@ -1794,7 +1822,7 @@ function loadDB() {
     // Merger toutes les clés structurelles depuis DEMO_DB si vides ou absentes
     // On conserve les données utilisateur (checkins, sessions, points) mais on
     // recharge les contenus (videos, audios, exercices, ateliers) depuis DEMO_DB
-    var contentKeys = ['videos','audios','exercices','ateliers','intervenants','defis'];
+    var contentKeys = ['videos','audios','exercices','ateliers','intervenants','defis','podcasts','posts_internes'];
     contentKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k]) || stored[k].length === 0) {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
@@ -1871,6 +1899,8 @@ function switchView(id) {
   if (id === 'admin') renderAdmin('ateliers');
   if (id === 'livreor') ldoLoad();
   if (id === 'intervenants') renderIntervenants();
+  if (id === 'podcasts') renderPodcasts();
+  if (id === 'posts') renderPosts();
 }
 
 /* ════════════════════════════════════════════
@@ -4787,6 +4817,33 @@ function renderAdmin(tab) {
       <td><button class="btn-ghost" onclick="editAtelier(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAtelier(${a.id})" style="color:var(--red)">✕</button></td>
     </tr>`).join('')}</tbody></table>`;
+  }   if (tab === 'podcasts') {
+    if (!DB.podcasts) DB.podcasts = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddPodcast()">\u002b Podcast</button></div>'
+      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Intervenant</th><th>Dur\u00e9e</th><th>Type</th><th>URL</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
+      + (DB.podcasts.length ? DB.podcasts.map(function(p) {
+          return '<tr><td>' + p.id + '</td><td style="font-weight:600;font-size:.82rem">' + p.titre + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (p.intervenant||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem">' + (p.duree||'\u2014') + '</td>'
+            + '<td style="font-size:.62rem;padding:.15rem .5rem;background:rgba(0,180,180,.1);border-radius:8px;color:#00b4b4">' + (p.type_url==='fichier'?'Fichier':'Lien externe') + '</td>'
+            + '<td style="font-size:.58rem;color:var(--text-muted)">' + (p.url?'\u2713':'\u26a0 Vide') + '</td>'
+            + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:8px;background:' + (p.actif!==false?'rgba(0,180,180,.12)':'rgba(232,100,30,.12)') + ';color:' + (p.actif!==false?'#00b4b4':'#e8641e') + '">' + (p.actif!==false?'actif':'inactif') + '</span></td>'
+            + '<td><button class="btn-ghost" onclick="editPodcast(' + p.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deletePodcast(' + p.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
+        }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun podcast enregistr\u00e9</td></tr>')
+      + '</tbody></table>';
+  }   if (tab === 'posts') {
+    if (!DB.posts_internes) DB.posts_internes = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddPost()">\u002b Post interne</button></div>'
+      + '<table><thead><tr><th>ID</th><th>Titre</th><th>Auteur</th><th>Date</th><th>Lien</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
+      + (DB.posts_internes.length ? DB.posts_internes.map(function(p) {
+          return '<tr><td>' + p.id + '</td><td style="font-weight:600;font-size:.82rem">' + p.titre + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (p.auteur||'\u2014') + '</td>'
+            + '<td style="font-size:.65rem;color:var(--text-muted)">' + (p.date||'\u2014') + '</td>'
+            + '<td style="font-size:.58rem;color:var(--text-muted)">' + (p.lien?'\u2713 D\u00e9fini':'\u2014') + '</td>'
+            + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:8px;background:' + (p.actif!==false?'rgba(0,180,180,.12)':'rgba(232,100,30,.12)') + ';color:' + (p.actif!==false?'#00b4b4':'#e8641e') + '">' + (p.actif!==false?'actif':'inactif') + '</span></td>'
+            + '<td><button class="btn-ghost" onclick="editPost(' + p.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deletePost(' + p.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
+        }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun post enregistr\u00e9</td></tr>')
+      + '</tbody></table>';
   }   if (tab === 'defis') {
     if (!DB.defis) DB.defis = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddDefi()">\u002b D\u00e9fi cognitif</button></div>'
@@ -5312,13 +5369,13 @@ function renderDefis() {
   // Grouper par intervenant pour l'en-tête
   var intervenants = [];
   list.forEach(function(d) {
-    var inv = d.intervenant || '(beOtop)';
+    var inv = d.intervenant || '(sans intervenant)';
     if (intervenants.indexOf(inv) === -1) intervenants.push(inv);
   });
 
   var html = '';
   intervenants.forEach(function(inv) {
-    var groupe = list.filter(function(d){ return (d.intervenant||'(beOtop)') === inv; });
+    var groupe = list.filter(function(d){ return (d.intervenant||'(sans intervenant)') === inv; });
     var nbLabel = groupe.length + ' s\u00e9ance' + (groupe.length > 1 ? 's' : '') + ' guid\u00e9e' + (groupe.length > 1 ? 's' : '');
     // En-tête groupe
     html += '<div style="margin-top:.4rem;margin-bottom:.6rem">'
@@ -5726,7 +5783,209 @@ function openIntervenant(id) {
   if (typeof openModal === 'function') openModal(inv.nom, body);
 }
 
-/* ══ HELPER — peupler un select avec la liste des intervenants ══ */
+/* ══════════════════════════════════════════
+   PODCASTS
+══════════════════════════════════════════ */
+function renderPodcasts() {
+  var grid = document.getElementById('podcasts-grid');
+  if (!grid) return;
+  var list = (DB.podcasts||[]).filter(function(p){ return p.actif !== false; });
+  if (!list.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucun podcast disponible.<br><span style="font-size:.65rem">Ajoutez des podcasts depuis Administration.</span></div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(p) {
+    var inv = (DB.intervenants||[]).find(function(i){ return i.nom === p.intervenant; });
+    var avatar = inv && inv.photo_url
+      ? '<img src="' + inv.photo_url + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">'
+      : '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#00b4b4,#f5855a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">\ud83c\udfa7</div>';
+    return '<div class="card" style="cursor:pointer;padding:1rem;margin-bottom:.7rem" onclick="openPodcast(' + p.id + ')">'
+      + '<div style="display:flex;align-items:center;gap:.9rem">'
+      + avatar
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-size:.88rem;font-weight:600;color:var(--text)">' + p.titre + '</div>'
+      + '<div style="font-size:.62rem;color:var(--text-dim);margin-top:.2rem">' + (p.description||'') + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0">'
+      + '<div style="font-size:.6rem;color:var(--teal);font-weight:600">\u25b6 \u00c9couter</div>'
+      + (p.duree ? '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">' + p.duree + '</div>' : '')
+      + '</div></div>'
+      + (p.intervenant ? '<div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">' + p.intervenant + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function openPodcast(id) {
+  var p = (DB.podcasts||[]).find(function(x){ return x.id === id; });
+  if (!p) return;
+  if (!p.url) { showToast('\u26a0 URL non renseign\u00e9e \u2014 Modifiez depuis Administration'); return; }
+  logPlay('podcast', p.titre, p.intervenant||'', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  if (p.type_url === 'fichier') {
+    var body = '<audio src="' + p.url + '" controls preload="auto" style="width:100%;border-radius:8px;margin-bottom:1rem"></audio>'
+      + (p.description ? '<div style="font-size:.72rem;color:var(--text-dim)">' + p.description + '</div>' : '');
+    openModal('\ud83c\udfa7 ' + p.titre, body);
+    setTimeout(function(){
+      var el = document.querySelector('#modal audio');
+      if (el) { el.play().catch(function(){}); el.addEventListener('ended', function(){ logPlayEnd('podcast', p.titre); }, {once:true}); }
+    }, 300);
+  } else {
+    window.open(p.url, '_blank');
+    logPlayEnd('podcast', p.titre);
+  }
+}
+
+function _podcastForm(p) {
+  var v = p || { id:0, titre:'', description:'', url:'', type_url:'externe', intervenant:'', duree:'', actif:true };
+  return '<div style="display:flex;flex-direction:column;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Titre *</label>'
+    + '<input id="f-pod-titre" value="' + (v.titre||'') + '" placeholder="Titre du podcast" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Description</label>'
+    + '<input id="f-pod-desc" value="' + (v.description||'') + '" placeholder="Description courte" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Type d\'URL</label>'
+    + '<select id="f-pod-type" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<option value="externe"' + (v.type_url!=='fichier'?' selected':'') + '>Lien externe (Spotify, YouTube, site...)</option>'
+    + '<option value="fichier"' + (v.type_url==='fichier'?' selected':'') + '>Fichier audio h\u00e9berg\u00e9 (/static/...)</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL</label>'
+    + '<input id="f-pod-url" value="' + (v.url||'') + '" placeholder="https://... ou /static/fichier.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
+    + '<select id="f-pod-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value="">— Aucun —</option></select></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e</label>'
+    + '<input id="f-pod-duree" value="' + (v.duree||'') + '" placeholder="~25 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
+    + '<select id="f-pod-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option><option value="0"' + (v.actif===false?' selected':'') + '>Inactif</option>'
+    + '</select></div></div>'
+    + '<div style="display:flex;gap:.6rem;margin-top:.4rem">'
+    + '<button class="btn-secondary" onclick="closeModal()">Annuler</button>'
+    + '<button class="btn-primary" onclick="savePodcast(' + v.id + ')">&#10003; Enregistrer</button>'
+    + '</div></div>';
+}
+
+function openAddPodcast() { openModal('Nouveau podcast', _podcastForm(null)); _fillIntervenantSelect('f-pod-intervenant', null); }
+function editPodcast(id) { var p=(DB.podcasts||[]).find(function(x){return x.id===id;}); if(!p)return; openModal('Modifier \u00ab\u202f'+p.titre+'\u202f\u00bb',_podcastForm(p)); _fillIntervenantSelect('f-pod-intervenant',p.intervenant||null); }
+
+function savePodcast(existingId) {
+  var titre = (document.getElementById('f-pod-titre')||{}).value;
+  if (!titre||!titre.trim()) { showToast('\u26a0 Titre requis'); return; }
+  if (!DB.podcasts) DB.podcasts = [];
+  var obj = {
+    titre: titre.trim(),
+    description: (document.getElementById('f-pod-desc')||{}).value||'',
+    type_url: (document.getElementById('f-pod-type')||{}).value||'externe',
+    url: ((document.getElementById('f-pod-url')||{}).value||'').trim(),
+    intervenant: (document.getElementById('f-pod-intervenant')||{}).value||'',
+    duree: (document.getElementById('f-pod-duree')||{}).value||'',
+    actif: (document.getElementById('f-pod-actif')||{}).value !== '0'
+  };
+  if (existingId) { var p=DB.podcasts.find(function(x){return x.id===existingId;}); if(p) Object.assign(p,obj); }
+  else { obj.id = DB.podcasts.length ? Math.max.apply(null,DB.podcasts.map(function(x){return x.id;}))+1 : 1; DB.podcasts.push(obj); }
+  saveDB(DB); closeModal(); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast enregistr\u00e9');
+}
+
+function deletePodcast(id) {
+  if (!confirm('Supprimer ce podcast ?')) return;
+  DB.podcasts = (DB.podcasts||[]).filter(function(x){return x.id!==id;});
+  saveDB(DB); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast supprim\u00e9');
+}
+
+/* ══════════════════════════════════════════
+   POSTS INTERNES
+══════════════════════════════════════════ */
+function renderPosts() {
+  var grid = document.getElementById('posts-grid');
+  if (!grid) return;
+  var list = (DB.posts_internes||[]).filter(function(p){ return p.actif !== false; });
+  if (!list.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucun post disponible.<br><span style="font-size:.65rem">Ajoutez des posts depuis Administration.</span></div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(p) {
+    var img = p.image_url ? '<img src="' + p.image_url + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:.8rem;display:block" onerror="this.style.display=\'none\'">' : '';
+    var lienBtn = p.lien ? '<a href="' + p.lien + '" target="_blank" rel="noopener" onclick="logPostClic(' + p.id + ')" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;padding:.45rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">\ud83d\udd17 Lire la suite</a>' : '';
+    return '<div class="card" style="padding:1.2rem" onclick="logPostClic(' + p.id + ')">'
+      + img
+      + '<div style="font-size:.92rem;font-weight:600;color:var(--text);margin-bottom:.4rem">' + p.titre + '</div>'
+      + (p.texte ? '<div style="font-size:.75rem;color:var(--text-dim);line-height:1.7;white-space:pre-wrap">' + p.texte + '</div>' : '')
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem">'
+      + '<div style="font-size:.6rem;color:var(--text-muted)">' + (p.auteur||'') + (p.date?' \u00b7 '+p.date:'') + '</div>'
+      + lienBtn
+      + '</div></div>';
+  }).join('');
+}
+
+function logPostClic(id) {
+  var p = (DB.posts_internes||[]).find(function(x){ return x.id===id; });
+  if (!p) return;
+  // Tracking clics posts — NE rentre PAS dans rétribution (action 'post_interne' non suivi)
+  fetch('/api/companion/play', {
+    method: 'POST', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      content_type: 'post_interne',
+      content_label: p.titre,
+      intervenant_nom: '',
+      site_slug: typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '',
+      duree_sec: 0
+    })
+  }).catch(function(){});
+}
+
+function _postForm(p) {
+  var v = p || { id:0, titre:'', texte:'', image_url:'', lien:'', auteur:'', date:'', actif:true };
+  var today = new Date().toISOString().slice(0,10);
+  return '<div style="display:flex;flex-direction:column;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Titre *</label>'
+    + '<input id="f-post-titre" value="' + (v.titre||'') + '" placeholder="Titre du post" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Texte</label>'
+    + '<textarea id="f-post-texte" rows="5" placeholder="Contenu du post..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.82rem;resize:vertical">' + (v.texte||'') + '</textarea></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL image (optionnel)</label>'
+    + '<input id="f-post-img" value="' + (v.image_url||'') + '" placeholder="/static/image.jpg ou https://..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Lien externe (optionnel)</label>'
+    + '<input id="f-post-lien" value="' + (v.lien||'') + '" placeholder="https://..." style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Auteur</label>'
+    + '<input id="f-post-auteur" value="' + (v.auteur||'') + '" placeholder="Nom Prénom" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Date</label>'
+    + '<input id="f-post-date" type="date" value="' + (v.date||today) + '" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
+    + '<select id="f-post-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option><option value="0"' + (v.actif===false?' selected':'') + '>Inactif</option>'
+    + '</select></div></div>'
+    + '<div style="display:flex;gap:.6rem;margin-top:.4rem">'
+    + '<button class="btn-secondary" onclick="closeModal()">Annuler</button>'
+    + '<button class="btn-primary" onclick="savePost(' + v.id + ')">&#10003; Enregistrer</button>'
+    + '</div></div>';
+}
+
+function openAddPost() { openModal('Nouveau post interne', _postForm(null)); }
+function editPost(id) { var p=(DB.posts_internes||[]).find(function(x){return x.id===id;}); if(!p)return; openModal('Modifier \u00ab\u202f'+p.titre+'\u202f\u00bb',_postForm(p)); }
+
+function savePost(existingId) {
+  var titre = (document.getElementById('f-post-titre')||{}).value;
+  if (!titre||!titre.trim()) { showToast('\u26a0 Titre requis'); return; }
+  if (!DB.posts_internes) DB.posts_internes = [];
+  var obj = {
+    titre: titre.trim(),
+    texte: (document.getElementById('f-post-texte')||{}).value||'',
+    image_url: ((document.getElementById('f-post-img')||{}).value||'').trim(),
+    lien: ((document.getElementById('f-post-lien')||{}).value||'').trim(),
+    auteur: (document.getElementById('f-post-auteur')||{}).value||'',
+    date: (document.getElementById('f-post-date')||{}).value||'',
+    actif: (document.getElementById('f-post-actif')||{}).value !== '0'
+  };
+  if (existingId) { var p=DB.posts_internes.find(function(x){return x.id===existingId;}); if(p) Object.assign(p,obj); }
+  else { obj.id = DB.posts_internes.length ? Math.max.apply(null,DB.posts_internes.map(function(x){return x.id;}))+1 : 1; DB.posts_internes.push(obj); }
+  saveDB(DB); closeModal(); renderAdmin('posts'); renderPosts(); showToast('\u2713 Post enregistr\u00e9');
+}
+
+function deletePost(id) {
+  if (!confirm('Supprimer ce post ?')) return;
+  DB.posts_internes = (DB.posts_internes||[]).filter(function(x){return x.id!==id;});
+  saveDB(DB); renderAdmin('posts'); renderPosts(); showToast('\u2713 Post supprim\u00e9');
+}
+</script>
 function _fillIntervenantSelect(selectId, selectedNom) {
   var sel = document.getElementById(selectId);
   if (!sel) return;
