@@ -1929,6 +1929,7 @@ def admin_intervenants_stats():
                     MAX(created_at)::date::text       AS derniere_lecture
                 FROM companion_content_plays
                 WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
                   {site_clause}
                 GROUP BY intervenant, content_type
                 ORDER BY intervenant, nb_clics DESC
@@ -1941,6 +1942,7 @@ def admin_intervenants_stats():
                     COALESCE(SUM(duree_sec), 0) AS total_duree_sec
                 FROM companion_content_plays
                 WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
                   {site_clause}
             """, params_base)
             totaux = cur.fetchone() or {}
@@ -1957,6 +1959,7 @@ def admin_intervenants_stats():
                     MAX(created_at)::date::text       AS derniere_lecture
                 FROM companion_content_plays
                 WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
                   {site_clause}
                 GROUP BY intervenant
                 ORDER BY nb_clics DESC
