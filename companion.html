@@ -1896,6 +1896,11 @@ function closeModal() {
   document.getElementById('modal').classList.remove('open');
   stopSpeech(); stopExerciceBg();
   if (_defiAudio) { try { _defiAudio.pause(); } catch(e){} _defiAudio = null; }
+  // Enregistrer la durée pour tous les contenus ouverts (video, audio, exercice)
+  Object.keys(_playTimers).forEach(function(k) {
+    var parts = k.split('|');
+    if (parts.length === 2) logPlayEnd(parts[0], parts[1]);
+  });
 }
 
 function formatDate(iso) {
