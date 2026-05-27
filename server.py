@@ -363,6 +363,16 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_user  ON intervenants(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_email ON intervenants(email)')
 
+        # Migration douce — colonnes V2 sur clients
+        cur.execute("""
+            ALTER TABLE clients
+            ADD COLUMN IF NOT EXISTS apporteur_id INTEGER REFERENCES intervenants(id) ON DELETE SET NULL
+        """)
+        cur.execute("""
+            ALTER TABLE clients
+            ADD COLUMN IF NOT EXISTS tarif_utilisateur_mensuel NUMERIC DEFAULT 0
+        """)
+
         # ── Semestres de rétribution ──────────────────────────────────────────
         cur.execute("""
             CREATE TABLE IF NOT EXISTS retribution_semestres (
@@ -505,10 +515,14 @@ def admin_get_clients():
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT c.*, COUNT(DISTINCT s.id) as nb_sites,
-                       (SELECT COUNT(*) FROM sessions se JOIN sites si ON se.site_id=si.id WHERE si.client_id=c.id) as nb_sessions
-                FROM clients c LEFT JOIN sites s ON s.client_id=c.id
-                GROUP BY c.id ORDER BY c.created_at DESC
+                SELECT c.*,
+                       COUNT(DISTINCT s.id) as nb_sites,
+                       (SELECT COUNT(*) FROM sessions se JOIN sites si ON se.site_id=si.id WHERE si.client_id=c.id) as nb_sessions,
+                       i.nom as apporteur_nom
+                FROM clients c
+                LEFT JOIN sites s ON s.client_id=c.id
+                LEFT JOIN intervenants i ON i.id = c.apporteur_id
+                GROUP BY c.id, i.nom ORDER BY c.created_at DESC
             ''')
             clients = cur.fetchall()
     return jsonify([serialize_row(c) for c in clients])
@@ -542,6 +556,28 @@ def admin_create_client():
             except psycopg2.IntegrityError:
                 return jsonify({'error': 'Ce client existe deja'}), 409
     return jsonify({'ok': True, 'client_id': client_id, 'slug': slug, 'tmp_password': tmp_pw}), 201
+
+@app.route('/api/admin/clients/<int:client_id>/apporteur', methods=['PATCH'])
+@login_required
+@admin_required
+def admin_set_apporteur(client_id):
+    """Définit l'intervenant apporteur d'affaire et le tarif mensuel d'un client."""
+    data = request.get_json() or {}
+    apporteur_id = data.get('apporteur_id')  # None pour supprimer
+    tarif        = float(data.get('tarif_utilisateur_mensuel', 0) or 0)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE clients
+                SET apporteur_id = %s, tarif_utilisateur_mensuel = %s
+                WHERE id = %s
+            """, [apporteur_id, tarif, client_id])
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Client introuvable'}), 404
+            conn.commit()
+    return jsonify({'ok': True, 'client_id': client_id,
+                    'apporteur_id': apporteur_id, 'tarif': tarif})
+
 
 @app.route('/api/admin/clients/<int:client_id>', methods=['PUT'])
 @login_required
@@ -2422,22 +2458,56 @@ def intervenant_stats():
             """, [inv_id])
             historique = [serialize_row(r) for r in cur.fetchall()]
 
+            # ── Clients apportés (V2) ──
+            clients_apportes = []
+            try:
+                cur.execute("""
+                    SELECT c.id, c.nom, c.tarif_utilisateur_mensuel,
+                           s.slug as site_slug,
+                           COUNT(DISTINCT cp.user_id) FILTER (
+                               WHERE cp.created_at::date BETWEEN %s AND %s
+                               AND cp.user_id IS NOT NULL
+                           ) as nb_actifs
+                    FROM clients c
+                    JOIN sites s ON s.client_id = c.id
+                    LEFT JOIN companion_content_plays cp ON cp.site_slug = s.slug
+                    WHERE c.apporteur_id = %s AND c.actif = 1
+                    GROUP BY c.id, c.nom, c.tarif_utilisateur_mensuel, s.slug
+                """, [f'{annee}-01-01' if semestre == 1 else f'{annee}-07-01',
+                      f'{annee}-06-30' if semestre == 1 else f'{annee}-12-31',
+                      inv_id])
+                for r in cur.fetchall():
+                    sr = serialize_row(r)
+                    tarif     = float(sr.get('tarif_utilisateur_mensuel') or 0)
+                    nb_actifs = int(sr.get('nb_actifs') or 0)
+                    ca_semestre = round(nb_actifs * tarif * 6, 2)
+                    commission  = round(ca_semestre * 0.20, 2)
+                    sr['ca_semestre']  = ca_semestre
+                    sr['commission_20pct'] = commission
+                    clients_apportes.append(sr)
+            except Exception:
+                pass  # table clients.apporteur_id peut ne pas exister encore
+
+            total_commission_apport = sum(c['commission_20pct'] for c in clients_apportes)
+
     # Calcul rétribution estimée (basé sur clics, sans CA réel disponible)
     pct_global = round(nb_clics_inv / total_clics * 100, 1) if total_clics else 0
     taux       = float(inv.get('taux_contenu') or 30) / 100
 
     return jsonify({
-        'intervenant':    inv,
-        'annee':          annee,
-        'semestre':       semestre,
-        'nb_clics':       nb_clics_inv,
-        'total_clics':    int(total_clics),
-        'pct_global':     pct_global,
-        'taux_contenu':   float(inv.get('taux_contenu') or 30),
-        'clics_detail':   clics_detail,
-        'clics_par_site': clics_par_site,
-        'historique':     historique,
-        'note':           'Rétribution en € calculée lors de la clôture semestrielle par beOtop',
+        'intervenant':              inv,
+        'annee':                    annee,
+        'semestre':                 semestre,
+        'nb_clics':                 nb_clics_inv,
+        'total_clics':              int(total_clics),
+        'pct_global':               pct_global,
+        'taux_contenu':             float(inv.get('taux_contenu') or 30),
+        'clics_detail':             clics_detail,
+        'clics_par_site':           clics_par_site,
+        'historique':               historique,
+        'clients_apportes':         clients_apportes,
+        'total_commission_apport':  total_commission_apport,
+        'note':                     'Rétribution en € calculée lors de la clôture semestrielle par beOtop',
     })
 
 
