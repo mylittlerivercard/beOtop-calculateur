@@ -641,6 +641,18 @@
       <canvas id="ca-timeline" height="80"></canvas>
     </div>
 
+    <!-- Top contenus par type -->
+    <div style="margin-top:1.5rem">
+      <div class="ca-chart-title" style="margin-bottom:1rem;font-size:.75rem">🏆 Top contenus utilisés sur la période</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem" id="ca-top-contenus"></div>
+    </div>
+
+    <!-- Top global podium -->
+    <div class="ca-chart" style="margin-top:1rem">
+      <div class="ca-chart-title">🥇 Classement global — tous contenus</div>
+      <ul class="ca-top-list" id="ca-top-global"></ul>
+    </div>
+
   </div>
   </div>
 
@@ -1630,12 +1642,54 @@ function loadCompanion() {
       /* Top actions */
       var topEl = document.getElementById('ca-top-actions');
       if (topEl && d.top_actions) {
+        var actionLabels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo' };
         topEl.innerHTML = d.top_actions.map(function(a, i) {
-          var labels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo' };
           return '<li class="ca-top-item">'
             + '<span class="ca-top-rank">' + (i+1) + '</span>'
-            + '<span style="flex:1">' + (labels[a.action] || a.action) + '</span>'
+            + '<span style="flex:1">' + (actionLabels[a.action] || a.action) + '</span>'
             + '<span class="ca-top-badge">' + a.nb + ' fois</span>'
+            + '</li>';
+        }).join('');
+      }
+
+      /* Top contenus par type */
+      var contenusEl = document.getElementById('ca-top-contenus');
+      if (contenusEl) {
+        var sections = [
+          { key:'top_audio',     label:'🎧 Bibliothèque audio',  color:'#00c8c8' },
+          { key:'top_video',     label:'🎬 Bibliothèque vidéo',  color:'#7c5cbf' },
+          { key:'top_exercices', label:'⚡ Exercices express',   color:'#f5855a' },
+          { key:'top_sons',      label:'🌿 Sons immersifs',      color:'#009090' },
+          { key:'top_jeux',      label:'🧠 Jeux cognitifs',      color:'#e8641e' },
+        ];
+        contenusEl.innerHTML = sections.filter(function(s){ return d[s.key] && d[s.key].length; }).map(function(s) {
+          var items = d[s.key];
+          var rows = items.map(function(it, i) {
+            var medals = ['🥇','🥈','🥉','4','5'];
+            return '<li class="ca-top-item">'
+              + '<span class="ca-top-rank">' + (medals[i]||i+1) + '</span>'
+              + '<span style="flex:1;font-size:.65rem">' + it.label + '</span>'
+              + '<span class="ca-top-badge">' + it.nb + '×</span>'
+              + '</li>';
+          }).join('');
+          return '<div class="ca-chart" style="border-top:3px solid '+s.color+'">'
+            + '<div class="ca-chart-title" style="color:'+s.color+'">' + s.label + '</div>'
+            + '<ul class="ca-top-list">' + rows + '</ul>'
+            + '</div>';
+        }).join('');
+      }
+
+      /* Top global podium */
+      var globalEl = document.getElementById('ca-top-global');
+      if (globalEl && d.top_global) {
+        var actionIcons = { audio:'🎧', video:'🎬', exercice:'⚡', sons:'🌿', jeu:'🧠', reservation:'📅', checkin:'💓', cc:'🫁' };
+        globalEl.innerHTML = d.top_global.map(function(it, i) {
+          var medals = ['🥇','🥈','🥉'];
+          return '<li class="ca-top-item">'
+            + '<span class="ca-top-rank" style="font-size:.8rem">' + (medals[i]||'#'+(i+1)) + '</span>'
+            + '<span style="margin-right:.4rem">' + (actionIcons[it.action]||'📌') + '</span>'
+            + '<span style="flex:1">' + it.label + '</span>'
+            + '<span class="ca-top-badge" style="background:rgba(0,180,180,.1);color:#00b4b4">' + it.nb + '×</span>'
             + '</li>';
         }).join('');
       }
