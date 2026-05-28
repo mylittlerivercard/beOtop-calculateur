@@ -6573,25 +6573,39 @@ function gamif_hookFunctions() {
     return result;
   };
 
-  /* Hook submitCheckin */
+  /* Hook submitCheckin — vérifie qu'un check-in a bien été enregistré */
   var _orig_submitCheckin = submitCheckin;
   submitCheckin = async function() {
+    var checkinsBefore = (DB.checkins || []).length;
     await _orig_submitCheckin.apply(this, arguments);
-    gamif_trigger('checkin', 'Check-in');
+    var checkinsAfter = (DB.checkins || []).length;
+    if (checkinsAfter > checkinsBefore) {
+      gamif_trigger('checkin', 'Check-in');
+    }
   };
 
-  /* Hook confirmerReservation */
+  /* Hook confirmerReservation — respecte les return anticipés */
   var _orig_confirmerReservation = confirmerReservation;
   confirmerReservation = async function() {
+    /* Compter les sessions AVANT l'appel */
+    var sessionsBefore = (DB.sessions || []).length;
     await _orig_confirmerReservation.apply(this, arguments);
-    gamif_trigger('reservation', 'Réservation atelier');
+    /* Ne déclencher que si une session a bien été ajoutée */
+    var sessionsAfter = (DB.sessions || []).length;
+    if (sessionsAfter > sessionsBefore) {
+      gamif_trigger('reservation', 'Réservation atelier');
+    }
   };
 
-  /* Hook finishCC */
+  /* Hook finishCC — vérifie qu'une session a bien été enregistrée */
   var _orig_finishCC = finishCC;
   finishCC = async function() {
+    var ccBefore = (DB.cc_sessions || []).length;
     await _orig_finishCC.apply(this, arguments);
-    gamif_trigger('cc', 'Cohérence cardiaque');
+    var ccAfter = (DB.cc_sessions || []).length;
+    if (ccAfter > ccBefore) {
+      gamif_trigger('cc', 'Cohérence cardiaque');
+    }
   };
 }
 
