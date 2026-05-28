@@ -419,52 +419,6 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 .cdj-dot.active { background: var(--teal-light); width: 18px; border-radius: 3px; }
 
-/* ── DÉFI COLLECTIF ── */
-.defi-card {
-  background: rgba(255,255,255,.92); border: 1px solid var(--border);
-  border-radius: 16px; padding: 1.3rem 1.5rem;
-  margin-bottom: 2rem; box-shadow: var(--shadow-sm);
-  display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
-}
-.defi-icon-wrap {
-  width: 52px; height: 52px; border-radius: 14px;
-  background: linear-gradient(135deg, rgba(200,169,110,.2), rgba(200,169,110,.05));
-  border: 1px solid rgba(200,169,110,.3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; flex-shrink: 0;
-}
-.defi-body { flex: 1; min-width: 200px; }
-.defi-label { font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: .25rem; }
-.defi-titre { font-size: .92rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
-.defi-desc  { font-size: .68rem; color: var(--text-muted); margin-bottom: .7rem; }
-.defi-progress-row { display: flex; align-items: center; gap: .7rem; }
-.defi-track {
-  flex: 1; height: 9px; border-radius: 5px;
-  background: rgba(200,169,110,.15); border: 1px solid rgba(200,169,110,.2);
-  overflow: hidden;
-}
-.defi-fill {
-  height: 100%; border-radius: 5px;
-  background: linear-gradient(90deg, var(--gold), #e8c88e);
-  transition: width 1s var(--ease-out);
-  position: relative; overflow: hidden;
-}
-.defi-fill::after {
-  content: '';
-  position: absolute; top: 0; bottom: 0; width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
-  animation: shimmer 2.5s ease-in-out infinite;
-}
-.defi-count { font-size: .78rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
-.defi-days  { font-size: .62rem; color: var(--text-muted); margin-top: .3rem; }
-.defi-cta { flex-shrink: 0; }
-.btn-defi {
-  background: rgba(200,169,110,.12); border: 1px solid rgba(200,169,110,.35);
-  border-radius: 10px; color: var(--gold); font-size: .72rem; font-weight: 600;
-  padding: .6rem 1.2rem; transition: all .2s;
-}
-.btn-defi:hover { background: rgba(200,169,110,.22); transform: translateY(-1px); }
-
 /* ── MINI CHECK-IN ── */
 .checkin-mini {
   background: linear-gradient(135deg, #003030, #005050);
@@ -660,46 +614,6 @@ input[type=range]::-webkit-slider-thumb {
   background: var(--surface); border: 1px solid var(--border); overflow: hidden;
 }
 .badge-prog-fill { height: 100%; border-radius: 2px; background: var(--teal); transition: width 1s var(--ease-out); }
-
-/* ── CLASSEMENT ANONYME ── */
-.rank-list { display: flex; flex-direction: column; gap: .6rem; }
-.rank-item {
-  display: flex; align-items: center; gap: 1rem;
-  padding: .85rem 1rem; border-radius: 12px;
-  background: var(--surface); border: 1px solid var(--border);
-  transition: all .2s; animation: slideRight .3s var(--ease-out) backwards;
-}
-.rank-item:hover { border-color: var(--teal-border); background: rgba(0,180,180,.06); }
-.rank-item.me {
-  background: rgba(0,180,180,.08); border-color: var(--teal-border);
-  box-shadow: 0 0 0 2px rgba(0,180,180,.15);
-}
-.rank-pos {
-  width: 28px; text-align: center; font-weight: 700;
-  font-size: .85rem; color: var(--text-muted); flex-shrink: 0;
-}
-.rank-pos.gold   { color: #f0b429; }
-.rank-pos.silver { color: #a0b0b8; }
-.rank-pos.bronze { color: #cd7f32; }
-.rank-avatar {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--teal-dim), var(--coral-dim));
-  border: 1px solid var(--teal-border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .7rem; color: var(--teal); font-weight: 700;
-}
-.rank-avatar.me-av { background: rgba(0,180,180,.15); border-color: var(--teal); }
-.rank-info { flex: 1; }
-.rank-name { font-size: .8rem; font-weight: 600; color: var(--text); }
-.rank-dept { font-size: .62rem; color: var(--text-muted); }
-.rank-pts  { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--teal); }
-.rank-streak { font-size: .65rem; color: var(--orange); font-weight: 600; }
-.rank-me-tag {
-  font-size: .52rem; font-weight: 700; color: var(--teal);
-  background: var(--teal-dim); border: 1px solid var(--teal-border);
-  border-radius: 8px; padding: .1rem .45rem; text-transform: uppercase; letter-spacing: .08em;
-  margin-left: .3rem;
-}
 
 /* ── HISTORIQUE ── */
 .hist-item {
@@ -963,7 +877,7 @@ input[type=range]::-webkit-slider-thumb {
 <!-- ══ TOPBAR ══ -->
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:1rem">
-    <button onclick="window.open('/companion','_blank')" style="display:flex;align-items:center;gap:.4rem;background:var(--teal-dim);border:1px solid var(--teal-border);border-radius:10px;padding:.3rem .8rem;font-size:.7rem;font-weight:600;color:var(--teal);transition:all .2s" onmouseover="this.style.background='rgba(0,180,180,.18)'" onmouseout="this.style.background='var(--teal-dim)'">&#8592; Companion</button>
+    <button onclick="window.location.href='/companion'" style="display:flex;align-items:center;gap:.4rem;background:var(--teal-dim);border:1px solid var(--teal-border);border-radius:10px;padding:.3rem .8rem;font-size:.7rem;font-weight:600;color:var(--teal);transition:all .2s" onmouseover="this.style.background='rgba(0,180,180,.18)'" onmouseout="this.style.background='var(--teal-dim)'">&#8592; Companion</button>
     <div class="logo">beOtop <em>Progression</em></div>
   </div>
 
@@ -1029,7 +943,7 @@ input[type=range]::-webkit-slider-thumb {
   </div>
 
   <div class="nav-section">Gestion</div>
-  <div class="nav-item" onclick="openAdminModal()">
+  <div class="nav-item" id="nav-simulation" style="display:none" onclick="openAdminModal()">
     <span class="nav-icon">⚙️</span><span>Simulation</span>
   </div>
 
@@ -1105,29 +1019,7 @@ input[type=range]::-webkit-slider-thumb {
       </div>
     </div>
 
-    <!-- DÉFI COLLECTIF -->
-    <div class="sec">Défi collectif de la semaine</div>
-    <div class="defi-card">
-      <div class="defi-icon-wrap" id="defi-icon">🧘</div>
-      <div class="defi-body">
-        <div class="defi-label">Défi équipe · Semaine en cours</div>
-        <div class="defi-titre" id="defi-titre">Chargement…</div>
-        <div class="defi-desc"  id="defi-desc"></div>
-        <div class="defi-progress-row">
-          <div class="defi-track"><div class="defi-fill" id="defi-fill" style="width:0%"></div></div>
-          <div class="defi-count" id="defi-count">0 / 0</div>
-        </div>
-        <div class="defi-days" id="defi-days"></div>
-      </div>
-      <div class="defi-cta">
-        <button class="btn-defi" onclick="participerDefi()">Participer → <span id="defi-xp-reward">+25 XP</span></button>
-      </div>
-    </div>
-
-    <!-- RITUEL QUOTIDIEN -->
-    <div id="rituel-widget-zone"></div>
-
-    <!-- CHECK-IN -->
+    <!-- CHECK-IN -->>
     <div class="sec">Check-in du jour</div>
     <div class="checkin-mini" id="checkin-zone">
       <div class="checkin-mini-label">
@@ -1182,9 +1074,9 @@ input[type=range]::-webkit-slider-thumb {
         <div class="kpi-sub">débloqués / <span id="kpi-badges-total">—</span></div>
       </div>
       <div class="kpi-card" style="--accent:#a855f7;animation-delay:.4s">
-        <div class="kpi-label">Rang équipe</div>
-        <div class="kpi-val" id="kpi-rang">#—</div>
-        <div class="kpi-sub">sur <span id="kpi-rang-total">—</span> collègues</div>
+        <div class="kpi-label">Record streak</div>
+        <div class="kpi-val" id="kpi-record">—</div>
+        <div class="kpi-sub">jours consécutifs 🏆</div>
       </div>
     </div>
 
@@ -1271,12 +1163,6 @@ input[type=range]::-webkit-slider-thumb {
   <div class="sec">Badges &amp; récompenses</div>
   <div class="badges-grid" id="pg-badges-grid"></div>
 
-  <!-- CLASSEMENT -->
-  <div class="sec">Classement équipe <span style="font-size:.58rem;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— données anonymisées</span></div>
-  <div class="card" style="margin-bottom:2rem;padding:1rem 1.2rem">
-    <div class="rank-list" id="pg-rank-list"></div>
-  </div>
-
   <!-- HISTORIQUE -->
   <div class="sec">Activités récentes</div>
   <div class="card" style="padding:1rem 1.3rem">
@@ -1347,23 +1233,6 @@ var CARTES_DU_JOUR = [
   { type:'Conseil bien-\u00eatre', contenu:'La \u003cem\u003eposition 127\u00b0\u003c/em\u003e est la seule inclinaison qui supprime totalement la compression des disques intervert\u00e9braux. Id\u00e9ale apr\u00e8s 3h de travail en station assise.', source:'NASA Neutral Body Posture Research', cta:'reservation' },
   { type:'Micro-exercice',    contenu:'Posez vos deux pieds à plat. Fermez les yeux 30 secondes. \u003cem\u003eNommez mentalement 5 sons\u003c/em\u003e que vous entendez. Cet ancrage sensoriel interrompt la boucle de stress.', source:'Thérapie d\'acceptation et d\'engagement (ACT)', cta:'exercices' },
   { type:'Fait scientifique', contenu:'Une sieste de \u003cem\u003e10 à 20 minutes\u003c/em\u003e restaure des performances cognitives équivalentes à \u003cem\u003e2h de sommeil nocturne supplémentaire\u003c/em\u003e. Ni plus ni moins.', source:'Sleep Foundation — NASA Nap Study', cta:'reservation' },
-];
-
-var DEFIS_SEMAINE = [
-  { icon:'🧘', titre:'3 séances de cohérence cardiaque', desc:'Ensemble, atteignons 3 sessions cc par personne cette semaine.', objectif:20, progres:14, xp:25, jours_restants:3, action:'cc' },
-  { icon:'⚡', titre:'Exercice express chaque midi', desc:'Un exercice de 5 min par jour — 5 jours consécutifs en équipe.', objectif:30, progres:22, xp:25, jours_restants:4, action:'exercice' },
-  { icon:'💓', titre:'Check-in quotidien à 9h', desc:'Construisons la donnée QVCT collective — check-in chaque matin.', objectif:25, progres:18, xp:10, jours_restants:2, action:'checkin' },
-];
-
-var CLASSEMENT_DEMO = [
-  { initiales:'AL', prenom:'Alexandre L.', dept:'RH',         pts:840, streak:12, me:false },
-  { initiales:'SF', prenom:'Sophie F.',    dept:'Marketing',  pts:720, streak:8,  me:false },
-  { initiales:'MR', prenom:'Vous',         dept:'',           pts:0,   streak:0,  me:true  },
-  { initiales:'TM', prenom:'Thomas M.',    dept:'Finance',    pts:510, streak:5,  me:false },
-  { initiales:'CR', prenom:'Chloé R.',     dept:'IT',         pts:480, streak:3,  me:false },
-  { initiales:'PB', prenom:'Pierre B.',    dept:'Ops',        pts:310, streak:7,  me:false },
-  { initiales:'LD', prenom:'Laura D.',     dept:'Juridique',  pts:240, streak:2,  me:false },
-  { initiales:'NJ', prenom:'Nicolas J.',   dept:'Direction',  pts:190, streak:1,  me:false },
 ];
 
 /* ════════════════════════════════════════════
@@ -1522,7 +1391,6 @@ function awardXP(action, label) {
   var niveauAvant = getNiveau(totalXP() - pts).niv;
   checkBadges();
   checkNiveauUp();
-  checkComboJour();
   /* Récompense variable — tirage surprise */
   if (action !== 'bonus' && action !== 'combo') triggerSurprise(action, pts);
   refreshTopbar();
@@ -1669,48 +1537,8 @@ function cardDuJourCTA() {
 /* ════════════════════════════════════════════
    DÉFI COLLECTIF
 ════════════════════════════════════════════ */
-function initDefi() {
-  // Rotate défis par semaine ISO
-  var d = new Date(); var jan = new Date(d.getFullYear(),0,1);
-  var week = Math.floor(((d - jan) / 86400000 + jan.getDay() + 1) / 7);
-  GAMIF.defi_idx = week % DEFIS_SEMAINE.length;
-  saveDB();
-  renderDefi();
-}
 
-function renderDefi() {
-  var d = DEFIS_SEMAINE[GAMIF.defi_idx];
-  if (!d) return;
-  setTxt('defi-icon', d.icon);
-  setTxt('defi-titre', d.titre);
-  setTxt('defi-desc', d.desc);
-  setTxt('defi-xp-reward', '+' + d.xp + ' XP');
 
-  // Simuler participation perso
-  var hasParticipated = GAMIF.defi_participations.indexOf(GAMIF.defi_idx + ':' + today()) >= 0;
-  var progres = d.progres + (hasParticipated ? 1 : 0);
-  var pct = Math.min(Math.round(progres / d.objectif * 100), 100);
-  setTxt('defi-count', progres + ' / ' + d.objectif);
-  setTxt('defi-days', 'J-' + d.jours_restants + ' · ' + (d.objectif - progres) + ' participations restantes');
-
-  var fill = el('defi-fill');
-  setTimeout(function(){ if (fill) fill.style.width = pct + '%'; }, 300);
-}
-
-function participerDefi() {
-  var key = GAMIF.defi_idx + ':' + today();
-  if (GAMIF.defi_participations.indexOf(key) >= 0) {
-    showToast('✅ Vous participez déjà à ce défi aujourd\'hui');
-    return;
-  }
-  GAMIF.defi_participations.push(key);
-  saveDB();
-  var d = DEFIS_SEMAINE[GAMIF.defi_idx];
-  awardXP('defi', 'Défi · ' + d.titre);
-  updateStreak();
-  renderDefi();
-  showToast('🤝 Participation enregistrée ! +' + d.xp + ' XP');
-}
 
 /* ════════════════════════════════════════════
    TICKER
@@ -1719,7 +1547,6 @@ function buildTicker() {
   var items = [
     { cls:'streak', txt:'🔥 Streak ' + (GAMIF.streak||0) + ' jours' },
     { cls:'badge',  txt:'🏅 ' + (GAMIF.badges_unlocked.length) + ' badges débloqués' },
-    { cls:'defi',   txt:'🏅 Défi en cours · ' + DEFIS_SEMAINE[GAMIF.defi_idx||0].titre },
     { cls:'streak', txt:'⚡ XP total · ' + totalXP() + ' pts' },
     { cls:'badge',  txt:'🌟 Niveau · ' + getNiveau(totalXP()).niv.label },
     { cls:'defi',   txt:'💓 Cohérence cardiaque · disponible maintenant' },
@@ -1762,8 +1589,8 @@ function refreshDashboard() {
   var total = totalXP();
   var n = getNiveau(total);
 
-  // Hero
-  setTxt('h-prenom', DB.user.prenom);
+  /* Hero */
+  setTxt('h-prenom', DB.user.prenom || '');
   setTxt('h-streak-count', GAMIF.streak || 0);
   setTxt('h-niveau-emoji', n.niv.emoji);
   setTxt('h-niveau-label', n.niv.label);
@@ -1773,33 +1600,23 @@ function refreshDashboard() {
   var fill = el('h-xp-fill');
   setTimeout(function(){ if (fill) fill.style.width = n.pct + '%'; }, 400);
 
-  // Ring (sessions cc du mois)
-  /* Rituel widget */
-  renderRituelWidget();
-
+  /* Ring (sessions cc du mois) */
   var ccCount = countAction('cc');
   var ringVal = Math.min(ccCount, 20);
   setTxt('h-ring-val', ccCount + ' / 20');
   var ringEl = el('h-ring');
-  if (ringEl) {
-    var offset = 226 - (226 * ringVal / 20);
-    ringEl.style.strokeDashoffset = offset;
-  }
+  if (ringEl) ringEl.style.strokeDashoffset = 226 - (226 * ringVal / 20);
 
-  // KPIs
+  /* KPIs */
   setTxt('kpi-streak', GAMIF.streak || 0);
   setTxt('kpi-xp-mois', xpMois());
   var unlocked = GAMIF.badges_unlocked.length;
   setTxt('kpi-badges', unlocked);
   setTxt('kpi-badges-total', BADGES_DEF.length);
+  setTxt('kpi-record', GAMIF.streak_record || 0);
 
-  // Classement — injecter XP réel pour "Vous"
-  var cl = CLASSEMENT_DEMO.map(function(c) { return Object.assign({}, c); });
-  cl.forEach(function(c) { if (c.me) { c.pts = total; c.streak = GAMIF.streak || 0; } });
-  cl.sort(function(a,b) { return b.pts - a.pts; });
-  var myRank = cl.findIndex(function(c){ return c.me; }) + 1;
-  setTxt('kpi-rang', '#' + myRank);
-  setTxt('kpi-rang-total', cl.length);
+  /* Rituel widget */
+  renderRituelWidget();
 }
 
 /* ════════════════════════════════════════════
@@ -1834,7 +1651,6 @@ function refreshProgression() {
   renderBadges();
 
   // Classement
-  renderClassement();
 
   // Historique
   renderHistorique();
@@ -1913,146 +1729,10 @@ var _leaderboardPeriode = 'total';
 var _leaderboardCache   = null;
 var _leaderboardLoading = false;
 
-function renderClassement() {
-  var list = el('pg-rank-list');
-  if (!list) return;
 
-  /* Afficher le sélecteur de période si absent */
-  var sec = list.previousElementSibling;
-  if (sec && !el('lb-periode-sel')) {
-    var selDiv = document.createElement('div');
-    selDiv.style.cssText = 'display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap';
-    var lblNode = document.createElement('div');
-    lblNode.style.cssText = 'font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted)';
-    lblNode.textContent = 'P\u00e9riode';
-    selDiv.appendChild(lblNode);
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:.3rem';
-    var lbls = {total:'Tous les temps', mois:'Ce mois', semaine:'Cette semaine'};
-    ['total','mois','semaine'].forEach(function(p) {
-      var btn = document.createElement('button');
-      btn.id = 'lb-btn-' + p;
-      btn.textContent = lbls[p];
-      btn.style.cssText = 'font-size:.65rem;padding:.3rem .8rem;border-radius:20px;border:1px solid var(--border2);cursor:pointer;font-family:inherit;transition:all .15s;'
-        + 'background:' + (p==='total'?'rgba(0,180,180,.12)':'var(--surface)') + ';'
-        + 'color:' + (p==='total'?'var(--teal)':'var(--text-muted)');
-      btn.onclick = (function(pp){ return function(){ setLeaderboardPeriode(pp); }; })(p);
-      btnRow.appendChild(btn);
-    });
-    selDiv.appendChild(btnRow);
-    list.parentNode.insertBefore(selDiv, list);
-  }
 
-  loadLeaderboard(_leaderboardPeriode);
-}
 
-function setLeaderboardPeriode(p) {
-  _leaderboardPeriode = p;
-  _leaderboardCache = null;
-  ['total','mois','semaine'].forEach(function(x) {
-    var btn = el('lb-btn-' + x);
-    if (!btn) return;
-    btn.style.background = x === p ? 'rgba(0,180,180,.12)' : 'var(--surface)';
-    btn.style.color = x === p ? 'var(--teal)' : 'var(--text-muted)';
-  });
-  loadLeaderboard(p);
-}
 
-function loadLeaderboard(periode) {
-  var list = el('pg-rank-list');
-  if (!list || _leaderboardLoading) return;
-
-  /* Skeleton loading */
-  list.innerHTML = [1,2,3,4,5].map(function(i) {
-    return '<div class="rank-item" style="opacity:.4;animation:fadeUp .3s '+i*.08+'s both">'
-      + '<div class="rank-pos">'+i+'</div>'
-      + '<div class="rank-avatar" style="background:var(--surface)"></div>'
-      + '<div class="rank-info"><div style="height:10px;width:80px;background:var(--border);border-radius:4px;margin-bottom:.4rem"></div>'
-      + '<div style="height:8px;width:50px;background:var(--border);border-radius:4px"></div></div>'
-      + '<div style="width:40px;height:24px;background:var(--border);border-radius:4px;margin-left:auto"></div>'
-      + '</div>';
-  }).join('');
-
-  _leaderboardLoading = true;
-
-  /* Récupérer site_slug depuis DB */
-  var siteSlug = (DB.user && DB.user.site) ? encodeURIComponent(DB.user.site) : '';
-  /* Essayer de lire le site_slug depuis l'URL Flask */
-  fetch('/api/companion/leaderboard?periode=' + periode + '&site_slug=' + siteSlug, {
-    credentials: 'include'
-  })
-  .then(function(r) { return r.ok ? r.json() : null; })
-  .then(function(data) {
-    _leaderboardLoading = false;
-    if (data && data.length) {
-      _leaderboardCache = data;
-      _renderLeaderboardData(data);
-    } else {
-      _renderLeaderboardFallback();
-    }
-  })
-  .catch(function() {
-    _leaderboardLoading = false;
-    _renderLeaderboardFallback();
-  });
-}
-
-function _renderLeaderboardData(data) {
-  var list = el('pg-rank-list');
-  if (!list) return;
-  var medals = ['🥇','🥈','🥉'];
-  var posCls = ['gold','silver','bronze'];
-
-  list.innerHTML = data.map(function(c, i) {
-    var niv = c.niveau || {};
-    return '<div class="rank-item' + (c.is_me ? ' me' : '') + '" style="animation-delay:' + (i*.06) + 's">'
-      + '<div class="rank-pos ' + (i<3?posCls[i]:'') + '">' + (i<3?medals[i]:(i+1)) + '</div>'
-      + '<div class="rank-avatar' + (c.is_me ? ' me-av' : '') + '">'
-        + (c.is_me ? (DB.user.initiales||'MR') : c.initiales) + '</div>'
-      + '<div class="rank-info">'
-        + '<div class="rank-name">'
-          + (c.is_me ? ((DB.user.prenom||'') + (DB.user.nom?' '+DB.user.nom.charAt(0)+'.':'')) : c.initiales)
-          + (c.is_me ? '<span class="rank-me-tag">Vous</span>' : '')
-        + '</div>'
-        + '<div class="rank-dept">' + (niv.emoji||'') + ' ' + (niv.label||'') + ' · ' + c.jours_actifs + 'j actifs</div>'
-      + '</div>'
-      + '<div style="text-align:right">'
-        + '<div class="rank-pts">' + c.total_xp + '</div>'
-        + '<div class="rank-streak">🔥 ' + c.streak + 'j</div>'
-      + '</div></div>';
-  }).join('');
-
-  /* Mettre à jour le KPI rang */
-  var myRank = data.findIndex(function(c){ return c.is_me; });
-  if (myRank >= 0) {
-    setTxt('kpi-rang', '#' + (myRank+1));
-    setTxt('kpi-rang-total', data.length);
-  }
-}
-
-function _renderLeaderboardFallback() {
-  /* Fallback : classement démo avec XP réel pour "Vous" */
-  var list = el('pg-rank-list');
-  if (!list) return;
-  var total = totalXP();
-  var cl = CLASSEMENT_DEMO.map(function(c) { return Object.assign({}, c); });
-  cl.forEach(function(c) { if (c.me) { c.pts = total; c.streak = GAMIF.streak||0; } });
-  cl.sort(function(a,b){ return b.pts - a.pts; });
-  var medals = ['🥇','🥈','🥉'];
-  var posCls = ['gold','silver','bronze'];
-  list.innerHTML = cl.map(function(c, i) {
-    return '<div class="rank-item' + (c.me?' me':'') + '" style="animation-delay:'+(i*.06)+'s">'
-      + '<div class="rank-pos '+(i<3?posCls[i]:'')+'">'+(i<3?medals[i]:(i+1))+'</div>'
-      + '<div class="rank-avatar'+(c.me?' me-av':'')+'">'+( c.me?(DB.user.initiales||'MR'):c.initiales)+'</div>'
-      + '<div class="rank-info"><div class="rank-name">'+( c.me?((DB.user.prenom||'Vous')):c.prenom)+(c.me?'<span class="rank-me-tag">Vous</span>':'')+'</div>'
-      + '<div class="rank-dept">'+(c.me?DB.user.dept:c.dept)+'</div></div>'
-      + '<div style="text-align:right"><div class="rank-pts">'+c.pts+'</div>'
-      + '<div class="rank-streak">🔥 '+c.streak+'j</div></div></div>';
-  }).join('');
-  /* Note démo */
-  list.insertAdjacentHTML('afterend',
-    '<div style="font-size:.6rem;color:var(--text-muted);margin-top:.6rem;text-align:center">Mode hors-ligne · Données illustratives</div>');
-}
 
 /* ════════════════════════════════════════════
    HISTORIQUE RENDER
@@ -2114,8 +1794,7 @@ function switchView(name) {
   recalcStreak();
 
   if (name === 'progression') {
-    _leaderboardCache = null; /* forcer rechargement classement */
-    refreshProgression();
+      refreshProgression();
     el('nav-new-badge').style.display = 'none';
     setTimeout(loadCheckinChart, 200);
   }
@@ -2401,6 +2080,22 @@ function _getNextRituel() {
   return RITUELS[0];
 }
 
+
+/* ════════════════════════════════════════════
+   CONTRÔLE RÔLE ADMIN
+════════════════════════════════════════════ */
+function checkAdminRole() {
+  fetch('/api/me', { credentials: 'include' })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(me) {
+      if (me && me.role === 'admin') {
+        var btn = el('nav-simulation');
+        if (btn) btn.style.display = '';
+      }
+    })
+    .catch(function() {});
+}
+
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
@@ -2411,15 +2106,15 @@ function init() {
   updateClock();
   setInterval(updateClock, 30000);
   initCardDuJour();
-  initDefi();
   checkCheckinDone();
   refreshTopbar();
   refreshDashboard();
   buildTicker();
   /* Vérifier combo du jour au chargement */
-  checkComboJour();
   /* Rituel quotidien — ancrage temporel */
   initRituel();
+  /* Simulation : visible uniquement pour les admins */
+  checkAdminRole();
 }
 
 
@@ -2777,37 +2472,6 @@ function _slotCSS() {
 }
 
 /* ── Combo du jour : 3 activités différentes = bonus ── */
-function checkComboJour() {
-  var t = today();
-  var comboKey = 'combo_' + t;
-  if (GAMIF[comboKey]) return; /* déjà déclenché aujourd'hui */
-
-  var actionsAujourdhui = (DB.points || []).filter(function(p){
-    return (p.date || '').slice(0,10) === t;
-  });
-  var actionsUniques = {};
-  actionsAujourdhui.forEach(function(p){ actionsUniques[p.action] = 1; });
-  var nbUniques = Object.keys(actionsUniques).length;
-
-  if (nbUniques >= 3) {
-    GAMIF[comboKey] = true;
-    saveDB();
-    var bonus = 50;
-    /* Écrire le bonus */
-    var entry = { action:'combo', label:'Combo du jour — ' + t, points: bonus, date: new Date().toISOString() };
-    try {
-      var raw = localStorage.getItem(DB_KEY);
-      var companion = raw ? JSON.parse(raw) : {};
-      if (!companion.points) companion.points = [];
-      companion.points.push(entry);
-      localStorage.setItem(DB_KEY, JSON.stringify(companion));
-      DB.points.push(entry);
-    } catch(e) {}
-    celebrate('combo', { bonus: bonus, desc: nbUniques + " activités différentes aujourd'hui !" });
-    refreshTopbar();
-    refreshDashboard();
-  }
-}
 
 /* ════════════════════════════════════════════
    MOTEUR DE CÉLÉBRATION
