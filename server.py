@@ -2080,7 +2080,8 @@ def admin_intervenants_stats():
     date_to   = request.args.get('date_to',   dt.today().isoformat())
     site_slug = request.args.get('site_slug')
 
-    site_clause = "AND site_slug = %s" if site_slug else ""
+    site_clause     = "AND site_slug = %s" if site_slug else ""
+    site_clause_cp  = "AND cp.site_slug = %s" if site_slug else ""
     params_base = [date_from, date_to] + ([site_slug] if site_slug else [])
 
     with get_db() as conn:
@@ -2100,7 +2101,7 @@ def admin_intervenants_stats():
                 WHERE cp.created_at::date BETWEEN %s AND %s
                   AND cp.content_type != 'post_interne'
                   AND i.actif = TRUE
-                  {site_clause.replace('site_slug', 'cp.site_slug')}
+                  {site_clause_cp}
                 GROUP BY cp.intervenant_nom, cp.content_type
                 ORDER BY cp.intervenant_nom, nb_clics DESC
             """, params_base)
@@ -2116,7 +2117,7 @@ def admin_intervenants_stats():
                 WHERE cp.created_at::date BETWEEN %s AND %s
                   AND cp.content_type != 'post_interne'
                   AND i.actif = TRUE
-                  {site_clause.replace('site_slug', 'cp.site_slug')}
+                  {site_clause_cp}
             """, params_base)
             totaux = cur.fetchone() or {}
             total_clics = int(totaux.get('total_clics', 0) or 0)
@@ -2135,7 +2136,7 @@ def admin_intervenants_stats():
                 WHERE cp.created_at::date BETWEEN %s AND %s
                   AND cp.content_type != 'post_interne'
                   AND i.actif = TRUE
-                  {site_clause.replace('site_slug', 'cp.site_slug')}
+                  {site_clause_cp}
                 GROUP BY i.nom
                 ORDER BY nb_clics DESC
             """, params_base)
