@@ -2088,30 +2088,35 @@ def admin_intervenants_stats():
 
             cur.execute(f"""
                 SELECT
-                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
-                    content_type,
+                    cp.intervenant_nom AS intervenant,
+                    cp.content_type,
                     COUNT(*)                          AS nb_clics,
-                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
-                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
-                    MIN(created_at)::date::text       AS premiere_lecture,
-                    MAX(created_at)::date::text       AS derniere_lecture
-                FROM companion_content_plays
-                WHERE created_at::date BETWEEN %s AND %s
-                  AND content_type != 'post_interne'
-                  {site_clause}
-                GROUP BY intervenant, content_type
-                ORDER BY intervenant, nb_clics DESC
+                    COALESCE(SUM(cp.duree_sec), 0)    AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(cp.duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(cp.created_at)::date::text    AS premiere_lecture,
+                    MAX(cp.created_at)::date::text    AS derniere_lecture
+                FROM companion_content_plays cp
+                INNER JOIN intervenants i ON TRIM(i.nom) = TRIM(cp.intervenant_nom)
+                WHERE cp.created_at::date BETWEEN %s AND %s
+                  AND cp.content_type != 'post_interne'
+                  AND i.actif = TRUE
+                  {site_clause.replace('site_slug', 'cp.site_slug')}
+                GROUP BY cp.intervenant_nom, cp.content_type
+                ORDER BY cp.intervenant_nom, nb_clics DESC
             """, params_base)
             rows_detail = [serialize_row(r) for r in cur.fetchall()]
 
+            # Total = uniquement les clics sur des intervenants déclarés actifs
             cur.execute(f"""
                 SELECT
                     COUNT(*)                    AS total_clics,
-                    COALESCE(SUM(duree_sec), 0) AS total_duree_sec
-                FROM companion_content_plays
-                WHERE created_at::date BETWEEN %s AND %s
-                  AND content_type != 'post_interne'
-                  {site_clause}
+                    COALESCE(SUM(cp.duree_sec), 0) AS total_duree_sec
+                FROM companion_content_plays cp
+                INNER JOIN intervenants i ON TRIM(i.nom) = TRIM(cp.intervenant_nom)
+                WHERE cp.created_at::date BETWEEN %s AND %s
+                  AND cp.content_type != 'post_interne'
+                  AND i.actif = TRUE
+                  {site_clause.replace('site_slug', 'cp.site_slug')}
             """, params_base)
             totaux = cur.fetchone() or {}
             total_clics = int(totaux.get('total_clics', 0) or 0)
@@ -2119,17 +2124,19 @@ def admin_intervenants_stats():
 
             cur.execute(f"""
                 SELECT
-                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
+                    i.nom                             AS intervenant,
                     COUNT(*)                          AS nb_clics,
-                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
-                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
-                    MIN(created_at)::date::text       AS premiere_lecture,
-                    MAX(created_at)::date::text       AS derniere_lecture
-                FROM companion_content_plays
-                WHERE created_at::date BETWEEN %s AND %s
-                  AND content_type != 'post_interne'
-                  {site_clause}
-                GROUP BY intervenant
+                    COALESCE(SUM(cp.duree_sec), 0)    AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(cp.duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(cp.created_at)::date::text    AS premiere_lecture,
+                    MAX(cp.created_at)::date::text    AS derniere_lecture
+                FROM companion_content_plays cp
+                INNER JOIN intervenants i ON TRIM(i.nom) = TRIM(cp.intervenant_nom)
+                WHERE cp.created_at::date BETWEEN %s AND %s
+                  AND cp.content_type != 'post_interne'
+                  AND i.actif = TRUE
+                  {site_clause.replace('site_slug', 'cp.site_slug')}
+                GROUP BY i.nom
                 ORDER BY nb_clics DESC
             """, params_base)
             rows_global = []
