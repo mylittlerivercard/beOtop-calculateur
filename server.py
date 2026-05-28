@@ -2738,6 +2738,12 @@ def companion_page():
         return redirect('/login')
     return serve_html('companion.html')
 
+@app.route('/gamification')
+def gamification_page():
+    if 'user_id' not in session:
+        return redirect('/login')
+    return serve_html('companion_gamification.html')
+
 @app.route('/roi')
 def roi_page():
     return serve_html('ROI_beOtop.html')
