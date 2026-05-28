@@ -736,6 +736,224 @@ input[type=range]::-webkit-slider-thumb {
   .topbar-center { display: none; }
   .badges-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ══════════════════════════════════════
+   CÉLÉBRATIONS — OVERLAY PLEIN ÉCRAN
+══════════════════════════════════════ */
+@keyframes celebIn   { from{opacity:0;transform:scale(.7)} 60%{transform:scale(1.06)} to{opacity:1;transform:scale(1)} }
+@keyframes celebOut  { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.1)} }
+@keyframes particleFly {
+  0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity:1; }
+  100% { transform: translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(.3); opacity:0; }
+}
+@keyframes streakCountUp { from{transform:scale(.5);opacity:0} 60%{transform:scale(1.2)} to{transform:scale(1);opacity:1} }
+@keyframes levelGlow {
+  0%,100% { box-shadow: 0 0 30px rgba(0,180,180,.4); }
+  50%     { box-shadow: 0 0 80px rgba(0,180,180,.9), 0 0 120px rgba(245,133,90,.5); }
+}
+@keyframes badgeShine {
+  0%   { filter: drop-shadow(0 0 8px rgba(200,169,110,.5)); }
+  50%  { filter: drop-shadow(0 0 28px rgba(200,169,110,1)) brightness(1.3); }
+  100% { filter: drop-shadow(0 0 8px rgba(200,169,110,.5)); }
+}
+@keyframes ripple {
+  0%   { transform: scale(0); opacity: .6; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+.celeb-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(2,12,12,.82);
+  backdrop-filter: blur(18px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.celeb-overlay.show { opacity: 1; pointer-events: all; }
+
+.celeb-box {
+  position: relative;
+  background: linear-gradient(145deg, #002828, #003d3d);
+  border: 1px solid rgba(0,180,180,.35);
+  border-radius: 28px; padding: 3rem 3.5rem;
+  text-align: center; max-width: 480px; width: 90vw;
+  box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.celeb-box.show { animation: celebIn .6s cubic-bezier(.34,1.56,.64,1) forwards; }
+.celeb-box.hide { animation: celebOut .35s ease forwards; }
+
+/* Ripple derrière la box */
+.celeb-ripple {
+  position: absolute; inset: 0; border-radius: 28px;
+  background: transparent; border: 2px solid rgba(0,180,180,.4);
+  animation: ripple 1.2s ease-out infinite;
+  pointer-events: none;
+}
+
+.celeb-emoji  {
+  font-size: 4.5rem; display: block; margin-bottom: 1rem;
+  animation: badgeShine 2s ease-in-out infinite;
+  line-height: 1;
+}
+.celeb-type {
+  font-size: .6rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--teal-light); font-weight: 700; margin-bottom: .6rem;
+}
+.celeb-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem; font-weight: 300; color: white;
+  line-height: 1.2; margin-bottom: .5rem;
+}
+.celeb-title em { color: var(--coral); font-style: italic; }
+.celeb-sub {
+  font-size: .78rem; color: rgba(255,255,255,.5);
+  margin-bottom: 1.8rem; line-height: 1.6;
+}
+.celeb-xp {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(0,180,180,.15); border: 1px solid rgba(0,180,180,.4);
+  border-radius: 30px; padding: .55rem 1.4rem;
+  font-size: 1.1rem; font-weight: 700; color: var(--teal-light);
+  margin-bottom: 1.5rem; animation: streakCountUp .5s .3s both;
+}
+.celeb-btn {
+  background: linear-gradient(135deg, var(--coral), var(--orange));
+  color: white; border-radius: 30px; padding: .8rem 2.2rem;
+  font-size: .82rem; font-weight: 600; letter-spacing: .04em;
+  box-shadow: 0 8px 24px rgba(245,133,90,.4);
+  transition: all .2s; cursor: pointer; border: none;
+  font-family: inherit;
+}
+.celeb-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(245,133,90,.55); }
+
+/* Niveau : barre de progression dans la célébration */
+.celeb-level-bar {
+  width: 100%; height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,.1); margin: 1rem 0 .4rem; overflow: hidden;
+}
+.celeb-level-fill {
+  height: 100%; border-radius: 4px; width: 0%;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  transition: width 1.2s cubic-bezier(.22,1,.36,1);
+}
+.celeb-level-labels {
+  display: flex; justify-content: space-between;
+  font-size: .6rem; color: rgba(255,255,255,.3);
+}
+
+/* Particules canvas */
+#celeb-particles {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1999;
+  display: none;
+}
+
+/* ══════════════════════════════════════
+   RITUEL QUOTIDIEN — BANNIÈRE & RAPPEL
+══════════════════════════════════════ */
+@keyframes rituelSlideDown {
+  from { transform: translateY(-110%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+@keyframes rituelSlideUp {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(-110%);opacity: 0; }
+}
+@keyframes pulseRing {
+  0%,100% { box-shadow: 0 0 0 0 rgba(245,133,90,.5); }
+  50%     { box-shadow: 0 0 0 10px rgba(245,133,90,.0); }
+}
+@keyframes countdown {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+/* Bannière ancrée en haut (sous topbar) */
+.rituel-banner {
+  position: fixed; top: 50px; left: 0; right: 0; z-index: 190;
+  background: linear-gradient(90deg, #002828 0%, #004444 50%, #002828 100%);
+  border-bottom: 1px solid rgba(245,133,90,.4);
+  padding: .7rem 2rem;
+  display: flex; align-items: center; gap: 1.2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  animation: rituelSlideDown .5s cubic-bezier(.34,1.56,.64,1);
+  transform-origin: top;
+}
+.rituel-banner.hiding {
+  animation: rituelSlideUp .4s ease forwards;
+}
+.rituel-flame {
+  font-size: 1.6rem;
+  animation: flamePulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.rituel-body { flex: 1; }
+.rituel-title {
+  font-size: .78rem; font-weight: 700; color: white; margin-bottom: .1rem;
+}
+.rituel-sub {
+  font-size: .65rem; color: rgba(255,255,255,.5);
+}
+.rituel-cta {
+  background: linear-gradient(135deg, var(--coral), var(--orange));
+  color: white; border-radius: 20px; padding: .45rem 1.2rem;
+  font-size: .72rem; font-weight: 600; cursor: pointer; border: none;
+  font-family: inherit; flex-shrink: 0;
+  animation: pulseRing 2s ease-in-out infinite;
+  transition: all .2s;
+}
+.rituel-cta:hover { transform: scale(1.05); }
+.rituel-close {
+  background: transparent; border: none; color: rgba(255,255,255,.3);
+  font-size: 1rem; cursor: pointer; padding: .2rem .4rem;
+  transition: color .15s; flex-shrink: 0;
+}
+.rituel-close:hover { color: rgba(255,255,255,.7); }
+/* Barre de progression temporelle */
+.rituel-progress {
+  position: absolute; bottom: 0; left: 0;
+  height: 2px; background: var(--coral); opacity: .6;
+}
+
+/* Pastille "check-in disponible" dans la topbar */
+.rituel-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--coral); border: 2px solid rgba(236,245,245,.97);
+  position: absolute; top: 4px; right: 4px;
+  animation: pulseRing 2s ease-in-out infinite;
+}
+
+/* Widget rituel dans le dashboard — fenêtre horaire */
+.rituel-widget {
+  background: linear-gradient(135deg, rgba(245,133,90,.12), rgba(232,100,30,.06));
+  border: 1px solid rgba(245,133,90,.3);
+  border-radius: 16px; padding: 1.1rem 1.4rem;
+  margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: all .2s;
+}
+.rituel-widget:hover { border-color: var(--coral); }
+.rituel-widget-ico {
+  width: 46px; height: 46px; border-radius: 12px;
+  background: rgba(245,133,90,.15); border: 1px solid rgba(245,133,90,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+  animation: pulseRing 2.5s ease-in-out infinite;
+}
+.rituel-widget-body { flex: 1; }
+.rituel-widget-title { font-size: .8rem; font-weight: 600; color: var(--text); margin-bottom: .15rem; }
+.rituel-widget-sub   { font-size: .65rem; color: var(--text-muted); }
+.rituel-widget-time  {
+  font-size: .6rem; font-weight: 700; color: var(--orange);
+  background: rgba(245,133,90,.1); border: 1px solid rgba(245,133,90,.25);
+  border-radius: 20px; padding: .2rem .7rem; white-space: nowrap;
+}
+/* Version "fait" du widget */
+.rituel-widget.done {
+  background: rgba(0,180,180,.06); border-color: var(--teal-border);
+  animation: none;
+}
+.rituel-widget.done .rituel-widget-ico { background: var(--teal-dim); border-color: var(--teal-border); animation: none; }
+.rituel-widget.done .rituel-widget-time { color: var(--teal); background: var(--teal-dim); border-color: var(--teal-border); }
 </style>
 </head>
 <body>
@@ -750,7 +968,7 @@ input[type=range]::-webkit-slider-thumb {
   </div>
 
   <div class="topbar-center">
-    <div class="streak-topbar" onclick="switchView('progression')">
+    <div class="streak-topbar" onclick="switchView('progression')" style="position:relative"><span id="rituel-topbar-dot" class="rituel-dot" style="display:none"></span>
       <span class="streak-flame" id="tb-flame">🔥</span>
       <span id="tb-streak-count">0</span>&nbsp;jours
     </div>
@@ -906,6 +1124,9 @@ input[type=range]::-webkit-slider-thumb {
       </div>
     </div>
 
+    <!-- RITUEL QUOTIDIEN -->
+    <div id="rituel-widget-zone"></div>
+
     <!-- CHECK-IN -->
     <div class="sec">Check-in du jour</div>
     <div class="checkin-mini" id="checkin-zone">
@@ -1022,8 +1243,32 @@ input[type=range]::-webkit-slider-thumb {
     </div>
   </div>
 
+  <!-- COURBE CHECK-IN -->
+  <div class="sec">Courbe bien-être</div>
+  <div class="card" style="margin-bottom:2rem;padding:1.3rem 1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem">
+      <div style="font-size:.6rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.15em">Check-in · Énergie · Stress · Concentration</div>
+      <select id="checkin-periode" onchange="loadCheckinChart()" style="font-size:.7rem;background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:.3rem .8rem;color:var(--text);cursor:pointer;outline:none">
+        <option value="semaine">Cette semaine</option>
+        <option value="mois" selected>Ce mois</option>
+        <option value="annee">Cette année</option>
+      </select>
+    </div>
+    <div style="position:relative;height:180px">
+      <canvas id="checkin-chart" style="display:block;max-width:100%"></canvas>
+      <div id="checkin-chart-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:.72rem;color:var(--text-muted)">
+        Aucun check-in sur cette période
+      </div>
+    </div>
+    <div style="display:flex;gap:1.2rem;margin-top:.9rem;font-size:.62rem;font-weight:600">
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:14px;height:3px;background:#f5855a;border-radius:2px"></span>Énergie</span>
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:14px;height:3px;background:#00b4b4;border-radius:2px"></span>Stress</span>
+      <span style="display:flex;align-items:center;gap:.4rem"><span style="display:inline-block;width:14px;height:3px;background:#a855f7;border-radius:2px"></span>Concentration</span>
+    </div>
+  </div>
+
   <!-- BADGES -->
-  <div class="sec">Badges & récompenses</div>
+  <div class="sec">Badges &amp; récompenses</div>
   <div class="badges-grid" id="pg-badges-grid"></div>
 
   <!-- CLASSEMENT -->
@@ -1274,7 +1519,12 @@ function awardXP(action, label) {
     localStorage.setItem(DB_KEY, JSON.stringify(companion));
   } catch(e) {}
   saveDB(); /* metadonnees gamif */
+  var niveauAvant = getNiveau(totalXP() - pts).niv;
   checkBadges();
+  checkNiveauUp();
+  checkComboJour();
+  /* Récompense variable — tirage surprise */
+  if (action !== 'bonus' && action !== 'combo') triggerSurprise(action, pts);
   refreshTopbar();
   if (pts > 0) showToast('🎯 +' + pts + ' XP · ' + (ACTION_LABELS[action] || action));
   return pts;
@@ -1303,11 +1553,11 @@ function checkBadges() {
 
   if (newBadges.length) {
     saveDB();
-    newBadges.forEach(function(b) {
+    el('nav-new-badge').style.display = '';
+    newBadges.forEach(function(b, i) {
       setTimeout(function() {
-        showToast('🏅 Badge débloqué : ' + b.emoji + ' ' + b.nom);
-        el('nav-new-badge').style.display = '';
-      }, 600);
+        celebrate('badge', { badge: b });
+      }, i * 600);
     });
   }
 }
@@ -1345,6 +1595,20 @@ function submitCheckin() {
   el('checkin-form').style.display = 'none';
   el('checkin-done').style.display = 'block';
   refreshDashboard();
+  renderRituelWidget();
+  /* Fermer la bannière si elle est ouverte */
+  var r = getRituelActif();
+  if (r) dismissRituel(r.id);
+
+  /* Premier check-in ever = célébration spéciale */
+  var totalCheckins = (DB.checkins || []).length;
+  if (totalCheckins <= 1) {
+    setTimeout(function(){ celebrate('premier_checkin', {}); }, 800);
+  }
+  /* Streak record battu */
+  if (GAMIF.streak > 0 && GAMIF.streak === GAMIF.streak_record && GAMIF.streak > 1) {
+    setTimeout(function(){ celebrate('streak', { streak: GAMIF.streak }); }, totalCheckins <= 1 ? 5500 : 800);
+  }
   checkBadges();
 }
 
@@ -1510,6 +1774,9 @@ function refreshDashboard() {
   setTimeout(function(){ if (fill) fill.style.width = n.pct + '%'; }, 400);
 
   // Ring (sessions cc du mois)
+  /* Rituel widget */
+  renderRituelWidget();
+
   var ccCount = countAction('cc');
   var ringVal = Math.min(ccCount, 20);
   setTxt('h-ring-val', ccCount + ' / 20');
@@ -1640,34 +1907,151 @@ function renderBadges() {
 }
 
 /* ════════════════════════════════════════════
-   CLASSEMENT RENDER
+   CLASSEMENT RENDER — API RÉELLE
 ════════════════════════════════════════════ */
+var _leaderboardPeriode = 'total';
+var _leaderboardCache   = null;
+var _leaderboardLoading = false;
+
 function renderClassement() {
   var list = el('pg-rank-list');
   if (!list) return;
 
+  /* Afficher le sélecteur de période si absent */
+  var sec = list.previousElementSibling;
+  if (sec && !el('lb-periode-sel')) {
+    var selDiv = document.createElement('div');
+    selDiv.style.cssText = 'display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap';
+    var lblNode = document.createElement('div');
+    lblNode.style.cssText = 'font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted)';
+    lblNode.textContent = 'P\u00e9riode';
+    selDiv.appendChild(lblNode);
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:.3rem';
+    var lbls = {total:'Tous les temps', mois:'Ce mois', semaine:'Cette semaine'};
+    ['total','mois','semaine'].forEach(function(p) {
+      var btn = document.createElement('button');
+      btn.id = 'lb-btn-' + p;
+      btn.textContent = lbls[p];
+      btn.style.cssText = 'font-size:.65rem;padding:.3rem .8rem;border-radius:20px;border:1px solid var(--border2);cursor:pointer;font-family:inherit;transition:all .15s;'
+        + 'background:' + (p==='total'?'rgba(0,180,180,.12)':'var(--surface)') + ';'
+        + 'color:' + (p==='total'?'var(--teal)':'var(--text-muted)');
+      btn.onclick = (function(pp){ return function(){ setLeaderboardPeriode(pp); }; })(p);
+      btnRow.appendChild(btn);
+    });
+    selDiv.appendChild(btnRow);
+    list.parentNode.insertBefore(selDiv, list);
+  }
+
+  loadLeaderboard(_leaderboardPeriode);
+}
+
+function setLeaderboardPeriode(p) {
+  _leaderboardPeriode = p;
+  _leaderboardCache = null;
+  ['total','mois','semaine'].forEach(function(x) {
+    var btn = el('lb-btn-' + x);
+    if (!btn) return;
+    btn.style.background = x === p ? 'rgba(0,180,180,.12)' : 'var(--surface)';
+    btn.style.color = x === p ? 'var(--teal)' : 'var(--text-muted)';
+  });
+  loadLeaderboard(p);
+}
+
+function loadLeaderboard(periode) {
+  var list = el('pg-rank-list');
+  if (!list || _leaderboardLoading) return;
+
+  /* Skeleton loading */
+  list.innerHTML = [1,2,3,4,5].map(function(i) {
+    return '<div class="rank-item" style="opacity:.4;animation:fadeUp .3s '+i*.08+'s both">'
+      + '<div class="rank-pos">'+i+'</div>'
+      + '<div class="rank-avatar" style="background:var(--surface)"></div>'
+      + '<div class="rank-info"><div style="height:10px;width:80px;background:var(--border);border-radius:4px;margin-bottom:.4rem"></div>'
+      + '<div style="height:8px;width:50px;background:var(--border);border-radius:4px"></div></div>'
+      + '<div style="width:40px;height:24px;background:var(--border);border-radius:4px;margin-left:auto"></div>'
+      + '</div>';
+  }).join('');
+
+  _leaderboardLoading = true;
+
+  /* Récupérer site_slug depuis DB */
+  var siteSlug = (DB.user && DB.user.site) ? encodeURIComponent(DB.user.site) : '';
+  /* Essayer de lire le site_slug depuis l'URL Flask */
+  fetch('/api/companion/leaderboard?periode=' + periode + '&site_slug=' + siteSlug, {
+    credentials: 'include'
+  })
+  .then(function(r) { return r.ok ? r.json() : null; })
+  .then(function(data) {
+    _leaderboardLoading = false;
+    if (data && data.length) {
+      _leaderboardCache = data;
+      _renderLeaderboardData(data);
+    } else {
+      _renderLeaderboardFallback();
+    }
+  })
+  .catch(function() {
+    _leaderboardLoading = false;
+    _renderLeaderboardFallback();
+  });
+}
+
+function _renderLeaderboardData(data) {
+  var list = el('pg-rank-list');
+  if (!list) return;
+  var medals = ['🥇','🥈','🥉'];
+  var posCls = ['gold','silver','bronze'];
+
+  list.innerHTML = data.map(function(c, i) {
+    var niv = c.niveau || {};
+    return '<div class="rank-item' + (c.is_me ? ' me' : '') + '" style="animation-delay:' + (i*.06) + 's">'
+      + '<div class="rank-pos ' + (i<3?posCls[i]:'') + '">' + (i<3?medals[i]:(i+1)) + '</div>'
+      + '<div class="rank-avatar' + (c.is_me ? ' me-av' : '') + '">'
+        + (c.is_me ? (DB.user.initiales||'MR') : c.initiales) + '</div>'
+      + '<div class="rank-info">'
+        + '<div class="rank-name">'
+          + (c.is_me ? ((DB.user.prenom||'') + (DB.user.nom?' '+DB.user.nom.charAt(0)+'.':'')) : c.initiales)
+          + (c.is_me ? '<span class="rank-me-tag">Vous</span>' : '')
+        + '</div>'
+        + '<div class="rank-dept">' + (niv.emoji||'') + ' ' + (niv.label||'') + ' · ' + c.jours_actifs + 'j actifs</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+        + '<div class="rank-pts">' + c.total_xp + '</div>'
+        + '<div class="rank-streak">🔥 ' + c.streak + 'j</div>'
+      + '</div></div>';
+  }).join('');
+
+  /* Mettre à jour le KPI rang */
+  var myRank = data.findIndex(function(c){ return c.is_me; });
+  if (myRank >= 0) {
+    setTxt('kpi-rang', '#' + (myRank+1));
+    setTxt('kpi-rang-total', data.length);
+  }
+}
+
+function _renderLeaderboardFallback() {
+  /* Fallback : classement démo avec XP réel pour "Vous" */
+  var list = el('pg-rank-list');
+  if (!list) return;
   var total = totalXP();
   var cl = CLASSEMENT_DEMO.map(function(c) { return Object.assign({}, c); });
   cl.forEach(function(c) { if (c.me) { c.pts = total; c.streak = GAMIF.streak||0; } });
   cl.sort(function(a,b){ return b.pts - a.pts; });
-
+  var medals = ['🥇','🥈','🥉'];
   var posCls = ['gold','silver','bronze'];
-
   list.innerHTML = cl.map(function(c, i) {
-    var pCls = i < 3 ? posCls[i] : '';
-    var pos = i < 3 ? ['🥇','🥈','🥉'][i] : (i+1);
-    return '<div class="rank-item' + (c.me ? ' me' : '') + '" style="animation-delay:' + (i*.06) + 's">'
-      + '<div class="rank-pos ' + pCls + '">' + pos + '</div>'
-      + '<div class="rank-avatar' + (c.me ? ' me-av' : '') + '">' + (c.me ? DB.user.initiales : c.initiales) + '</div>'
-      + '<div class="rank-info">'
-      + '<div class="rank-name">' + (c.me ? (DB.user.prenom + ' ' + DB.user.nom.charAt(0) + '.') : c.prenom) + (c.me ? '<span class="rank-me-tag">Vous</span>' : '') + '</div>'
-      + '<div class="rank-dept">' + (c.me ? DB.user.dept : c.dept) + '</div>'
-      + '</div>'
-      + '<div style="text-align:right">'
-      + '<div class="rank-pts">' + c.pts + '</div>'
-      + '<div class="rank-streak">🔥 ' + c.streak + 'j</div>'
-      + '</div></div>';
+    return '<div class="rank-item' + (c.me?' me':'') + '" style="animation-delay:'+(i*.06)+'s">'
+      + '<div class="rank-pos '+(i<3?posCls[i]:'')+'">'+(i<3?medals[i]:(i+1))+'</div>'
+      + '<div class="rank-avatar'+(c.me?' me-av':'')+'">'+( c.me?(DB.user.initiales||'MR'):c.initiales)+'</div>'
+      + '<div class="rank-info"><div class="rank-name">'+( c.me?((DB.user.prenom||'Vous')):c.prenom)+(c.me?'<span class="rank-me-tag">Vous</span>':'')+'</div>'
+      + '<div class="rank-dept">'+(c.me?DB.user.dept:c.dept)+'</div></div>'
+      + '<div style="text-align:right"><div class="rank-pts">'+c.pts+'</div>'
+      + '<div class="rank-streak">🔥 '+c.streak+'j</div></div></div>';
   }).join('');
+  /* Note démo */
+  list.insertAdjacentHTML('afterend',
+    '<div style="font-size:.6rem;color:var(--text-muted);margin-top:.6rem;text-align:center">Mode hors-ligne · Données illustratives</div>');
 }
 
 /* ════════════════════════════════════════════
@@ -1730,8 +2114,10 @@ function switchView(name) {
   recalcStreak();
 
   if (name === 'progression') {
+    _leaderboardCache = null; /* forcer rechargement classement */
     refreshProgression();
     el('nav-new-badge').style.display = 'none';
+    setTimeout(loadCheckinChart, 200);
   }
   if (name === 'dashboard') refreshDashboard();
 }
@@ -1792,11 +2178,236 @@ function closeModal() {
   el('modal').classList.remove('open');
 }
 
+
+/* ════════════════════════════════════════════
+   RITUEL QUOTIDIEN — ANCRAGE TEMPOREL
+   Fenêtres horaires :
+   · Matin   07h-10h  : check-in + cohérence
+   · Midi    12h-14h  : exercice express
+   · Soir    17h-19h  : check-in soir + sons
+   Bannière auto-affichée si fenêtre ouverte
+   et action non encore faite aujourd'hui.
+════════════════════════════════════════════ */
+
+var RITUELS = [
+  {
+    id: 'matin',
+    label: 'Rituel du matin',
+    sub: 'Check-in + cohérence cardiaque pour bien démarrer',
+    emoji: '🌅',
+    debut: 7, fin: 10,
+    action: 'checkin',
+    xp_bonus: 5,
+    cta: 'Faire mon check-in'
+  },
+  {
+    id: 'midi',
+    label: 'Pause active du midi',
+    sub: 'Un exercice express pour recharger votre énergie',
+    emoji: '⚡',
+    debut: 12, fin: 14,
+    action: 'exercice',
+    xp_bonus: 5,
+    cta: 'Faire un exercice'
+  },
+  {
+    id: 'soir',
+    label: 'Rituel de fin de journée',
+    sub: 'Sons immersifs ou cohérence pour décompresser',
+    emoji: '🌙',
+    debut: 17, fin: 19,
+    action: 'sons',
+    xp_bonus: 5,
+    cta: 'Décompresser maintenant'
+  },
+];
+
+var _rituelBannerTimer = null;
+var _rituelDismissed   = {};
+
+/* Retourne le rituel actif pour l'heure courante, null sinon */
+function getRituelActif() {
+  var h = new Date().getHours();
+  for (var i = 0; i < RITUELS.length; i++) {
+    var r = RITUELS[i];
+    if (h >= r.debut && h < r.fin) return r;
+  }
+  return null;
+}
+
+/* Vérifie si l'action du rituel a déjà été faite aujourd'hui */
+function rituelDejaFait(rituel) {
+  var t = today();
+  return (DB.points || []).some(function(p) {
+    return p.action === rituel.action && (p.date||'').slice(0,10) === t;
+  });
+}
+
+/* Initialise le rituel : widget + bannière si pertinent */
+function initRituel() {
+  renderRituelWidget();
+  var r = getRituelActif();
+  if (r && !rituelDejaFait(r) && !_rituelDismissed[r.id + '_' + today()]) {
+    /* Délai de 1.5s pour ne pas surcharger l'ouverture de page */
+    setTimeout(showRituelBanner, 1500);
+  }
+  /* Revérifier toutes les 5 minutes */
+  setInterval(function() {
+    renderRituelWidget();
+    var r2 = getRituelActif();
+    if (r2 && !rituelDejaFait(r2) && !_rituelDismissed[r2.id + '_' + today()]) {
+      showRituelBanner();
+    }
+  }, 5 * 60 * 1000);
+}
+
+/* Widget dans le dashboard */
+function renderRituelWidget() {
+  var zone = el('rituel-widget-zone');
+  if (!zone) return;
+
+  var r = getRituelActif();
+  var dot = el('rituel-topbar-dot');
+
+  if (!r) {
+    /* Hors fenêtre — montrer le prochain rituel */
+    var next = _getNextRituel();
+    if (next) {
+      zone.innerHTML = '<div class="rituel-widget done">'
+        + '<div class="rituel-widget-ico">' + next.emoji + '</div>'
+        + '<div class="rituel-widget-body">'
+        + '<div class="rituel-widget-title">Prochain rituel : ' + next.label + '</div>'
+        + '<div class="rituel-widget-sub">' + next.sub + '</div>'
+        + '</div>'
+        + '<div class="rituel-widget-time">Disponible à ' + _pad(next.debut) + 'h</div>'
+        + '</div>';
+    } else {
+      zone.innerHTML = '';
+    }
+    if (dot) dot.style.display = 'none';
+    return;
+  }
+
+  var fait = rituelDejaFait(r);
+  if (dot) dot.style.display = fait ? 'none' : '';
+
+  if (fait) {
+    zone.innerHTML = '<div class="rituel-widget done">'
+      + '<div class="rituel-widget-ico">✅</div>'
+      + '<div class="rituel-widget-body">'
+      + '<div class="rituel-widget-title">' + r.label + ' · Accompli !</div>'
+      + '<div class="rituel-widget-sub">Bravo — revenez demain pour maintenir le fil.</div>'
+      + '</div>'
+      + '<div class="rituel-widget-time">+' + (BAREME[r.action]||10) + ' XP</div>'
+      + '</div>';
+  } else {
+    var heuresFin = _pad(r.fin) + 'h00';
+    zone.innerHTML = '<div class="rituel-widget" onclick="scrollToCheckin()">'
+      + '<div class="rituel-widget-ico">' + r.emoji + '</div>'
+      + '<div class="rituel-widget-body">'
+      + '<div class="rituel-widget-title">' + r.label + '</div>'
+      + '<div class="rituel-widget-sub">' + r.sub + '</div>'
+      + '</div>'
+      + '<div class="rituel-widget-time">Jusqu\u2019\u00e0 ' + heuresFin + '</div>'
+      + '</div>';
+  }
+}
+
+/* Bannière flottante sous la topbar */
+function showRituelBanner() {
+  var r = getRituelActif();
+  if (!r || rituelDejaFait(r)) return;
+
+  /* Créer ou recycler */
+  var banner = el('rituel-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'rituel-banner';
+    banner.className = 'rituel-banner';
+    document.body.appendChild(banner);
+  }
+  banner.classList.remove('hiding');
+
+  var heuresFin = _pad(r.fin) + 'h00';
+  var minsRestantes = (r.fin - new Date().getHours()) * 60 - new Date().getMinutes();
+
+    var rid = r.id;
+  banner.innerHTML = '<div class="rituel-progress" id="rituel-bar" style="animation:countdown '
+    + (minsRestantes * 60) + 's linear forwards"></div>'
+    + '<div class="rituel-flame">' + r.emoji + '</div>'
+    + '<div class="rituel-body">'
+    + '<div class="rituel-title">' + r.label + ' — jusqu’à ' + heuresFin + '</div>'
+    + '<div class="rituel-sub">' + r.sub + ' · +' + ((BAREME[r.action]||10) + r.xp_bonus) + ' XP</div>'
+    + '</div>';
+  var _bcta = document.createElement('button');
+  _bcta.className = 'rituel-cta';
+  _bcta.textContent = r.cta;
+  _bcta.onclick = (function(id){ return function(){ rituelCTA(id); }; })(rid);
+  var _bclose = document.createElement('button');
+  _bclose.className = 'rituel-close';
+  _bclose.textContent = '✕';
+  _bclose.onclick = (function(id){ return function(){ dismissRituel(id); }; })(rid);
+  banner.appendChild(_bcta);
+  banner.appendChild(_bclose);
+
+  /* Décaler le main content pour éviter le chevauchement */
+  var shell = document.querySelector('.app-shell');
+  if (shell) shell.style.marginTop = '52px';
+
+  /* Auto-dismiss après 12s */
+  clearTimeout(_rituelBannerTimer);
+  _rituelBannerTimer = setTimeout(function(){ dismissRituel(r.id); }, 12000);
+}
+
+function dismissRituel(id) {
+  _rituelDismissed[id + '_' + today()] = true;
+  var banner = el('rituel-banner');
+  if (!banner) return;
+  banner.classList.add('hiding');
+  setTimeout(function(){
+    if (banner.parentNode) banner.parentNode.removeChild(banner);
+    var shell = document.querySelector('.app-shell');
+    if (shell) shell.style.marginTop = '';
+  }, 400);
+  clearTimeout(_rituelBannerTimer);
+}
+
+function rituelCTA(id) {
+  var r = RITUELS.find(function(x){ return x.id === id; });
+  dismissRituel(id);
+  /* Scroller vers le check-in ou toast selon l'action */
+  if (r && r.action === 'checkin') {
+    scrollToCheckin();
+  } else {
+    showToast((r ? r.emoji : '') + ' Ouvrez le Companion pour accéder à cet atelier');
+  }
+}
+
+function scrollToCheckin() {
+  var zone = el('checkin-zone');
+  if (zone) zone.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* Helpers */
+function _pad(h) { return String(h).padStart(2,'0'); }
+
+function _getNextRituel() {
+  var h = new Date().getHours();
+  /* Rituels du jour restants */
+  for (var i = 0; i < RITUELS.length; i++) {
+    if (RITUELS[i].debut > h) return RITUELS[i];
+  }
+  /* Demain : premier rituel */
+  return RITUELS[0];
+}
+
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
 function init() {
   loadDB();
+  /* Initialiser le niveau de référence AVANT d'afficher quoi que ce soit */
+  _lastNiveauIdx = NIVEAUX.indexOf(getNiveau(totalXP()).niv);
   updateClock();
   setInterval(updateClock, 30000);
   initCardDuJour();
@@ -1805,9 +2416,660 @@ function init() {
   refreshTopbar();
   refreshDashboard();
   buildTicker();
+  /* Vérifier combo du jour au chargement */
+  checkComboJour();
+  /* Rituel quotidien — ancrage temporel */
+  initRituel();
+}
+
+
+
+
+/* ════════════════════════════════════════════
+   COURBE CHECK-IN
+════════════════════════════════════════════ */
+function loadCheckinChart() {
+  var periode = document.getElementById('checkin-periode');
+  var p = periode ? periode.value : 'mois';
+  var emptyEl = document.getElementById('checkin-chart-empty');
+  var canvas  = document.getElementById('checkin-chart');
+  if (!canvas) return;
+
+  var now = new Date(), debut;
+  if (p === 'semaine') {
+    debut = new Date(now); debut.setDate(now.getDate() - now.getDay() + 1);
+  } else if (p === 'annee') {
+    debut = new Date(now.getFullYear(), 0, 1);
+  } else {
+    debut = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  debut.setHours(0,0,0,0);
+
+  /* Lire depuis DB.checkins (localStorage companion) */
+  var data = (DB.checkins || [])
+    .filter(function(c){ return new Date(c.date) >= debut && c.energie && c.stress && c.focus; })
+    .map(function(c){ return { date:(c.date||'').slice(0,10), energie:+c.energie, stress:+c.stress, focus:+c.focus }; })
+    .sort(function(a,b){ return a.date.localeCompare(b.date); });
+
+  /* Deduplication par date */
+  var seen = {}, uniq = [];
+  data.forEach(function(d){ if (!seen[d.date]) { seen[d.date]=1; uniq.push(d); } });
+  data = uniq;
+
+  if (!data.length) {
+    canvas.style.display = 'none';
+    if (emptyEl) { emptyEl.style.display = 'flex'; emptyEl.style.position = 'static'; }
+    return;
+  }
+  if (emptyEl) { emptyEl.style.display = 'none'; }
+  canvas.style.display = 'block';
+  drawCheckinChart(canvas, data, p);
+}
+
+function drawCheckinChart(canvas, data, periode) {
+  var container = canvas.parentElement;
+  var W = (container ? container.offsetWidth : 0) || 560;
+  var H = 180;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  var DPR = window.devicePixelRatio || 1;
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  var PAD = { top:16, right:16, bottom:40, left:32 };
+  var cW = W - PAD.left - PAD.right;
+  var cH = H - PAD.top  - PAD.bottom;
+  ctx.clearRect(0, 0, W, H);
+
+  /* Grille */
+  ctx.strokeStyle = 'rgba(0,180,180,.1)';
+  ctx.lineWidth = 1;
+  for (var v = 2; v <= 10; v += 2) {
+    var gy = PAD.top + cH - ((v-1)/9)*cH;
+    ctx.beginPath(); ctx.moveTo(PAD.left, gy); ctx.lineTo(PAD.left+cW, gy); ctx.stroke();
+    ctx.fillStyle = 'rgba(58,88,88,.6)'; ctx.font = '500 10px DM Sans,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(v, PAD.left-5, gy+4);
+  }
+
+  var series = [
+    { key:'energie', color:'#f5855a' },
+    { key:'stress',  color:'#00b4b4' },
+    { key:'focus',   color:'#a855f7' },
+  ];
+  var n = data.length;
+
+  series.forEach(function(s) {
+    /* Fill */
+    ctx.save();
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    data.forEach(function(d, i) {
+      var x = PAD.left + (n > 1 ? i/(n-1) : .5) * cW;
+      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.lineTo(PAD.left+cW, PAD.top+cH);
+    ctx.lineTo(PAD.left, PAD.top+cH);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    /* Ligne */
+    ctx.beginPath();
+    ctx.strokeStyle = s.color; ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    data.forEach(function(d, i) {
+      var x = PAD.left + (n > 1 ? i/(n-1) : .5) * cW;
+      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    /* Points */
+    data.forEach(function(d, i) {
+      var x = PAD.left + (n > 1 ? i/(n-1) : .5) * cW;
+      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.stroke();
+    });
+  });
+
+  /* Labels X */
+  ctx.fillStyle = 'rgba(58,88,88,.8)'; ctx.font = '500 10px DM Sans,sans-serif'; ctx.textAlign = 'center';
+  var step = Math.max(1, Math.ceil(n/8));
+  data.forEach(function(d, i) {
+    if (i % step !== 0 && i !== n-1) return;
+    var x = PAD.left + (n > 1 ? i/(n-1) : .5) * cW;
+    var dt = new Date(d.date + 'T12:00:00');
+    var lbl;
+    if (periode === 'annee')   lbl = dt.toLocaleDateString('fr-FR', {day:'numeric',month:'short'});
+    else if (periode === 'semaine') lbl = dt.toLocaleDateString('fr-FR', {weekday:'short',day:'numeric'});
+    else lbl = dt.toLocaleDateString('fr-FR', {day:'numeric',month:'short'});
+    ctx.fillText(lbl, x, H - PAD.bottom + 16);
+  });
+
+  /* Ligne de base */
+  ctx.strokeStyle = 'rgba(0,180,180,.2)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top+cH); ctx.lineTo(PAD.left+cW, PAD.top+cH); ctx.stroke();
+}
+
+
+/* ════════════════════════════════════════════
+   RÉCOMPENSES VARIABLES — SURPRISE & ANTICIPATION
+   Principe : 1 action sur N déclenche un tirage
+   spécial avec animation "slot machine" avant
+   la révélation du bonus.
+════════════════════════════════════════════ */
+
+/* Probabilités et montants des bonus surprise */
+var BONUS_TABLE = [
+  { prob:.40, mult:2,   label:'Double XP !',      emoji:'✨', color:'#00b4b4' },
+  { prob:.25, mult:3,   label:'Triple XP !',       emoji:'⚡', color:'#f5855a' },
+  { prob:.15, mult:5,   label:'x5 XP Jackpot !',   emoji:'🎰', color:'#c8a96e' },
+  { prob:.12, mult:0,   label:'Bonus Streak +5j',   emoji:'🔥', color:'#e8641e', special:'streak_bonus' },
+  { prob:.08, mult:10,  label:'Légendaire ! x10',   emoji:'💎', color:'#e040fb' },
+];
+
+/* Fréquence : 1 chance sur N actions par type */
+var SURPRISE_FREQ = {
+  checkin: 5, cc: 3, audio: 6, exercice: 4,
+  jeu: 5, reservation: 3, sons: 7, video: 6, defi: 4
+};
+
+/* Compteurs d'actions depuis la dernière surprise */
+/* Stockés dans GAMIF pour persister entre sessions */
+
+function shouldTriggerSurprise(action) {
+  var freq = SURPRISE_FREQ[action] || 6;
+  if (!GAMIF.surprise_counters) GAMIF.surprise_counters = {};
+  var count = (GAMIF.surprise_counters[action] || 0) + 1;
+  GAMIF.surprise_counters[action] = count;
+  saveDB();
+  /* Tirage : probabilité croissante qui se reset après déclenchement */
+  var prob = Math.min(count / freq, 1);
+  return Math.random() < prob;
+}
+
+function resetSurpriseCounter(action) {
+  if (!GAMIF.surprise_counters) GAMIF.surprise_counters = {};
+  GAMIF.surprise_counters[action] = 0;
+  saveDB();
+}
+
+function drawBonus() {
+  var r = Math.random();
+  var cumul = 0;
+  for (var i = 0; i < BONUS_TABLE.length; i++) {
+    cumul += BONUS_TABLE[i].prob;
+    if (r < cumul) return BONUS_TABLE[i];
+  }
+  return BONUS_TABLE[0];
+}
+
+/* Point d'entrée : appelé depuis awardXP */
+function triggerSurprise(action, basePts) {
+  if (!shouldTriggerSurprise(action)) return;
+  resetSurpriseCounter(action);
+  var bonus = drawBonus();
+  /* Petit délai pour ne pas superposer avec le toast XP */
+  setTimeout(function() {
+    showSlotMachine(action, basePts, bonus);
+  }, 600);
+}
+
+/* ── Slot machine overlay ── */
+var _slotTimer = null;
+var _slotPhase = 0; /* 0=spin 1=slowdown 2=reveal */
+
+function showSlotMachine(action, basePts, bonus) {
+  /* Créer ou recycler l'overlay slot */
+  var overlay = document.getElementById('slot-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'slot-overlay';
+    overlay.innerHTML = _slotHTML();
+    document.body.appendChild(overlay);
+  }
+
+  /* Injecter le style si absent */
+  if (!document.getElementById('slot-style')) {
+    var s = document.createElement('style');
+    s.id = 'slot-style';
+    s.textContent = _slotCSS();
+    document.head.appendChild(s);
+  }
+
+  overlay.style.display = 'flex';
+  _slotPhase = 0;
+
+  /* Afficher l'action source */
+  var srcEl = document.getElementById('slot-source');
+  if (srcEl) srcEl.textContent = (ACTION_ICONS[action]||'🎯') + ' ' + (ACTION_LABELS[action]||action);
+
+  /* Démarrer le spin */
+  _runSlot(bonus, basePts);
+}
+
+var _SLOT_EMOJIS = ['🌱','⚡','🎯','💓','🏅','🌿','💎','✨','🔥','🎰','🏆','🫀'];
+
+function _runSlot(bonus, basePts) {
+  var reelEl = document.getElementById('slot-reel');
+  var phaseEl = document.getElementById('slot-phase');
+  var revealEl = document.getElementById('slot-reveal');
+  if (!reelEl) return;
+
+  revealEl.style.display = 'none';
+  reelEl.style.display = 'block';
+  if (phaseEl) phaseEl.textContent = 'Tirage en cours…';
+
+  var spins = 0, maxSpins = 18, interval = 80;
+  clearInterval(_slotTimer);
+
+  _slotTimer = setInterval(function() {
+    /* Afficher emojis aléatoires pendant le spin */
+    var r1 = _SLOT_EMOJIS[Math.floor(Math.random()*_SLOT_EMOJIS.length)];
+    var r2 = _SLOT_EMOJIS[Math.floor(Math.random()*_SLOT_EMOJIS.length)];
+    var r3 = _SLOT_EMOJIS[Math.floor(Math.random()*_SLOT_EMOJIS.length)];
+    reelEl.textContent = r1 + '  ' + r2 + '  ' + r3;
+    spins++;
+
+    /* Ralentissement progressif */
+    if (spins > maxSpins * 0.6) {
+      clearInterval(_slotTimer);
+      interval = Math.min(interval * 1.35, 400);
+      _slotTimer = setInterval(arguments.callee, interval);
+    }
+
+    if (spins >= maxSpins) {
+      clearInterval(_slotTimer);
+      _revealBonus(bonus, basePts);
+    }
+  }, interval);
+}
+
+function _revealBonus(bonus, basePts) {
+  var reelEl   = document.getElementById('slot-reel');
+  var revealEl = document.getElementById('slot-reveal');
+  var phaseEl  = document.getElementById('slot-phase');
+  if (!reelEl || !revealEl) return;
+
+  reelEl.style.display = 'none';
+  revealEl.style.display = 'block';
+  revealEl.innerHTML = '<span style="font-size:3.5rem;display:block;margin-bottom:.6rem;animation:celebIn .5s cubic-bezier(.34,1.56,.64,1)">'
+    + bonus.emoji + '</span>'
+    + '<div style="font-size:1.3rem;font-weight:700;color:' + bonus.color + ';margin-bottom:.4rem">' + bonus.label + '</div>';
+
+  if (phaseEl) phaseEl.textContent = '';
+
+  /* Calculer et attribuer le bonus réel */
+  var bonusPts = 0;
+  if (bonus.special === 'streak_bonus') {
+    GAMIF.streak = (GAMIF.streak || 0) + 5;
+    if (GAMIF.streak > (GAMIF.streak_record||0)) GAMIF.streak_record = GAMIF.streak;
+    saveDB();
+    revealEl.innerHTML += '<div style="font-size:.82rem;color:rgba(255,255,255,.6);margin-top:.3rem">Votre streak augmente de 5 jours !</div>';
+    refreshTopbar();
+  } else {
+    bonusPts = basePts * (bonus.mult - 1); /* bonus = ce qu'on ajoute EN PLUS du base */
+    if (bonusPts > 0) {
+      var entry = { action:'bonus', label:'Bonus surprise x'+bonus.mult, points:bonusPts, date:new Date().toISOString() };
+      try {
+        var raw = localStorage.getItem(DB_KEY);
+        var companion = raw ? JSON.parse(raw) : {};
+        if (!companion.points) companion.points = [];
+        companion.points.push(entry);
+        localStorage.setItem(DB_KEY, JSON.stringify(companion));
+        DB.points.push(entry);
+      } catch(e) {}
+      revealEl.innerHTML += '<div style="font-size:1rem;color:rgba(255,255,255,.55);margin-top:.3rem">+'
+        + bonusPts + ' XP bonus ajoutés !</div>';
+      refreshTopbar();
+      refreshDashboard();
+      checkNiveauUp();
+    }
+  }
+
+  /* Particules colorées */
+  _launchParticles([bonus.color, '#ffffff', '#f5855a', '#00b4b4']);
+
+  /* Auto-fermeture 4s */
+  clearTimeout(_slotTimer);
+  _slotTimer = setTimeout(closeSlot, 4000);
+}
+
+function closeSlot() {
+  clearTimeout(_slotTimer);
+  clearInterval(_slotTimer);
+  _stopParticles();
+  var overlay = document.getElementById('slot-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _slotHTML() {
+  return '<div id="slot-box" onclick="closeSlot()">'
+    + '<div id="slot-source" style="font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem"></div>'
+    + '<div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:.8rem">Bonus surprise !</div>'
+    + '<div id="slot-reel" style="font-size:2.2rem;letter-spacing:.2em;font-family:monospace;min-height:3rem;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:12px;padding:.6rem 1.5rem;margin-bottom:.8rem;border:1px solid rgba(255,255,255,.1)"></div>'
+    + '<div id="slot-reveal" style="display:none;text-align:center"></div>'
+    + '<div id="slot-phase" style="font-size:.68rem;color:rgba(255,255,255,.35);margin-top:.6rem"></div>'
+    + '<div style="font-size:.6rem;color:rgba(255,255,255,.2);margin-top:1.2rem">Touchez pour fermer</div>'
+    + '</div>';
+}
+
+function _slotCSS() {
+  return '#slot-overlay{'
+    + 'position:fixed;inset:0;z-index:2100;'
+    + 'display:none;align-items:center;justify-content:center;'
+    + 'background:rgba(2,10,10,.88);backdrop-filter:blur(20px);'
+    + '}'
+    + '#slot-box{'
+    + 'background:linear-gradient(145deg,#001a1a,#002e2e);'
+    + 'border:1px solid rgba(0,180,180,.3);border-radius:24px;'
+    + 'padding:2.2rem 3rem;text-align:center;'
+    + 'max-width:400px;width:88vw;'
+    + 'box-shadow:0 40px 80px rgba(0,0,0,.6);'
+    + 'animation:celebIn .5s cubic-bezier(.34,1.56,.64,1);'
+    + 'cursor:pointer;'
+    + '}';
+}
+
+/* ── Combo du jour : 3 activités différentes = bonus ── */
+function checkComboJour() {
+  var t = today();
+  var comboKey = 'combo_' + t;
+  if (GAMIF[comboKey]) return; /* déjà déclenché aujourd'hui */
+
+  var actionsAujourdhui = (DB.points || []).filter(function(p){
+    return (p.date || '').slice(0,10) === t;
+  });
+  var actionsUniques = {};
+  actionsAujourdhui.forEach(function(p){ actionsUniques[p.action] = 1; });
+  var nbUniques = Object.keys(actionsUniques).length;
+
+  if (nbUniques >= 3) {
+    GAMIF[comboKey] = true;
+    saveDB();
+    var bonus = 50;
+    /* Écrire le bonus */
+    var entry = { action:'combo', label:'Combo du jour — ' + t, points: bonus, date: new Date().toISOString() };
+    try {
+      var raw = localStorage.getItem(DB_KEY);
+      var companion = raw ? JSON.parse(raw) : {};
+      if (!companion.points) companion.points = [];
+      companion.points.push(entry);
+      localStorage.setItem(DB_KEY, JSON.stringify(companion));
+      DB.points.push(entry);
+    } catch(e) {}
+    celebrate('combo', { bonus: bonus, desc: nbUniques + " activités différentes aujourd'hui !" });
+    refreshTopbar();
+    refreshDashboard();
+  }
+}
+
+/* ════════════════════════════════════════════
+   MOTEUR DE CÉLÉBRATION
+════════════════════════════════════════════ */
+
+var _celebQueue = [];
+var _celebActive = false;
+var _celebTimer  = null;
+
+/* Point d'entrée principal */
+function celebrate(type, opts) {
+  /* type: 'niveau' | 'badge' | 'streak' | 'premier_checkin' | 'combo' */
+  _celebQueue.push({ type: type, opts: opts || {} });
+  if (!_celebActive) _nextCeleb();
+}
+
+function _nextCeleb() {
+  if (!_celebQueue.length) { _celebActive = false; return; }
+  _celebActive = true;
+  var item = _celebQueue.shift();
+  _showCeleb(item.type, item.opts);
+}
+
+function _showCeleb(type, opts) {
+  var overlay = el('celeb-overlay');
+  var box     = el('celeb-box');
+  if (!overlay || !box) { _celebActive = false; return; }
+
+  /* Réinitialiser */
+  box.classList.remove('show','hide');
+  el('celeb-level-zone').style.display = 'none';
+  el('celeb-xp').style.display = 'none';
+  el('celeb-level-fill').style.width = '0%';
+
+  /* Contenu selon le type */
+  var cfg = _celebConfig(type, opts);
+  el('celeb-emoji').textContent  = cfg.emoji;
+  el('celeb-type').textContent   = cfg.label;
+  el('celeb-title').innerHTML    = cfg.title;
+  el('celeb-sub').textContent    = cfg.sub;
+
+  if (cfg.xp) {
+    el('celeb-xp').style.display = '';
+    el('celeb-xp').textContent   = '+' + cfg.xp + ' XP';
+  }
+  if (cfg.level) {
+    el('celeb-level-zone').style.display = '';
+    el('celeb-level-from').textContent = cfg.level.from;
+    el('celeb-level-to').textContent   = cfg.level.to;
+  }
+
+  /* Afficher */
+  overlay.classList.add('show');
+  setTimeout(function(){ box.classList.add('show'); }, 50);
+
+  /* Barre de niveau animée après 400ms */
+  if (cfg.level) {
+    setTimeout(function(){
+      el('celeb-level-fill').style.width = cfg.level.pct + '%';
+    }, 400);
+  }
+
+  /* Particules */
+  _launchParticles(cfg.colors || ['#00b4b4','#f5855a','#c8a96e','#ffffff']);
+
+  /* Auto-fermeture après 5s */
+  clearTimeout(_celebTimer);
+  _celebTimer = setTimeout(closeCeleb, 5000);
+}
+
+function _celebConfig(type, opts) {
+  if (type === 'niveau') {
+    var n = opts.niveau || {};
+    var next = opts.next || {};
+    return {
+      emoji: n.emoji || '🌟',
+      label: 'Niveau atteint',
+      title: 'Vous êtes <em>' + n.label + '</em>',
+      sub: 'Félicitations — vous avancez vers ' + (next.label || 'le sommet') + ' ' + (next.emoji || ''),
+      xp: null,
+      level: { from: opts.prev_label || '', to: next.label || '∞', pct: 5 },
+      colors: ['#00b4b4','#00d4d4','#f5855a','#ffffff','#c8a96e']
+    };
+  }
+  if (type === 'badge') {
+    var b = opts.badge || {};
+    return {
+      emoji: b.emoji || '🏅',
+      label: 'Badge débloqué',
+      title: '<em>' + b.nom + '</em>',
+      sub: b.desc || '',
+      xp: null,
+      colors: ['#c8a96e','#f5855a','#ffffff','#ffe08a']
+    };
+  }
+  if (type === 'streak') {
+    var s = opts.streak || 0;
+    return {
+      emoji: '🔥',
+      label: 'Streak record',
+      title: '<em>' + s + ' jours</em> d\'affilée',
+      sub: 'Votre record personnel est battu. Continuez !',
+      xp: null,
+      colors: ['#f5855a','#ff8c42','#ffcfb3','#e8641e']
+    };
+  }
+  if (type === 'premier_checkin') {
+    return {
+      emoji: '✅',
+      label: 'Première fois',
+      title: 'Bienvenue dans <em>la routine</em>',
+      sub: 'Votre premier check-in est validé. Revenez demain pour construire votre streak.',
+      xp: 10,
+      colors: ['#00b4b4','#a0f0f0','#ffffff','#f5855a']
+    };
+  }
+  if (type === 'combo') {
+    return {
+      emoji: '⚡',
+      label: 'Combo du jour',
+      title: 'Journée <em>complète</em>',
+      sub: opts.desc || "3 activités aujourd'hui — bonus accordé !",
+      xp: opts.bonus || 50,
+      colors: ['#f5855a','#ffcfb3','#00b4b4','#c8a96e','#ffffff']
+    };
+  }
+  /* Générique */
+  return {
+    emoji: opts.emoji || '🎯',
+    label: opts.label || 'Achievement',
+    title: opts.title || 'Bravo !',
+    sub: opts.sub || '',
+    xp: opts.xp || null,
+    colors: ['#00b4b4','#f5855a','#ffffff']
+  };
+}
+
+function closeCeleb() {
+  clearTimeout(_celebTimer);
+  var overlay = el('celeb-overlay');
+  var box     = el('celeb-box');
+  if (!overlay) return;
+  box.classList.add('hide');
+  setTimeout(function(){
+    overlay.classList.remove('show');
+    box.classList.remove('show','hide');
+    _stopParticles();
+    /* Enchaîner la suivante */
+    setTimeout(_nextCeleb, 200);
+  }, 350);
+}
+
+/* ── Moteur particules canvas ── */
+var _particleAnim = null;
+var _particles    = [];
+
+function _launchParticles(colors) {
+  var canvas = el('celeb-particles');
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var ctx = canvas.getContext('2d');
+  _particles = [];
+
+  for (var i = 0; i < 80; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = 3 + Math.random() * 8;
+    _particles.push({
+      x: window.innerWidth  / 2 + (Math.random() - .5) * 200,
+      y: window.innerHeight / 2 + (Math.random() - .5) * 100,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 4,
+      size: 4 + Math.random() * 8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * 360,
+      rotV: (Math.random() - .5) * 12,
+      shape: Math.random() > .5 ? 'rect' : 'circle',
+      life: 1,
+      decay: .012 + Math.random() * .018
+    });
+  }
+
+  cancelAnimationFrame(_particleAnim);
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    _particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.25; /* gravité */
+      p.vx *= 0.98;
+      p.rot += p.rotV;
+      p.life -= p.decay;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      if (p.shape === 'rect') {
+        ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size/2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+    if (alive) { _particleAnim = requestAnimationFrame(frame); }
+    else { _stopParticles(); }
+  }
+  frame();
+}
+
+function _stopParticles() {
+  cancelAnimationFrame(_particleAnim);
+  var canvas = el('celeb-particles');
+  if (canvas) canvas.style.display = 'none';
+}
+
+/* ── Détection de franchissement de niveau ── */
+var _lastNiveauIdx = -1;
+
+function checkNiveauUp() {
+  var total = totalXP();
+  var n = getNiveau(total);
+  var idx = NIVEAUX.indexOf(n.niv);
+  if (_lastNiveauIdx === -1) { _lastNiveauIdx = idx; return; }
+  if (idx > _lastNiveauIdx) {
+    var prev = NIVEAUX[_lastNiveauIdx];
+    celebrate('niveau', { niveau: n.niv, next: n.next, prev_label: prev.label });
+    _lastNiveauIdx = idx;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- ══ CÉLÉBRATION OVERLAY ══ -->
+<canvas id="celeb-particles"></canvas>
+<div class="celeb-overlay" id="celeb-overlay" onclick="closeCeleb()">
+  <div class="celeb-box" id="celeb-box" onclick="event.stopPropagation()">
+    <div class="celeb-ripple"></div>
+    <span class="celeb-emoji" id="celeb-emoji">🏆</span>
+    <div class="celeb-type"  id="celeb-type">Achievement</div>
+    <div class="celeb-title" id="celeb-title">—</div>
+    <div class="celeb-sub"   id="celeb-sub"></div>
+    <div class="celeb-xp"    id="celeb-xp" style="display:none"></div>
+    <div id="celeb-level-zone" style="display:none">
+      <div class="celeb-level-bar">
+        <div class="celeb-level-fill" id="celeb-level-fill"></div>
+      </div>
+      <div class="celeb-level-labels">
+        <span id="celeb-level-from"></span>
+        <span id="celeb-level-to"></span>
+      </div>
+    </div>
+    <button class="celeb-btn" onclick="closeCeleb()">Super, continuons ! →</button>
+  </div>
+</div>
+
 </body>
 </html>
