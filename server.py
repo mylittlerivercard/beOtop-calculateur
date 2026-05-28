@@ -1865,6 +1865,90 @@ def get_scores():
 
 
 
+@app.route('/api/companion/leaderboard', methods=['GET'])
+@login_required
+def companion_leaderboard():
+    """
+    Classement anonymisé des utilisateurs du même site.
+    Retourne : rang, initiales, dept masqué, total XP, streak, niveau.
+    Règle RGPD : nom jamais exposé en clair — initiales seulement.
+    """
+    user_id   = session.get('user_id')
+    site_slug = request.args.get('site_slug', '')
+    periode   = request.args.get('periode', 'total')  # total | mois | semaine
+
+    date_filter = ""
+    if periode == 'mois':
+        date_filter = "AND cp.date >= DATE_TRUNC('month', CURRENT_DATE)"
+    elif periode == 'semaine':
+        date_filter = "AND cp.date >= DATE_TRUNC('week', CURRENT_DATE)"
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Classement par site — initiales anonymisées
+            query = f"""
+                SELECT
+                    cp.user_id,
+                    COALESCE(SUM(cp.points), 0)            AS total_xp,
+                    COUNT(DISTINCT cp.date)                 AS jours_actifs,
+                    LEFT(UPPER(REPLACE(u.nom, ' ', '')), 2) AS initiales,
+                    (cp.user_id = %s)                       AS is_me
+                FROM companion_points cp
+                JOIN users u ON u.id = cp.user_id
+                WHERE cp.site_slug = %s
+                  AND u.actif = 1
+                  {date_filter}
+                GROUP BY cp.user_id, u.nom
+                ORDER BY total_xp DESC
+                LIMIT 20
+            """
+            cur.execute(query, [user_id, site_slug])
+            rows = cur.fetchall()
+
+            # Calcul streak pour chaque user (60 derniers jours)
+            user_ids = [r['user_id'] for r in rows]
+            streaks  = {}
+            if user_ids:
+                cur.execute("""
+                    SELECT user_id, date::text
+                    FROM companion_points
+                    WHERE user_id = ANY(%s)
+                    GROUP BY user_id, date
+                    ORDER BY user_id, date DESC
+                """, [user_ids])
+                from collections import defaultdict
+                dates_by_user = defaultdict(list)
+                for r in cur.fetchall():
+                    dates_by_user[r['user_id']].append(r['date'])
+                from datetime import date as dt, timedelta
+                for uid, dates in dates_by_user.items():
+                    streak = 0
+                    cursor_d = dt.today()
+                    for d_str in dates:
+                        d = dt.fromisoformat(d_str)
+                        if d == cursor_d or d == cursor_d - timedelta(days=1):
+                            streak += 1
+                            cursor_d = d
+                        else:
+                            break
+                    streaks[uid] = streak
+
+    result = []
+    for i, r in enumerate(rows):
+        niv = get_niveau(int(r['total_xp']))
+        result.append({
+            'rang':       i + 1,
+            'initiales':  r['initiales'] or '??',
+            'total_xp':   int(r['total_xp']),
+            'streak':     streaks.get(r['user_id'], 0),
+            'jours_actifs': int(r['jours_actifs']),
+            'niveau':     niv['niveau'],
+            'is_me':      bool(r['is_me']),
+        })
+
+    return jsonify(result)
+
+
 # ========== LIVRE D'OR ==========
 
 @app.route('/api/companion/livreor', methods=['GET'])
