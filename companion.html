@@ -1018,8 +1018,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <div class="nav-section-label">Suivi</div>
-  <div class="nav-item" onclick="switchView('progres')">
-    <span class="nav-icon">🏆</span><span>Mes progrès</span>
+  <div class="nav-item" onclick="openGamification()">
+    <span class="nav-icon">🏆</span><span>Ma progression</span>
+    <span class="nav-badge" style="background:rgba(245,133,90,.12);color:#e8641e;border-color:rgba(245,133,90,.3)">XP</span>
   </div>
   <div class="nav-item" onclick="switchView('profil')">
     <span class="nav-icon">👤</span><span>Mon profil</span>
@@ -5352,8 +5353,14 @@ function ldoEscape(str) {
         .catch(function(){ renderDashboard(); renderCCStats(); });
     } catch(e){ console.error('[beOtop]',e); }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_init); else _init();
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',_init); else _init();
 })();
+
+/* ════ LIEN MODULE GAMIFICATION ════ */
+function openGamification() {
+  window.open('companion_gamification.html', '_blank');
+}
 </script>
 
 <script>
