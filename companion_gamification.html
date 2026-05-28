@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>beOtop · Ma Progression</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════ */
+:root {
+  --teal:        #00b4b4;
+  --teal-light:  #00d4d4;
+  --teal-dim:    rgba(0,180,180,.1);
+  --teal-border: rgba(0,180,180,.3);
+  --coral:       #f5855a;
+  --coral-dim:   rgba(245,133,90,.12);
+  --coral-border:rgba(245,133,90,.4);
+  --orange:      #e8641e;
+  --gold:        #c8a96e;
+  --gold-dim:    rgba(200,169,110,.12);
+
+  --bg:          #ecf5f5;
+  --bg2:         #ffffff;
+  --surface:     rgba(0,180,180,.05);
+  --border:      rgba(0,180,180,.15);
+  --border2:     rgba(0,180,180,.25);
+
+  --text:        #071515;
+  --text-dim:    #1a3535;
+  --text-muted:  #3a5858;
+
+  --shadow-sm:   0 4px 16px rgba(0,180,180,.1), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-md:   0 12px 32px rgba(0,180,180,.15), 0 2px 8px rgba(0,0,0,.04);
+  --shadow-coral:0 8px 24px rgba(245,133,90,.3);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 400;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--teal-border); border-radius: 2px; }
+
+/* ── Keyframes ── */
+@keyframes fadeUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:none } }
+@keyframes scaleIn  { from { opacity:0; transform:scale(.88) } to { opacity:1; transform:scale(1) } }
+@keyframes slideRight { from { opacity:0; transform:translateX(-16px) } to { opacity:1; transform:none } }
+@keyframes flamePulse {
+  0%,100% { transform: scaleY(1) scaleX(1); filter: drop-shadow(0 0 8px rgba(245,133,90,.7)); }
+  50%     { transform: scaleY(1.1) scaleX(.95); filter: drop-shadow(0 0 16px rgba(245,133,90,1)); }
+}
+@keyframes xpFill   { from { width: 0 } }
+@keyframes confetti {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-80px) rotate(720deg); opacity: 0; }
+}
+@keyframes badgePop {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.15) rotate(4deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes ring90   { to { stroke-dashoffset: 0; } }
+@keyframes ticker   { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes shimmer  { 0%{left:-100%} 100%{left:200%} }
+
+/* ══════════════════════════════════════
+   LAYOUT — TOPBAR + SIDENAV + MAIN
+══════════════════════════════════════ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .8rem 2rem;
+  background: rgba(236,245,245,.97);
+  border-bottom: 1px solid var(--border2);
+  position: sticky; top: 0; z-index: 200;
+  backdrop-filter: blur(20px);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 400;
+  background: linear-gradient(135deg, var(--teal), var(--coral));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; letter-spacing: .12em;
+}
+.logo em { font-style: italic; font-weight: 300; }
+.topbar-center {
+  display: flex; align-items: center; gap: 1.5rem;
+}
+/* Streak chip dans topbar */
+.streak-topbar {
+  display: flex; align-items: center; gap: .45rem;
+  background: rgba(245,133,90,.1); border: 1px solid var(--coral-border);
+  border-radius: 20px; padding: .3rem .9rem;
+  font-size: .72rem; font-weight: 600; color: var(--orange);
+  cursor: pointer; transition: all .2s;
+}
+.streak-topbar:hover { background: rgba(245,133,90,.18); }
+.streak-flame { animation: flamePulse 2.2s ease-in-out infinite; display: inline-block; }
+/* XP mini bar dans topbar */
+.xp-topbar {
+  display: flex; align-items: center; gap: .6rem;
+  font-size: .68rem; color: var(--text-muted);
+}
+.xp-mini-track {
+  width: 90px; height: 5px; border-radius: 3px;
+  background: var(--teal-dim); border: 1px solid var(--teal-border);
+  overflow: hidden; position: relative;
+}
+.xp-mini-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  transition: width .8s var(--ease-out);
+}
+.niveau-chip {
+  font-size: .65rem; font-weight: 600; color: var(--teal);
+  background: var(--teal-dim); border: 1px solid var(--teal-border);
+  border-radius: 10px; padding: .15rem .55rem;
+}
+.topbar-right { display: flex; align-items: center; gap: .7rem; }
+.user-pill {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: .3rem .8rem .3rem .4rem;
+  font-size: .72rem; color: var(--text-dim);
+}
+.avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal-dim), var(--coral-dim));
+  border: 1px solid var(--teal-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .62rem; color: var(--teal); font-weight: 600;
+}
+
+.app-shell { display: flex; min-height: calc(100vh - 50px); }
+
+/* ── SIDENAV ── */
+.sidenav {
+  width: 220px; flex-shrink: 0;
+  background: rgba(236,248,248,.98);
+  border-right: 1px solid var(--border);
+  padding: 1.2rem 0;
+  display: flex; flex-direction: column;
+  position: sticky; top: 50px; height: calc(100vh - 50px);
+  overflow-y: auto;
+}
+.nav-section {
+  font-size: .52rem; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 700;
+  padding: 0 1.2rem; margin: 1rem 0 .4rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .55rem 1.2rem; font-size: .78rem; font-weight: 500;
+  color: var(--text-dim); cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all .15s; position: relative;
+}
+.nav-item:hover { color: var(--text); background: var(--teal-dim); }
+.nav-item.active { color: var(--teal); border-left-color: var(--teal); background: rgba(0,180,180,.08); font-weight: 600; }
+.nav-icon { font-size: 1rem; width: 20px; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: .55rem; font-weight: 600;
+  background: var(--coral-dim); color: var(--orange);
+  border: 1px solid var(--coral-border); border-radius: 10px; padding: .1rem .4rem;
+}
+.nav-new {
+  margin-left: auto; font-size: .52rem; font-weight: 700;
+  color: var(--coral); letter-spacing: .05em; text-transform: uppercase;
+}
+.nav-bottom {
+  margin-top: auto; padding: 1rem 1.2rem;
+  border-top: 1px solid var(--border);
+  font-size: .58rem; color: var(--text-muted);
+}
+
+/* ── MAIN ── */
+.main-content { flex: 1; overflow-y: auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ══════════════════════════════════════
+   COMPOSANTS COMMUNS
+══════════════════════════════════════ */
+.card {
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.3rem 1.4rem;
+  box-shadow: var(--shadow-sm);
+}
+.sec {
+  font-size: .58rem; font-weight: 700; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--text-muted);
+  display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem;
+}
+.sec::after { content: ""; flex: 1; height: 1px; background: var(--border2); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--coral), var(--orange));
+  color: white; border-radius: 12px; padding: .65rem 1.5rem;
+  font-size: .78rem; font-weight: 600; letter-spacing: .02em;
+  box-shadow: var(--shadow-coral); transition: all .2s var(--ease-spring);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(245,133,90,.45); }
+.btn-ghost {
+  background: transparent; color: var(--text-muted);
+  font-size: .72rem; padding: .4rem .8rem; border-radius: 8px;
+  transition: all .15s;
+}
+.btn-ghost:hover { background: var(--teal-dim); color: var(--teal); }
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+  background: rgba(7,21,21,.95); border: 1px solid var(--teal-border);
+  border-radius: 14px; padding: .85rem 1.3rem;
+  font-size: .78rem; color: white;
+  box-shadow: 0 12px 32px rgba(0,0,0,.4);
+  transform: translateY(80px); opacity: 0;
+  transition: all .35s var(--ease-spring); pointer-events: none;
+  display: flex; align-items: center; gap: .6rem;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(12px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #f8fafa; border: 1px solid var(--teal-border);
+  border-radius: 20px; padding: 2rem; width: 500px; max-width: 94vw;
+  max-height: 88vh; overflow-y: auto;
+  animation: scaleIn .3s var(--ease-spring);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; cursor: pointer; transition: all .15s;
+}
+.modal-close:hover { background: var(--teal-dim); color: var(--teal); }
+
+/* ══════════════════════════════════════
+   DASHBOARD — HERO GAMIFIÉ
+══════════════════════════════════════ */
+.hero {
+  background: linear-gradient(125deg, #002424 0%, #004848 45%, #002e2e 100%);
+  padding: 2rem 2.2rem 1.8rem;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 92% 15%, rgba(245,133,90,.28) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 5% 88%, rgba(0,180,180,.22) 0%, transparent 60%);
+}
+.hero-inner {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 1.5rem; flex-wrap: wrap; position: relative; z-index: 2;
+}
+.hero-left {}
+.hero-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem; font-weight: 300; color: white; line-height: 1;
+}
+.hero-date { font-size: .68rem; color: rgba(255,255,255,.45); letter-spacing: .1em; margin-top: .2rem; text-transform: capitalize; }
+.hero-greeting {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 300; color: rgba(255,255,255,.9); margin-top: .9rem;
+}
+.hero-greeting em { color: var(--coral); font-style: italic; }
+
+/* Streak + XP sous greeting */
+.hero-gamif {
+  display: flex; align-items: center; gap: 1rem;
+  margin-top: 1.2rem; flex-wrap: wrap;
+}
+.streak-hero {
+  display: flex; align-items: center; gap: .5rem;
+  background: rgba(245,133,90,.18); border: 1px solid rgba(245,133,90,.4);
+  border-radius: 30px; padding: .45rem 1.1rem;
+}
+.streak-hero-flame { font-size: 1.3rem; animation: flamePulse 2s ease-in-out infinite; }
+.streak-hero-count { font-size: 1.6rem; font-weight: 700; color: white; line-height: 1; }
+.streak-hero-label { font-size: .6rem; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .08em; }
+
+.xp-hero { flex: 1; min-width: 180px; }
+.xp-hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
+.xp-hero-niveau {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .72rem; color: rgba(255,255,255,.8); font-weight: 600;
+}
+.xp-hero-pts { font-size: .65rem; color: rgba(255,255,255,.4); }
+.xp-track {
+  width: 100%; height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,.12); overflow: hidden; position: relative;
+}
+.xp-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  transition: width 1.2s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.xp-fill::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+.xp-hero-sub { font-size: .58rem; color: rgba(255,255,255,.3); margin-top: .35rem; }
+
+/* Ring right */
+.hero-right { text-align: center; }
+.ring-lbl { font-size: .58rem; color: rgba(255,255,255,.4); margin-top: .3rem; letter-spacing: .06em; text-transform: uppercase; }
+.ring-val  { font-size: .78rem; font-weight: 600; color: var(--teal-light); }
+.ring-track { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 5; }
+.ring-fill  {
+  fill: none; stroke: var(--teal-light); stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: 226; stroke-dashoffset: 226;
+  transform-origin: center; transform: rotate(-90deg);
+  transition: stroke-dashoffset 1.2s var(--ease-out);
+}
+
+/* ── TICKER ── */
+.ticker-bar {
+  background: #0a1a1a; border-bottom: 1px solid rgba(0,180,180,.18);
+  height: 40px; overflow: hidden; position: relative;
+}
+.ticker-bar::before, .ticker-bar::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 60px;
+  z-index: 2; pointer-events: none;
+}
+.ticker-bar::before { left:0;  background: linear-gradient(to right, #0a1a1a, transparent); }
+.ticker-bar::after  { right:0; background: linear-gradient(to left,  #0a1a1a, transparent); }
+.ticker-track { display: flex; animation: ticker 32s linear infinite; white-space: nowrap; align-items: center; height: 100%; }
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: 0 1.4rem; font-size: .68rem; font-weight: 500;
+  color: rgba(255,255,255,.45); border-right: 1px solid rgba(255,255,255,.07); height: 100%;
+  transition: color .2s;
+}
+.ticker-item:hover { color: white; }
+.ticker-item.streak { color: #ffcfb3; }
+.ticker-item.badge  { color: #a0f0f0; }
+.ticker-item.defi   { color: #d4b8ff; }
+
+/* ══════════════════════════════════════
+   DASHBOARD BODY
+══════════════════════════════════════ */
+.dash-body { padding: 1.8rem 2.2rem; }
+
+/* ── CARTE DU JOUR ── */
+.card-du-jour {
+  background: linear-gradient(135deg, #003232 0%, #005050 50%, #003838 100%);
+  border-radius: 18px; padding: 1.4rem 1.8rem;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,50,50,.25);
+  cursor: pointer; transition: transform .25s var(--ease-spring), box-shadow .25s;
+}
+.card-du-jour:hover { transform: translateY(-3px); box-shadow: 0 20px 48px rgba(0,50,50,.35); }
+.card-du-jour::before {
+  content: '';
+  position: absolute; top: -30px; right: -30px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,180,180,.25), transparent 70%);
+  pointer-events: none;
+}
+.cdj-label {
+  font-size: .58rem; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--teal-light); font-weight: 700; margin-bottom: .7rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.cdj-label::before {
+  content: ''; display: inline-block;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal-light);
+  animation: flamePulse 2s infinite;
+}
+.cdj-type {
+  font-size: .62rem; font-weight: 600;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px; padding: .2rem .7rem;
+  color: rgba(255,255,255,.6); margin-bottom: .6rem; display: inline-block;
+}
+.cdj-contenu {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem; font-weight: 300; color: white; line-height: 1.5;
+  margin-bottom: .9rem;
+}
+.cdj-contenu em { color: var(--coral); font-style: italic; }
+.cdj-source { font-size: .65rem; color: rgba(255,255,255,.35); }
+.cdj-cta {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: rgba(0,180,180,.2); border: 1px solid rgba(0,180,180,.4);
+  border-radius: 20px; padding: .4rem 1rem;
+  font-size: .7rem; font-weight: 600; color: var(--teal-light);
+  transition: all .2s;
+}
+.cdj-cta:hover { background: rgba(0,180,180,.35); }
+.cdj-footer { display: flex; align-items: center; justify-content: space-between; }
+.cdj-progress-dots { display: flex; gap: .35rem; }
+.cdj-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.2); transition: all .3s;
+}
+.cdj-dot.active { background: var(--teal-light); width: 18px; border-radius: 3px; }
+
+/* ── DÉFI COLLECTIF ── */
+.defi-card {
+  background: rgba(255,255,255,.92); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.3rem 1.5rem;
+  margin-bottom: 2rem; box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
+}
+.defi-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(200,169,110,.2), rgba(200,169,110,.05));
+  border: 1px solid rgba(200,169,110,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+}
+.defi-body { flex: 1; min-width: 200px; }
+.defi-label { font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: .25rem; }
+.defi-titre { font-size: .92rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+.defi-desc  { font-size: .68rem; color: var(--text-muted); margin-bottom: .7rem; }
+.defi-progress-row { display: flex; align-items: center; gap: .7rem; }
+.defi-track {
+  flex: 1; height: 9px; border-radius: 5px;
+  background: rgba(200,169,110,.15); border: 1px solid rgba(200,169,110,.2);
+  overflow: hidden;
+}
+.defi-fill {
+  height: 100%; border-radius: 5px;
+  background: linear-gradient(90deg, var(--gold), #e8c88e);
+  transition: width 1s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.defi-fill::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+.defi-count { font-size: .78rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+.defi-days  { font-size: .62rem; color: var(--text-muted); margin-top: .3rem; }
+.defi-cta { flex-shrink: 0; }
+.btn-defi {
+  background: rgba(200,169,110,.12); border: 1px solid rgba(200,169,110,.35);
+  border-radius: 10px; color: var(--gold); font-size: .72rem; font-weight: 600;
+  padding: .6rem 1.2rem; transition: all .2s;
+}
+.btn-defi:hover { background: rgba(200,169,110,.22); transform: translateY(-1px); }
+
+/* ── MINI CHECK-IN ── */
+.checkin-mini {
+  background: linear-gradient(135deg, #003030, #005050);
+  border-radius: 16px; padding: 1.3rem 1.6rem; margin-bottom: 2rem;
+  box-shadow: 0 12px 28px rgba(0,0,0,.1);
+}
+.checkin-mini-label {
+  font-size: .62rem; letter-spacing: .2em; color: var(--teal-light);
+  font-weight: 700; margin-bottom: .9rem; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.checkin-mini-label .cdj-type { margin-bottom: 0; }
+.sliders-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; margin-bottom: 1.2rem; }
+.sl-grp label { font-size: .68rem; color: rgba(255,255,255,.65); display: block; margin-bottom: .45rem; }
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  border-radius: 2px; background: rgba(255,255,255,.2);
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: white; border: 2px solid var(--coral);
+  box-shadow: 0 2px 8px rgba(245,133,90,.5);
+}
+.sl-extremes { display: flex; justify-content: space-between; font-size: .58rem; color: rgba(255,255,255,.35); margin-top: .25rem; }
+.sl-val { color: var(--coral); font-weight: 700; font-size: .7rem; }
+.btn-checkin {
+  background: linear-gradient(90deg, var(--coral), var(--orange));
+  color: white; border-radius: 30px; padding: .65rem 1.8rem;
+  font-size: .78rem; font-weight: 600; box-shadow: 0 6px 16px rgba(245,133,90,.35);
+  transition: all .2s var(--ease-spring);
+}
+.btn-checkin:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(245,133,90,.5); }
+.checkin-done {
+  display: none; text-align: center; padding: .8rem;
+  font-size: .8rem; color: rgba(255,255,255,.7);
+}
+.checkin-done .check-ico { font-size: 1.8rem; display: block; margin-bottom: .3rem; }
+
+/* ── KPIs ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .9rem; margin-bottom: 2rem; }
+.kpi-card {
+  background: white; border-radius: 16px; padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm); transition: all .25s var(--ease-spring);
+  animation: fadeUp .4s var(--ease-out) backwards;
+  position: relative; overflow: hidden;
+}
+.kpi-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.kpi-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent, var(--teal)); border-radius: 16px 16px 0 0;
+  box-shadow: 0 0 8px var(--accent, var(--teal));
+}
+.kpi-label { font-size: .58rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: .45rem; }
+.kpi-val   { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 500; color: var(--text); line-height: 1; }
+.kpi-sub   { font-size: .62rem; color: var(--text-muted); margin-top: .3rem; }
+
+/* ════════════════════════════════════════
+   VUE PROGRESSION
+════════════════════════════════════════ */
+.prog-view { padding: 2rem 2.2rem; }
+
+/* ── NIVEAU HERO ── */
+.niveau-hero {
+  background: linear-gradient(135deg, #002424, #004444);
+  border-radius: 20px; padding: 2rem 2.2rem;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,40,40,.25);
+}
+.niveau-hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 55% at 90% 20%, rgba(0,180,180,.2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 80%, rgba(245,133,90,.15) 0%, transparent 60%);
+}
+.niveau-hero-inner {
+  display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+  position: relative; z-index: 2;
+}
+.niveau-badge-big {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; flex-shrink: 0;
+  box-shadow: inset 0 0 20px rgba(0,180,180,.15);
+  transition: transform .3s var(--ease-spring);
+}
+.niveau-badge-big:hover { transform: scale(1.1) rotate(-5deg); }
+.niveau-info { flex: 1; min-width: 200px; }
+.niveau-label-big {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 300; color: white; margin-bottom: .15rem;
+}
+.niveau-sub { font-size: .7rem; color: rgba(255,255,255,.45); margin-bottom: 1rem; }
+.xp-bar-full { position: relative; }
+.xp-bar-track {
+  width: 100%; height: 12px; border-radius: 6px;
+  background: rgba(255,255,255,.1); overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  transition: width 1.4s var(--ease-out);
+  position: relative; overflow: hidden;
+}
+.xp-bar-fill::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+.xp-bar-labels {
+  display: flex; justify-content: space-between; margin-top: .4rem;
+  font-size: .62rem; color: rgba(255,255,255,.35);
+}
+.xp-pts-total { text-align: right; }
+.xp-pts-big {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem; font-weight: 300; color: white; line-height: 1;
+}
+.xp-pts-lbl { font-size: .6rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .1em; }
+
+/* ── STREAK CALENDAR ── */
+.streak-section { margin-bottom: 2rem; }
+.streak-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem;
+}
+.streak-count-display {
+  display: flex; align-items: center; gap: .8rem;
+}
+.streak-flame-big { font-size: 2.5rem; animation: flamePulse 2s ease-in-out infinite; }
+.streak-num { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: var(--orange); line-height: 1; }
+.streak-txt { font-size: .7rem; color: var(--text-muted); }
+.streak-record { font-size: .68rem; color: var(--text-muted); display: flex; align-items: center; gap: .4rem; }
+.streak-record span { color: var(--coral); font-weight: 600; }
+
+.streak-calendar {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: .35rem;
+}
+.streak-day-label {
+  font-size: .55rem; text-align: center; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .08em; padding: .2rem 0;
+}
+.streak-day {
+  aspect-ratio: 1; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .58rem; color: var(--text-muted);
+  transition: all .2s; position: relative; cursor: default;
+}
+.streak-day.done {
+  background: linear-gradient(135deg, rgba(0,180,180,.2), rgba(0,180,180,.08));
+  border-color: var(--teal-border); color: var(--teal);
+}
+.streak-day.done::after {
+  content: '✓'; position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: .72rem; font-weight: 700; color: var(--teal);
+}
+.streak-day.today {
+  border-color: var(--coral); box-shadow: 0 0 10px rgba(245,133,90,.3);
+}
+.streak-day.today.done { border-color: var(--teal); box-shadow: 0 0 10px rgba(0,180,180,.4); }
+.streak-day-num { opacity: 0; }
+.streak-day.done .streak-day-num { display: none; }
+.streak-day:not(.done) .streak-day-num { opacity: .6; }
+
+/* ── BADGES ── */
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .9rem; margin-bottom: 2rem; }
+.badge-item {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.1rem .8rem;
+  text-align: center; transition: all .25s var(--ease-spring);
+  position: relative; overflow: hidden;
+}
+.badge-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.badge-item.locked { opacity: .45; filter: grayscale(.8); }
+.badge-item.new-badge { animation: badgePop .5s var(--ease-spring); border-color: var(--coral); }
+.badge-item.new-badge::before {
+  content: 'NEW'; position: absolute; top: 6px; right: 6px;
+  font-size: .45rem; font-weight: 700; color: var(--coral); letter-spacing: .1em;
+  background: var(--coral-dim); border: 1px solid var(--coral-border);
+  border-radius: 6px; padding: .1rem .35rem;
+}
+.badge-emoji { font-size: 2rem; display: block; margin-bottom: .5rem; }
+.badge-name  { font-size: .68rem; font-weight: 600; color: var(--text); margin-bottom: .2rem; }
+.badge-desc  { font-size: .58rem; color: var(--text-muted); line-height: 1.3; }
+.badge-prog  {
+  margin-top: .55rem; height: 4px; border-radius: 2px;
+  background: var(--surface); border: 1px solid var(--border); overflow: hidden;
+}
+.badge-prog-fill { height: 100%; border-radius: 2px; background: var(--teal); transition: width 1s var(--ease-out); }
+
+/* ── CLASSEMENT ANONYME ── */
+.rank-list { display: flex; flex-direction: column; gap: .6rem; }
+.rank-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .85rem 1rem; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all .2s; animation: slideRight .3s var(--ease-out) backwards;
+}
+.rank-item:hover { border-color: var(--teal-border); background: rgba(0,180,180,.06); }
+.rank-item.me {
+  background: rgba(0,180,180,.08); border-color: var(--teal-border);
+  box-shadow: 0 0 0 2px rgba(0,180,180,.15);
+}
+.rank-pos {
+  width: 28px; text-align: center; font-weight: 700;
+  font-size: .85rem; color: var(--text-muted); flex-shrink: 0;
+}
+.rank-pos.gold   { color: #f0b429; }
+.rank-pos.silver { color: #a0b0b8; }
+.rank-pos.bronze { color: #cd7f32; }
+.rank-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal-dim), var(--coral-dim));
+  border: 1px solid var(--teal-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; color: var(--teal); font-weight: 700;
+}
+.rank-avatar.me-av { background: rgba(0,180,180,.15); border-color: var(--teal); }
+.rank-info { flex: 1; }
+.rank-name { font-size: .8rem; font-weight: 600; color: var(--text); }
+.rank-dept { font-size: .62rem; color: var(--text-muted); }
+.rank-pts  { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--teal); }
+.rank-streak { font-size: .65rem; color: var(--orange); font-weight: 600; }
+.rank-me-tag {
+  font-size: .52rem; font-weight: 700; color: var(--teal);
+  background: var(--teal-dim); border: 1px solid var(--teal-border);
+  border-radius: 8px; padding: .1rem .45rem; text-transform: uppercase; letter-spacing: .08em;
+  margin-left: .3rem;
+}
+
+/* ── HISTORIQUE ── */
+.hist-item {
+  display: flex; align-items: center; gap: .9rem;
+  padding: .75rem 0; border-bottom: 1px solid var(--border);
+  animation: slideRight .25s var(--ease-out) backwards;
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-ico {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.hist-label { font-size: .78rem; font-weight: 500; color: var(--text); }
+.hist-sub   { font-size: .62rem; color: var(--text-muted); }
+.hist-pts   { margin-left: auto; font-size: .82rem; font-weight: 700; color: var(--teal); white-space: nowrap; }
+.hist-date  { font-size: .6rem; color: var(--text-muted); white-space: nowrap; }
+
+/* ── CONFETTI CANVAS ── */
+#confetti-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+  display: none;
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidenav { width: 54px; }
+  .sidenav .nav-item span:not(.nav-icon) { display: none; }
+  .sidenav .nav-section, .sidenav .nav-badge, .sidenav .nav-new, .nav-bottom { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .sliders-row { grid-template-columns: 1fr; }
+  .topbar-center { display: none; }
+  .badges-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="logo">beOtop <em>Companion</em></div>
+
+  <div class="topbar-center">
+    <div class="streak-topbar" onclick="switchView('progression')">
+      <span class="streak-flame" id="tb-flame">🔥</span>
+      <span id="tb-streak-count">0</span>&nbsp;jours
+    </div>
+    <div class="xp-topbar">
+      <span class="niveau-chip" id="tb-niveau">🌱 Débutant</span>
+      <div class="xp-mini-track">
+        <div class="xp-mini-fill" id="tb-xp-fill" style="width:0%"></div>
+      </div>
+      <span id="tb-xp-txt" style="font-size:.6rem;color:var(--text-muted)">0 XP</span>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar" id="tb-avatar">MR</div>
+      <span id="tb-user">Marie R.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHELL ══ -->
+<div class="app-shell">
+
+<!-- SIDENAV -->
+<nav class="sidenav">
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="switchView('dashboard')">
+    <span class="nav-icon">🏠</span><span>Tableau de bord</span>
+  </div>
+  <div class="nav-item" onclick="switchView('progression')">
+    <span class="nav-icon">🏆</span><span>Ma progression</span>
+    <span class="nav-new" id="nav-new-badge" style="display:none">NEW</span>
+  </div>
+
+  <div class="nav-section">Bien-être</div>
+  <div class="nav-item" onclick="showToast('🔗 Module Cohérence cardiaque (companion principal)')">
+    <span class="nav-icon">💓</span><span>Cohérence cardiaque</span>
+  </div>
+  <div class="nav-item" onclick="showToast('🔗 Module Bibliothèque audio (companion principal)')">
+    <span class="nav-icon">🎧</span><span>Bibliothèque audio</span>
+  </div>
+  <div class="nav-item" onclick="showToast('🔗 Module Exercices express (companion principal)')">
+    <span class="nav-icon">⚡</span><span>Exercices express</span>
+  </div>
+  <div class="nav-item" onclick="showToast('🔗 Module Jeux cérébraux (companion principal)')">
+    <span class="nav-icon">🧠</span><span>Jeux cérébraux</span>
+  </div>
+  <div class="nav-item" onclick="showToast('🔗 Module Sons immersifs (companion principal)')">
+    <span class="nav-icon">🌿</span><span>Sons immersifs</span>
+  </div>
+
+  <div class="nav-section">Suivi</div>
+  <div class="nav-item" onclick="switchView('dashboard')">
+    <span class="nav-icon">📅</span><span>Réserver</span>
+  </div>
+  <div class="nav-item" onclick="switchView('dashboard')">
+    <span class="nav-icon">💬</span><span>Livre d'or</span>
+  </div>
+
+  <div class="nav-section">Gestion</div>
+  <div class="nav-item" onclick="openAdminModal()">
+    <span class="nav-icon">⚙️</span><span>Simulation</span>
+  </div>
+
+  <div class="nav-bottom">beOtop Gamification v1.0<br>Module standalone</div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main-content">
+
+<!-- ════════════ DASHBOARD ════════════ -->
+<div class="view active" id="view-dashboard">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-time" id="h-clock">--:--</div>
+        <div class="hero-date"  id="h-date"></div>
+        <div class="hero-greeting">Bonjour, <em id="h-prenom">—</em></div>
+        <div class="hero-gamif">
+          <div class="streak-hero">
+            <span class="streak-hero-flame">🔥</span>
+            <div>
+              <div class="streak-hero-count" id="h-streak-count">0</div>
+              <div class="streak-hero-label">jours</div>
+            </div>
+          </div>
+          <div class="xp-hero">
+            <div class="xp-hero-top">
+              <div class="xp-hero-niveau">
+                <span id="h-niveau-emoji">🌱</span>
+                <span id="h-niveau-label">Débutant</span>
+              </div>
+              <div class="xp-hero-pts" id="h-xp-pts">0 / 100 XP</div>
+            </div>
+            <div class="xp-track"><div class="xp-fill" id="h-xp-fill" style="width:0%"></div></div>
+            <div class="xp-hero-sub" id="h-xp-sub">Prochain niveau : Actif 🌿</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <svg width="86" height="86" viewBox="0 0 88 88">
+          <circle class="ring-track" cx="44" cy="44" r="36"/>
+          <circle class="ring-fill" id="h-ring" cx="44" cy="44" r="36"/>
+        </svg>
+        <div class="ring-lbl">Cohérence</div>
+        <div class="ring-val" id="h-ring-val">0 / 20</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <div class="ticker-track" id="h-ticker"></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="dash-body">
+
+    <!-- CARTE DU JOUR -->
+    <div class="sec">Moment du jour</div>
+    <div class="card-du-jour" onclick="nextCardDuJour()">
+      <div class="cdj-label">Contenu exclusif · Renouvelé chaque jour</div>
+      <div class="cdj-type" id="cdj-type">Fait scientifique</div>
+      <div class="cdj-contenu" id="cdj-contenu">Chargement…</div>
+      <div class="cdj-source" id="cdj-source"></div>
+      <div style="height:.9rem"></div>
+      <div class="cdj-footer">
+        <div class="cdj-progress-dots" id="cdj-dots"></div>
+        <button class="cdj-cta" onclick="event.stopPropagation();cardDuJourCTA()">
+          → Essayer maintenant
+        </button>
+      </div>
+    </div>
+
+    <!-- DÉFI COLLECTIF -->
+    <div class="sec">Défi collectif de la semaine</div>
+    <div class="defi-card">
+      <div class="defi-icon-wrap" id="defi-icon">🧘</div>
+      <div class="defi-body">
+        <div class="defi-label">Défi équipe · Semaine en cours</div>
+        <div class="defi-titre" id="defi-titre">Chargement…</div>
+        <div class="defi-desc"  id="defi-desc"></div>
+        <div class="defi-progress-row">
+          <div class="defi-track"><div class="defi-fill" id="defi-fill" style="width:0%"></div></div>
+          <div class="defi-count" id="defi-count">0 / 0</div>
+        </div>
+        <div class="defi-days" id="defi-days"></div>
+      </div>
+      <div class="defi-cta">
+        <button class="btn-defi" onclick="participerDefi()">Participer → <span id="defi-xp-reward">+25 XP</span></button>
+      </div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div class="sec">Check-in du jour</div>
+    <div class="checkin-mini" id="checkin-zone">
+      <div class="checkin-mini-label">
+        Comment vous sentez-vous ?
+        <div class="cdj-type" id="checkin-pts-label">+10 XP</div>
+      </div>
+      <div id="checkin-form">
+        <div class="sliders-row">
+          <div class="sl-grp">
+            <label>Énergie ⚡ <span class="sl-val" id="val-energie">6</span>/10</label>
+            <input type="range" id="sl-energie" min="1" max="10" value="6"
+              oninput="document.getElementById('val-energie').textContent=this.value">
+            <div class="sl-extremes"><span>Épuisé</span><span>En forme</span></div>
+          </div>
+          <div class="sl-grp">
+            <label>Stress 🌡️ <span class="sl-val" id="val-stress">5</span>/10</label>
+            <input type="range" id="sl-stress" min="1" max="10" value="5"
+              oninput="document.getElementById('val-stress').textContent=this.value">
+            <div class="sl-extremes"><span>Calme</span><span>Saturé</span></div>
+          </div>
+          <div class="sl-grp">
+            <label>Focus 🎯 <span class="sl-val" id="val-focus">7</span>/10</label>
+            <input type="range" id="sl-focus" min="1" max="10" value="7"
+              oninput="document.getElementById('val-focus').textContent=this.value">
+            <div class="sl-extremes"><span>Dispersé</span><span>Focalisé</span></div>
+          </div>
+        </div>
+        <button class="btn-checkin" onclick="submitCheckin()">✓ Valider mon check-in · +10 XP</button>
+      </div>
+      <div class="checkin-done" id="checkin-done">
+        <span class="check-ico">✅</span>
+        Check-in du jour validé ! Revenez demain pour maintenir votre streak.
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="sec">Ce mois</div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--accent:var(--teal);animation-delay:.1s">
+        <div class="kpi-label">Streak actuel</div>
+        <div class="kpi-val" id="kpi-streak">—</div>
+        <div class="kpi-sub">jours consécutifs 🔥</div>
+      </div>
+      <div class="kpi-card" style="--accent:var(--coral);animation-delay:.2s">
+        <div class="kpi-label">XP ce mois</div>
+        <div class="kpi-val" id="kpi-xp-mois">—</div>
+        <div class="kpi-sub">points gagnés</div>
+      </div>
+      <div class="kpi-card" style="--accent:var(--gold);animation-delay:.3s">
+        <div class="kpi-label">Badges</div>
+        <div class="kpi-val" id="kpi-badges">—</div>
+        <div class="kpi-sub">débloqués / <span id="kpi-badges-total">—</span></div>
+      </div>
+      <div class="kpi-card" style="--accent:#a855f7;animation-delay:.4s">
+        <div class="kpi-label">Rang équipe</div>
+        <div class="kpi-val" id="kpi-rang">#—</div>
+        <div class="kpi-sub">sur <span id="kpi-rang-total">—</span> collègues</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /view-dashboard -->
+
+<!-- ════════════ PROGRESSION ════════════ -->
+<div class="view" id="view-progression">
+<div class="prog-view">
+
+  <!-- NIVEAU HERO -->
+  <div class="niveau-hero">
+    <div class="niveau-hero-inner">
+      <div class="niveau-badge-big" id="pg-badge-big">🌱</div>
+      <div class="niveau-info">
+        <div style="font-size:.6rem;letter-spacing:.2em;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:.3rem">Niveau actuel</div>
+        <div class="niveau-label-big" id="pg-niveau-label">Débutant</div>
+        <div class="niveau-sub" id="pg-niveau-sub">Continuez — le prochain niveau vous attend</div>
+        <div class="xp-bar-full">
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" id="pg-xp-fill" style="width:0%"></div>
+          </div>
+          <div class="xp-bar-labels">
+            <span id="pg-xp-dans-niveau">0 XP dans ce niveau</span>
+            <span id="pg-xp-restant"></span>
+          </div>
+        </div>
+      </div>
+      <div class="xp-pts-total">
+        <div class="xp-pts-big" id="pg-total-xp">0</div>
+        <div class="xp-pts-lbl">XP total</div>
+        <div style="margin-top:.5rem;font-size:.7rem;color:rgba(255,255,255,.4)">
+          🔥 Record : <strong id="pg-record-streak" style="color:rgba(255,255,255,.7)">0</strong> jours
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STREAK CALENDAR -->
+  <div class="streak-section">
+    <div class="sec">Streak — 28 derniers jours</div>
+    <div class="card" style="margin-bottom:2rem">
+      <div class="streak-header">
+        <div class="streak-count-display">
+          <span class="streak-flame-big">🔥</span>
+          <div>
+            <div class="streak-num" id="pg-streak-num">0</div>
+            <div class="streak-txt">jours consécutifs</div>
+          </div>
+        </div>
+        <div class="streak-record">
+          🏆 Record personnel : <span id="pg-record-txt">0 jours</span>
+        </div>
+      </div>
+      <div class="streak-calendar" id="pg-streak-cal"></div>
+    </div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="sec">Badges & récompenses</div>
+  <div class="badges-grid" id="pg-badges-grid"></div>
+
+  <!-- CLASSEMENT -->
+  <div class="sec">Classement équipe <span style="font-size:.58rem;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— données anonymisées</span></div>
+  <div class="card" style="margin-bottom:2rem;padding:1rem 1.2rem">
+    <div class="rank-list" id="pg-rank-list"></div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="sec">Activités récentes</div>
+  <div class="card" style="padding:1rem 1.3rem">
+    <div id="pg-hist"></div>
+  </div>
+
+</div>
+</div><!-- /view-progression -->
+
+</div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<!-- MODAL SIMULATION -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Simulation</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   CONSTANTES GAMIFICATION
+════════════════════════════════════════════ */
+var NIVEAUX = [
+  { seuil:0,    label:'Débutant',   emoji:'🌱', couleur:'#4caf50' },
+  { seuil:100,  label:'Actif',      emoji:'🌿', couleur:'#00b4b4' },
+  { seuil:300,  label:'Régulier',   emoji:'💪', couleur:'#2196f3' },
+  { seuil:600,  label:'Engagé',     emoji:'🌟', couleur:'#ff9800' },
+  { seuil:1000, label:'Expert',     emoji:'🏆', couleur:'#f5855a' },
+  { seuil:1800, label:'Ambassadeur',emoji:'💎', couleur:'#e040fb' },
+];
+
+var BAREME = {
+  checkin: 10, cc: 20, audio: 15, exercice: 15,
+  jeu: 10, reservation: 25, sons: 10, video: 15, defi: 25
+};
+
+var ACTION_ICONS  = { checkin:'💓', cc:'🫀', audio:'🎧', exercice:'⚡', jeu:'🧠', reservation:'📅', sons:'🌿', video:'🎬', defi:'🏅' };
+var ACTION_LABELS = { checkin:'Check-in', cc:'Cohérence cardiaque', audio:'Audio', exercice:'Exercice', jeu:'Jeu cérébral', reservation:'Réservation', sons:'Sons immersifs', video:'Vidéo', defi:'Défi collectif' };
+
+var BADGES_DEF = [
+  { id:'premier_checkin',  emoji:'✅', nom:'Premier pas',       desc:'1er check-in validé',              seuil:1,  action:'checkin',     type:'count' },
+  { id:'streak_3',         emoji:'🔥', nom:'3 jours d\'affilée',desc:'3 jours consécutifs',              seuil:3,  action:'streak',      type:'streak' },
+  { id:'streak_7',         emoji:'🔥', nom:'Semaine de feu',    desc:'7 jours consécutifs',              seuil:7,  action:'streak',      type:'streak' },
+  { id:'streak_21',        emoji:'🏅', nom:'Habitude forgée',   desc:'21 jours consécutifs',             seuil:21, action:'streak',      type:'streak' },
+  { id:'cc_5',             emoji:'🫀', nom:'Cœur cohérent',     desc:'5 sessions cohérence cardiaque',   seuil:5,  action:'cc',          type:'count' },
+  { id:'audio_10',         emoji:'🎧', nom:'Grand auditeur',    desc:'10 écoutes audio',                 seuil:10, action:'audio',       type:'count' },
+  { id:'exercice_5',       emoji:'⚡', nom:'Corps en mouvement',desc:'5 exercices express',              seuil:5,  action:'exercice',    type:'count' },
+  { id:'jeu_10',           emoji:'🧠', nom:'Cerveau actif',     desc:'10 jeux cérébraux',                seuil:10, action:'jeu',         type:'count' },
+  { id:'reservation_3',    emoji:'📅', nom:'Habitué des lieux', desc:'3 réservations d\'atelier',        seuil:3,  action:'reservation', type:'count' },
+  { id:'niveau_actif',     emoji:'🌿', nom:'Actif',             desc:'Niveau Actif atteint',             seuil:100,action:'total_xp',    type:'xp' },
+  { id:'niveau_expert',    emoji:'🏆', nom:'Expert',            desc:'Niveau Expert atteint',            seuil:1000,action:'total_xp',   type:'xp' },
+  { id:'defi_3',           emoji:'🤝', nom:'Esprit d\'équipe',  desc:'3 défis collectifs relevés',       seuil:3,  action:'defi',        type:'count' },
+];
+
+var CARTES_DU_JOUR = [
+  { type:'Fait scientifique', contenu:'\u003cem\u003e20 minutes\u003c/em\u003e dans un espace de récupération réduisent le cortisol de \u003cem\u003e15 à 23%\u003c/em\u003e selon les études en neurobiologie du stress.', source:'Laboratoire de neurosciences de Harvard, 2023', cta:'coherence' },
+  { type:'Conseil pratique',  contenu:'La règle des \u003cem\u003e90 minutes\u003c/em\u003e : notre cerveau alterne naturellement entre cycles de haute et basse concentration. Une pause à 90 min optimise la récupération cognitive.', source:'Dr Andrew Huberman — Huberman Lab', cta:'exercices' },
+  { type:'Micro-exercice',    contenu:'\u003cem\u003eRespirez 4 secondes, retenez 4 secondes, expirez 4 secondes.\u003c/em\u003e Répétez 4 fois. Ce protocole active le nerf vague et réduit le stress en 2 minutes.', source:'Box breathing — Navy SEALs Protocol', cta:'coherence' },
+  { type:'Fait scientifique', contenu:'Les collaborateurs qui font une pause active de \u003cem\u003e15 minutes\u003c/em\u003e \u00e0 mi-journ\u00e9e sont \u003cem\u003e34% plus productifs\u003c/em\u003e l\u2019apr\u00e8s-midi que ceux qui d\u00e9jeunent \u00e0 leur bureau.', source:'Stanford Happiness Lab, 2022', cta:'reservation' },
+  { type:'Conseil bien-\u00eatre', contenu:'La \u003cem\u003eposition 127\u00b0\u003c/em\u003e est la seule inclinaison qui supprime totalement la compression des disques intervert\u00e9braux. Id\u00e9ale apr\u00e8s 3h de travail en station assise.', source:'NASA Neutral Body Posture Research', cta:'reservation' },
+  { type:'Micro-exercice',    contenu:'Posez vos deux pieds à plat. Fermez les yeux 30 secondes. \u003cem\u003eNommez mentalement 5 sons\u003c/em\u003e que vous entendez. Cet ancrage sensoriel interrompt la boucle de stress.', source:'Thérapie d\'acceptation et d\'engagement (ACT)', cta:'exercices' },
+  { type:'Fait scientifique', contenu:'Une sieste de \u003cem\u003e10 à 20 minutes\u003c/em\u003e restaure des performances cognitives équivalentes à \u003cem\u003e2h de sommeil nocturne supplémentaire\u003c/em\u003e. Ni plus ni moins.', source:'Sleep Foundation — NASA Nap Study', cta:'reservation' },
+];
+
+var DEFIS_SEMAINE = [
+  { icon:'🧘', titre:'3 séances de cohérence cardiaque', desc:'Ensemble, atteignons 3 sessions cc par personne cette semaine.', objectif:20, progres:14, xp:25, jours_restants:3, action:'cc' },
+  { icon:'⚡', titre:'Exercice express chaque midi', desc:'Un exercice de 5 min par jour — 5 jours consécutifs en équipe.', objectif:30, progres:22, xp:25, jours_restants:4, action:'exercice' },
+  { icon:'💓', titre:'Check-in quotidien à 9h', desc:'Construisons la donnée QVCT collective — check-in chaque matin.', objectif:25, progres:18, xp:10, jours_restants:2, action:'checkin' },
+];
+
+var CLASSEMENT_DEMO = [
+  { initiales:'AL', prenom:'Alexandre L.', dept:'RH',         pts:840, streak:12, me:false },
+  { initiales:'SF', prenom:'Sophie F.',    dept:'Marketing',  pts:720, streak:8,  me:false },
+  { initiales:'MR', prenom:'Vous',         dept:'',           pts:0,   streak:0,  me:true  },
+  { initiales:'TM', prenom:'Thomas M.',    dept:'Finance',    pts:510, streak:5,  me:false },
+  { initiales:'CR', prenom:'Chloé R.',     dept:'IT',         pts:480, streak:3,  me:false },
+  { initiales:'PB', prenom:'Pierre B.',    dept:'Ops',        pts:310, streak:7,  me:false },
+  { initiales:'LD', prenom:'Laura D.',     dept:'Juridique',  pts:240, streak:2,  me:false },
+  { initiales:'NJ', prenom:'Nicolas J.',   dept:'Direction',  pts:190, streak:1,  me:false },
+];
+
+/* ════════════════════════════════════════════
+   ÉTAT LOCAL
+════════════════════════════════════════════ */
+/* Cle partagee avec le companion principal */
+var DB_KEY       = 'beotop_companion_db_v5';
+/* Cle propre au module gamification */
+var DB_GAMIF_KEY = 'beotop_gamif_meta_v1';
+var DB;     // donnees companion (read-only sauf gamif_meta)
+var GAMIF;  // metadonnees exclusives gamification
+
+function loadDB() {
+  /* Charger les donnees companion */
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    if (raw) { DB = JSON.parse(raw); }
+  } catch(e) {}
+  if (!DB) DB = {};
+  if (!DB.user)        DB.user        = { prenom:'Utilisateur', nom:'', initiales:'U', dept:'' };
+  if (!DB.points)      DB.points      = [];
+  if (!DB.checkins)    DB.checkins    = [];
+  if (!DB.sessions)    DB.sessions    = [];
+  if (!DB.cc_sessions) DB.cc_sessions = [];
+
+  /* Charger les metadonnees gamification */
+  try {
+    var rawG = localStorage.getItem(DB_GAMIF_KEY);
+    if (rawG) { GAMIF = JSON.parse(rawG); }
+  } catch(e) {}
+  if (!GAMIF) GAMIF = {
+    streak: 0, streak_record: 0, last_active: null,
+    badges_unlocked: [], defi_participations: [],
+    card_du_jour_idx: 0, card_du_jour_date: null, defi_idx: 0,
+  };
+
+  recalcStreak();
+}
+
+function saveDB() {
+  /* N'ecrit JAMAIS dans beotop_companion_db_v5 */
+  try { localStorage.setItem(DB_GAMIF_KEY, JSON.stringify(GAMIF)); } catch(e) {}
+}
+
+function reloadCompanionData() {
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    if (raw) {
+      var fresh = JSON.parse(raw);
+      DB.points      = fresh.points      || [];
+      DB.checkins    = fresh.checkins    || [];
+      DB.sessions    = fresh.sessions    || [];
+      DB.cc_sessions = fresh.cc_sessions || [];
+      DB.user        = fresh.user        || DB.user;
+    }
+  } catch(e) {}
+}
+
+/* ════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════ */
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function getNiveau(total) {
+  var niv = NIVEAUX[0];
+  for (var i = 0; i < NIVEAUX.length; i++) {
+    if (total >= NIVEAUX[i].seuil) niv = NIVEAUX[i];
+  }
+  var idx = NIVEAUX.indexOf(niv);
+  var next = idx + 1 < NIVEAUX.length ? NIVEAUX[idx + 1] : null;
+  var dans = total - niv.seuil;
+  var vers = next ? next.seuil - niv.seuil : null;
+  var pct  = vers ? Math.min(Math.round(dans / vers * 100), 100) : 100;
+  return { niv, next, dans, vers, pct };
+}
+
+/* pts() lit le champ 'points' (companion) ou 'pts' (gamif legacy) */
+function ptsVal(p) { return p.points || p.pts || 0; }
+
+function totalXP() {
+  return (DB.points || []).reduce(function(s,p){ return s + ptsVal(p); }, 0);
+}
+
+function xpMois() {
+  var d = new Date();
+  var start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10);
+  return (DB.points || [])
+    .filter(function(p){ return (p.date||'').slice(0,10) >= start; })
+    .reduce(function(s,p){ return s + ptsVal(p); }, 0);
+}
+
+function countAction(action) {
+  /* Compte dans DB.points ET dans les collections specifiques du companion */
+  var fromPoints = (DB.points || []).filter(function(p){ return p.action === action; }).length;
+  /* Fallback : deduire depuis les collections si points vides */
+  if (fromPoints === 0) {
+    if (action === 'cc')          return (DB.cc_sessions || []).length;
+    if (action === 'reservation') return (DB.sessions    || []).filter(function(s){ return s.label && s.label.indexOf('Reserv') < 0; }).length;
+  }
+  return fromPoints;
+}
+
+function el(id) { return document.getElementById(id); }
+function setTxt(id, val) { var e = el(id); if (e) e.textContent = val; }
+
+/* ════════════════════════════════════════════
+   STREAK
+════════════════════════════════════════════ */
+/* Recalcule le streak depuis toutes les activites companion */
+function recalcStreak() {
+  var dates = {};
+  (DB.checkins    || []).forEach(function(c){ if (c.date) dates[c.date.slice(0,10)] = 1; });
+  (DB.sessions    || []).forEach(function(s){ if (s.date) dates[s.date.slice(0,10)] = 1; });
+  (DB.cc_sessions || []).forEach(function(s){ if (s.date) dates[s.date.slice(0,10)] = 1; });
+  delete dates[''];
+  var sorted = Object.keys(dates).sort();
+  if (!sorted.length) { GAMIF.streak = 0; return; }
+  var streak = 0;
+  var cursor = new Date(today());
+  while (true) {
+    var d = cursor.toISOString().slice(0,10);
+    if (dates[d]) { streak++; cursor.setDate(cursor.getDate() - 1); }
+    else { break; }
+  }
+  GAMIF.streak = streak;
+  GAMIF.last_active = sorted[sorted.length - 1];
+  if (GAMIF.streak > (GAMIF.streak_record || 0)) GAMIF.streak_record = GAMIF.streak;
+}
+
+function updateStreak() {
+  reloadCompanionData();
+  recalcStreak();
+  saveDB();
+}
+
+/* ════════════════════════════════════════════
+   ATTRIBUTION XP
+════════════════════════════════════════════ */
+function awardXP(action, label) {
+  var pts = BAREME[action] || 0;
+  /* Ecriture dans la cle companion (format { action, label, points, date }) */
+  if (!DB.points) DB.points = [];
+  var entry = { action: action, label: label, points: pts, date: new Date().toISOString() };
+  DB.points.push(entry);
+  /* Persister dans la cle companion */
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    var companion = raw ? JSON.parse(raw) : {};
+    if (!companion.points) companion.points = [];
+    companion.points.push(entry);
+    localStorage.setItem(DB_KEY, JSON.stringify(companion));
+  } catch(e) {}
+  saveDB(); /* metadonnees gamif */
+  checkBadges();
+  refreshTopbar();
+  if (pts > 0) showToast('🎯 +' + pts + ' XP · ' + (ACTION_LABELS[action] || action));
+  return pts;
+}
+
+/* ════════════════════════════════════════════
+   BADGES
+════════════════════════════════════════════ */
+function checkBadges() {
+  var total = totalXP();
+  var newBadges = [];
+
+  BADGES_DEF.forEach(function(b) {
+    if (GAMIF.badges_unlocked.indexOf(b.id) >= 0) return; // déjà débloqué
+
+    var ok = false;
+    if (b.type === 'count')  ok = countAction(b.action) >= b.seuil;
+    if (b.type === 'streak') ok = (GAMIF.streak || 0) >= b.seuil;
+    if (b.type === 'xp')     ok = total >= b.seuil;
+
+    if (ok) {
+      GAMIF.badges_unlocked.push(b.id);
+      newBadges.push(b);
+    }
+  });
+
+  if (newBadges.length) {
+    saveDB();
+    newBadges.forEach(function(b) {
+      setTimeout(function() {
+        showToast('🏅 Badge débloqué : ' + b.emoji + ' ' + b.nom);
+        el('nav-new-badge').style.display = '';
+      }, 600);
+    });
+  }
+}
+
+/* ════════════════════════════════════════════
+   CHECK-IN
+════════════════════════════════════════════ */
+function submitCheckin() {
+  var t = today();
+  /* Verifier dans les donnees companion fraiches */
+  reloadCompanionData();
+  var alreadyDone = (DB.checkins || []).some(function(c){
+    return (c.date || '').slice(0,10) === t;
+  });
+  if (alreadyDone) { showToast('⚠️ Check-in déjà effectué aujourd\'hui'); return; }
+
+  var energie = parseInt((el('sl-energie')||{}).value) || 6;
+  var stress   = parseInt((el('sl-stress') ||{}).value) || 5;
+  var focus    = parseInt((el('sl-focus')  ||{}).value) || 7;
+
+  /* Ecrire dans la cle companion au format ISO */
+  var entry = { date: new Date().toISOString(), label: 'Check-in', detail: '', energie: energie, stress: stress, focus: focus };
+  try {
+    var raw = localStorage.getItem(DB_KEY);
+    var companion = raw ? JSON.parse(raw) : {};
+    if (!companion.checkins) companion.checkins = [];
+    companion.checkins.push(entry);
+    localStorage.setItem(DB_KEY, JSON.stringify(companion));
+    DB.checkins = companion.checkins;
+  } catch(e) {}
+
+  updateStreak();
+  awardXP('checkin', 'Check-in ' + t);
+
+  el('checkin-form').style.display = 'none';
+  el('checkin-done').style.display = 'block';
+  refreshDashboard();
+  checkBadges();
+}
+
+function checkCheckinDone() {
+  var t = today();
+  var done = (DB.checkins || []).some(function(c){
+    return (c.date || '').slice(0,10) === t;
+  });
+  if (done) {
+    if (el('checkin-form')) el('checkin-form').style.display = 'none';
+    if (el('checkin-done')) el('checkin-done').style.display = 'block';
+  }
+}
+
+/* ════════════════════════════════════════════
+   CARTE DU JOUR
+════════════════════════════════════════════ */
+var _cdj_current = 0;
+
+function initCardDuJour() {
+  var t = today();
+  if (GAMIF.card_du_jour_date !== t) {
+    GAMIF.card_du_jour_idx = Math.floor(Math.random() * CARTES_DU_JOUR.length);
+    GAMIF.card_du_jour_date = t;
+    saveDB();
+  }
+  _cdj_current = GAMIF.card_du_jour_idx;
+  renderCardDuJour();
+}
+
+function renderCardDuJour() {
+  var c = CARTES_DU_JOUR[_cdj_current];
+  if (!c) return;
+  setTxt('cdj-type', c.type);
+  var cont = el('cdj-contenu');
+  if (cont) cont.innerHTML = c.contenu;
+  setTxt('cdj-source', '— ' + c.source);
+
+  // dots
+  var dots = el('cdj-dots');
+  if (dots) {
+    dots.innerHTML = CARTES_DU_JOUR.map(function(_, i) {
+      return '<div class="cdj-dot' + (i === _cdj_current ? ' active' : '') + '"></div>';
+    }).join('');
+  }
+}
+
+function nextCardDuJour() {
+  _cdj_current = (_cdj_current + 1) % CARTES_DU_JOUR.length;
+  renderCardDuJour();
+}
+
+function cardDuJourCTA() {
+  var c = CARTES_DU_JOUR[_cdj_current];
+  showToast('🔗 Accès ' + c.type + ' (companion principal)');
+}
+
+/* ════════════════════════════════════════════
+   DÉFI COLLECTIF
+════════════════════════════════════════════ */
+function initDefi() {
+  // Rotate défis par semaine ISO
+  var d = new Date(); var jan = new Date(d.getFullYear(),0,1);
+  var week = Math.floor(((d - jan) / 86400000 + jan.getDay() + 1) / 7);
+  GAMIF.defi_idx = week % DEFIS_SEMAINE.length;
+  saveDB();
+  renderDefi();
+}
+
+function renderDefi() {
+  var d = DEFIS_SEMAINE[GAMIF.defi_idx];
+  if (!d) return;
+  setTxt('defi-icon', d.icon);
+  setTxt('defi-titre', d.titre);
+  setTxt('defi-desc', d.desc);
+  setTxt('defi-xp-reward', '+' + d.xp + ' XP');
+
+  // Simuler participation perso
+  var hasParticipated = GAMIF.defi_participations.indexOf(GAMIF.defi_idx + ':' + today()) >= 0;
+  var progres = d.progres + (hasParticipated ? 1 : 0);
+  var pct = Math.min(Math.round(progres / d.objectif * 100), 100);
+  setTxt('defi-count', progres + ' / ' + d.objectif);
+  setTxt('defi-days', 'J-' + d.jours_restants + ' · ' + (d.objectif - progres) + ' participations restantes');
+
+  var fill = el('defi-fill');
+  setTimeout(function(){ if (fill) fill.style.width = pct + '%'; }, 300);
+}
+
+function participerDefi() {
+  var key = GAMIF.defi_idx + ':' + today();
+  if (GAMIF.defi_participations.indexOf(key) >= 0) {
+    showToast('✅ Vous participez déjà à ce défi aujourd\'hui');
+    return;
+  }
+  GAMIF.defi_participations.push(key);
+  saveDB();
+  var d = DEFIS_SEMAINE[GAMIF.defi_idx];
+  awardXP('defi', 'Défi · ' + d.titre);
+  updateStreak();
+  renderDefi();
+  showToast('🤝 Participation enregistrée ! +' + d.xp + ' XP');
+}
+
+/* ════════════════════════════════════════════
+   TICKER
+════════════════════════════════════════════ */
+function buildTicker() {
+  var items = [
+    { cls:'streak', txt:'🔥 Streak ' + (GAMIF.streak||0) + ' jours' },
+    { cls:'badge',  txt:'🏅 ' + (GAMIF.badges_unlocked.length) + ' badges débloqués' },
+    { cls:'defi',   txt:'🏅 Défi en cours · ' + DEFIS_SEMAINE[GAMIF.defi_idx||0].titre },
+    { cls:'streak', txt:'⚡ XP total · ' + totalXP() + ' pts' },
+    { cls:'badge',  txt:'🌟 Niveau · ' + getNiveau(totalXP()).niv.label },
+    { cls:'defi',   txt:'💓 Cohérence cardiaque · disponible maintenant' },
+    { cls:'streak', txt:'📅 Dernier check-in · ' + (GAMIF.last_active || 'jamais') },
+  ];
+  var html = items.concat(items).map(function(it) {
+    return '<div class="ticker-item ' + it.cls + '">' + it.txt + '</div>';
+  }).join('');
+  var t = el('h-ticker');
+  if (t) t.innerHTML = html;
+}
+
+/* ════════════════════════════════════════════
+   REFRESH TOPBAR
+════════════════════════════════════════════ */
+function refreshTopbar() {
+  var total = totalXP();
+  var n = getNiveau(total);
+
+  setTxt('tb-streak-count', GAMIF.streak || 0);
+  var u = DB.user || {}; setTxt('tb-user', (u.prenom||'') + (u.nom ? ' ' + u.nom.charAt(0) + '.' : ''));
+  setTxt('tb-avatar', DB.user.initiales || 'MR');
+
+  var chip = el('tb-niveau');
+  if (chip) chip.textContent = n.niv.emoji + ' ' + n.niv.label;
+
+  var fill = el('tb-xp-fill');
+  if (fill) fill.style.width = n.pct + '%';
+
+  setTxt('tb-xp-txt', total + ' XP');
+
+  // Topbar avatar
+  setTxt('tb-avatar', DB.user.initiales || 'MR');
+}
+
+/* ════════════════════════════════════════════
+   REFRESH DASHBOARD
+════════════════════════════════════════════ */
+function refreshDashboard() {
+  var total = totalXP();
+  var n = getNiveau(total);
+
+  // Hero
+  setTxt('h-prenom', DB.user.prenom);
+  setTxt('h-streak-count', GAMIF.streak || 0);
+  setTxt('h-niveau-emoji', n.niv.emoji);
+  setTxt('h-niveau-label', n.niv.label);
+  setTxt('h-xp-pts', (n.niv.seuil + n.dans) + ' / ' + (n.next ? n.next.seuil : '∞') + ' XP');
+  setTxt('h-xp-sub', n.next ? 'Prochain niveau : ' + n.next.label + ' ' + n.next.emoji : '🎉 Niveau maximum !');
+
+  var fill = el('h-xp-fill');
+  setTimeout(function(){ if (fill) fill.style.width = n.pct + '%'; }, 400);
+
+  // Ring (sessions cc du mois)
+  var ccCount = countAction('cc');
+  var ringVal = Math.min(ccCount, 20);
+  setTxt('h-ring-val', ccCount + ' / 20');
+  var ringEl = el('h-ring');
+  if (ringEl) {
+    var offset = 226 - (226 * ringVal / 20);
+    ringEl.style.strokeDashoffset = offset;
+  }
+
+  // KPIs
+  setTxt('kpi-streak', GAMIF.streak || 0);
+  setTxt('kpi-xp-mois', xpMois());
+  var unlocked = GAMIF.badges_unlocked.length;
+  setTxt('kpi-badges', unlocked);
+  setTxt('kpi-badges-total', BADGES_DEF.length);
+
+  // Classement — injecter XP réel pour "Vous"
+  var cl = CLASSEMENT_DEMO.map(function(c) { return Object.assign({}, c); });
+  cl.forEach(function(c) { if (c.me) { c.pts = total; c.streak = GAMIF.streak || 0; } });
+  cl.sort(function(a,b) { return b.pts - a.pts; });
+  var myRank = cl.findIndex(function(c){ return c.me; }) + 1;
+  setTxt('kpi-rang', '#' + myRank);
+  setTxt('kpi-rang-total', cl.length);
+}
+
+/* ════════════════════════════════════════════
+   REFRESH PROGRESSION
+════════════════════════════════════════════ */
+function refreshProgression() {
+  var total = totalXP();
+  var n = getNiveau(total);
+
+  // Niveau hero
+  setTxt('pg-badge-big', n.niv.emoji);
+  setTxt('pg-niveau-label', n.niv.label);
+  setTxt('pg-niveau-sub', n.next
+    ? 'Plus que ' + (n.next.seuil - total) + ' XP pour atteindre ' + n.next.label + ' ' + n.next.emoji
+    : '🎉 Vous avez atteint le niveau maximum !');
+  setTxt('pg-total-xp', total);
+  setTxt('pg-record-streak', GAMIF.streak_record || 0);
+  setTxt('pg-xp-dans-niveau', n.dans + ' XP dans ce niveau');
+  setTxt('pg-xp-restant', n.vers ? (n.vers - n.dans) + ' XP pour le prochain' : '');
+
+  var fill = el('pg-xp-fill');
+  setTimeout(function(){ if (fill) fill.style.width = n.pct + '%'; }, 300);
+
+  // Streak num
+  setTxt('pg-streak-num', GAMIF.streak || 0);
+  setTxt('pg-record-txt', (GAMIF.streak_record || 0) + ' jours');
+
+  // Calendrier streak 28j
+  renderStreakCalendar();
+
+  // Badges
+  renderBadges();
+
+  // Classement
+  renderClassement();
+
+  // Historique
+  renderHistorique();
+}
+
+/* ════════════════════════════════════════════
+   STREAK CALENDAR (28 jours)
+════════════════════════════════════════════ */
+function renderStreakCalendar() {
+  var cal = el('pg-streak-cal');
+  if (!cal) return;
+
+  var jours = ['L','M','M','J','V','S','D'];
+  var html = jours.map(function(j){ return '<div class="streak-day-label">' + j + '</div>'; }).join('');
+
+  var dates = [];
+  for (var i = 27; i >= 0; i--) {
+    var d = new Date(); d.setDate(d.getDate() - i);
+    dates.push(d.toISOString().slice(0,10));
+  }
+
+  // Padding début pour aligner sur lundi
+  var firstDay = new Date(dates[0]);
+  var dow = (firstDay.getDay() + 6) % 7; // 0=lundi
+  for (var p = 0; p < dow; p++) {
+    html += '<div></div>';
+  }
+
+  var checkinDates = (DB.checkins||[]).map(function(c){ return (c.date||'').slice(0,10); });
+  var t = today();
+
+  dates.forEach(function(date) {
+    var done = checkinDates.indexOf(date) >= 0;
+    var isToday = date === t;
+    var dayNum = parseInt(date.slice(8));
+    var cls = 'streak-day' + (done ? ' done' : '') + (isToday ? ' today' : '');
+    html += '<div class="' + cls + '" title="' + date + '">'
+      + '<span class="streak-day-num">' + dayNum + '</span>'
+      + '</div>';
+  });
+
+  cal.innerHTML = html;
+}
+
+/* ════════════════════════════════════════════
+   BADGES RENDER
+════════════════════════════════════════════ */
+function renderBadges() {
+  var grid = el('pg-badges-grid');
+  if (!grid) return;
+  var total = totalXP();
+
+  grid.innerHTML = BADGES_DEF.map(function(b) {
+    var unlocked = GAMIF.badges_unlocked.indexOf(b.id) >= 0;
+    var isNew = unlocked && DB._new_badges && DB._new_badges.indexOf(b.id) >= 0;
+
+    // Calcul progression
+    var prog = 0;
+    if (b.type === 'count')  prog = Math.min(countAction(b.action) / b.seuil * 100, 100);
+    if (b.type === 'streak') prog = Math.min((GAMIF.streak||0) / b.seuil * 100, 100);
+    if (b.type === 'xp')     prog = Math.min(total / b.seuil * 100, 100);
+
+    return '<div class="badge-item' + (!unlocked ? ' locked' : '') + (isNew ? ' new-badge' : '') + '" title="' + b.desc + '">'
+      + '<span class="badge-emoji">' + b.emoji + '</span>'
+      + '<div class="badge-name">' + b.nom + '</div>'
+      + '<div class="badge-desc">' + b.desc + '</div>'
+      + (!unlocked ? '<div class="badge-prog"><div class="badge-prog-fill" style="width:' + Math.round(prog) + '%"></div></div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   CLASSEMENT RENDER
+════════════════════════════════════════════ */
+function renderClassement() {
+  var list = el('pg-rank-list');
+  if (!list) return;
+
+  var total = totalXP();
+  var cl = CLASSEMENT_DEMO.map(function(c) { return Object.assign({}, c); });
+  cl.forEach(function(c) { if (c.me) { c.pts = total; c.streak = GAMIF.streak||0; } });
+  cl.sort(function(a,b){ return b.pts - a.pts; });
+
+  var posCls = ['gold','silver','bronze'];
+
+  list.innerHTML = cl.map(function(c, i) {
+    var pCls = i < 3 ? posCls[i] : '';
+    var pos = i < 3 ? ['🥇','🥈','🥉'][i] : (i+1);
+    return '<div class="rank-item' + (c.me ? ' me' : '') + '" style="animation-delay:' + (i*.06) + 's">'
+      + '<div class="rank-pos ' + pCls + '">' + pos + '</div>'
+      + '<div class="rank-avatar' + (c.me ? ' me-av' : '') + '">' + (c.me ? DB.user.initiales : c.initiales) + '</div>'
+      + '<div class="rank-info">'
+      + '<div class="rank-name">' + (c.me ? (DB.user.prenom + ' ' + DB.user.nom.charAt(0) + '.') : c.prenom) + (c.me ? '<span class="rank-me-tag">Vous</span>' : '') + '</div>'
+      + '<div class="rank-dept">' + (c.me ? DB.user.dept : c.dept) + '</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+      + '<div class="rank-pts">' + c.pts + '</div>'
+      + '<div class="rank-streak">🔥 ' + c.streak + 'j</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   HISTORIQUE RENDER
+════════════════════════════════════════════ */
+function renderHistorique() {
+  var h = el('pg-hist');
+  if (!h) return;
+  var pts = (DB.points || []).slice().reverse().slice(0, 20);
+  if (!pts.length) {
+    h.innerHTML = '<div style="font-size:.72rem;color:var(--text-muted);padding:.5rem">Aucune activité enregistrée — commencez par un check-in !</div>';
+    return;
+  }
+  var bgs = { checkin:'rgba(0,180,180,.1)', cc:'rgba(245,133,90,.1)', audio:'rgba(138,106,170,.1)', exercice:'rgba(90,160,100,.1)', jeu:'rgba(100,130,200,.1)', reservation:'rgba(200,169,110,.1)', sons:'rgba(0,160,160,.1)', video:'rgba(150,100,180,.1)', defi:'rgba(200,169,110,.15)' };
+
+  h.innerHTML = pts.map(function(p, i) {
+    return '<div class="hist-item" style="animation-delay:' + (i*.04) + 's">'
+      + '<div class="hist-ico" style="background:' + (bgs[p.action]||'var(--surface)') + '">' + (ACTION_ICONS[p.action]||'•') + '</div>'
+      + '<div><div class="hist-label">' + (p.label || ACTION_LABELS[p.action] || p.action) + '</div>'
+      + '<div class="hist-sub">' + (ACTION_LABELS[p.action]||p.action) + '</div></div>'
+      + '<div style="text-align:right">'
+      + '<div class="hist-pts">+' + p.pts + ' XP</div>'
+      + '<div class="hist-date">' + p.date + '</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   HORLOGE
+════════════════════════════════════════════ */
+function updateClock() {
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2,'0');
+  var mm = String(now.getMinutes()).padStart(2,'0');
+  setTxt('h-clock', hh + ':' + mm);
+
+  var jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  var mois  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  setTxt('h-date', jours[now.getDay()] + ' ' + now.getDate() + ' ' + mois[now.getMonth()]);
+}
+
+/* ════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════ */
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+
+  var v = el('view-' + name);
+  if (v) v.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'" + name + "'") >= 0) {
+      n.classList.add('active');
+    }
+  });
+
+  /* Recharger les donnees companion a chaque changement de vue */
+  reloadCompanionData();
+  recalcStreak();
+
+  if (name === 'progression') {
+    refreshProgression();
+    el('nav-new-badge').style.display = 'none';
+  }
+  if (name === 'dashboard') refreshDashboard();
+}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+var _toastTimer;
+function showToast(msg) {
+  var t = el('toast');
+  if (!t) return;
+  t.innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+}
+
+/* ════════════════════════════════════════════
+   MODAL SIMULATION
+════════════════════════════════════════════ */
+function openAdminModal() {
+  el('modal-title').textContent = '⚙️ Simulation d\'activité';
+  el('modal-body').innerHTML = '<div style="display:flex;flex-direction:column;gap:.6rem">'
+    + '<p style="font-size:.72rem;color:var(--text-muted);margin-bottom:.5rem">Simulez des actions pour tester la gamification.</p>'
+    + Object.keys(BAREME).map(function(a) {
+        return '<button onclick="simuler(\'' + a + '\')" style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:all .15s" onmouseover="this.style.background=\'rgba(0,180,180,.1)\'" onmouseout="this.style.background=\'var(--surface)\'">'
+          + '<span>' + (ACTION_ICONS[a]||'•') + ' ' + (ACTION_LABELS[a]||a) + '</span>'
+          + '<strong style="color:var(--teal)">+' + BAREME[a] + ' XP</strong>'
+          + '</button>';
+      }).join('')
+    + '<hr style="border:none;border-top:1px solid var(--border);margin:.5rem 0">'
+    + '<button onclick="resetGamif()" style="padding:.65rem 1rem;border-radius:10px;background:rgba(232,100,30,.08);border:1px solid rgba(232,100,30,.25);color:var(--orange);font-size:.72rem;cursor:pointer">↺ Réinitialiser toutes les données</button>'
+    + '</div>';
+  el('modal').classList.add('open');
+}
+
+function simuler(action) {
+  closeModal();
+  awardXP(action, ACTION_LABELS[action] + ' (simulation)');
+  reloadCompanionData();
+  recalcStreak();
+  refreshDashboard();
+  checkBadges();
+}
+
+function resetGamif() {
+  if (!confirm('Réinitialiser toutes les données de gamification ?')) return;
+  localStorage.removeItem(DB_KEY);
+  loadDB();
+  closeModal();
+  showToast('↺ Données réinitialisées');
+  refreshTopbar();
+  refreshDashboard();
+  refreshProgression();
+}
+
+function closeModal() {
+  el('modal').classList.remove('open');
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function init() {
+  loadDB();
+  updateClock();
+  setInterval(updateClock, 30000);
+  initCardDuJour();
+  initDefi();
+  checkCheckinDone();
+  refreshTopbar();
+  refreshDashboard();
+  buildTicker();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
