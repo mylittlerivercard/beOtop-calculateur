@@ -5350,6 +5350,17 @@ function ldoEscape(str) {
 ════════════════════════════════════════════ */
 (function(){
   function _init(){
+    /* Lire le site passé en paramètre URL (?site=demo-beotop) */
+    var urlParams = new URLSearchParams(window.location.search);
+    var siteParam = urlParams.get('site');
+    if (siteParam) {
+      cachedSiteSlug = siteParam;
+      if (DB.user && DB.user.site_slug !== siteParam) {
+        DB.user.site_slug = siteParam;
+        DB.user.site = siteParam;
+        saveDB(DB);
+      }
+    }
     try{
       // Charger l'utilisateur connecté depuis l'API
       fetch('/api/auth/me', { credentials: 'include' })
