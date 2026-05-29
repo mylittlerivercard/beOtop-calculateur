@@ -12,6 +12,7 @@ import os
 import csv
 import io
 import sys
+import logging
 import secrets
 from datetime import datetime, date
 from functools import wraps
@@ -392,6 +393,26 @@ def init_db():
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_intervenant ON retribution_semestres(intervenant_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_periode     ON retribution_semestres(annee, semestre)')
+
+        # Tables créées à la volée dans certaines routes — sécurisées ici
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS companion_livreor (
+                id         SERIAL PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                site_slug  TEXT,
+                prenom     TEXT,
+                texte      TEXT NOT NULL
+            )
+        ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS leads (
+                id         SERIAL PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                prenom TEXT, nom TEXT, email TEXT, role TEXT,
+                entreprise TEXT, effectif TEXT, priorite TEXT, message TEXT
+            )
+        ''')
 
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
@@ -1758,6 +1779,7 @@ def award_points(user_id, action, label, site_slug=None):
                 conn.commit()
     except Exception as e:
         print(f">>> award_points error: {e}", file=sys.stderr)
+        import logging; logging.error(f"award_points({action}, {label}): {e}")
     return pts
 
 
@@ -1958,16 +1980,7 @@ def livreor_get():
     site_slug = request.args.get('site_slug')
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS companion_livreor (
-                    id          SERIAL PRIMARY KEY,
-                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                    site_slug   TEXT,
-                    prenom      TEXT,
-                    texte       TEXT NOT NULL
-                )
-            """)
+
             conn.commit()
             if site_slug:
                 cur.execute("""
@@ -2009,16 +2022,7 @@ def livreor_post():
             prenom = ''
             if user and user['nom']:
                 prenom = user['nom'].strip().split()[0]
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS companion_livreor (
-                    id          SERIAL PRIMARY KEY,
-                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                    site_slug   TEXT,
-                    prenom      TEXT,
-                    texte       TEXT NOT NULL
-                )
-            """)
+
             cur.execute("""
                 INSERT INTO companion_livreor (user_id, site_slug, prenom, texte)
                 VALUES (%s, %s, %s, %s)
@@ -2755,13 +2759,7 @@ Priorité   : {priorite}
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS leads (
-                        id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        prenom TEXT, nom TEXT, email TEXT, role TEXT,
-                        entreprise TEXT, effectif TEXT, priorite TEXT, message TEXT
-                    )
-                """)
+
                 cur.execute("""
                     INSERT INTO leads (prenom, nom, email, role, entreprise, effectif, priorite, message)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -3091,6 +3089,10 @@ def auth_register():
 
     if not all([token, nom, email, password]):
         return jsonify({'error': 'Champs manquants'}), 400
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return jsonify({'error': 'Email invalide'}), 400
+    if len(nom.strip()) < 2:
+        return jsonify({'error': 'Nom invalide'}), 400
     if len(password) < 8:
         return jsonify({'error': 'Mot de passe trop court (8 caractères min)'}), 400
 
