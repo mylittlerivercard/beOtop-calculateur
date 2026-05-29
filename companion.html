@@ -1336,9 +1336,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <div class="form-field">
           <label>Site</label>
           <select id="pf-site">
-            <option>BPCE — Paris 15e</option>
-            <option>L'Oréal — Clichy</option>
-            <option>LVMH — Paris 8e</option>
+            <option value="">— Sélectionner un site —</option>
           </select>
         </div>
         <button class="btn-primary" onclick="saveProfile()">Enregistrer</button>
@@ -2296,11 +2294,22 @@ var cachedSiteSlug = null;
 
 async function getSiteSlug() {
   if (cachedSiteSlug) return cachedSiteSlug;
+  /* Priorité 1 : site configuré dans le profil utilisateur */
+  if (DB.user && DB.user.site_slug) {
+    cachedSiteSlug = DB.user.site_slug;
+    return cachedSiteSlug;
+  }
   try {
     const r = await fetch('/api/client/sites', { credentials: 'include' });
     if (r.ok) {
       const sites = await r.json();
-      if (sites.length) { cachedSiteSlug = sites[0].slug; return cachedSiteSlug; }
+      if (sites.length) {
+        /* Pour un admin : chercher le site correspondant au site enregistré dans le profil */
+        var userSite = DB.user && DB.user.site ? DB.user.site : null;
+        var match = userSite ? sites.find(function(s){ return s.slug === userSite || s.nom === userSite; }) : null;
+        cachedSiteSlug = (match || sites[0]).slug;
+        return cachedSiteSlug;
+      }
     }
   } catch(e) {}
   return null;
@@ -4768,6 +4777,22 @@ function renderProfil() {
   document.getElementById('pf-prenom').value = u.prenom;
   document.getElementById('pf-nom').value = u.nom || '';
   document.getElementById('pf-dept').value = u.dept || '';
+  /* Charger les vrais sites dans le select */
+  var sel = document.getElementById('pf-site');
+  if (sel && sel.options.length <= 1) {
+    fetch('/api/client/sites', { credentials: 'include' })
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(sites) {
+        sites.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s.slug;
+          opt.textContent = s.nom + (s.client_nom ? ' — ' + s.client_nom : '');
+          if (s.slug === (u.site_slug || u.site)) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      })
+      .catch(function(){});
+  }
   calcStreak();
 
   const all = [
@@ -4794,7 +4819,10 @@ function saveProfile() {
   DB.user.prenom = document.getElementById('pf-prenom').value;
   DB.user.nom    = document.getElementById('pf-nom').value;
   DB.user.dept   = document.getElementById('pf-dept').value;
-  DB.user.site   = document.getElementById('pf-site').value;
+  var siteVal = document.getElementById('pf-site').value;
+  DB.user.site      = siteVal;
+  DB.user.site_slug = siteVal;
+  cachedSiteSlug    = siteVal || null; /* Forcer le rechargement du slug */
   DB.user.initiales = (DB.user.prenom[0] + (DB.user.nom||'R')[0]).toUpperCase();
   saveDB(DB);
   showToast('✓ Profil enregistré');
