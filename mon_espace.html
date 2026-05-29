@@ -426,20 +426,33 @@ function renderAll(d) {
 
   // Table par site
   var sites = d.clics_par_site || [];
+  var tauxContenu = parseFloat(d.taux_contenu || 30) / 100;
   if (!sites.length) {
     document.getElementById('table-sites').innerHTML = '<div class="empty"><span class="empty-icon">🏢</span>Aucune donnée par site.</div>';
   } else {
     var rows2 = sites.map(function(r) {
-      var pctSite = r.nb_clics_total ? Math.round(r.nb_clics_inv / r.nb_clics_total * 100) : 0;
+      var pctSite    = r.nb_clics_total ? Math.round(r.nb_clics_inv / r.nb_clics_total * 100) : 0;
+      var tarifAnnuel = parseFloat(r.tarif_annuel || 0);
+      var nbSalaries  = parseInt(r.nb_salaries || 0);
+      var caAnnuel    = tarifAnnuel > 0 && nbSalaries > 0 ? tarifAnnuel * nbSalaries : 0;
+      var caSemestre  = caAnnuel / 2;
+      /* Rémunération estimée = CA semestriel × part clics × taux contenu */
+      var remunEstimee = caSemestre > 0 ? (caSemestre * (pctSite / 100) * tauxContenu).toFixed(2) : null;
       return '<tr>'
         + '<td style="font-weight:500">' + (r.site_slug || '—') + '</td>'
         + '<td><strong>' + r.nb_clics_inv + '</strong> / ' + r.nb_clics_total + '</td>'
         + '<td>' + pctSite + '%'
         + '<div class="bar-wrap"><div class="bar-fill coral" style="width:' + Math.min(pctSite,100) + '%"></div></div></td>'
+        + '<td style="text-align:center">' + (tarifAnnuel > 0 ? tarifAnnuel + ' €/an' : '—') + '</td>'
+        + '<td style="text-align:center">' + (nbSalaries > 0 ? nbSalaries + ' emp.' : '—') + '</td>'
+        + '<td style="text-align:center;font-weight:600;color:var(--teal)">' + (remunEstimee ? remunEstimee + ' €' : '—') + '</td>'
         + '</tr>';
     }).join('');
     document.getElementById('table-sites').innerHTML = '<table><thead><tr>'
       + '<th>Site</th><th>Mes clics / Total</th><th>Part sur ce site</th>'
+      + '<th style="text-align:center">Tarif annuel</th>'
+      + '<th style="text-align:center">Employés déclarés</th>'
+      + '<th style="text-align:center">Rémunération estimée S</th>'
       + '</tr></thead><tbody>' + rows2 + '</tbody></table>';
   }
 
@@ -470,13 +483,13 @@ function renderAll(d) {
         + '<td style="font-weight:500">' + (c.nom || '—') + '</td>'
         + '<td style="font-size:.65rem;color:var(--text-muted)">' + (c.site_slug || '—') + '</td>'
         + '<td style="text-align:center">' + (c.nb_actifs || 0) + '</td>'
-        + '<td style="text-align:center">' + (c.tarif_utilisateur_mensuel ? c.tarif_utilisateur_mensuel + ' \u20ac' : '—') + '</td>'
+        + '<td style="text-align:center">' + (c.tarif_annuel ? c.tarif_annuel + ' \u20ac/an' : (c.tarif_utilisateur_mensuel ? c.tarif_utilisateur_mensuel + ' \u20ac/mois' : '—')) + '</td>'
         + '<td style="text-align:center"><strong>' + (c.ca_semestre ? c.ca_semestre + ' \u20ac' : '—') + '</strong></td>'
         + '<td style="text-align:center"><strong style="color:var(--coral-dark)">' + (c.commission_20pct ? c.commission_20pct + ' \u20ac' : '—') + '</strong></td>'
         + '</tr>';
     }).join('');
     document.getElementById('table-apport').innerHTML = '<table><thead><tr>'
-      + '<th>Client</th><th>Site</th><th>Utilisateurs actifs</th><th>Tarif/user/mois</th><th>CA s\u00e9mestriel</th><th>Votre commission 20%</th>'
+      + '<th>Client</th><th>Site</th><th>Employés déclarés</th><th>Tarif annuel/employé</th><th>CA semestriel</th><th>Votre commission 20%</th>'
       + '</tr></thead><tbody>' + rows3 + '</tbody></table>';
     var totalApport = d.total_commission_apport || 0;
     if (totalApport > 0) {
