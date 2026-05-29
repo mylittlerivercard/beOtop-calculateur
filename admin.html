@@ -301,7 +301,18 @@
     <div class="field"><label>Client *</label><select id="s-client"></select></div>
     <div class="field"><label>Nom du site *</label><input id="s-nom" type="text" placeholder="ex. Siège Paris"></div>
     <div class="field"><label>Ville</label><input id="s-ville" type="text" placeholder="ex. Paris 9e"></div>
-    <div class="field"><label>Nb salariés sur site</label><input id="s-salaries" type="number" placeholder="ex. 400"></div>
+    <div class="field"><label>Nb employés déclarés sur site</label><input id="s-salaries" type="number" placeholder="ex. 400"></div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+        <input id="s-companion" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleCompanionTarif(this.checked)">
+        Site équipé du Companion beOtop
+      </label>
+    </div>
+    <div class="field" id="s-tarif-field" style="display:none">
+      <label>Tarif Companion € / employé déclaré / an</label>
+      <input id="s-tarif" type="number" step="1" min="0" placeholder="ex. 60">
+      <div style="font-size:.62rem;color:#6b6070;margin-top:.3rem">Tarif annuel par employé déclaré sur le site — base du calcul de rétribution semestrielle</div>
+    </div>
     <div class="result-box" id="s-result"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-site')">Annuler</button>
@@ -627,17 +638,26 @@ async function loadSites(){
   });
 }
 
+function toggleCompanionTarif(checked) {
+  var field = document.getElementById('s-tarif-field');
+  if (field) field.style.display = checked ? '' : 'none';
+}
+
 async function createSite(){
   var nom = document.getElementById('s-nom').value.trim();
   var client_id = document.getElementById('s-client').value;
   if(!nom || !client_id){ toast('Nom et client requis'); return; }
+  var hasCompanion = document.getElementById('s-companion').checked;
+  var tarif = hasCompanion ? (parseFloat(document.getElementById('s-tarif').value) || 0) : 0;
   var r = await fetch('/api/admin/sites', {
     method:'POST', credentials:'include',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       nom, client_id: parseInt(client_id),
       ville: document.getElementById('s-ville').value,
-      nb_salaries: parseInt(document.getElementById('s-salaries').value) || 0
+      nb_salaries: parseInt(document.getElementById('s-salaries').value) || 0,
+      has_companion: hasCompanion,
+      tarif_annuel: tarif
     })
   });
   var d = await r.json();
@@ -758,7 +778,7 @@ async function saveApporteur() {
   var r = await fetch('/api/admin/clients/' + _apporteurClientId + '/apporteur', {
     method: 'PATCH', credentials: 'include',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ apporteur_id: apporteurId ? parseInt(apporteurId) : null, tarif_utilisateur_mensuel: tarif })
+    body: JSON.stringify({ apporteur_id: apporteurId ? parseInt(apporteurId) : null, tarif_annuel: tarif })
   });
   var d = await r.json();
   if (d.ok) {
