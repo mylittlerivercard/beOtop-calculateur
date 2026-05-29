@@ -371,10 +371,13 @@ def init_db():
         cur.execute("""
             ALTER TABLE clients
             ADD COLUMN IF NOT EXISTS tarif_utilisateur_mensuel NUMERIC DEFAULT 0
-        ''')
-        cur.execute('''
+        """)
+        cur.execute("""
             ALTER TABLE sites
-            ADD COLUMN IF NOT EXISTS has_companion  INTEGER DEFAULT 0,
+            ADD COLUMN IF NOT EXISTS has_companion  INTEGER DEFAULT 0
+        """)
+        cur.execute("""
+            ALTER TABLE sites
             ADD COLUMN IF NOT EXISTS tarif_annuel   NUMERIC DEFAULT 0
         """)
 
@@ -2442,24 +2445,43 @@ def intervenant_stats():
             total_clics = (cur.fetchone() or {}).get('total', 0) or 0
 
             # Clics par site pour calcul rétribution
-            cur.execute(f"""
-                SELECT cp.site_slug,
-                       COUNT(*) as nb_clics_inv,
-                       (SELECT COUNT(*) FROM companion_content_plays cp2
-                        WHERE cp2.site_slug = cp.site_slug
-                        AND cp2.content_type != 'post_interne'
-                        AND {sem_clause}) as nb_clics_total,
-                       COALESCE(s.tarif_annuel, 0)  as tarif_annuel,
-                       COALESCE(s.nb_salaries, 0)   as nb_salaries,
-                       COALESCE(s.has_companion, 0) as has_companion
-                FROM companion_content_plays cp
-                LEFT JOIN sites s ON s.slug = cp.site_slug
-                WHERE cp.intervenant_nom = %s
-                  AND cp.content_type != 'post_interne'
-                  AND {sem_clause}
-                GROUP BY cp.site_slug, s.tarif_annuel, s.nb_salaries, s.has_companion
-            """, [inv['nom']])
-            clics_par_site = [serialize_row(r) for r in cur.fetchall()]
+            # Les colonnes tarif_annuel/has_companion peuvent ne pas exister encore
+            try:
+                cur.execute(f"""
+                    SELECT cp.site_slug,
+                           COUNT(*) as nb_clics_inv,
+                           (SELECT COUNT(*) FROM companion_content_plays cp2
+                            WHERE cp2.site_slug = cp.site_slug
+                            AND cp2.content_type != 'post_interne'
+                            AND {sem_clause}) as nb_clics_total,
+                           COALESCE(s.tarif_annuel, 0)  as tarif_annuel,
+                           COALESCE(s.nb_salaries, 0)   as nb_salaries
+                    FROM companion_content_plays cp
+                    LEFT JOIN sites s ON s.slug = cp.site_slug
+                    WHERE cp.intervenant_nom = %s
+                      AND cp.content_type != 'post_interne'
+                      AND {sem_clause}
+                    GROUP BY cp.site_slug, s.tarif_annuel, s.nb_salaries
+                """, [inv['nom']])
+                clics_par_site = [serialize_row(r) for r in cur.fetchall()]
+            except Exception:
+                conn.rollback()
+                cur.execute(f"""
+                    SELECT site_slug,
+                           COUNT(*) as nb_clics_inv,
+                           (SELECT COUNT(*) FROM companion_content_plays cp2
+                            WHERE cp2.site_slug = cp.site_slug
+                            AND cp2.content_type != 'post_interne'
+                            AND {sem_clause}) as nb_clics_total,
+                           0 as tarif_annuel,
+                           0 as nb_salaries
+                    FROM companion_content_plays cp
+                    WHERE intervenant_nom = %s
+                      AND content_type != 'post_interne'
+                      AND {sem_clause}
+                    GROUP BY site_slug
+                """, [inv['nom']])
+                clics_par_site = [serialize_row(r) for r in cur.fetchall()]
 
             # Historique semestres précédents
             cur.execute("""
