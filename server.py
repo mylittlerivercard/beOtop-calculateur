@@ -371,6 +371,11 @@ def init_db():
         cur.execute("""
             ALTER TABLE clients
             ADD COLUMN IF NOT EXISTS tarif_utilisateur_mensuel NUMERIC DEFAULT 0
+        ''')
+        cur.execute('''
+            ALTER TABLE sites
+            ADD COLUMN IF NOT EXISTS has_companion  INTEGER DEFAULT 0,
+            ADD COLUMN IF NOT EXISTS tarif_annuel   NUMERIC DEFAULT 0
         """)
 
         # ── Semestres de rétribution ──────────────────────────────────────────
@@ -629,9 +634,11 @@ def admin_create_site():
             slug = f"{client['slug']}-{slug_nom}"
             slug = ''.join(c for c in slug if c.isalnum() or c == '-')
             try:
+                has_companion = 1 if data.get('has_companion') else 0
+                tarif_annuel  = float(data.get('tarif_annuel', 0) or 0)
                 cur.execute(
-                    "INSERT INTO sites (client_id, nom, slug, ville, nb_salaries) VALUES (%s,%s,%s,%s,%s) RETURNING id",
-                    [client_id, nom, slug, data.get('ville',''), data.get('nb_salaries', 0)]
+                    "INSERT INTO sites (client_id, nom, slug, ville, nb_salaries, has_companion, tarif_annuel) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+                    [client_id, nom, slug, data.get('ville',''), data.get('nb_salaries', 0), has_companion, tarif_annuel]
                 )
                 site_id = cur.fetchone()['id']
                 conn.commit()
@@ -647,9 +654,12 @@ def admin_update_site(site_id):
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "UPDATE sites SET nom=%s, ville=%s, nb_salaries=%s, actif=%s WHERE id=%s",
+                "UPDATE sites SET nom=%s, ville=%s, nb_salaries=%s, actif=%s, has_companion=%s, tarif_annuel=%s WHERE id=%s",
                 [data.get('nom'), data.get('ville'), int(data.get('nb_salaries') or 0),
-                 int(data.get('actif', 1)), site_id]
+                 int(data.get('actif', 1)),
+                 1 if data.get('has_companion') else 0,
+                 float(data.get('tarif_annuel', 0) or 0),
+                 site_id]
             )
             conn.commit()
     return jsonify({'ok': True})
@@ -2433,17 +2443,21 @@ def intervenant_stats():
 
             # Clics par site pour calcul rétribution
             cur.execute(f"""
-                SELECT site_slug,
+                SELECT cp.site_slug,
                        COUNT(*) as nb_clics_inv,
                        (SELECT COUNT(*) FROM companion_content_plays cp2
                         WHERE cp2.site_slug = cp.site_slug
                         AND cp2.content_type != 'post_interne'
-                        AND {sem_clause}) as nb_clics_total
+                        AND {sem_clause}) as nb_clics_total,
+                       COALESCE(s.tarif_annuel, 0)  as tarif_annuel,
+                       COALESCE(s.nb_salaries, 0)   as nb_salaries,
+                       COALESCE(s.has_companion, 0) as has_companion
                 FROM companion_content_plays cp
-                WHERE intervenant_nom = %s
-                  AND content_type != 'post_interne'
+                LEFT JOIN sites s ON s.slug = cp.site_slug
+                WHERE cp.intervenant_nom = %s
+                  AND cp.content_type != 'post_interne'
                   AND {sem_clause}
-                GROUP BY site_slug
+                GROUP BY cp.site_slug, s.tarif_annuel, s.nb_salaries, s.has_companion
             """, [inv['nom']])
             clics_par_site = [serialize_row(r) for r in cur.fetchall()]
 
