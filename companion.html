@@ -1336,7 +1336,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <div class="form-field">
           <label>Site</label>
           <select id="pf-site">
-            <option value="">— Sélectionner un site —</option>
+            <option>BPCE — Paris 15e</option>
+            <option>L'Oréal — Clichy</option>
+            <option>LVMH — Paris 8e</option>
           </select>
         </div>
         <button class="btn-primary" onclick="saveProfile()">Enregistrer</button>
@@ -1774,7 +1776,7 @@ var DEMO_DB = {
       bio: "Laurent Thiry est expert en neurosciences appliquées et en développement des performances cognitives. Il accompagne dirigeants et équipes dans l'optimisation de leurs ressources mentales à travers des approches validées scientifiquement.",
       photo_initiales: 'LT',
       photo_couleur: '#00b4b4',
-      photo_url: '/static/photo-laurent.jpg',
+      photo_url: '/audio/photo-laurent.jpg',
       site_url: '',
       linkedin_url: '',
       tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
@@ -1790,7 +1792,7 @@ var DEMO_DB = {
       bio: "Nathalie Hergue-Jalenques est la fondatrice de beOtop, concept d'espaces de récupération phygitaux déployés dans les grandes entreprises. Ancienne cadre en ressources humaines, elle a développé une approche innovante combinant neurosciences, design et technologie pour permettre aux collaborateurs de recharger leurs ressources cognitives et émotionnelles au cœur de leur environnement de travail.",
       photo_initiales: 'NH',
       photo_couleur: '#f5855a',
-      photo_url: '/static/photo-nathalie.jpg',
+      photo_url: '/audio/photo-nathalie.jpg',
       site_url: 'https://beotop.fr',
       linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
       tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
@@ -1845,11 +1847,6 @@ function loadDB() {
           if (!inv.bio) inv.bio = demo.bio;
           if (!inv.tags || !inv.tags.length) inv.tags = demo.tags;
         }
-        /* Normaliser photo_url : URL GitHub absolue -> chemin relatif /static/ */
-        if (inv.photo_url && inv.photo_url.indexOf('mylittlerivercard.github.io') >= 0) {
-          var parts = inv.photo_url.split('/static/');
-          inv.photo_url = parts.length > 1 ? '/static/' + parts[1] : inv.photo_url;
-        }
       });
     }
     var dataKeys = ['points','checkins','reservations','cc_sessions','sessions'];
@@ -1857,7 +1854,6 @@ function loadDB() {
       if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
     });
     if (!stored.user) stored.user = JSON.parse(JSON.stringify(DEMO_DB.user));
-    if (stored.user.nom === undefined) stored.user.nom = '';
     saveDB(stored);
     return stored;
   } catch(e) {
@@ -1954,7 +1950,7 @@ function renderDashboard() {
   // Topbar
   var udEl = document.getElementById('user-display');
   var uaEl = document.getElementById('user-avatar');
-  if (udEl) udEl.textContent = u.prenom + (u.nom ? ' ' + u.nom[0] + '.' : '');
+  if (udEl) udEl.textContent = u.prenom + ' ' + (u.nom||'')[0] + '.';
   if (uaEl) uaEl.textContent = u.initiales || (u.prenom[0] + (u.nom||'R')[0]);
 
   // Prénom hero
@@ -2294,22 +2290,11 @@ var cachedSiteSlug = null;
 
 async function getSiteSlug() {
   if (cachedSiteSlug) return cachedSiteSlug;
-  /* Priorité 1 : site configuré dans le profil utilisateur */
-  if (DB.user && DB.user.site_slug) {
-    cachedSiteSlug = DB.user.site_slug;
-    return cachedSiteSlug;
-  }
   try {
     const r = await fetch('/api/client/sites', { credentials: 'include' });
     if (r.ok) {
       const sites = await r.json();
-      if (sites.length) {
-        /* Pour un admin : chercher le site correspondant au site enregistré dans le profil */
-        var userSite = DB.user && DB.user.site ? DB.user.site : null;
-        var match = userSite ? sites.find(function(s){ return s.slug === userSite || s.nom === userSite; }) : null;
-        cachedSiteSlug = (match || sites[0]).slug;
-        return cachedSiteSlug;
-      }
+      if (sites.length) { cachedSiteSlug = sites[0].slug; return cachedSiteSlug; }
     }
   } catch(e) {}
   return null;
@@ -2750,7 +2735,7 @@ var EXERCICE_STEPS = {
       bio: "Laurent Thiry est expert en neurosciences appliquées et en développement des performances cognitives. Il accompagne dirigeants et équipes dans l'optimisation de leurs ressources mentales à travers des approches validées scientifiquement.",
       photo_initiales: 'LT',
       photo_couleur: '#00b4b4',
-      photo_url: '/static/photo-laurent.jpg',
+      photo_url: '/audio/photo-laurent.jpg',
       site_url: '',
       linkedin_url: '',
       tags: ['Neurosciences', 'Défis cognitifs', 'Performance'],
@@ -2766,7 +2751,7 @@ var EXERCICE_STEPS = {
       bio: "Nathalie Hergue-Jalenques est la fondatrice de beOtop, concept d'espaces de récupération phygitaux déployés dans les grandes entreprises. Ancienne cadre en ressources humaines, elle a développé une approche innovante combinant neurosciences, design et technologie pour permettre aux collaborateurs de recharger leurs ressources cognitives et émotionnelles au cœur de leur environnement de travail.",
       photo_initiales: 'NH',
       photo_couleur: '#f5855a',
-      photo_url: '/static/photo-nathalie.jpg',
+      photo_url: '/audio/photo-nathalie.jpg',
       site_url: 'https://beotop.fr',
       linkedin_url: 'https://www.linkedin.com/in/nathalie-hergue-jalenques/',
       tags: ['QVCT', 'Bien-être au travail', 'RPS', 'Espaces ré-énergie', 'Innovation RH'],
@@ -4777,22 +4762,6 @@ function renderProfil() {
   document.getElementById('pf-prenom').value = u.prenom;
   document.getElementById('pf-nom').value = u.nom || '';
   document.getElementById('pf-dept').value = u.dept || '';
-  /* Charger les vrais sites dans le select */
-  var sel = document.getElementById('pf-site');
-  if (sel && sel.options.length <= 1) {
-    fetch('/api/client/sites', { credentials: 'include' })
-      .then(function(r){ return r.ok ? r.json() : []; })
-      .then(function(sites) {
-        sites.forEach(function(s) {
-          var opt = document.createElement('option');
-          opt.value = s.slug;
-          opt.textContent = s.nom + (s.client_nom ? ' — ' + s.client_nom : '');
-          if (s.slug === (u.site_slug || u.site)) opt.selected = true;
-          sel.appendChild(opt);
-        });
-      })
-      .catch(function(){});
-  }
   calcStreak();
 
   const all = [
@@ -4819,10 +4788,7 @@ function saveProfile() {
   DB.user.prenom = document.getElementById('pf-prenom').value;
   DB.user.nom    = document.getElementById('pf-nom').value;
   DB.user.dept   = document.getElementById('pf-dept').value;
-  var siteVal = document.getElementById('pf-site').value;
-  DB.user.site      = siteVal;
-  DB.user.site_slug = siteVal;
-  cachedSiteSlug    = siteVal || null; /* Forcer le rechargement du slug */
+  DB.user.site   = document.getElementById('pf-site').value;
   DB.user.initiales = (DB.user.prenom[0] + (DB.user.nom||'R')[0]).toUpperCase();
   saveDB(DB);
   showToast('✓ Profil enregistré');
@@ -5375,9 +5341,9 @@ function ldoEscape(str) {
           if (me) {
             // Mettre à jour DB.user avec les vraies données
             var parts = (me.nom || '').trim().split(' ');
-            DB.user.prenom    = parts[0] || me.nom || 'Utilisateur';
-            DB.user.nom       = parts.slice(1).join(' ') || '';
-            DB.user.initiales = ((DB.user.prenom[0]||'') + (DB.user.nom[0]||'')).toUpperCase();
+            DB.user.prenom = parts[0] || me.nom || 'Utilisateur';
+            DB.user.nom = parts.slice(1).join(' ') || '';
+            DB.user.initiales = (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
             saveDB(DB);
           }
           renderDashboard();
@@ -5671,7 +5637,7 @@ function saveIntervenant(existingId) {
       inv.photo_initiales = document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2);
       inv.photo_couleur = document.getElementById('f-inv-color').value;
       var _pf = document.getElementById('f-inv-photo').value.trim();
-      inv.photo_url = _pf ? ('/static/' + _pf) : '';
+      inv.photo_url = _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : '';
       inv.site_url = document.getElementById('f-inv-site').value.trim();
       inv.linkedin_url = document.getElementById('f-inv-linkedin').value.trim();
       inv.tags = tags;
@@ -5685,7 +5651,7 @@ function saveIntervenant(existingId) {
       bio: document.getElementById('f-inv-bio').value.trim(),
       photo_initiales: document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2) || nom.slice(0,2).toUpperCase(),
       photo_couleur: document.getElementById('f-inv-color').value,
-      photo_url: (function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('/static/' + _pf) : ''; })(),
+      photo_url: (function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : ''; })(),
       site_url: document.getElementById('f-inv-site').value.trim(),
       linkedin_url: document.getElementById('f-inv-linkedin').value.trim(),
       tags: tags,
@@ -6139,26 +6105,6 @@ var _playTimers = {};
 function logPlay(contentType, contentLabel, intervenantNom, intervenantId, siteSlug) {
   var key = contentType + '|' + contentLabel;
   _playTimers[key] = Date.now();
-  /* Utiliser cachedSiteSlug en priorité */
-  var slug = siteSlug || cachedSiteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
-  if (!slug) {
-    /* Résoudre le slug de façon asynchrone si pas encore connu */
-    getSiteSlug().then(function(s) {
-      fetch('/api/companion/play', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content_type:    contentType,
-          content_label:   contentLabel,
-          intervenant_nom: intervenantNom || '',
-          intervenant_id:  intervenantId  || null,
-          site_slug:       s || '',
-          duree_sec: 0
-        })
-      }).catch(function() {});
-    });
-    return;
-  }
   fetch('/api/companion/play', {
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -6167,7 +6113,7 @@ function logPlay(contentType, contentLabel, intervenantNom, intervenantId, siteS
       content_label:   contentLabel,
       intervenant_nom: intervenantNom || '',
       intervenant_id:  intervenantId  || null,
-      site_slug:       slug,
+      site_slug:       siteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
       duree_sec: 0
     })
   }).catch(function() {});
@@ -6186,7 +6132,7 @@ function logPlayEnd(contentType, contentLabel) {
     body: JSON.stringify({
       content_type:  contentType,
       content_label: contentLabel,
-      site_slug:     cachedSiteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
+      site_slug:     (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
       duree_sec:     duree
     })
   }).catch(function() {});
