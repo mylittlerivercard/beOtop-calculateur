@@ -116,7 +116,7 @@
     <div class="nav-item" onclick="showPage('sites', this)"><span class="nav-icon">📍</span> Sites</div>
     <div class="nav-item" onclick="showPage('users', this)"><span class="nav-icon">👤</span> Utilisateurs</div>
     <div class="nav-item" onclick="showPage('sessions', this)"><span class="nav-icon">📋</span> Séances</div>
-    <div class="nav-item" onclick="showPage('intervenants', this)"><span class="nav-icon">🎓</span> Intervenants</div>
+    <div class="nav-item" onclick="showPage('intervenants', this)"><span class="nav-icon">🎓</span> Apporteurs &amp; Intervenants</div>
     <div class="nav-item" onclick="showPage('retribution', this)"><span class="nav-icon">💰</span> Rétribution</div>
   </nav>
   <div class="sidebar-footer">
@@ -223,10 +223,10 @@
   <div class="page" id="page-intervenants">
     <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
       <div>
-        <div class="page-title">Intervenants</div>
+        <div class="page-title">Apporteurs &amp; Intervenants</div>
         <div class="page-sub">Experts Companion · Rétribution contenu</div>
       </div>
-      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel intervenant</div>
+      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel apporteur / intervenant</div>
     </div>
     <div class="card">
       <table class="tbl" id="intervenants-table">
@@ -671,7 +671,7 @@ async function loadIntervenants() {
   var tbl = document.getElementById('intervenants-table');
   tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>';
   if (!data.length) {
-    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel intervenant</td></tr>';
+    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel apporteur / intervenant</td></tr>';
     return;
   }
   data.forEach(function(inv) {
@@ -796,49 +796,49 @@ async function loadRetributionAdmin() {
   document.getElementById('ret-table').innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
   document.getElementById('ret-summary').innerHTML = '<span style="font-size:.72rem;color:#6b6070">Chargement…</span>';
 
-  // Charger stats depuis tous les intervenants
-  var invData = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
-  var allRows = [];
-  var totalClics = 0;
+  /* Dates du semestre */
+  var dateFrom = semestre == 1 ? annee + '-01-01' : annee + '-07-01';
+  var dateTo   = semestre == 1 ? annee + '-06-30' : annee + '-12-31';
 
-  for (var i = 0; i < invData.length; i++) {
-    var inv = invData[i];
-    var s = await fetch('/api/intervenant/stats?annee=' + annee + '&semestre=' + semestre + '&intervenant_id=' + inv.id, {credentials:'include'}).then(r => r.json());
-    if (s.error) continue;
-    totalClics = s.total_clics || totalClics;
-    var taux = (inv.taux_contenu || 30) / 100;
-    var estApporteur = inv.apporteur_affaire || false;
-    (s.clics_par_site || []).forEach(function(site) {
-      var pctClics   = s.total_clics ? site.nb_clics_inv / s.total_clics : 0;
-      // CA site = nb_actifs × tarif × 6 mois (nb_actifs non dispo ici, affichage indicatif)
-      var montentContenu  = tarif > 0 ? (0 * tarif * 6 * taux * pctClics) : null;
-      var commissionApport = estApporteur && tarif > 0 ? (0 * tarif * 6 * 0.20) : null;
-      var partBeotop = estApporteur ? '50%' : '70%';
-      allRows.push({
-        nom:       inv.nom,
-        nb_clics:  site.nb_clics_inv,
-        pct:       (pctClics * 100).toFixed(1) + '%',
-        site:      site.site_slug || '—',
-        ca:        tarif > 0 ? '(nb actifs requis)' : '—',
-        contenu:   tarif > 0 ? '(nb actifs requis)' : '—',
-        apport:    estApporteur ? (tarif > 0 ? '(nb actifs requis)' : '—') : '—',
-        total:     '—',
-        beotop:    partBeotop,
-        est_apporteur: estApporteur
-      });
-    });
-    if (!(s.clics_par_site || []).length && s.nb_clics > 0) {
-      allRows.push({
-        nom: inv.nom, nb_clics: s.nb_clics,
-        pct: s.pct_global + '%', site: 'tous',
-        ca: '—', contenu: '—', apport: '—', total: '—',
-        beotop: estApporteur ? '50%' : '70%',
-        est_apporteur: estApporteur
-      });
-    }
+  /* Route admin — une seule requête, pas de boucle */
+  var stats, invMeta = {};
+  try {
+    var r = await fetch('/api/admin/intervenants/stats?date_from=' + dateFrom + '&date_to=' + dateTo, { credentials: 'include' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    stats = await r.json();
+  } catch(e) {
+    document.getElementById('ret-summary').innerHTML = '<span style="color:#c00;font-size:.72rem">Erreur serveur : ' + e.message + '</span>';
+    return;
   }
 
-  _retribData = { annee, semestre, tarif, rows: allRows, total_clics: totalClics };
+  /* Métadonnées intervenants (taux, apporteur) */
+  try {
+    var invData = await fetch('/api/admin/intervenants', { credentials: 'include' }).then(function(r2){ return r2.json(); });
+    (invData || []).forEach(function(inv) { invMeta[inv.nom] = inv; });
+  } catch(e) {}
+
+  var totalClics = stats.total_clics || 0;
+  var allRows = [];
+
+  (stats.par_intervenant || []).forEach(function(s) {
+    var inv = invMeta[s.intervenant] || {};
+    var taux = (inv.taux_contenu || 30) / 100;
+    var estApporteur = inv.apporteur_affaire || false;
+    var pctClics = totalClics ? (s.nb_clics / totalClics * 100).toFixed(1) : '0.0';
+    var montant = tarif > 0 ? '— (nb actifs requis)' : '—';
+    var apportBadge = estApporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
+    allRows.push({
+      nom: s.intervenant, apportBadge: apportBadge,
+      nb_clics: s.nb_clics, pct: pctClics + '%',
+      site: 'tous sites', ca: montant, contenu: montant,
+      apport: estApporteur ? montant : '—',
+      total: '—',
+      beotop: estApporteur ? '50%' : '70%',
+      est_apporteur: estApporteur
+    });
+  });
+
+  _retribData = { annee: annee, semestre: semestre, tarif: tarif, rows: allRows, total_clics: totalClics };
 
   document.getElementById('ret-result-title').textContent = 'S' + semestre + ' ' + annee + ' · ' + totalClics + ' clics totaux';
   document.getElementById('ret-summary').innerHTML =
@@ -847,9 +847,8 @@ async function loadRetributionAdmin() {
   var tbl = document.getElementById('ret-table');
   tbl.innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
   allRows.forEach(function(r) {
-    var apportBadge = r.est_apporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
     tbl.innerHTML += '<tr>'
-      + '<td class="td-main">' + r.nom + apportBadge + '</td>'
+      + '<td class="td-main">' + r.nom + r.apportBadge + '</td>'
       + '<td>' + r.nb_clics + '</td>'
       + '<td>' + r.pct + '</td>'
       + '<td>' + r.site + '</td>'
