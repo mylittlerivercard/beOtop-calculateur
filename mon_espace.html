@@ -504,7 +504,7 @@ function renderAll(d) {
       return '<tr>'
         + '<td style="font-weight:500">' + (c.nom || '—') + '</td>'
         + '<td style="font-size:.65rem;color:var(--text-muted)">' + (c.site_slug || '—') + '</td>'
-        + '<td style="text-align:center">' + (c.nb_actifs || 0) + '</td>'
+        + '<td style="text-align:center">' + (c.nb_salaries > 0 ? c.nb_salaries + ' emp.' : '—') + '</td>'
         + '<td style="text-align:center">' + (c.tarif_annuel ? c.tarif_annuel + ' \u20ac/an' : (c.tarif_utilisateur_mensuel ? c.tarif_utilisateur_mensuel + ' \u20ac/mois' : '—')) + '</td>'
         + '<td style="text-align:center"><strong>' + (c.ca_semestre ? c.ca_semestre + ' \u20ac' : '—') + '</strong></td>'
         + '<td style="text-align:center"><strong style="color:var(--coral-dark)">' + (c.commission_20pct ? c.commission_20pct + ' \u20ac' : '—') + '</strong></td>'
