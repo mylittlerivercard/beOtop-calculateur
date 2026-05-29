@@ -2446,6 +2446,8 @@ def intervenant_stats():
 
             # Clics par site pour calcul rétribution
             # Les colonnes tarif_annuel/has_companion peuvent ne pas exister encore
+            # Prefixer created_at par cp. pour éviter ambiguïté avec LEFT JOIN sites
+            cp_sem_clause = sem_clause.replace('created_at', 'cp.created_at')
             try:
                 cur.execute(f"""
                     SELECT cp.site_slug,
@@ -2460,7 +2462,7 @@ def intervenant_stats():
                     LEFT JOIN sites s ON s.slug = cp.site_slug
                     WHERE cp.intervenant_nom = %s
                       AND cp.content_type != 'post_interne'
-                      AND {sem_clause}
+                      AND {cp_sem_clause}
                     GROUP BY cp.site_slug, s.tarif_annuel, s.nb_salaries
                 """, [inv['nom']])
                 clics_par_site = [serialize_row(r) for r in cur.fetchall()]
