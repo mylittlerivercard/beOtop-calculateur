@@ -400,6 +400,60 @@ function showPage(id, el){
 }
 
 // ── Modal ──
+
+/* ── Détail rétribution par intervenant ── */
+async function showRetribDetail(nomEnc) {
+  var nom = decodeURIComponent(nomEnc);
+  var annee    = document.getElementById('ret-annee').value;
+  var semestre = document.getElementById('ret-semestre').value;
+  var dateFrom = semestre == 1 ? annee + '-01-01' : annee + '-07-01';
+  var dateTo   = semestre == 1 ? annee + '-06-30' : annee + '-12-31';
+
+  var modal = document.getElementById('modal-stats-inv');
+  var body  = document.getElementById('modal-stats-body');
+  if (!modal || !body) return;
+  body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#888;font-size:.8rem">Chargement…</div>';
+  openModal('modal-stats-inv');
+
+  try {
+    var r = await fetch('/api/admin/intervenants/stats?date_from=' + dateFrom + '&date_to=' + dateTo, { credentials: 'include' });
+    var d = await r.json();
+
+    /* Filtrer les détails pour cet intervenant */
+    var detail = (d.detail_par_type || []).filter(function(x){ return x.intervenant === nom; });
+    var totalNom = (d.par_intervenant || []).find(function(x){ return x.intervenant === nom; }) || {};
+
+    var rows = detail.map(function(c) {
+      return '<tr><td style="padding:.4rem .6rem">' + c.content_type + '</td>'
+        + '<td style="text-align:center;padding:.4rem .6rem">' + c.nb_clics + '</td>'
+        + '<td style="text-align:center;padding:.4rem .6rem">' + Math.round(c.duree_totale_min||0) + ' min</td></tr>';
+    }).join('') || '<tr><td colspan="3" style="text-align:center;color:#aaa;padding:.8rem;font-size:.72rem">Aucune activité</td></tr>';
+
+    /* Clics par site depuis detail_par_type */
+    var parSite = {};
+    (d.detail_par_type || []).filter(function(x){ return x.intervenant === nom; }).forEach(function(c){
+      parSite[c.content_type] = (parSite[c.content_type]||0) + c.nb_clics;
+    });
+
+    body.innerHTML = '<h4 style="margin:0 0 1rem;font-size:.95rem">' + nom + '</h4>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:1.2rem">'
+      + _statBox('Clics totaux', totalNom.nb_clics || 0, 'var(--gold)')
+      + _statBox('Durée totale', Math.round(totalNom.duree_totale_min||0) + ' min', '#1a7a42')
+      + _statBox('% Global', (totalNom.pct_clics||0) + '%', '#888')
+      + '</div>'
+      + '<div style="font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:.5rem">Par type de contenu · S' + semestre + ' ' + annee + '</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:.75rem">'
+      + '<thead><tr style="border-bottom:1px solid #eee">'
+      + '<th style="text-align:left;padding:.4rem .6rem;color:#888;font-weight:500">Type</th>'
+      + '<th style="text-align:center;padding:.4rem .6rem;color:#888;font-weight:500">Clics</th>'
+      + '<th style="text-align:center;padding:.4rem .6rem;color:#888;font-weight:500">Durée</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+  } catch(e) {
+    body.innerHTML = '<p style="color:#c00;font-size:.8rem">Erreur : ' + e.message + '</p>';
+  }
+}
+
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(function(m){
@@ -847,8 +901,10 @@ async function loadRetributionAdmin() {
   var tbl = document.getElementById('ret-table');
   tbl.innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
   allRows.forEach(function(r) {
-    tbl.innerHTML += '<tr>'
-      + '<td class="td-main">' + r.nom + r.apportBadge + '</td>'
+    var tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.onclick = (function(nom){ return function(){ showRetribDetail(nom); }; })(r.nom);
+    tr.innerHTML = '<td class="td-main">' + r.nom + r.apportBadge + '</td>'
       + '<td>' + r.nb_clics + '</td>'
       + '<td>' + r.pct + '</td>'
       + '<td>' + r.site + '</td>'
@@ -856,10 +912,10 @@ async function loadRetributionAdmin() {
       + '<td>' + r.contenu + '</td>'
       + '<td>' + (r.est_apporteur ? '<strong>' + r.apport + '</strong>' : '<span style="color:#aaa">—</span>') + '</td>'
       + '<td>' + r.total + '</td>'
-      + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:6px;background:' + (r.est_apporteur ? 'rgba(0,120,100,.1)' : 'rgba(0,0,0,.05)') + ';color:' + (r.est_apporteur ? '#007860' : '#6b6070') + '">' + r.beotop + '</span></td>'
-      + '</tr>';
+      + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:6px;background:' + (r.est_apporteur ? 'rgba(0,120,100,.1)' : 'rgba(0,0,0,.05)') + ';color:' + (r.est_apporteur ? '#007860' : '#6b6070') + '">' + r.beotop + '</span></td>';
+    tbl.appendChild(tr);
   });
-  if (!allRows.length) tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#6b6070;padding:1rem">Aucune donnée sur cette période</td></tr>';
+    if (!allRows.length) tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#6b6070;padding:1rem">Aucune donnée sur cette période</td></tr>';
 }
 
 async function cloturerSemestre() {
