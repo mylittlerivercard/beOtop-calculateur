@@ -726,8 +726,48 @@ async function toggleIntervenant(id, actif) {
   loadIntervenants();
 }
 
-function viewIntervenantStats(id) {
-  window.open('/api/intervenant/stats?intervenant_id=' + id, '_blank');
+async function viewIntervenantStats(id) {
+  var annee    = new Date().getFullYear();
+  var semestre = new Date().getMonth() < 6 ? 1 : 2;
+  var url = '/api/intervenant/stats?intervenant_id=' + id + '&annee=' + annee + '&semestre=' + semestre;
+  var modal = document.getElementById('modal-stats-inv');
+  var body  = document.getElementById('modal-stats-body');
+  if (!modal || !body) return;
+  body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#888;font-size:.8rem">Chargement…</div>';
+  openModal('modal-stats-inv');
+  try {
+    var r = await fetch(url, { credentials: 'include' });
+    var d = await r.json();
+    if (d.error) { body.innerHTML = '<p style="color:#c00">' + d.error + '</p>'; return; }
+    var rows = (d.clics_detail || []).map(function(c) {
+      return '<tr><td>' + (c.content_label||'—') + '</td>'
+        + '<td style="text-align:center">' + c.nb_clics + '</td>'
+        + '<td style="text-align:center">' + Math.round(c.duree_totale_min||0) + ' min</td></tr>';
+    }).join('') || '<tr><td colspan="3" style="text-align:center;color:#aaa;padding:.8rem;font-size:.72rem">Aucune activité</td></tr>';
+    body.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:1.2rem">'
+      + _statBox('Clics totaux', d.nb_clics || 0, 'var(--gold)')
+      + _statBox('Durée totale', Math.round(d.duree_totale_min||0) + ' min', '#1a7a42')
+      + _statBox('% Global', (d.pct_global||0) + '%', 'var(--mist)')
+      + '</div>'
+      + '<div style="font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:.5rem">'
+      + 'Détail · S' + semestre + ' ' + annee + '</div>'
+      + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.75rem">'
+      + '<thead><tr style="border-bottom:1px solid #eee">'
+      + '<th style="text-align:left;padding:.4rem .6rem;color:#888;font-weight:500">Contenu</th>'
+      + '<th style="text-align:center;padding:.4rem .6rem;color:#888;font-weight:500">Clics</th>'
+      + '<th style="text-align:center;padding:.4rem .6rem;color:#888;font-weight:500">Durée</th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  } catch(e) {
+    body.innerHTML = '<p style="color:#c00;font-size:.8rem">Erreur : ' + e.message + '</p>';
+  }
+}
+
+function _statBox(label, val, color) {
+  return '<div style="background:rgba(0,0,0,.03);border-radius:10px;padding:.8rem;text-align:center;border:1px solid rgba(0,0,0,.06)">'
+    + '<div style="font-size:1.3rem;font-weight:600;color:' + color + '">' + val + '</div>'
+    + '<div style="font-size:.6rem;color:#999;margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em">' + label + '</div>'
+    + '</div>';
 }
 
 // ── Rétribution semestrielle ──
@@ -860,5 +900,16 @@ function exportRetributionCSV() {
 loadMe();
 loadOverview();
 </script>
+
+<!-- Modal stats intervenant -->
+<div class="modal-overlay" id="modal-stats-inv" onclick="if(event.target===this)closeModal('modal-stats-inv')">
+  <div class="modal" style="max-width:560px;width:94vw;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400">📊 Statistiques intervenant</h3>
+      <button onclick="closeModal('modal-stats-inv')" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#999">✕</button>
+    </div>
+    <div id="modal-stats-body"></div>
+  </div>
+</div>
 </body>
 </html>
