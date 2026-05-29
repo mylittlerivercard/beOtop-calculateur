@@ -1859,6 +1859,7 @@ function loadDB() {
       if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
     });
     if (!stored.user) stored.user = JSON.parse(JSON.stringify(DEMO_DB.user));
+    if (stored.user.nom === undefined) stored.user.nom = '';
     saveDB(stored);
     return stored;
   } catch(e) {
@@ -1955,7 +1956,7 @@ function renderDashboard() {
   // Topbar
   var udEl = document.getElementById('user-display');
   var uaEl = document.getElementById('user-avatar');
-  if (udEl) udEl.textContent = u.prenom + ' ' + (u.nom||'')[0] + '.';
+  if (udEl) udEl.textContent = u.prenom + (u.nom ? ' ' + u.nom[0] + '.' : '');
   if (uaEl) uaEl.textContent = u.initiales || (u.prenom[0] + (u.nom||'R')[0]);
 
   // Prénom hero
@@ -5346,9 +5347,9 @@ function ldoEscape(str) {
           if (me) {
             // Mettre à jour DB.user avec les vraies données
             var parts = (me.nom || '').trim().split(' ');
-            DB.user.prenom = parts[0] || me.nom || 'Utilisateur';
-            DB.user.nom = parts.slice(1).join(' ') || '';
-            DB.user.initiales = (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
+            DB.user.prenom    = parts[0] || me.nom || 'Utilisateur';
+            DB.user.nom       = parts.slice(1).join(' ') || '';
+            DB.user.initiales = ((DB.user.prenom[0]||'') + (DB.user.nom[0]||'')).toUpperCase();
             saveDB(DB);
           }
           renderDashboard();
