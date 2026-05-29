@@ -116,7 +116,7 @@
     <div class="nav-item" onclick="showPage('sites', this)"><span class="nav-icon">📍</span> Sites</div>
     <div class="nav-item" onclick="showPage('users', this)"><span class="nav-icon">👤</span> Utilisateurs</div>
     <div class="nav-item" onclick="showPage('sessions', this)"><span class="nav-icon">📋</span> Séances</div>
-    <div class="nav-item" onclick="showPage('intervenants', this)"><span class="nav-icon">🎓</span> Intervenants</div>
+    <div class="nav-item" onclick="showPage('intervenants', this)"><span class="nav-icon">🎓</span> Apporteurs & Intervenants</div>
     <div class="nav-item" onclick="showPage('retribution', this)"><span class="nav-icon">💰</span> Rétribution</div>
   </nav>
   <div class="sidebar-footer">
@@ -223,10 +223,10 @@
   <div class="page" id="page-intervenants">
     <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
       <div>
-        <div class="page-title">Intervenants</div>
-        <div class="page-sub">Experts Companion · Rétribution contenu</div>
+        <div class="page-title">Apporteurs <em>&amp; Intervenants</em></div>
+        <div class="page-sub">Experts Companion · Apporteurs d'affaires · Rétribution</div>
       </div>
-      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel intervenant</div>
+      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel apporteur / intervenant</div>
     </div>
     <div class="card">
       <table class="tbl" id="intervenants-table">
@@ -671,7 +671,7 @@ async function loadIntervenants() {
   var tbl = document.getElementById('intervenants-table');
   tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>';
   if (!data.length) {
-    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel intervenant</td></tr>';
+    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel apporteur / intervenant</td></tr>';
     return;
   }
   data.forEach(function(inv) {
