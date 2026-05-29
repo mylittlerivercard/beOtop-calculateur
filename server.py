@@ -12,7 +12,6 @@ import os
 import csv
 import io
 import sys
-import logging
 import secrets
 from datetime import datetime, date
 from functools import wraps
@@ -393,26 +392,6 @@ def init_db():
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_intervenant ON retribution_semestres(intervenant_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_periode     ON retribution_semestres(annee, semestre)')
-
-        # Tables créées à la volée dans certaines routes — sécurisées ici
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS companion_livreor (
-                id         SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                site_slug  TEXT,
-                prenom     TEXT,
-                texte      TEXT NOT NULL
-            )
-        ''')
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS leads (
-                id         SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                prenom TEXT, nom TEXT, email TEXT, role TEXT,
-                entreprise TEXT, effectif TEXT, priorite TEXT, message TEXT
-            )
-        ''')
 
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
@@ -1779,7 +1758,6 @@ def award_points(user_id, action, label, site_slug=None):
                 conn.commit()
     except Exception as e:
         print(f">>> award_points error: {e}", file=sys.stderr)
-        import logging; logging.error(f"award_points({action}, {label}): {e}")
     return pts
 
 
@@ -1887,90 +1865,6 @@ def get_scores():
 
 
 
-@app.route('/api/companion/leaderboard', methods=['GET'])
-@login_required
-def companion_leaderboard():
-    """
-    Classement anonymisé des utilisateurs du même site.
-    Retourne : rang, initiales, dept masqué, total XP, streak, niveau.
-    Règle RGPD : nom jamais exposé en clair — initiales seulement.
-    """
-    user_id   = session.get('user_id')
-    site_slug = request.args.get('site_slug', '')
-    periode   = request.args.get('periode', 'total')  # total | mois | semaine
-
-    date_filter = ""
-    if periode == 'mois':
-        date_filter = "AND cp.date >= DATE_TRUNC('month', CURRENT_DATE)"
-    elif periode == 'semaine':
-        date_filter = "AND cp.date >= DATE_TRUNC('week', CURRENT_DATE)"
-
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            # Classement par site — initiales anonymisées
-            query = f"""
-                SELECT
-                    cp.user_id,
-                    COALESCE(SUM(cp.points), 0)            AS total_xp,
-                    COUNT(DISTINCT cp.date)                 AS jours_actifs,
-                    LEFT(UPPER(REPLACE(u.nom, ' ', '')), 2) AS initiales,
-                    (cp.user_id = %s)                       AS is_me
-                FROM companion_points cp
-                JOIN users u ON u.id = cp.user_id
-                WHERE cp.site_slug = %s
-                  AND u.actif = 1
-                  {date_filter}
-                GROUP BY cp.user_id, u.nom
-                ORDER BY total_xp DESC
-                LIMIT 20
-            """
-            cur.execute(query, [user_id, site_slug])
-            rows = cur.fetchall()
-
-            # Calcul streak pour chaque user (60 derniers jours)
-            user_ids = [r['user_id'] for r in rows]
-            streaks  = {}
-            if user_ids:
-                cur.execute("""
-                    SELECT user_id, date::text
-                    FROM companion_points
-                    WHERE user_id = ANY(%s)
-                    GROUP BY user_id, date
-                    ORDER BY user_id, date DESC
-                """, [user_ids])
-                from collections import defaultdict
-                dates_by_user = defaultdict(list)
-                for r in cur.fetchall():
-                    dates_by_user[r['user_id']].append(r['date'])
-                from datetime import date as dt, timedelta
-                for uid, dates in dates_by_user.items():
-                    streak = 0
-                    cursor_d = dt.today()
-                    for d_str in dates:
-                        d = dt.fromisoformat(d_str)
-                        if d == cursor_d or d == cursor_d - timedelta(days=1):
-                            streak += 1
-                            cursor_d = d
-                        else:
-                            break
-                    streaks[uid] = streak
-
-    result = []
-    for i, r in enumerate(rows):
-        niv = get_niveau(int(r['total_xp']))
-        result.append({
-            'rang':       i + 1,
-            'initiales':  r['initiales'] or '??',
-            'total_xp':   int(r['total_xp']),
-            'streak':     streaks.get(r['user_id'], 0),
-            'jours_actifs': int(r['jours_actifs']),
-            'niveau':     niv['niveau'],
-            'is_me':      bool(r['is_me']),
-        })
-
-    return jsonify(result)
-
-
 # ========== LIVRE D'OR ==========
 
 @app.route('/api/companion/livreor', methods=['GET'])
@@ -1980,7 +1874,16 @@ def livreor_get():
     site_slug = request.args.get('site_slug')
     with get_db() as conn:
         with conn.cursor() as cur:
-
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS companion_livreor (
+                    id          SERIAL PRIMARY KEY,
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    site_slug   TEXT,
+                    prenom      TEXT,
+                    texte       TEXT NOT NULL
+                )
+            """)
             conn.commit()
             if site_slug:
                 cur.execute("""
@@ -2022,7 +1925,16 @@ def livreor_post():
             prenom = ''
             if user and user['nom']:
                 prenom = user['nom'].strip().split()[0]
-
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS companion_livreor (
+                    id          SERIAL PRIMARY KEY,
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    site_slug   TEXT,
+                    prenom      TEXT,
+                    texte       TEXT NOT NULL
+                )
+            """)
             cur.execute("""
                 INSERT INTO companion_livreor (user_id, site_slug, prenom, texte)
                 VALUES (%s, %s, %s, %s)
@@ -2049,27 +1961,11 @@ def companion_log_play():
     intervenant_nom = data.get('intervenant_nom', '') or ''
     intervenant_id  = data.get('intervenant_id')
     duree_sec       = int(data.get('duree_sec', 0))
-    site_slug       = data.get('site_slug', '') or ''
+    site_slug       = data.get('site_slug', '')
     user_id         = session.get('user_id')
 
     if not content_type or not content_label:
         return jsonify({'error': 'content_type et content_label requis'}), 400
-
-    # Si site_slug vide, récupérer le premier site du client de l'utilisateur
-    if not site_slug and user_id:
-        try:
-            with get_db() as conn2:
-                with conn2.cursor() as cur2:
-                    cur2.execute(
-                        "SELECT s.slug FROM sites s JOIN users u ON u.client_id = s.client_id "
-                        "WHERE u.id = %s AND s.actif = 1 ORDER BY s.id LIMIT 1",
-                        [user_id]
-                    )
-                    row = cur2.fetchone()
-                    if row:
-                        site_slug = row['slug']
-        except Exception:
-            pass
 
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -2100,8 +1996,7 @@ def admin_intervenants_stats():
     date_to   = request.args.get('date_to',   dt.today().isoformat())
     site_slug = request.args.get('site_slug')
 
-    site_clause     = "AND site_slug = %s" if site_slug else ""
-    site_clause_cp  = "AND cp.site_slug = %s" if site_slug else ""
+    site_clause = "AND site_slug = %s" if site_slug else ""
     params_base = [date_from, date_to] + ([site_slug] if site_slug else [])
 
     with get_db() as conn:
@@ -2109,37 +2004,30 @@ def admin_intervenants_stats():
 
             cur.execute(f"""
                 SELECT
-                    cp.intervenant_nom AS intervenant,
-                    cp.content_type,
+                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
+                    content_type,
                     COUNT(*)                          AS nb_clics,
-                    COALESCE(SUM(cp.duree_sec), 0)    AS duree_totale_sec,
-                    ROUND(COALESCE(SUM(cp.duree_sec), 0) / 60.0, 1) AS duree_totale_min,
-                    MIN(cp.created_at)::date::text    AS premiere_lecture,
-                    MAX(cp.created_at)::date::text    AS derniere_lecture
-                FROM companion_content_plays cp
-                WHERE cp.created_at::date BETWEEN %s AND %s
-                  AND cp.content_type != 'post_interne'
-                  AND TRIM(cp.intervenant_nom) IN (
-                      SELECT TRIM(nom) FROM intervenants WHERE actif = TRUE
-                  )
-                  {site_clause_cp}
-                GROUP BY cp.intervenant_nom, cp.content_type
-                ORDER BY cp.intervenant_nom, nb_clics DESC
+                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(created_at)::date::text       AS premiere_lecture,
+                    MAX(created_at)::date::text       AS derniere_lecture
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
+                  {site_clause}
+                GROUP BY intervenant, content_type
+                ORDER BY intervenant, nb_clics DESC
             """, params_base)
             rows_detail = [serialize_row(r) for r in cur.fetchall()]
 
-            # Total = uniquement les clics sur des intervenants/apporteurs déclarés actifs
             cur.execute(f"""
                 SELECT
                     COUNT(*)                    AS total_clics,
-                    COALESCE(SUM(cp.duree_sec), 0) AS total_duree_sec
-                FROM companion_content_plays cp
-                WHERE cp.created_at::date BETWEEN %s AND %s
-                  AND cp.content_type != 'post_interne'
-                  AND TRIM(cp.intervenant_nom) IN (
-                      SELECT TRIM(nom) FROM intervenants WHERE actif = TRUE
-                  )
-                  {site_clause_cp}
+                    COALESCE(SUM(duree_sec), 0) AS total_duree_sec
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
+                  {site_clause}
             """, params_base)
             totaux = cur.fetchone() or {}
             total_clics = int(totaux.get('total_clics', 0) or 0)
@@ -2147,20 +2035,17 @@ def admin_intervenants_stats():
 
             cur.execute(f"""
                 SELECT
-                    TRIM(cp.intervenant_nom)          AS intervenant,
+                    COALESCE(NULLIF(TRIM(intervenant_nom), ''), '(sans intervenant)') AS intervenant,
                     COUNT(*)                          AS nb_clics,
-                    COALESCE(SUM(cp.duree_sec), 0)    AS duree_totale_sec,
-                    ROUND(COALESCE(SUM(cp.duree_sec), 0) / 60.0, 1) AS duree_totale_min,
-                    MIN(cp.created_at)::date::text    AS premiere_lecture,
-                    MAX(cp.created_at)::date::text    AS derniere_lecture
-                FROM companion_content_plays cp
-                WHERE cp.created_at::date BETWEEN %s AND %s
-                  AND cp.content_type != 'post_interne'
-                  AND TRIM(cp.intervenant_nom) IN (
-                      SELECT TRIM(nom) FROM intervenants WHERE actif = TRUE
-                  )
-                  {site_clause_cp}
-                GROUP BY TRIM(cp.intervenant_nom)
+                    COALESCE(SUM(duree_sec), 0)       AS duree_totale_sec,
+                    ROUND(COALESCE(SUM(duree_sec), 0) / 60.0, 1) AS duree_totale_min,
+                    MIN(created_at)::date::text       AS premiere_lecture,
+                    MAX(created_at)::date::text       AS derniere_lecture
+                FROM companion_content_plays
+                WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
+                  {site_clause}
+                GROUP BY intervenant
                 ORDER BY nb_clics DESC
             """, params_base)
             rows_global = []
@@ -2778,7 +2663,13 @@ Priorité   : {priorite}
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
-
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS leads (
+                        id SERIAL PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        prenom TEXT, nom TEXT, email TEXT, role TEXT,
+                        entreprise TEXT, effectif TEXT, priorite TEXT, message TEXT
+                    )
+                """)
                 cur.execute("""
                     INSERT INTO leads (prenom, nom, email, role, entreprise, effectif, priorite, message)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -2846,12 +2737,6 @@ def companion_page():
     if 'user_id' not in session:
         return redirect('/login')
     return serve_html('companion.html')
-
-@app.route('/gamification')
-def gamification_page():
-    if 'user_id' not in session:
-        return redirect('/login')
-    return serve_html('companion_gamification.html')
 
 @app.route('/roi')
 def roi_page():
@@ -3108,10 +2993,6 @@ def auth_register():
 
     if not all([token, nom, email, password]):
         return jsonify({'error': 'Champs manquants'}), 400
-    if '@' not in email or '.' not in email.split('@')[-1]:
-        return jsonify({'error': 'Email invalide'}), 400
-    if len(nom.strip()) < 2:
-        return jsonify({'error': 'Nom invalide'}), 400
     if len(password) < 8:
         return jsonify({'error': 'Mot de passe trop court (8 caractères min)'}), 400
 
