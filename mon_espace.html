@@ -261,6 +261,28 @@ tr:hover td { background: var(--surface2); }
     <button class="btn-calcul" onclick="loadStats()">Actualiser</button>
   </div>
 
+  <!-- RÉCAP ANNUEL -->
+  <div id="recap-annuel" style="display:none;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(0,180,180,.03));border:1px solid rgba(0,180,180,.25);border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1.5rem">
+    <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--teal);margin-bottom:.8rem">Récapitulatif semestriel estimé</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+      <div>
+        <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem">Rétribution contenu</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--teal)" id="recap-contenu">—</div>
+        <div style="font-size:.6rem;color:var(--text-muted)" id="recap-contenu-detail"></div>
+      </div>
+      <div>
+        <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem">Commission apport d'affaire</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--coral)" id="recap-apport">—</div>
+        <div style="font-size:.6rem;color:var(--text-muted)">20% du CA clients apportés</div>
+      </div>
+      <div style="border-left:2px solid rgba(0,180,180,.2);padding-left:1rem">
+        <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem">Total estimé du semestre</div>
+        <div style="font-size:1.6rem;font-weight:700;color:var(--text)" id="recap-total">—</div>
+        <div style="font-size:.6rem;color:var(--text-muted)">Versé à la clôture semestrielle</div>
+      </div>
+    </div>
+  </div>
+
   <!-- KPIs -->
   <div class="grid-3" id="kpi-grid">
     <div class="kpi-card">
@@ -499,6 +521,29 @@ function renderAll(d) {
     }
   } else {
     if (sectionApport) sectionApport.style.display = 'none';
+  }
+
+  // ── Récap semestriel ──────────────────────────────────────────────
+  var totalContenu = 0;
+  (d.clics_par_site || []).forEach(function(r) {
+    var tarifA  = parseFloat(r.tarif_annuel || 0);
+    var nbSal   = parseInt(r.nb_salaries || 0);
+    var pctSite = r.nb_clics_total ? (r.nb_clics_inv / r.nb_clics_total) : 0;
+    var taux    = parseFloat(d.taux_contenu || 30) / 100;
+    if (tarifA > 0 && nbSal > 0) {
+      totalContenu += tarifA * nbSal / 2 * pctSite * taux;
+    }
+  });
+  totalContenu = Math.round(totalContenu * 100) / 100;
+  var totalApportNum = parseFloat(d.total_commission_apport || 0);
+  var totalGlobal    = Math.round((totalContenu + totalApportNum) * 100) / 100;
+  var recap = document.getElementById('recap-annuel');
+  if (recap) {
+    recap.style.display = totalContenu > 0 || totalApportNum > 0 ? '' : 'none';
+    document.getElementById('recap-contenu').textContent       = totalContenu > 0 ? totalContenu.toFixed(2) + ' €' : '—';
+    document.getElementById('recap-contenu-detail').textContent = totalContenu > 0 ? parseFloat(d.pct_global||0) + '% × ' + parseFloat(d.taux_contenu||30) + '% du CA sites' : 'Tarifs non configurés';
+    document.getElementById('recap-apport').textContent        = totalApportNum > 0 ? totalApportNum.toFixed(2) + ' €' : '—';
+    document.getElementById('recap-total').textContent         = totalGlobal > 0 ? totalGlobal.toFixed(2) + ' €' : '—';
   }
 }
 
