@@ -2498,28 +2498,25 @@ def intervenant_stats():
             clients_apportes = []
             try:
                 cur.execute("""
-                    SELECT c.id, c.nom, c.tarif_utilisateur_mensuel,
-                           s.slug as site_slug,
-                           COUNT(DISTINCT cp.user_id) FILTER (
-                               WHERE cp.created_at::date BETWEEN %s AND %s
-                               AND cp.user_id IS NOT NULL
-                           ) as nb_actifs
+                    SELECT c.id, c.nom,
+                           COALESCE(s.tarif_annuel, 0)  as tarif_annuel,
+                           COALESCE(s.nb_salaries, 0)   as nb_salaries,
+                           s.slug as site_slug
                     FROM clients c
                     JOIN sites s ON s.client_id = c.id
-                    LEFT JOIN companion_content_plays cp ON cp.site_slug = s.slug
                     WHERE c.apporteur_id = %s AND c.actif = 1
-                    GROUP BY c.id, c.nom, c.tarif_utilisateur_mensuel, s.slug
-                """, [f'{annee}-01-01' if semestre == 1 else f'{annee}-07-01',
-                      f'{annee}-06-30' if semestre == 1 else f'{annee}-12-31',
-                      inv_id])
+                    GROUP BY c.id, c.nom, s.tarif_annuel, s.nb_salaries, s.slug
+                """, [inv_id])
                 for r in cur.fetchall():
                     sr = serialize_row(r)
-                    tarif     = float(sr.get('tarif_utilisateur_mensuel') or 0)
-                    nb_actifs = int(sr.get('nb_actifs') or 0)
-                    ca_semestre = round(nb_actifs * tarif * 6, 2)
-                    commission  = round(ca_semestre * 0.20, 2)
-                    sr['ca_semestre']  = ca_semestre
-                    sr['commission_20pct'] = commission
+                    tarif_annuel = float(sr.get('tarif_annuel') or 0)
+                    nb_salaries  = int(sr.get('nb_salaries') or 0)
+                    # CA semestriel = tarif annuel × nb employés déclarés / 2
+                    ca_semestre  = round(tarif_annuel * nb_salaries / 2, 2)
+                    commission   = round(ca_semestre * 0.20, 2)
+                    sr['tarif_annuel']       = tarif_annuel
+                    sr['ca_semestre']        = ca_semestre
+                    sr['commission_20pct']   = commission
                     clients_apportes.append(sr)
             except Exception:
                 pass  # table clients.apporteur_id peut ne pas exister encore
