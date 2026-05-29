@@ -226,7 +226,7 @@
         <div class="page-title">Apporteurs &amp; Intervenants</div>
         <div class="page-sub">Experts Companion · Rétribution contenu</div>
       </div>
-      <div class="btn-add" onclick="openModal('modal-intervenant')">+ Nouvel apporteur / intervenant</div>
+      <div class="btn-add" onclick="loadIntervenantNoms(); document.getElementById('inv-nom').style.display='none'; openModal('modal-intervenant')">+ Nouvel apporteur / intervenant</div>
     </div>
     <div class="card">
       <table class="tbl" id="intervenants-table">
@@ -358,7 +358,14 @@
 <div class="modal-overlay" id="modal-intervenant">
   <div class="modal">
     <h3>Nouvel intervenant</h3>
-    <div class="field"><label>Nom complet *</label><input id="inv-nom" type="text" placeholder="ex. Laurent Thiry"></div>
+    <div class="field">
+      <label>Nom complet * <span style="font-size:.65rem;color:#6b6070">(depuis les contenus du companion)</span></label>
+      <select id="inv-nom-select" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem;margin-bottom:.4rem" onchange="onInvNomSelect(this.value)">
+        <option value="">— Chargement des noms… —</option>
+      </select>
+      <input id="inv-nom" type="text" placeholder="Ou saisir manuellement" style="width:100%;box-sizing:border-box">
+      <div style="font-size:.6rem;color:#6b6070;margin-top:.2rem">Le nom doit correspondre exactement au nom affiché dans le companion pour le suivi des clics</div>
+    </div>
     <div class="field"><label>Email (crée un compte /mon-espace)</label><input id="inv-email" type="email" placeholder="laurent@exemple.fr"></div>
     <div class="field"><label>Spécialité</label><input id="inv-spec" type="text" placeholder="ex. Neurosciences · Performance mentale"></div>
     <div class="field"><label>Bio</label><textarea id="inv-bio" rows="3" placeholder="Présentation courte…" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem;resize:vertical"></textarea></div>
@@ -451,6 +458,51 @@ async function showRetribDetail(nomEnc) {
 
   } catch(e) {
     body.innerHTML = '<p style="color:#c00;font-size:.8rem">Erreur : ' + e.message + '</p>';
+  }
+}
+
+
+/* ── Noms intervenants depuis companion_content_plays ── */
+function loadIntervenantNoms() {
+  var sel = document.getElementById('inv-nom-select');
+  if (!sel) return;
+  fetch('/api/admin/intervenants/stats?date_from=2020-01-01&date_to=2099-12-31', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (!d) return;
+      sel.innerHTML = '<option value="">— Sélectionner un nom —</option>';
+      var noms = (d.par_intervenant || [])
+        .map(function(x){ return x.intervenant; })
+        .filter(function(n){ return n && n !== '(sans intervenant)'; })
+        .sort();
+      noms.forEach(function(n) {
+        var opt = document.createElement('option');
+        opt.value = n; opt.textContent = n;
+        sel.appendChild(opt);
+      });
+      var optManuel = document.createElement('option');
+      optManuel.value = '__manuel__';
+      optManuel.textContent = '+ Saisir un nom manuellement';
+      sel.appendChild(optManuel);
+    })
+    .catch(function(){
+      sel.innerHTML = '<option value="">Erreur de chargement</option>';
+    });
+}
+
+function onInvNomSelect(val) {
+  var input = document.getElementById('inv-nom');
+  if (!input) return;
+  if (val && val !== '__manuel__') {
+    input.value = val;
+    input.style.display = 'none';
+  } else if (val === '__manuel__') {
+    input.value = '';
+    input.style.display = '';
+    input.focus();
+  } else {
+    input.value = '';
+    input.style.display = 'none';
   }
 }
 
