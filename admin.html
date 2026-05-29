@@ -625,17 +625,71 @@ async function loadSites(){
   clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
 
   var tbl = document.getElementById('sites-table');
-  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Ville</th><th>Salariés</th><th>Séances</th><th>Kiosque URL</th></tr>';
+  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Ville</th><th>Employés</th><th>Companion</th><th>Tarif/an</th><th>Séances</th><th>Kiosque URL</th><th>Actions</th></tr>';
   sites.forEach(function(s){
-    tbl.innerHTML += '<tr>' +
-      '<td class="td-main">' + s.nom + '</td>' +
-      '<td>' + (s.client_nom || '—') + '</td>' +
-      '<td>' + (s.ville || '—') + '</td>' +
-      '<td>' + (s.nb_salaries || '—') + '</td>' +
-      '<td>' + (s.nb_sessions || 0) + '</td>' +
-      '<td><span class="kiosk-url" onclick="copyKiosk(\'' + s.slug + '\')" title="Cliquer pour copier">/kiosk/' + s.slug + '</span></td>' +
-      '</tr>';
+    var compBadge = s.has_companion
+      ? '<span style="background:rgba(0,180,180,.12);color:#00b4b4;border-radius:6px;padding:.1rem .5rem;font-size:.65rem;font-weight:600">✓ Oui</span>'
+      : '<span style="color:#aaa;font-size:.72rem">—</span>';
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="td-main">' + s.nom + '</td>'
+      + '<td>' + (s.client_nom || '—') + '</td>'
+      + '<td>' + (s.ville || '—') + '</td>'
+      + '<td>' + (s.nb_salaries || '—') + '</td>'
+      + '<td>' + compBadge + '</td>'
+      + '<td>' + (s.tarif_annuel ? s.tarif_annuel + ' €' : '—') + '</td>'
+      + '<td>' + (s.nb_sessions || 0) + '</td>'
+      + '<td><span class="kiosk-url" title="Cliquer pour copier">/kiosk/' + s.slug + '</span></td>'
+      + '<td><button class="btn-sm">✏️ Modifier</button></td>';
+    tr.querySelector('.kiosk-url').onclick = (function(slug){ return function(){ copyKiosk(slug); }; })(s.slug);
+    tr.querySelector('.btn-sm').onclick    = (function(site){ return function(){ openEditSite(site); }; })(s);
+    tbl.appendChild(tr);
   });
+}
+
+
+/* ── Édition site ── */
+function toggleEditCompanionTarif(checked) {
+  var f = document.getElementById('se-tarif-field');
+  if (f) f.style.display = checked ? '' : 'none';
+}
+
+function openEditSite(s) {
+  document.getElementById('se-id').value      = s.id;
+  document.getElementById('se-nom').value     = s.nom || '';
+  document.getElementById('se-ville').value   = s.ville || '';
+  document.getElementById('se-salaries').value = s.nb_salaries || '';
+  document.getElementById('se-actif').value   = s.actif !== undefined ? s.actif : 1;
+  var hasComp = s.has_companion ? true : false;
+  document.getElementById('se-companion').checked = hasComp;
+  document.getElementById('se-tarif').value   = s.tarif_annuel || '';
+  toggleEditCompanionTarif(hasComp);
+  openModal('modal-site-edit');
+}
+
+async function saveSite() {
+  var id       = document.getElementById('se-id').value;
+  var nom      = document.getElementById('se-nom').value.trim();
+  var hasComp  = document.getElementById('se-companion').checked;
+  var tarif    = hasComp ? (parseFloat(document.getElementById('se-tarif').value) || 0) : 0;
+  if (!nom) { toast('Nom requis'); return; }
+  var r = await fetch('/api/admin/sites/' + id, {
+    method: 'PUT', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nom: nom,
+      ville: document.getElementById('se-ville').value,
+      nb_salaries: parseInt(document.getElementById('se-salaries').value) || 0,
+      actif: parseInt(document.getElementById('se-actif').value),
+      has_companion: hasComp,
+      tarif_annuel: tarif
+    })
+  });
+  var d = await r.json();
+  if (d.ok) {
+    closeModal('modal-site-edit');
+    toast('Site mis à jour ✓');
+    loadSites();
+  } else { toast(d.error || 'Erreur'); }
 }
 
 function toggleCompanionTarif(checked) {
@@ -1032,6 +1086,39 @@ loadOverview();
       <button onclick="closeModal('modal-stats-inv')" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#999">✕</button>
     </div>
     <div id="modal-stats-body"></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT SITE -->
+<div class="modal-overlay" id="modal-site-edit" onclick="if(event.target===this)closeModal('modal-site-edit')">
+  <div class="modal">
+    <h3>Modifier le site</h3>
+    <input type="hidden" id="se-id">
+    <div class="field"><label>Nom du site *</label><input id="se-nom" type="text"></div>
+    <div class="field"><label>Ville</label><input id="se-ville" type="text"></div>
+    <div class="field"><label>Nb employés déclarés</label><input id="se-salaries" type="number" placeholder="ex. 400"></div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+        <input id="se-companion" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleEditCompanionTarif(this.checked)">
+        Site équipé du Companion beOtop
+      </label>
+    </div>
+    <div class="field" id="se-tarif-field" style="display:none">
+      <label>Tarif Companion € / employé déclaré / an</label>
+      <input id="se-tarif" type="number" step="1" min="0" placeholder="ex. 60">
+    </div>
+    <div class="field">
+      <label>Statut</label>
+      <select id="se-actif">
+        <option value="1">Actif</option>
+        <option value="0">Inactif</option>
+      </select>
+    </div>
+    <div class="result-box" id="se-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-site-edit')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSite()">Enregistrer</button>
+    </div>
   </div>
 </div>
 </body>
