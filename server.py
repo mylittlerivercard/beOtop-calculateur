@@ -2049,11 +2049,27 @@ def companion_log_play():
     intervenant_nom = data.get('intervenant_nom', '') or ''
     intervenant_id  = data.get('intervenant_id')
     duree_sec       = int(data.get('duree_sec', 0))
-    site_slug       = data.get('site_slug', '')
+    site_slug       = data.get('site_slug', '') or ''
     user_id         = session.get('user_id')
 
     if not content_type or not content_label:
         return jsonify({'error': 'content_type et content_label requis'}), 400
+
+    # Si site_slug vide, récupérer le premier site du client de l'utilisateur
+    if not site_slug and user_id:
+        try:
+            with get_db() as conn2:
+                with conn2.cursor() as cur2:
+                    cur2.execute(
+                        "SELECT s.slug FROM sites s JOIN users u ON u.client_id = s.client_id "
+                        "WHERE u.id = %s AND s.actif = 1 ORDER BY s.id LIMIT 1",
+                        [user_id]
+                    )
+                    row = cur2.fetchone()
+                    if row:
+                        site_slug = row['slug']
+        except Exception:
+            pass
 
     with get_db() as conn:
         with conn.cursor() as cur:
