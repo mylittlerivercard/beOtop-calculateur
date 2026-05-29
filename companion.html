@@ -6139,6 +6139,26 @@ var _playTimers = {};
 function logPlay(contentType, contentLabel, intervenantNom, intervenantId, siteSlug) {
   var key = contentType + '|' + contentLabel;
   _playTimers[key] = Date.now();
+  /* Utiliser cachedSiteSlug en priorité */
+  var slug = siteSlug || cachedSiteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  if (!slug) {
+    /* Résoudre le slug de façon asynchrone si pas encore connu */
+    getSiteSlug().then(function(s) {
+      fetch('/api/companion/play', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content_type:    contentType,
+          content_label:   contentLabel,
+          intervenant_nom: intervenantNom || '',
+          intervenant_id:  intervenantId  || null,
+          site_slug:       s || '',
+          duree_sec: 0
+        })
+      }).catch(function() {});
+    });
+    return;
+  }
   fetch('/api/companion/play', {
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -6147,7 +6167,7 @@ function logPlay(contentType, contentLabel, intervenantNom, intervenantId, siteS
       content_label:   contentLabel,
       intervenant_nom: intervenantNom || '',
       intervenant_id:  intervenantId  || null,
-      site_slug:       siteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
+      site_slug:       slug,
       duree_sec: 0
     })
   }).catch(function() {});
@@ -6166,7 +6186,7 @@ function logPlayEnd(contentType, contentLabel) {
     body: JSON.stringify({
       content_type:  contentType,
       content_label: contentLabel,
-      site_slug:     (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
+      site_slug:     cachedSiteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : ''),
       duree_sec:     duree
     })
   }).catch(function() {});
