@@ -257,10 +257,10 @@
             <option value="2">S2 · Juillet – Décembre</option>
           </select>
         </div>
-        <div class="field" style="margin:0;min-width:180px">
-          <label>Tarif € / utilisateur actif / mois</label>
-          <input id="ret-tarif" type="number" step="0.5" min="0" value="5" placeholder="ex. 5.00" style="background:rgba(255,255,255,0.65);border:1px solid rgba(0,0,0,0.09);color:#1a1a2e;padding:.4rem .7rem;border-radius:7px;font-size:.72rem;font-family:'Jost',sans-serif;outline:none;width:100%">
+        <div class="field" style="margin:0;min-width:220px;background:rgba(0,180,180,.06);border-radius:8px;padding:.5rem .8rem;border:1px solid rgba(0,180,180,.15)">
+          <div style="font-size:.65rem;color:#00b4b4">💡 Tarifs configurés par site (Admin → Sites)</div>
         </div>
+        <input type="hidden" id="ret-tarif" value="0">
         <button class="btn-add" onclick="loadRetributionAdmin()">Calculer</button>
         <button class="btn-add" style="background:rgba(0,120,100,.12);color:#007860;border:1px solid rgba(0,120,100,.25)" onclick="cloturerSemestre()">✓ Clôturer et persister</button>
         <button class="btn-add" style="background:rgba(0,0,0,.06);color:#6b6070;border:1px solid rgba(0,0,0,.12)" onclick="exportRetributionCSV()">⬇ CSV</button>
@@ -276,6 +276,24 @@
       <table class="tbl" id="ret-table">
         <tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu 30% (€)</th><th>Commission apport 20% (€)</th><th>Total (€)</th><th>Part beOtop</th></tr>
       </table>
+
+      <!-- SYNTHÈSE GLOBALE -->
+      <div id="ret-synthese" style="display:none;margin-top:1.5rem;padding-top:1.2rem;border-top:2px solid rgba(0,180,180,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#00b4b4">Synthèse semestrielle · tous intervenants</div>
+          <div id="ret-synthese-total" style="font-size:.85rem;font-weight:700;color:#00b4b4"></div>
+        </div>
+        <table class="tbl" id="ret-synthese-table">
+          <tr>
+            <th>Intervenant</th>
+            <th style="text-align:center">Clics</th>
+            <th style="text-align:center">% global</th>
+            <th style="text-align:right">Rétribution contenu</th>
+            <th style="text-align:right">Commission apport 20%</th>
+            <th style="text-align:right;font-weight:700">Total à verser</th>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -997,18 +1015,41 @@ async function loadRetributionAdmin() {
   var totalClics = stats.total_clics || 0;
   var allRows = [];
 
+  /* Sites pour calcul CA */
+  var sitesData = {};
+  try {
+    var sitesResp = await fetch('/api/admin/sites', { credentials: 'include' }).then(function(r){ return r.json(); });
+    (sitesResp || []).forEach(function(s){ sitesData[s.slug] = s; });
+  } catch(e) {}
+
   (stats.par_intervenant || []).forEach(function(s) {
+    /* Exclure (sans intervenant) */
+    if (!s.intervenant || s.intervenant === '(sans intervenant)') return;
+
     var inv = invMeta[s.intervenant] || {};
     var taux = (inv.taux_contenu || 30) / 100;
     var estApporteur = inv.apporteur_affaire || false;
     var pctClics = totalClics ? (s.nb_clics / totalClics * 100).toFixed(1) : '0.0';
-    var montant = tarif > 0 ? '— (nb actifs requis)' : '—';
+
+    /* Calculer le CA depuis les sites avec tarif_annuel */
+    var caTotal = 0;
+    Object.values(sitesData).forEach(function(site) {
+      if (site.has_companion && site.tarif_annuel > 0 && site.nb_salaries > 0) {
+        caTotal += parseFloat(site.tarif_annuel) * parseInt(site.nb_salaries) / 2;
+      }
+    });
+
+    var montantContenu = caTotal > 0
+      ? (caTotal * (s.nb_clics / totalClics) * taux).toFixed(2) + ' €'
+      : '— (tarifs non configurés)';
+
     var apportBadge = estApporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
     allRows.push({
       nom: s.intervenant, apportBadge: apportBadge,
       nb_clics: s.nb_clics, pct: pctClics + '%',
-      site: 'tous sites', ca: montant, contenu: montant,
-      apport: estApporteur ? montant : '—',
+      site: 'tous sites', ca: caTotal > 0 ? caTotal.toFixed(2) + ' €' : '—',
+      contenu: montantContenu,
+      apport: estApporteur ? '—' : '—',
       total: '—',
       beotop: estApporteur ? '50%' : '70%',
       est_apporteur: estApporteur
@@ -1039,6 +1080,56 @@ async function loadRetributionAdmin() {
     tbl.appendChild(tr);
   });
     if (!allRows.length) tbl.innerHTML += '<tr><td colspan="6" style="text-align:center;color:#6b6070;padding:1rem">Aucune donnée sur cette période</td></tr>';
+
+  // ── Synthèse globale via route dédiée ────────────────────────────
+  var synthese = document.getElementById('ret-synthese');
+  if (synthese) {
+    try {
+      var rs = await fetch('/api/admin/retribution/synthese?annee=' + annee + '&semestre=' + semestre, { credentials: 'include' });
+      var ds = await rs.json();
+      var tbl = document.getElementById('ret-synthese-table');
+      var totEl = document.getElementById('ret-synthese-total');
+
+      if (ds.resultats && ds.resultats.length) {
+        synthese.style.display = '';
+        tbl.innerHTML = '<tr>'
+          + '<th>Intervenant</th>'
+          + '<th style="text-align:center">Clics</th>'
+          + '<th style="text-align:center">% global</th>'
+          + '<th style="text-align:right">Rétribution contenu</th>'
+          + '<th style="text-align:right">Commission apport 20%</th>'
+          + '<th style="text-align:right;font-weight:700">Total à verser</th>'
+          + '</tr>';
+
+        ds.resultats.forEach(function(r) {
+          var apportBadge = r.est_apporteur ? ' <span style="font-size:.55rem;color:#a06820;background:rgba(160,104,32,.1);padding:.1rem .4rem;border-radius:4px">apporteur</span>' : '';
+          var tr = '<tr>'
+            + '<td class="td-main">' + r.intervenant + apportBadge + '</td>'
+            + '<td style="text-align:center">' + r.nb_clics + '</td>'
+            + '<td style="text-align:center">' + r.pct_clics + '%</td>'
+            + '<td style="text-align:right">' + (r.retrib_contenu > 0 ? r.retrib_contenu.toFixed(2) + ' €' : '—') + '</td>'
+            + '<td style="text-align:right">' + (r.commission_apport > 0 ? r.commission_apport.toFixed(2) + ' €' : '—') + '</td>'
+            + '<td style="text-align:right;font-weight:700;color:#00b4b4">' + (r.total > 0 ? r.total.toFixed(2) + ' €' : '—') + '</td>'
+            + '</tr>';
+          tbl.innerHTML += tr;
+        });
+
+        // Ligne total
+        tbl.innerHTML += '<tr style="border-top:2px solid rgba(0,180,180,.3);background:rgba(0,180,180,.04)">'
+          + '<td class="td-main" colspan="3"><strong>TOTAL À VERSER</strong></td>'
+          + '<td style="text-align:right;font-weight:700">' + ds.total_contenu.toFixed(2) + ' €</td>'
+          + '<td style="text-align:right;font-weight:700">' + ds.total_apport.toFixed(2) + ' €</td>'
+          + '<td style="text-align:right;font-weight:700;color:#00b4b4;font-size:1rem">' + ds.total_global.toFixed(2) + ' €</td>'
+          + '</tr>';
+
+        if (totEl) totEl.textContent = 'CA semestriel sites : ' + ds.ca_semestre_total.toFixed(2) + ' €';
+      } else {
+        synthese.style.display = 'none';
+      }
+    } catch(e) {
+      if (synthese) synthese.style.display = 'none';
+    }
+  }
 }
 
 async function cloturerSemestre() {
