@@ -2546,6 +2546,169 @@ def intervenant_stats():
     })
 
 
+
+@app.route('/api/admin/retribution/synthese', methods=['GET'])
+@login_required
+@admin_required
+def admin_retribution_synthese():
+    """
+    Synthèse semestrielle de rétribution pour tous les intervenants actifs.
+    Agrège en une seule requête : rétribution contenu + commission apport.
+    Params : annee, semestre
+    """
+    from datetime import date as dt
+    annee    = int(request.args.get('annee',    dt.today().year))
+    semestre = int(request.args.get('semestre', 1 if dt.today().month <= 6 else 2))
+    date_from = f'{annee}-01-01' if semestre == 1 else f'{annee}-07-01'
+    date_to   = f'{annee}-06-30' if semestre == 1 else f'{annee}-12-31'
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+
+            # 1. TOUS les intervenants déclarés actifs + leurs clics (LEFT JOIN)
+            cur.execute("""
+                SELECT
+                    i.id                AS inv_id,
+                    i.nom               AS intervenant,
+                    i.taux_contenu      AS taux,
+                    i.apporteur_affaire AS est_apporteur,
+                    COALESCE(cp.nb_clics, 0)    AS nb_clics,
+                    COALESCE(cp.total_clics, 0) AS total_clics
+                FROM intervenants i
+                LEFT JOIN (
+                    SELECT
+                        TRIM(intervenant_nom) AS intervenant_nom,
+                        COUNT(*) AS nb_clics,
+                        (SELECT COUNT(*) FROM companion_content_plays cp2
+                         WHERE cp2.created_at::date BETWEEN %s AND %s
+                           AND cp2.content_type != 'post_interne') AS total_clics
+                    FROM companion_content_plays
+                    WHERE created_at::date BETWEEN %s AND %s
+                      AND content_type != 'post_interne'
+                    GROUP BY TRIM(intervenant_nom)
+                ) cp ON TRIM(cp.intervenant_nom) = TRIM(i.nom)
+                WHERE i.actif = TRUE
+                ORDER BY nb_clics DESC
+            """, [date_from, date_to, date_from, date_to])
+            intervenants = [serialize_row(r) for r in cur.fetchall()]
+
+            # 2. CA semestriel total des sites companion
+            cur.execute("""
+                SELECT
+                    COALESCE(SUM(tarif_annuel * nb_salaries), 0) / 2 AS ca_semestre_total
+                FROM sites
+                WHERE has_companion = 1 AND tarif_annuel > 0 AND nb_salaries > 0 AND actif = 1
+            """)
+            row = cur.fetchone()
+            ca_semestre_total = float(row['ca_semestre_total'] or 0) if row else 0
+
+            # 3. CA semestriel par site pour calcul par intervenant
+            cur.execute("""
+                SELECT slug, tarif_annuel, nb_salaries,
+                       (tarif_annuel * nb_salaries) / 2 AS ca_semestre
+                FROM sites
+                WHERE has_companion = 1 AND tarif_annuel > 0 AND nb_salaries > 0 AND actif = 1
+            """)
+            sites = [serialize_row(r) for r in cur.fetchall()]
+
+            # 4. Clics par intervenant par site
+            cur.execute("""
+                SELECT
+                    TRIM(intervenant_nom) AS intervenant,
+                    site_slug,
+                    COUNT(*) AS nb_clics_site,
+                    (SELECT COUNT(*) FROM companion_content_plays cp2
+                     WHERE cp2.site_slug = cp.site_slug
+                     AND cp2.created_at::date BETWEEN %s AND %s
+                     AND cp2.content_type != 'post_interne') AS total_clics_site
+                FROM companion_content_plays cp
+                WHERE created_at::date BETWEEN %s AND %s
+                  AND content_type != 'post_interne'
+                  AND TRIM(intervenant_nom) IN (
+                      SELECT TRIM(nom) FROM intervenants WHERE actif = TRUE
+                  )
+                GROUP BY TRIM(intervenant_nom), site_slug
+            """, [date_from, date_to, date_from, date_to])
+            clics_par_site = {}
+            for r in cur.fetchall():
+                sr = serialize_row(r)
+                inv = sr['intervenant']
+                if inv not in clics_par_site:
+                    clics_par_site[inv] = []
+                clics_par_site[inv].append(sr)
+
+            # 5. Commission apport par intervenant
+            cur.execute("""
+                SELECT
+                    i.id AS inv_id,
+                    i.nom AS intervenant,
+                    COALESCE(SUM(s.tarif_annuel * s.nb_salaries) / 2, 0) AS ca_clients_semestre
+                FROM intervenants i
+                JOIN clients c ON c.apporteur_id = i.id AND c.actif = 1
+                JOIN sites s ON s.client_id = c.id
+                    AND s.has_companion = 1
+                    AND s.tarif_annuel > 0
+                    AND s.nb_salaries > 0
+                    AND s.actif = 1
+                WHERE i.actif = TRUE
+                GROUP BY i.id, i.nom
+            """)
+            apports = {serialize_row(r)['intervenant']: float(serialize_row(r)['ca_clients_semestre'] or 0)
+                       for r in cur.fetchall()}
+
+    # Calculer rétribution contenu par intervenant
+    sites_dict = {s['slug']: s for s in sites}
+    resultats = []
+    total_contenu = 0
+    total_apport  = 0
+
+    for inv in intervenants:
+        nom  = inv['intervenant']
+        taux = float(inv['taux'] or 30) / 100
+
+        # Rétribution contenu = somme sur chaque site (CA site × part clics inv × taux)
+        retrib_contenu = 0
+        for cs in clics_par_site.get(nom, []):
+            site = sites_dict.get(cs['site_slug'])
+            if site and cs['total_clics_site']:
+                ca_site = float(site['ca_semestre'] or 0)
+                pct = int(cs['nb_clics_site']) / int(cs['total_clics_site'])
+                retrib_contenu += ca_site * pct * taux
+
+        retrib_contenu = round(retrib_contenu, 2)
+
+        # Commission apport
+        ca_apport   = apports.get(nom, 0)
+        commission  = round(ca_apport * 0.20, 2) if inv['est_apporteur'] else 0
+
+        total_inv   = round(retrib_contenu + commission, 2)
+        total_contenu += retrib_contenu
+        total_apport  += commission
+
+        resultats.append({
+            'intervenant':    nom,
+            'nb_clics':       int(inv['nb_clics'] or 0),
+            'pct_clics':      round(int(inv['nb_clics'] or 0) / int(inv['total_clics'] or 1) * 100, 1) if inv['total_clics'] else 0,
+            'taux':           float(inv['taux'] or 30),
+            'est_apporteur':  bool(inv['est_apporteur']),
+            'retrib_contenu': retrib_contenu,
+            'ca_apport':      round(ca_apport, 2),
+            'commission_apport': commission,
+            'total':          total_inv,
+        })
+
+    return jsonify({
+        'annee':             annee,
+        'semestre':          semestre,
+        'date_from':         date_from,
+        'date_to':           date_to,
+        'ca_semestre_total': round(ca_semestre_total, 2),
+        'resultats':         resultats,
+        'total_contenu':     round(total_contenu, 2),
+        'total_apport':      round(total_apport, 2),
+        'total_global':      round(total_contenu + total_apport, 2),
+    })
+
 @app.route('/api/admin/retribution/calcul-semestre', methods=['POST'])
 @login_required
 @admin_required
