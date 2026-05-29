@@ -579,7 +579,7 @@
           <option value="90">3 derniers mois</option>
           <option value="365">12 derniers mois</option>
         </select>
-        <a href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
+        <a id="btn-ouvrir-app" href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
           ↗ Ouvrir l'app
         </a>
       </div>
@@ -776,7 +776,12 @@ function buildSiteBar(){
   sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats();};bar.appendChild(sel);
 }
-function updateActiveChip(){document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll);});}
+function updateActiveChip(){
+  document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll);});
+  /* Mettre à jour le lien Ouvrir l'app avec le site actif */
+  var btn = document.getElementById('btn-ouvrir-app');
+  if (btn) btn.href = '/companion' + (currentSite ? '?site=' + currentSite : '');
+}
 
 async function loadStats(){
   var d=await fetch('/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:''),{credentials:'include'}).then(function(r){return r.json();}).catch(function(){return{total_seances:0};});
