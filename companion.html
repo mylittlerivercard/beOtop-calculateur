@@ -2151,6 +2151,7 @@ function openModal(title, bodyHtml) {
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   stopSpeech(); stopExerciceBg();
+  if (typeof _stopAudioFile === 'function') _stopAudioFile();
   if (_defiAudio) { try { _defiAudio.pause(); } catch(e){} _defiAudio = null; }
   // Enregistrer la durée pour tous les contenus ouverts (video, audio, exercice)
   Object.keys(_playTimers).forEach(function(k) {
@@ -4741,6 +4742,60 @@ function filterAudio(cat) {
   renderAudio();
 }
 
+/* ════ LECTURE DE FICHIERS AUDIO RÉELS (/static/*.mp3) via HTML5 Audio ════ */
+var _audioFileEl = null;
+
+function _isAudioFileUrl(url) {
+  if (!url) return false;
+  return url.indexOf('/static/') === 0 || /\.(mp3|ogg|wav|m4a)(\?|#|$)/i.test(url);
+}
+
+function _stopAudioFile() {
+  if (_audioFileEl) {
+    try { _audioFileEl.pause(); _audioFileEl.src = ''; _audioFileEl.load(); } catch(e){}
+    _audioFileEl = null;
+  }
+}
+
+function _playAudioFile(audio, url) {
+  // Couper tout son génératif éventuel — les MP3 ne passent jamais par WebAudio
+  if (typeof stopAllSons === 'function') stopAllSons();
+  if (typeof stopNativeAudio === 'function') stopNativeAudio();
+  if (typeof _nativeSessionTimer !== 'undefined') clearInterval(_nativeSessionTimer);
+  _stopAudioFile();
+
+  _audioFileEl = new Audio(url);
+  _audioFileEl.play().catch(function(){ showToast('⚠ Lecture impossible : ' + url); });
+
+  openModal(audio.titre,
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
+    + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '')
+    + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
+    + '<div id="af-timer" style="font-size:1.8rem;font-weight:300;color:var(--gold)">0:00</div>'
+    + '<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div id="af-progress" style="height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .3s linear"></div></div>'
+    + '<div style="font-size:.68rem;color:var(--text-muted)">' + (audio.duree || '') + '</div>'
+    + '</div>'
+    + '<button class="btn-primary" id="af-stop-btn" style="width:100%">⏹ Arrêter</button>'
+  );
+
+  _audioFileEl.ontimeupdate = function() {
+    if (!_audioFileEl) return;
+    var cur = _audioFileEl.currentTime || 0, dur = _audioFileEl.duration || 0;
+    var m = Math.floor(cur / 60), s = Math.floor(cur % 60);
+    var t = document.getElementById('af-timer'); if (t) t.textContent = m + ':' + String(s).padStart(2, '0');
+    var p = document.getElementById('af-progress'); if (p && dur) p.style.width = Math.min(cur / dur * 100, 100) + '%';
+  };
+  _audioFileEl.onended = function() {
+    var p = document.getElementById('af-progress'); if (p) p.style.width = '100%';
+    showToast('Session terminée : ' + audio.titre);
+  };
+
+  setTimeout(function() {
+    var btn = document.getElementById('af-stop-btn');
+    if (btn) btn.onclick = function(){ _stopAudioFile(); closeModal(); };
+  }, 100);
+}
+
 function playAudio(id) {
   var audio = DB.audios.find(function(a){ return a.id === id; });
   if (!audio) return;
@@ -4748,6 +4803,10 @@ function playAudio(id) {
   DB.sessions.push({ date: new Date().toISOString(), label: audio.titre, detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60 });
   saveDB(DB);
   awardPoints('audio', audio.titre);
+
+  // Fichier audio réel (/static/*.mp3, .ogg, .wav) → lecteur HTML5, jamais le moteur génératif
+  var _u = (audio.url_audio || '').trim();
+  if (_isAudioFileUrl(_u)) { _playAudioFile(audio, _u); return; }
 
   var durSec = parseDuration(audio.duree);
   var steps = getAudioSteps(audio);
