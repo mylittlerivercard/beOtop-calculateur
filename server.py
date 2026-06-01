@@ -479,6 +479,37 @@ def init_db():
             )
             cur.execute("CREATE INDEX IF NOT EXISTS idx_c" + _t + "_site ON companion_" + _t + "(site_slug)")
 
+        # ── Migration unique : ancienne table JSONB companion_contenus → tables par type ──
+        cur.execute("SELECT to_regclass('public.companion_contenus') AS t")
+        if cur.fetchone()['t'] is not None:
+            _type_map = {'audio': 'audios', 'video': 'videos', 'exercice': 'exercices',
+                         'defi': 'defis', 'podcast': 'podcasts'}
+            for _old, _new in _type_map.items():
+                cur.execute("SELECT COUNT(*) AS n FROM companion_" + _new)
+                if cur.fetchone()['n'] != 0:
+                    continue   # déjà des données → on ne migre pas
+                cur.execute("SELECT * FROM companion_contenus WHERE type=%s", [_old])
+                _rows = cur.fetchall()
+                _cols = COMPANION_CONTENT_TABLES[_new]
+                for _r in _rows:
+                    _data = _r.get('data') or {}
+                    if isinstance(_data, str):
+                        try: _data = json.loads(_data)
+                        except Exception: _data = {}
+                    _fields = ['site_slug'] + _cols + ['actif']
+                    _vals = [_data.get('site_slug', '') or '']
+                    for _c in _cols:
+                        if _c == 'intervenant':
+                            _vals.append(_r.get('intervenant_nom') or _data.get('intervenant') or '')
+                        elif _c == 'titre':
+                            _vals.append(_r.get('titre') or _data.get('titre') or '')
+                        else:
+                            _vals.append(_data.get(_c, '') or '')
+                    _vals.append(_r.get('actif', True))
+                    _ph = ', '.join(['%s'] * len(_fields))
+                    cur.execute("INSERT INTO companion_" + _new + " (" + ', '.join(_fields) + ") VALUES (" + _ph + ")", _vals)
+            print(">>> Migration companion_contenus → tables par type vérifiée", file=sys.stderr)
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
