@@ -433,10 +433,12 @@ def init_db():
                 nom         TEXT NOT NULL,
                 label       TEXT NOT NULL,
                 photo       TEXT,
+                audio       TEXT,
                 actif       BOOLEAN DEFAULT TRUE,
                 ordre       INTEGER DEFAULT 0
             )
         """)
+        cur.execute("ALTER TABLE companion_sons ADD COLUMN IF NOT EXISTS audio TEXT")
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sons_site ON companion_sons(site_slug)')
 
         conn.commit()
@@ -2209,8 +2211,8 @@ def _son_to_dict(row):
     return {
         'id': row['id'], 'site_slug': row.get('site_slug'),
         'nom': row['nom'], 'label': row['label'],
-        'photo': row.get('photo'), 'actif': row.get('actif', True),
-        'ordre': row.get('ordre', 0)
+        'photo': row.get('photo'), 'audio': row.get('audio'),
+        'actif': row.get('actif', True), 'ordre': row.get('ordre', 0)
     }
 
 
@@ -2245,9 +2247,9 @@ def companion_sons_create():
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO companion_sons (site_slug, nom, label, photo, actif, ordre) VALUES (%s,%s,%s,%s,%s,%s) RETURNING *",
+                "INSERT INTO companion_sons (site_slug, nom, label, photo, audio, actif, ordre) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING *",
                 [data.get('site_slug', '') or '', nom, label, data.get('photo', '') or '',
-                 bool(data.get('actif', True)), int(data.get('ordre', 0) or 0)]
+                 data.get('audio', '') or '', bool(data.get('actif', True)), int(data.get('ordre', 0) or 0)]
             )
             row = cur.fetchone()
             conn.commit()
@@ -2259,7 +2261,7 @@ def companion_sons_create():
 def companion_sons_update(son_id):
     data = request.get_json() or {}
     cols = []; vals = []
-    for key in ('nom', 'label', 'photo', 'site_slug'):
+    for key in ('nom', 'label', 'photo', 'audio', 'site_slug'):
         if key in data:
             cols.append(key + '=%s'); vals.append(data[key])
     if 'actif' in data:

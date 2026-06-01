@@ -3346,7 +3346,7 @@ function renderProgresData(d) {
 /* ════════════════════════════════════════════
    SONS IMMERSIFS
 ════════════════════════════════════════════ */
-var _sonCtx = null, _sonNodes = {}, _sonGain = null, _sonActive = null;
+var _sonCtx = null, _sonNodes = {}, _sonGain = null, _sonActive = null, _sonAudioEl = null;
 
 function getSonCtx() {
   if (!_sonCtx) {
@@ -3715,21 +3715,23 @@ function renderAdminSons() {
         + '<td><strong>' + s.label + '</strong></td>'
         + '<td style="font-size:.7rem;color:var(--text-dim)">' + s.nom + '</td>'
         + '<td style="font-size:.65rem;color:var(--text-muted)">' + (s.photo || '—') + '</td>'
+        + '<td style="font-size:.65rem;color:var(--text-muted)">' + (s.audio || '—') + '</td>'
         + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:8px;background:' + (s.actif !== false ? 'rgba(0,180,180,.12)' : 'rgba(232,100,30,.12)') + ';color:' + (s.actif !== false ? '#00b4b4' : '#e8641e') + '">' + (s.actif !== false ? 'actif' : 'inactif') + '</span></td>'
         + '<td><button class="btn-ghost" onclick="editSon(' + s.id + ')">✎</button> <button class="btn-ghost" onclick="deleteSon(' + s.id + ')" style="color:var(--red)">✕</button></td></tr>';
     }).join('');
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddSon()">+ Ajouter un son</button></div>'
-      + '<table><thead><tr><th>ID</th><th>Label</th><th>Nom technique</th><th>Photo</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
-      + (rows || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun son</td></tr>')
+      + '<table><thead><tr><th>ID</th><th>Label</th><th>Nom technique</th><th>Photo</th><th>Audio</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
+      + (rows || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun son</td></tr>')
       + '</tbody></table>';
   });
 }
 
 function _sonForm(s) {
-  var v = s || { id: 0, label: '', nom: '', photo: '', actif: true };
+  var v = s || { id: 0, label: '', nom: '', photo: '', audio: '', actif: true };
   return '<div class="form-field"><label>Label (affiché)</label><input type="text" id="f-son-label" value="' + (v.label || '') + '" placeholder="Forêt"></div>'
     + '<div class="form-field"><label>Nom technique</label><input type="text" id="f-son-nom" value="' + (v.nom || '') + '" placeholder="foret"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Utilisé par le moteur sonore : foret, pluie, ocean, cafe, orage, clavier, creche, noel, paques</div></div>'
     + '<div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-son-photo" value="' + (v.photo || '') + '" placeholder="foret.jpg"></div>'
+    + '<div class="form-field"><label>Fichier audio (dans /static/)</label><input type="text" id="f-son-audio" value="' + (v.audio || '') + '" placeholder="foret.mp3"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide = son synthétique (si le nom technique est connu)</div></div>'
     + '<div class="form-field"><label>Actif</label><select id="f-son-actif"><option value="1"' + (v.actif !== false ? ' selected' : '') + '>Oui</option><option value="0"' + (v.actif === false ? ' selected' : '') + '>Non</option></select></div>'
     + '<div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annuler</button><button class="btn-primary" onclick="saveSon(' + v.id + ')">✓ Enregistrer</button></div>';
 }
@@ -3743,6 +3745,7 @@ function saveSon(existingId) {
   var payload = {
     label: label.trim(), nom: nom.trim(),
     photo: ((document.getElementById('f-son-photo') || {}).value || '').trim(),
+    audio: ((document.getElementById('f-son-audio') || {}).value || '').trim(),
     actif: (document.getElementById('f-son-actif') || {}).value !== '0'
   };
   getSiteSlug().then(function(slug){
@@ -3768,10 +3771,38 @@ function deleteSon(id) {
     .catch(function(){ showToast('⚠ Erreur réseau'); });
 }
 
-function playSon(type) {
+function playSon(nom) {
   stopAllSons();
+  var son = (_sonsCache || []).find(function(s){ return s.nom === nom; });
+  if (son && son.audio) { _playSonFile(son); return; }   // vrai fichier audio /static/
   var ctx = getSonCtx(); // resume() appelé dans getSonCtx si suspendu
-  _startSon(type, ctx);
+  _startSon(nom, ctx);   // sinon moteur synthétique
+}
+
+/* Met à jour l'état visuel de toutes les cartes de sons (dynamique). */
+function _updateSonStatus(activeNom) {
+  (_sonsCache || []).forEach(function(s){
+    var card = document.getElementById('son-' + s.nom);
+    var status = document.getElementById('status-' + s.nom);
+    var on = s.nom === activeNom;
+    if (card) card.style.borderColor = on ? 'var(--gold-border)' : '';
+    if (status) { status.textContent = on ? '■ En lecture' : '▶ Démarrer'; status.style.color = on ? 'var(--gold)' : 'var(--text-muted)'; }
+  });
+}
+
+/* Lecture d'un vrai fichier audio hébergé dans /static/. */
+function _playSonFile(son) {
+  _sonActive = son.nom;
+  try {
+    _sonAudioEl = new Audio('/static/' + son.audio);
+    _sonAudioEl.loop = true;
+    var volEl = document.getElementById('son-volume');
+    _sonAudioEl.volume = volEl ? Math.min(1, +volEl.value / 100) : 0.4;
+    _sonAudioEl.play().catch(function(){ showToast('⚠ Lecture impossible : ' + son.audio); });
+  } catch (e) { showToast('⚠ Lecture impossible : ' + son.audio); return; }
+  _updateSonStatus(son.nom);
+  showToast('♫ ' + son.label + ' en lecture');
+  setTimeout(function(){ awardPoints('sons', 'Sons immersifs · ' + son.nom); }, 5 * 60 * 1000);
 }
 
 function _startSon(type, ctx) {
@@ -3787,16 +3818,9 @@ function _startSon(type, ctx) {
   _sonGain.connect(ctx.destination);
   _sonNodes[type] = buildSonGraph(type, _sonGain);
   _sonActive = type;
-  ['foret','pluie','ocean','cafe','orage','clavier','creche','noel','paques'].forEach(function(t) {
-    var card = document.getElementById('son-' + t);
-    var status = document.getElementById('status-' + t);
-    if (card) card.style.borderColor = t === type ? 'var(--gold-border)' : '';
-    if (status) status.textContent = t === type ? '■ En lecture' : '▶ Démarrer';
-    if (status && t === type) status.style.color = 'var(--gold)';
-    else if (status) status.style.color = 'var(--text-muted)';
-  });
-  var _sonLbls = {foret:'Foret',pluie:'Pluie',ocean:'Ocean',cafe:'Cafe',orage:'Orage',clavier:'Clavier',creche:'Creche',noel:'Noel',paques:'Paques'};
-  showToast('♫ ' + (_sonLbls[type]||type) + ' en lecture');
+  _updateSonStatus(type);
+  var _son = (_sonsCache || []).find(function(s){ return s.nom === type; });
+  showToast('♫ ' + (_son ? _son.label : type) + ' en lecture');
   setTimeout(function(){ awardPoints('sons', 'Sons immersifs · ' + type); }, 5 * 60 * 1000);
 }
 
@@ -3806,17 +3830,14 @@ function stopAllSons() {
   });
   _sonNodes = {}; _sonActive = null;
   if (_sonGain) { try { _sonGain.disconnect(); } catch(e){} _sonGain = null; }
-  ['foret','pluie','ocean','cafe','orage','clavier','creche','noel','paques'].forEach(function(t) {
-    var card = document.getElementById('son-' + t);
-    var status = document.getElementById('status-' + t);
-    if (card) card.style.borderColor = '';
-    if (status) { status.textContent = '▶ Démarrer'; status.style.color = 'var(--text-muted)'; }
-  });
+  if (_sonAudioEl) { try { _sonAudioEl.pause(); _sonAudioEl.src = ''; } catch(e){} _sonAudioEl = null; }
+  _updateSonStatus(null);
 }
 
 function setSonVolume(val) {
   document.getElementById('son-vol-label').textContent = val + '%';
   if (_sonGain) _sonGain.gain.setTargetAtTime(val / 100 * 0.5, getSonCtx().currentTime, 0.1);
+  if (_sonAudioEl) _sonAudioEl.volume = Math.min(1, val / 100);
 }
 
 
