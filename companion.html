@@ -5229,7 +5229,7 @@ function openAddVideo() {
         <option value="posture">Posture & ergonomie</option>
         <option value="relaxation">Relaxation</option>
         <option value="resilience">Résilience</option>
-        <option value="sleep">Sommeil & récupération</option>
+        <option value="sieste">Sieste & récupération</option>
         <option value="sophrologie">Sophrologie</option>
         <option value="tms">TMS & douleurs</option>
         <option value="yoga">Yoga bureau</option>
@@ -5395,7 +5395,7 @@ function openAddAudio() {
         <option value="mindfulness">Mindfulness</option>
         <option value="nsdr">NSDR</option>
         <option value="relaxation">Relaxation</option>
-        <option value="sleep">Sommeil</option>
+        <option value="sieste">Sieste</option>
         <option value="sophrologie">Sophrologie</option>
         <option value="visualisation">Visualisation</option>
         <option value="__new__">+ Nouvelle catégorie…</option>
@@ -5939,7 +5939,7 @@ function _defiForm(d) {
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
     + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"anti-stress\">Anti-stress</option><option value=\"bien-etre\">Bien-être général</option><option value=\"cognition\">Cognition & mémoire</option><option value=\"energie\">Énergie & vitalité</option><option value=\"gestion-emotions\">Gestion des émotions</option><option value=\"meditation\">Méditation</option><option value=\"mindfulness\">Mindfulness</option><option value=\"neurosciences\">Neurosciences</option><option value=\"philosophie\">Philosophie & sens</option><option value=\"psychologie\">Psychologie positive</option><option value=\"relaxation\">Relaxation</option><option value=\"resilience\">Résilience</option><option value=\"sleep\">Sommeil</option><option value=\"sophrologie\">Sophrologie</option><option value=\"tms\">TMS & douleurs</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"anti-stress\">Anti-stress</option><option value=\"bien-etre\">Bien-être général</option><option value=\"cognition\">Cognition & mémoire</option><option value=\"energie\">Énergie & vitalité</option><option value=\"gestion-emotions\">Gestion des émotions</option><option value=\"meditation\">Méditation</option><option value=\"mindfulness\">Mindfulness</option><option value=\"neurosciences\">Neurosciences</option><option value=\"philosophie\">Philosophie & sens</option><option value=\"psychologie\">Psychologie positive</option><option value=\"relaxation\">Relaxation</option><option value=\"resilience\">Résilience</option><option value=\"sieste\">Sieste</option><option value=\"sophrologie\">Sophrologie</option><option value=\"tms\">TMS & douleurs</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
     + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
