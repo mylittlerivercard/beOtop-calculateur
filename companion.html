@@ -3694,9 +3694,7 @@ function renderSons() {
     var actifs = _sonsCache.filter(function(s){ return s.actif !== false; });
     if (!actifs.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">Aucun son configuré.</div>'; return; }
     grid.innerHTML = actifs.map(function(s){
-      var media = s.photo
-        ? '<img src="/static/' + s.photo + '" alt="' + s.nom + '" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🎵</span>'
-        : '<div style="font-size:2.2rem;margin-bottom:.4rem">🎵</div>';
+      var media = _cardHeader(s, {icon: '🎵'});
       return '<div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon(\'' + s.nom + '\')" id="son-' + s.nom + '">'
         + media
         + '<div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">' + s.label + '</div>'
@@ -3879,30 +3877,7 @@ function renderVideo() {
   }
   var bg = { sophrologie:'rgba(90,138,106,.15)', yoga:'rgba(90,138,170,.15)', tms:'rgba(200,169,110,.1)', mindfulness:'rgba(138,106,170,.15)' };
   grid.innerHTML = filtered.map(function(v) {
-    var thumb = getYoutubeThumbnail(v.url_video);
-    var thumbHtml;
-    if (thumb) {
-      thumbHtml = '<div class="audio-thumb" style="padding:0;overflow:hidden;border-radius:8px 8px 0 0;height:100px;background:#000">'
-        + '<img src="' + thumb + '" alt="' + v.titre + '" '
-        + 'style="width:100%;height:100%;object-fit:cover;display:block;" '
-        + 'onerror="this.parentNode.innerHTML=\'<div style=&quot;font-size:1.5rem;display:flex;align-items:center;justify-content:center;height:100%&quot;>🎬</div>\'">'
-        + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
-        + 'width:36px;height:36px;background:rgba(255,0,0,.85);border-radius:50%;'
-        + 'display:flex;align-items:center;justify-content:center;pointer-events:none">'
-        + '<span style="color:white;font-size:.8rem;margin-left:2px">▶</span></div>'
-        + '</div>';
-      thumbHtml = '<div style="position:relative;overflow:hidden;border-radius:8px 8px 0 0;height:100px;background:#000">'
-        + '<img src="' + thumb + '" alt="' + v.titre + '" '
-        + 'style="width:100%;height:100%;object-fit:cover;display:block;" '
-        + 'onerror="this.parentNode.innerHTML=\'<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:1.5rem&quot;>🎬</div>\'">'
-        + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
-        + 'width:36px;height:36px;background:rgba(255,0,0,.85);border-radius:50%;'
-        + 'display:flex;align-items:center;justify-content:center">'
-        + '<span style="color:white;font-size:.8rem;margin-left:3px">▶</span></div>'
-        + '</div>';
-    } else {
-      thumbHtml = '<div class="audio-thumb" style="background:' + (bg[v.categorie]||'var(--surface2)') + '">' + (v.icon||'🎬') + '</div>';
-    }
+    var thumbHtml = _cardHeader(v, { fallbackImg: getYoutubeThumbnail(v.url_video), icon: v.icon || '🎬' });
     return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer;padding:0;overflow:hidden">'
       + thumbHtml
       + '<div style="padding:.8rem 1rem">'
@@ -4668,13 +4643,14 @@ function showIntervenantContenus(nom) {
     if (!items.length) return;
     total += items.length;
     html += '<div style="font-size:.58rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:1.1rem 0 .5rem">' + g.type + ' · ' + items.length + '</div>';
-    items.forEach(function(it){
-      var sub = it.description || it.indication || '';
-      html += '<div class="card" style="cursor:pointer;padding:.8rem 1rem;margin-bottom:.5rem" onclick="' + g.fn + '(' + it.id + ')">'
-        + '<div style="font-size:.85rem;font-weight:600;color:var(--text)">' + (it.icon ? it.icon + ' ' : '') + it.titre + '</div>'
-        + (sub ? '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">' + sub + '</div>' : '')
+    html += '<div class="audio-grid">' + items.map(function(it){
+      return '<div class="audio-card" onclick="' + g.fn + '(' + it.id + ')">'
+        + _cardHeader(it, {icon: it.icon || '🎵'})
+        + '<div class="audio-title">' + it.titre + '</div>'
+        + '<div class="audio-meta"><span>' + (it.categorie || '') + '</span><span class="audio-duration">' + (it.duree || '') + '</span></div>'
+        + '<button class="audio-play-btn">▶ Ouvrir</button>'
         + '</div>';
-    });
+    }).join('') + '</div>';
   });
   if (!total) html = '<div style="padding:2.5rem;text-align:center;color:var(--text-muted);font-size:.78rem">Aucun contenu publié par cet intervenant pour le moment.</div>';
   var grid = document.getElementById('ivc-grid');
@@ -4689,6 +4665,39 @@ var CATS_AUDIO = [
 ];
 var currentAudioCat = 'all';
 
+/* Retourne le nom de fichier photo d'un intervenant (ou null). */
+function getIntervenantPhoto(nomIntervenant) {
+  if (!nomIntervenant) return null;
+  var inv = (DB.intervenants || []).find(function(i){ return i.nom === nomIntervenant; });
+  if (!inv) return null;
+  if (inv.photo) return inv.photo;
+  if (inv.photo_url) return inv.photo_url.split('/').pop();   // dérive le fichier d'un chemin existant
+  return null;
+}
+
+/* Header de card uniforme : photo d'illustration OU photo intervenant OU emoji,
+   + avatar rond de l'intervenant en overlay dès qu'un intervenant a une photo.
+   opts: { icon, fallbackImg } */
+function _cardHeader(item, opts) {
+  opts = opts || {};
+  var icon = opts.icon || (item && item.icon) || '🎵';
+  var illus = (item && item.photo) ? ('/static/' + item.photo) : '';
+  var invFile = (item && item.intervenant) ? getIntervenantPhoto(item.intervenant) : null;
+  var invUrl = invFile ? ('/static/' + invFile) : '';
+  var headerImg = illus || opts.fallbackImg || invUrl;
+  var avatar = invUrl
+    ? '<img src="' + invUrl + '" alt="' + (item.intervenant || '') + '" title="' + (item.intervenant || '') + '" style="position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,.4);z-index:2" onerror="this.style.display=\'none\'">'
+    : '';
+  if (!headerImg) {
+    return '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + icon + '</div>';
+  }
+  return '<div style="position:relative;height:110px;border-radius:8px 8px 0 0;overflow:hidden;background:rgba(0,180,180,.1);display:flex;align-items:center;justify-content:center;font-size:2rem">'
+    + icon
+    + '<img src="' + headerImg + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">'
+    + avatar
+    + '</div>';
+}
+
 function renderAudio() {
   const catsEl = document.getElementById('audio-cats');
   catsEl.innerHTML = _buildCatPills(DB.audios, currentAudioCat, 'filterAudio');
@@ -4699,7 +4708,7 @@ function renderAudio() {
     const isPlaying = currentAudio && currentAudio.id === a.id;
     const bg = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ciblé:'rgba(200,169,110,.1)', ambiance:'rgba(90,138,106,.1)' };
     return `<div class="audio-card${isPlaying?' playing':''}" id="audio-card-${a.id}">
-      ${a.photo ? `<img src="/static/${a.photo}" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0">` : `<div class="audio-thumb" style="background:${bg[a.categorie]||'var(--surface2)'}">${a.icon}</div>`}
+      ${_cardHeader(a, {icon: a.icon || '🎵'})}
       <div class="audio-title">${a.titre}</div>
       <div class="audio-meta">
         <span>${a.categorie}</span>
@@ -4781,16 +4790,12 @@ function renderExercices() {
 
   const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
   document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
-    <div class="exercise-card" onclick="openExercice(${e.id})">
-      <div class="ex-header">
-        <div class="ex-icon" style="background:${e.bg}">${e.icon}</div>
-        <div>
-          <div class="ex-title">${e.titre}</div>
-          <div class="ex-target">${e.indication}</div>
-        </div>
-      </div>
-      <div class="ex-tags">${e.tags.map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
-      <div class="ex-duration">${e.description}</div>
+    <div class="audio-card" onclick="openExercice(${e.id})">
+      ${_cardHeader(e, {icon: e.icon || '⚡'})}
+      <div class="audio-title">${e.titre}</div>
+      <div class="audio-meta"><span>${e.categorie||''}</span><span class="audio-duration">${e.tags && e.tags[0] ? e.tags[0] : ''}</span></div>
+      ${e.indication ? `<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">${e.indication}</div>` : ''}
+      <div class="ex-tags" style="margin-top:.4rem">${(e.tags||[]).map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
       ${_invBadge(e.intervenant)}
     </div>`).join('');
 }
@@ -5947,16 +5952,8 @@ function renderDefis() {
 
   // Grille de cartes côte à côte (même présentation que les audios/vidéos)
   container.innerHTML = '<div class="audio-grid">' + list.map(function(d) {
-    var invPhoto = _intervenantPhotoUrl(d.intervenant);
-    var imgSrc = d.photo ? ('/static/' + d.photo) : invPhoto;
-    var avatar = (d.photo && invPhoto)
-      ? '<img src="' + invPhoto + '" alt="' + (d.intervenant || '') + '" title="' + (d.intervenant || '') + '" style="position:absolute;bottom:6px;right:6px;width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)" onerror="this.style.display=\'none\'">'
-      : '';
-    var thumb = imgSrc
-      ? '<div style="position:relative;border-radius:8px 8px 0 0;overflow:hidden"><img src="' + imgSrc + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;display:block" onerror="_sugImgErr(this)"><div class="audio-thumb" style="display:none;background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>' + avatar + '</div>'
-      : '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>';
     return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
-      + thumb
+      + _cardHeader(d, {icon: d.icon || '🧩'})
       + '<div class="audio-title">' + d.titre + '</div>'
       + '<div class="audio-meta"><span>' + (d.categorie || 'défi') + '</span><span class="audio-duration">' + (d.duree || '') + '</span></div>'
       + _invBadge(d.intervenant)
@@ -6362,25 +6359,16 @@ function renderPodcasts() {
     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucun podcast disponible.<br><span style="font-size:.65rem">Ajoutez des podcasts depuis Administration.</span></div>';
     return;
   }
-  grid.innerHTML = list.map(function(p) {
-    var inv = (DB.intervenants||[]).find(function(i){ return i.nom === p.intervenant; });
-    var avatar = inv && inv.photo_url
-      ? '<img src="' + inv.photo_url + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">'
-      : '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#00b4b4,#f5855a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">\ud83c\udfa7</div>';
-    return '<div class="card" style="cursor:pointer;padding:1rem;margin-bottom:.7rem" onclick="openPodcast(' + p.id + ')">'
-      + '<div style="display:flex;align-items:center;gap:.9rem">'
-      + avatar
-      + '<div style="flex:1;min-width:0">'
-      + '<div style="font-size:.88rem;font-weight:600;color:var(--text)">' + p.titre + '</div>'
-      + '<div style="font-size:.62rem;color:var(--text-dim);margin-top:.2rem">' + (p.description||'') + '</div>'
-      + '</div>'
-      + '<div style="text-align:right;flex-shrink:0">'
-      + '<div style="font-size:.6rem;color:var(--teal);font-weight:600">\u25b6 \u00c9couter</div>'
-      + (p.duree ? '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">' + p.duree + '</div>' : '')
-      + '</div></div>'
+  grid.innerHTML = '<div class="audio-grid">' + list.map(function(p) {
+    return '<div class="audio-card" onclick="openPodcast(' + p.id + ')">'
+      + _cardHeader(p, {icon: '\ud83c\udf99\ufe0f'})
+      + '<div class="audio-title">' + p.titre + '</div>'
+      + '<div class="audio-meta"><span>' + (p.categorie||'podcast') + '</span><span class="audio-duration">' + (p.duree||'') + '</span></div>'
+      + (p.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + p.description + '</div>' : '')
       + _invBadge(p.intervenant)
+      + '<button class="audio-play-btn">\u25b6 \u00c9couter</button>'
       + '</div>';
-  }).join('');
+  }).join('') + '</div>';
 }
 
 function openPodcast(id) {
