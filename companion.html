@@ -1388,6 +1388,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('defis',this)">Défis cognitifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('podcasts',this)">Podcasts</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('sons',this)">Sons immersifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('posts',this)">Posts internes</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
@@ -1438,7 +1439,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <h1>Sons <em>immersifs</em></h1>
     <p>Paysages sonores natifs · Travail en fond · Récupération</p>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem">
+  <div id="sons-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem">
     <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('foret')" id="son-foret">
       <img src="/static/foret.jpg" alt="foret" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌲</span>
       <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Forêt</div>
@@ -2084,7 +2085,7 @@ function switchView(id) {
   });
   if (id === 'dashboard') renderDashboard();
   if (id === 'reservation') renderCalendrier();
-  if (id === 'sons') { /* sons auto-start on click */ }
+  if (id === 'sons') renderSons();
   if (id === 'video') renderVideo();
   if (id === 'jeux') {
     var menu = document.getElementById('jeux-menu');
@@ -3673,6 +3674,100 @@ function buildSonGraph(type, masterGain) {
 }
 
 
+/* ════════════════════════════════════════════
+   SONS IMMERSIFS — gestion serveur (liste, admin)
+════════════════════════════════════════════ */
+var _sonsCache = [];
+function loadSons(cb) {
+  getSiteSlug().then(function(slug){
+    fetch('/api/companion/sons?site_slug=' + encodeURIComponent(slug || ''), { credentials: 'include' })
+      .then(function(r){ return r.ok ? r.json() : { sons: [] }; })
+      .then(function(d){ _sonsCache = d.sons || []; if (cb) cb(); })
+      .catch(function(){ if (cb) cb(); });
+  });
+}
+
+function renderSons() {
+  var grid = document.getElementById('sons-grid');
+  if (!grid) return;
+  loadSons(function(){
+    var actifs = _sonsCache.filter(function(s){ return s.actif !== false; });
+    if (!actifs.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">Aucun son configuré.</div>'; return; }
+    grid.innerHTML = actifs.map(function(s){
+      var media = s.photo
+        ? '<img src="/static/' + s.photo + '" alt="' + s.nom + '" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🎵</span>'
+        : '<div style="font-size:2.2rem;margin-bottom:.4rem">🎵</div>';
+      return '<div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon(\'' + s.nom + '\')" id="son-' + s.nom + '">'
+        + media
+        + '<div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">' + s.label + '</div>'
+        + '<div class="son-status" id="status-' + s.nom + '" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>'
+        + '</div>';
+    }).join('');
+  });
+}
+
+function renderAdminSons() {
+  var el = document.getElementById('admin-content');
+  el.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:.75rem">Chargement…</div>';
+  loadSons(function(){
+    var rows = _sonsCache.map(function(s){
+      return '<tr><td>' + s.id + '</td>'
+        + '<td><strong>' + s.label + '</strong></td>'
+        + '<td style="font-size:.7rem;color:var(--text-dim)">' + s.nom + '</td>'
+        + '<td style="font-size:.65rem;color:var(--text-muted)">' + (s.photo || '—') + '</td>'
+        + '<td><span style="font-size:.62rem;padding:.15rem .5rem;border-radius:8px;background:' + (s.actif !== false ? 'rgba(0,180,180,.12)' : 'rgba(232,100,30,.12)') + ';color:' + (s.actif !== false ? '#00b4b4' : '#e8641e') + '">' + (s.actif !== false ? 'actif' : 'inactif') + '</span></td>'
+        + '<td><button class="btn-ghost" onclick="editSon(' + s.id + ')">✎</button> <button class="btn-ghost" onclick="deleteSon(' + s.id + ')" style="color:var(--red)">✕</button></td></tr>';
+    }).join('');
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddSon()">+ Ajouter un son</button></div>'
+      + '<table><thead><tr><th>ID</th><th>Label</th><th>Nom technique</th><th>Photo</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
+      + (rows || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun son</td></tr>')
+      + '</tbody></table>';
+  });
+}
+
+function _sonForm(s) {
+  var v = s || { id: 0, label: '', nom: '', photo: '', actif: true };
+  return '<div class="form-field"><label>Label (affiché)</label><input type="text" id="f-son-label" value="' + (v.label || '') + '" placeholder="Forêt"></div>'
+    + '<div class="form-field"><label>Nom technique</label><input type="text" id="f-son-nom" value="' + (v.nom || '') + '" placeholder="foret"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Utilisé par le moteur sonore : foret, pluie, ocean, cafe, orage, clavier, creche, noel, paques</div></div>'
+    + '<div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-son-photo" value="' + (v.photo || '') + '" placeholder="foret.jpg"></div>'
+    + '<div class="form-field"><label>Actif</label><select id="f-son-actif"><option value="1"' + (v.actif !== false ? ' selected' : '') + '>Oui</option><option value="0"' + (v.actif === false ? ' selected' : '') + '>Non</option></select></div>'
+    + '<div class="modal-actions"><button class="btn-secondary" onclick="closeModal()">Annuler</button><button class="btn-primary" onclick="saveSon(' + v.id + ')">✓ Enregistrer</button></div>';
+}
+function openAddSon() { openModal('Ajouter un son', _sonForm(null)); }
+function editSon(id) { var s = _sonsCache.find(function(x){ return x.id === id; }); if (!s) return; openModal('Modifier « ' + s.label + ' »', _sonForm(s)); }
+
+function saveSon(existingId) {
+  var label = (document.getElementById('f-son-label') || {}).value || '';
+  var nom = (document.getElementById('f-son-nom') || {}).value || '';
+  if (!label.trim() || !nom.trim()) { showToast('⚠ Label et nom requis'); return; }
+  var payload = {
+    label: label.trim(), nom: nom.trim(),
+    photo: ((document.getElementById('f-son-photo') || {}).value || '').trim(),
+    actif: (document.getElementById('f-son-actif') || {}).value !== '0'
+  };
+  getSiteSlug().then(function(slug){
+    payload.site_slug = slug || '';
+    var url = existingId ? '/api/companion/sons/' + existingId : '/api/companion/sons';
+    var method = existingId ? 'PUT' : 'POST';
+    fetch(url, { method: method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+      .then(function(res){
+        if (!res.ok) { showToast('⚠ ' + (res.b.error || 'Erreur')); return; }
+        closeModal(); showToast('✓ Son enregistré');
+        renderAdminSons(); renderSons();
+      })
+      .catch(function(){ showToast('⚠ Erreur réseau'); });
+  });
+}
+
+function deleteSon(id) {
+  if (!confirm('Supprimer ce son ?')) return;
+  fetch('/api/companion/sons/' + id, { method: 'DELETE', credentials: 'include' })
+    .then(function(r){ return r.ok; })
+    .then(function(ok){ if (!ok) { showToast('⚠ Erreur'); return; } showToast('✓ Son supprimé'); renderAdminSons(); renderSons(); })
+    .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
 function playSon(type) {
   stopAllSons();
   var ctx = getSonCtx(); // resume() appelé dans getSonCtx si suspendu
@@ -5097,6 +5192,7 @@ function switchAdminTab(tab, btn) {
 
 function renderAdmin(tab) {
   const el = document.getElementById('admin-content');
+  if (tab === 'sons') { renderAdminSons(); return; }
   if (tab === 'ateliers') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Nom</th><th>Icône</th><th>Indication</th><th>Statut</th><th>Action</th>

@@ -425,6 +425,20 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_contenus_type        ON companion_contenus(type)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_contenus_intervenant ON companion_contenus(intervenant_id)')
 
+        # ── Sons immersifs Companion (gérés par site) ─────────────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_sons (
+                id          SERIAL PRIMARY KEY,
+                site_slug   TEXT,
+                nom         TEXT NOT NULL,
+                label       TEXT NOT NULL,
+                photo       TEXT,
+                actif       BOOLEAN DEFAULT TRUE,
+                ordre       INTEGER DEFAULT 0
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_sons_site ON companion_sons(site_slug)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -2174,6 +2188,105 @@ def companion_intervenants_list():
             """)
             rows = cur.fetchall()
     return jsonify({'intervenants': [dict(r) for r in rows]})
+
+
+# ========== COMPANION — SONS IMMERSIFS ==========
+
+DEFAULT_SONS = [
+    ('foret',   'Forêt',   'foret.jpg'),
+    ('pluie',   'Pluie',   'pluie.jpg'),
+    ('ocean',   'Océan',   'ocean.jpg'),
+    ('cafe',    'Café',    'cafe.jpg'),
+    ('orage',   'Orage',   'orage.jpg'),
+    ('clavier', 'Clavier', 'clavier.jpg'),
+    ('creche',  'Crèche',  'creche.jpg'),
+    ('noel',    'Noël',    'noel.jpg'),
+    ('paques',  'Pâques',  'paques.jpg'),
+]
+
+
+def _son_to_dict(row):
+    return {
+        'id': row['id'], 'site_slug': row.get('site_slug'),
+        'nom': row['nom'], 'label': row['label'],
+        'photo': row.get('photo'), 'actif': row.get('actif', True),
+        'ordre': row.get('ordre', 0)
+    }
+
+
+@app.route('/api/companion/sons', methods=['GET'])
+@login_required
+def companion_sons_list():
+    """Liste les sons immersifs d'un site ; sème les 9 sons par défaut si vide."""
+    site_slug = request.args.get('site_slug', '') or ''
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) AS n FROM companion_sons WHERE COALESCE(site_slug,'') = %s", [site_slug])
+            if cur.fetchone()['n'] == 0:
+                for i, (nom, label, photo) in enumerate(DEFAULT_SONS):
+                    cur.execute(
+                        "INSERT INTO companion_sons (site_slug, nom, label, photo, actif, ordre) VALUES (%s,%s,%s,%s,TRUE,%s)",
+                        [site_slug, nom, label, photo, i]
+                    )
+                conn.commit()
+            cur.execute("SELECT * FROM companion_sons WHERE COALESCE(site_slug,'') = %s ORDER BY ordre, id", [site_slug])
+            rows = cur.fetchall()
+    return jsonify({'sons': [_son_to_dict(r) for r in rows]})
+
+
+@app.route('/api/companion/sons', methods=['POST'])
+@login_required
+def companion_sons_create():
+    data = request.get_json() or {}
+    nom = (data.get('nom') or '').strip()
+    label = (data.get('label') or '').strip()
+    if not nom or not label:
+        return jsonify({'error': 'Nom et label requis'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO companion_sons (site_slug, nom, label, photo, actif, ordre) VALUES (%s,%s,%s,%s,%s,%s) RETURNING *",
+                [data.get('site_slug', '') or '', nom, label, data.get('photo', '') or '',
+                 bool(data.get('actif', True)), int(data.get('ordre', 0) or 0)]
+            )
+            row = cur.fetchone()
+            conn.commit()
+    return jsonify(_son_to_dict(row)), 201
+
+
+@app.route('/api/companion/sons/<int:son_id>', methods=['PUT'])
+@login_required
+def companion_sons_update(son_id):
+    data = request.get_json() or {}
+    cols = []; vals = []
+    for key in ('nom', 'label', 'photo', 'site_slug'):
+        if key in data:
+            cols.append(key + '=%s'); vals.append(data[key])
+    if 'actif' in data:
+        cols.append('actif=%s'); vals.append(bool(data['actif']))
+    if 'ordre' in data:
+        cols.append('ordre=%s'); vals.append(int(data['ordre'] or 0))
+    if not cols:
+        return jsonify({'error': 'Aucun champ à mettre à jour'}), 400
+    vals.append(son_id)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE companion_sons SET " + ", ".join(cols) + " WHERE id=%s RETURNING *", vals)
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'error': 'Son introuvable'}), 404
+            conn.commit()
+    return jsonify(_son_to_dict(row))
+
+
+@app.route('/api/companion/sons/<int:son_id>', methods=['DELETE'])
+@login_required
+def companion_sons_delete(son_id):
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM companion_sons WHERE id=%s", [son_id])
+            conn.commit()
+    return jsonify({'ok': True})
 
 
 @app.route('/api/admin/intervenants/stats', methods=['GET'])
