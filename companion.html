@@ -4848,7 +4848,7 @@ function playAudio(id) {
   // (celui-ci est réservé aux sons immersifs : forêt, pluie, océan…).
   var _u = (audio.url_audio || '').trim();
   if (!_u) { showToast('⚠ Aucune source audio — ajoutez une URL ou un fichier'); return; }
-  if (/w\.soundcloud\.com/i.test(_u))                                  { _playAudioIframe(audio, _u); return; } // SoundCloud → iframe
+  if (_u.indexOf('soundcloud.com') !== -1)                             { _playAudioIframe(audio, _u); return; } // SoundCloud → iframe
   if (_isAudioFileUrl(_u))                                             { _playAudioFile(audio, _u);  return; } // /static/ ou .mp3/.ogg/.wav → new Audio()
   if (/youtube\.com|youtu\.be|player\.vimeo\.com|vimeo\.com/i.test(_u)){ _playAudioIframe(audio, _u); return; } // YouTube/Vimeo → iframe
   _playAudioFile(audio, _u);                                                                                    // autre URL externe → new Audio()
