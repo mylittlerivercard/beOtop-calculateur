@@ -5930,6 +5930,12 @@ var _defiAudio = null;
 var currentDefiCat = 'all';
 function filterDefi(cat) { currentDefiCat = cat; renderDefis(); }
 
+/* URL de la photo d'un intervenant (pour illustrer une vignette par défaut). */
+function _intervenantPhotoUrl(nom) {
+  var inv = (DB.intervenants || []).find(function(i){ return i.nom === nom; });
+  return inv && inv.photo_url ? inv.photo_url : '';
+}
+
 function renderDefis() {
   var container = document.getElementById('defis-container');
   if (!container) return;
@@ -5941,8 +5947,9 @@ function renderDefis() {
 
   // Grille de cartes côte à côte (même présentation que les audios/vidéos)
   container.innerHTML = '<div class="audio-grid">' + list.map(function(d) {
-    var thumb = d.photo
-      ? '<img src="/static/' + d.photo + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0">'
+    var imgSrc = d.photo ? ('/static/' + d.photo) : _intervenantPhotoUrl(d.intervenant);
+    var thumb = imgSrc
+      ? '<img src="' + imgSrc + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0" onerror="_sugImgErr(this)"><div class="audio-thumb" style="display:none;background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>'
       : '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>';
     return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
       + thumb
@@ -6028,6 +6035,8 @@ function _defiForm(d) {
     + '<input id="f-df-desc" value="' + (v.description||'') + '" placeholder="Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL audio (chemin /audio/...)</label>'
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Photo d\'illustration (fichier dans /static/)</label>'
+    + '<input id="f-df-photo" value="' + (v.photo||'') + '" placeholder="defi.jpg" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Vide = photo de l\'intervenant, sinon icône</div></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
     + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"attention\">Attention & focus</option><option value=\"cognition\">Cognition générale</option><option value=\"creativite\">Créativité</option><option value=\"double-tache\">Double tâche</option><option value=\"flexibilite\">Flexibilité mentale</option><option value=\"inhibition\">Inhibition de réponse</option><option value=\"logique\">Logique</option><option value=\"memoire\">Mémoire de travail</option><option value=\"neurosciences\">Neurosciences appliquées</option><option value=\"reflexes\">Réflexes</option><option value=\"resilience\">Résilience</option><option value=\"vitesse\">Vitesse de traitement</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
@@ -6070,6 +6079,7 @@ function saveDefi(existingId) {
     titre:       titre.trim(),
     description: (document.getElementById('f-df-desc')||{}).value||'',
     url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
+    photo:       ((document.getElementById('f-df-photo')||{}).value||'').trim(),
     categorie: getCatValue('f-df-cat','f-df-newcat'),
     intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
     duree:       (document.getElementById('f-df-duree')||{}).value||'',
