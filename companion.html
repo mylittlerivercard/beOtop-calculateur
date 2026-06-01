@@ -1872,6 +1872,27 @@ var DB = loadDB();
 ════════════════════════════════════════════ */
 function _cloneArr(x) { return JSON.parse(JSON.stringify(x || [])); }
 
+/* Fusionne les contenus SANS rien écraser :
+   - conserve tous les contenus locaux (démos éditées + ajouts manuels)
+   - ajoute les démos manquantes et complète les URLs embed vides depuis la démo
+   - ajoute les contenus serveur (db_id) */
+function _mergeContenus(stored, demoArr, serverItems) {
+  stored = stored || []; demoArr = demoArr || [];
+  var byId = {};
+  stored.forEach(function(x){ if (x && !x.db_id && x.id != null) byId[x.id] = x; });
+  demoArr.forEach(function(dm){
+    if (!byId[dm.id]) {
+      byId[dm.id] = JSON.parse(JSON.stringify(dm));
+    } else {
+      var cur = byId[dm.id];
+      if (!cur.url_audio && dm.url_audio) cur.url_audio = dm.url_audio;
+      if (!cur.url_video && dm.url_video) cur.url_video = dm.url_video;
+    }
+  });
+  var locals = Object.keys(byId).map(function(k){ return byId[k]; });
+  return locals.concat(serverItems || []);
+}
+
 /* Recharge les contenus depuis l'API et reconstruit chaque tableau
    = contenus de démonstration (DEMO_DB) + contenus serveur. */
 function syncContenus(cb) {
@@ -1884,11 +1905,11 @@ function syncContenus(cb) {
         c.id = 100000 + c.db_id;   // id front unique, sans collision avec les démos
         byType[c.type].push(c);
       });
-      DB.audios    = _cloneArr(DEMO_DB.audios).concat(byType.audio);
-      DB.videos    = _cloneArr(DEMO_DB.videos).concat(byType.video);
-      DB.exercices = _cloneArr(DEMO_DB.exercices).concat(byType.exercice);
-      DB.defis     = _cloneArr(DEMO_DB.defis).concat(byType.defi);
-      DB.podcasts  = _cloneArr(DEMO_DB.podcasts).concat(byType.podcast);
+      DB.audios    = _mergeContenus(DB.audios,    DEMO_DB.audios,    byType.audio);
+      DB.videos    = _mergeContenus(DB.videos,    DEMO_DB.videos,    byType.video);
+      DB.exercices = _mergeContenus(DB.exercices, DEMO_DB.exercices, byType.exercice);
+      DB.defis     = _mergeContenus(DB.defis,     DEMO_DB.defis,     byType.defi);
+      DB.podcasts  = _mergeContenus(DB.podcasts,  DEMO_DB.podcasts,  byType.podcast);
       saveDB(DB);
       if (cb) cb();
     })
