@@ -407,6 +407,15 @@
         Si coché : beOtop reverse 20% du CA du client apporté en plus des 30% contenu. La part beOtop passe de 70% à 50%.
       </div>
     </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+        <input id="inv-est-intervenant" type="checkbox" checked style="width:16px;height:16px;cursor:pointer">
+        Intervenant de contenu — visible dans le Companion
+      </label>
+      <div style="font-size:.62rem;color:#6b6070;margin-top:.3rem;padding:.4rem .6rem;background:rgba(0,180,180,.06);border-radius:6px;border:1px solid rgba(0,180,180,.15)">
+        Décoché : la personne reste un apporteur d'affaire mais n'apparaît pas comme intervenant dans le Companion (annuaire, ajout de contenu).
+      </div>
+    </div>
     <div class="result-box" id="inv-result"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-intervenant')">Annuler</button>
@@ -879,6 +888,7 @@ async function loadIntervenants() {
       '<td><span class="pill ' + (inv.actif ? 'ok' : 'off') + '">' + (inv.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td style="display:flex;gap:.3rem">' +
         '<button class="btn-sm" onclick="viewIntervenantStats(' + inv.id + ')">📊 Stats</button>' +
+        '<button class="btn-sm" onclick="toggleContenu(' + inv.id + ',' + (inv.est_intervenant !== false) + ')">' + (inv.est_intervenant !== false ? '👤 Companion ✓' : '👤 Companion ✗') + '</button>' +
         '<button class="btn-sm" onclick="toggleIntervenant(' + inv.id + ',' + inv.actif + ')">' + (inv.actif ? 'Désactiver' : 'Activer') + '</button>' +
       '</td>' +
       '</tr>';
@@ -898,7 +908,8 @@ async function createIntervenant() {
       bio:              document.getElementById('inv-bio').value.trim(),
       photo_url:        document.getElementById('inv-photo').value.trim(),
       taux_contenu:     parseFloat(document.getElementById('inv-taux').value) || 30,
-      apporteur_affaire: document.getElementById('inv-apporteur').checked
+      apporteur_affaire: document.getElementById('inv-apporteur').checked,
+      est_intervenant:  document.getElementById('inv-est-intervenant').checked
     })
   });
   var d = await r.json();
@@ -910,6 +921,15 @@ async function createIntervenant() {
     box.classList.add('show');
     loadIntervenants();
   } else { toast(d.error || 'Erreur'); }
+}
+
+async function toggleContenu(id, isInterv) {
+  await fetch('/api/admin/intervenants/' + id, {
+    method: 'PUT', credentials: 'include',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({est_intervenant: !isInterv})
+  });
+  loadIntervenants();
 }
 
 async function toggleIntervenant(id, actif) {
