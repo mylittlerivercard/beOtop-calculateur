@@ -1965,28 +1965,32 @@ function syncIntervenants(cb) {
   fetch('/api/companion/intervenants', { credentials: 'include' })
     .then(function(r){ return r.ok ? r.json() : { intervenants: [] }; })
     .then(function(d){
-      var demos = DEMO_DB.intervenants || [];
-      var list = (d.intervenants || []).map(function(s){
-        var demo = demos.find(function(dm){
-          return dm.nom === s.nom || dm.nom.indexOf(s.nom) === 0 || s.nom.indexOf(dm.nom) === 0;
-        }) || {};
+      // Fusion DEMO_DB + base de données : la BDD prime (par nom).
+      var byNom = {};
+      (DEMO_DB.intervenants || []).forEach(function(dm){
+        byNom[dm.nom] = JSON.parse(JSON.stringify(dm));
+      });
+      (d.intervenants || []).forEach(function(s){
+        var ex = byNom[s.nom] || {};
         var initiales = (s.nom || '?').split(' ').map(function(w){ return w[0] || ''; }).join('').toUpperCase().slice(0, 2);
-        return Object.assign({}, demo, {
-          id:          s.id,
+        byNom[s.nom] = Object.assign({}, ex, {
+          id:          100000 + s.id,   // id front unique (évite les collisions avec les démos)
+          _dbid:       s.id,            // id réel en base (pour PUT/DELETE)
           nom:         s.nom,
-          specialite:  s.specialite || demo.specialite || '',
-          bio:         s.bio || demo.bio || '',
-          photo:       s.photo || demo.photo || (s.photo_url ? s.photo_url.split('/').pop() : '') || '',
-          photo_url:   s.photo_url || demo.photo_url || '',
-          titre:       demo.titre || s.specialite || 'Intervenant beOtop',
-          tags:        (demo.tags && demo.tags.length) ? demo.tags : (s.specialite ? [s.specialite] : []),
-          photo_initiales: demo.photo_initiales || initiales,
-          photo_couleur:   demo.photo_couleur || '#00b4b4',
+          specialite:  s.specialite || ex.specialite || '',
+          bio:         s.bio || ex.bio || '',
+          photo:       s.photo || ex.photo || '',
+          photo_url:   s.photo_url || ex.photo_url || '',
+          titre:       s.titre || ex.titre || 'Intervenant beOtop',
+          tags:        (s.tags && s.tags.length) ? s.tags : (ex.tags || []),
+          photo_initiales: ex.photo_initiales || initiales,
+          photo_couleur:   ex.photo_couleur || '#00b4b4',
           actif:       true,
           _srv:        true
         });
       });
-      if (list.length) { DB.intervenants = list; saveDB(DB); }
+      DB.intervenants = Object.keys(byNom).map(function(k){ return byNom[k]; });
+      saveDB(DB);
       if (cb) cb();
     })
     .catch(function(){ if (cb) cb(); });
@@ -6257,50 +6261,50 @@ function saveIntervenant(existingId) {
   var titre = document.getElementById('f-inv-titre').value.trim();
   if (!nom || !titre) { showToast('Nom et titre requis'); return; }
   var tags = document.getElementById('f-inv-tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
-  var contenus = document.getElementById('f-inv-contenus').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
-  if (!DB.intervenants) DB.intervenants = [];
-  if (existingId) {
-    var inv = DB.intervenants.find(function(i){ return i.id === existingId; });
-    if (inv) {
-      inv.nom = nom; inv.titre = titre;
-      inv.specialite = document.getElementById('f-inv-spec').value.trim();
-      inv.bio = document.getElementById('f-inv-bio').value.trim();
-      inv.photo_initiales = document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2);
-      inv.photo_couleur = document.getElementById('f-inv-color').value;
-      var _pf = document.getElementById('f-inv-photo').value.trim();
-      inv.photo_url = _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : '';
-      inv.site_url = document.getElementById('f-inv-site').value.trim();
-      inv.linkedin_url = document.getElementById('f-inv-linkedin').value.trim();
-      inv.tags = tags;
-      inv.contenu_ids = contenus.length ? { custom: contenus } : {};
-    }
-  } else {
-    var newId = Math.max(0, ...(DB.intervenants.map(function(i){ return i.id; }))) + 1;
-    DB.intervenants.push({
-      id: newId, nom: nom, titre: titre,
-      specialite: document.getElementById('f-inv-spec').value.trim(),
-      bio: document.getElementById('f-inv-bio').value.trim(),
-      photo_initiales: document.getElementById('f-inv-init').value.trim().toUpperCase().slice(0,2) || nom.slice(0,2).toUpperCase(),
-      photo_couleur: document.getElementById('f-inv-color').value,
-      photo_url: (function(){ var _pf = document.getElementById('f-inv-photo').value.trim(); return _pf ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + _pf) : ''; })(),
-      site_url: document.getElementById('f-inv-site').value.trim(),
-      linkedin_url: document.getElementById('f-inv-linkedin').value.trim(),
-      tags: tags,
-      contenu_ids: contenus.length ? { custom: contenus } : {},
-      actif: true
-    });
-  }
-  saveDB(DB);
-  closeModal();
-  showToast('✓ Intervenant enregistré');
-  renderAdmin('intervenants');
+  var photoFile = document.getElementById('f-inv-photo').value.trim();
+  var payload = {
+    nom: nom, titre: titre,
+    specialite: document.getElementById('f-inv-spec').value.trim(),
+    bio: document.getElementById('f-inv-bio').value.trim(),
+    photo: photoFile,
+    photo_url: photoFile ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + photoFile) : '',
+    tags: tags
+  };
+  var inv = (DB.intervenants || []).find(function(i){ return i.id === existingId; });
+  getSiteSlug().then(function(slug){
+    payload.site_slug = slug || '';
+    var dbid = inv && inv._dbid;
+    var url    = dbid ? ('/api/companion/intervenants/' + dbid) : '/api/companion/intervenants';
+    var method = dbid ? 'PUT' : 'POST';
+    fetch(url, { method: method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+      .then(function(res){
+        if (!res.ok) { showToast('⚠ ' + (res.b.error || 'Erreur')); return; }
+        closeModal(); showToast('✓ Intervenant enregistré');
+        syncIntervenants(function(){ renderAdmin('intervenants'); });
+      })
+      .catch(function(){ showToast('⚠ Erreur réseau'); });
+  });
 }
 
 function deleteIntervenant(id) {
   if (!confirm('Supprimer cet intervenant ?')) return;
+  var inv = (DB.intervenants || []).find(function(i){ return i.id === id; });
+  if (inv && inv._dbid) {
+    fetch('/api/companion/intervenants/' + inv._dbid, { method: 'DELETE', credentials: 'include' })
+      .then(function(r){ return r.ok; })
+      .then(function(ok){
+        if (!ok) { showToast('⚠ Erreur'); return; }
+        showToast('Intervenant supprimé');
+        syncIntervenants(function(){ renderAdmin('intervenants'); });
+      })
+      .catch(function(){ showToast('⚠ Erreur réseau'); });
+    return;
+  }
+  // Intervenant de démo (non présent en base) : retrait local uniquement
   DB.intervenants = (DB.intervenants||[]).filter(function(i){ return i.id !== id; });
   saveDB(DB);
-  showToast('Intervenant supprimé');
+  showToast('Intervenant retiré (démo · non persistant)');
   renderAdmin('intervenants');
 }
 

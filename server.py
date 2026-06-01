@@ -441,6 +441,24 @@ def init_db():
         cur.execute("ALTER TABLE companion_sons ADD COLUMN IF NOT EXISTS audio TEXT")
         cur.execute('CREATE INDEX IF NOT EXISTS idx_sons_site ON companion_sons(site_slug)')
 
+        # ── Intervenants Companion (persistance dédiée, par site) ─────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_intervenants (
+                id          SERIAL PRIMARY KEY,
+                site_slug   TEXT,
+                nom         TEXT,
+                specialite  TEXT,
+                bio         TEXT,
+                photo       TEXT,
+                photo_url   TEXT,
+                titre       TEXT,
+                tags        TEXT,
+                actif       BOOLEAN DEFAULT TRUE,
+                created_at  TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cint_site ON companion_intervenants(site_slug)')
+
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
         count = cur.fetchone()['n']
@@ -2176,20 +2194,103 @@ def companion_contenus_delete(cid):
     return jsonify({'ok': True})
 
 
+def _cint_to_dict(row):
+    tags = row.get('tags')
+    if isinstance(tags, str) and tags.strip():
+        try:
+            tags = json.loads(tags)
+        except Exception:
+            tags = [t.strip() for t in tags.split(',') if t.strip()]
+    if not isinstance(tags, list):
+        tags = []
+    return {
+        'id': row['id'], 'site_slug': row.get('site_slug'),
+        'nom': row.get('nom'), 'specialite': row.get('specialite'),
+        'bio': row.get('bio'), 'photo': row.get('photo'),
+        'photo_url': row.get('photo_url'), 'titre': row.get('titre'),
+        'tags': tags, 'actif': row.get('actif', True)
+    }
+
+
+def _cint_tags_str(value):
+    if isinstance(value, list):
+        return json.dumps(value)
+    return value or ''
+
+
 @app.route('/api/companion/intervenants', methods=['GET'])
 @login_required
 def companion_intervenants_list():
-    """Liste publique (lecture) des intervenants actifs, pour Companion."""
+    """Liste les intervenants actifs (table companion_intervenants)."""
+    site_slug = request.args.get('site_slug')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if site_slug:
+                cur.execute("""
+                    SELECT * FROM companion_intervenants
+                    WHERE actif = TRUE AND (COALESCE(site_slug,'') = %s OR COALESCE(site_slug,'') = '')
+                    ORDER BY id
+                """, [site_slug])
+            else:
+                cur.execute("SELECT * FROM companion_intervenants WHERE actif = TRUE ORDER BY id")
+            rows = cur.fetchall()
+    return jsonify({'intervenants': [_cint_to_dict(r) for r in rows]})
+
+
+@app.route('/api/companion/intervenants', methods=['POST'])
+@login_required
+def companion_intervenants_create():
+    data = request.get_json() or {}
+    nom = (data.get('nom') or '').strip()
+    if not nom:
+        return jsonify({'error': 'Nom requis'}), 400
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, nom, specialite, bio, photo_url, email
-                FROM intervenants
-                WHERE actif = TRUE AND COALESCE(est_intervenant, TRUE) = TRUE
-                ORDER BY nom
-            """)
-            rows = cur.fetchall()
-    return jsonify({'intervenants': [dict(r) for r in rows]})
+                INSERT INTO companion_intervenants
+                    (site_slug, nom, specialite, bio, photo, photo_url, titre, tags, actif)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,TRUE) RETURNING *
+            """, [data.get('site_slug', '') or '', nom, data.get('specialite', '') or '',
+                  data.get('bio', '') or '', data.get('photo', '') or '', data.get('photo_url', '') or '',
+                  data.get('titre', '') or '', _cint_tags_str(data.get('tags'))])
+            row = cur.fetchone()
+            conn.commit()
+    return jsonify(_cint_to_dict(row)), 201
+
+
+@app.route('/api/companion/intervenants/<int:iid>', methods=['PUT'])
+@login_required
+def companion_intervenants_update(iid):
+    data = request.get_json() or {}
+    cols = []; vals = []
+    for key in ('site_slug', 'nom', 'specialite', 'bio', 'photo', 'photo_url', 'titre'):
+        if key in data:
+            cols.append(key + '=%s'); vals.append(data[key])
+    if 'tags' in data:
+        cols.append('tags=%s'); vals.append(_cint_tags_str(data['tags']))
+    if 'actif' in data:
+        cols.append('actif=%s'); vals.append(bool(data['actif']))
+    if not cols:
+        return jsonify({'error': 'Aucun champ à mettre à jour'}), 400
+    vals.append(iid)
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE companion_intervenants SET " + ", ".join(cols) + " WHERE id=%s RETURNING *", vals)
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'error': 'Intervenant introuvable'}), 404
+            conn.commit()
+    return jsonify(_cint_to_dict(row))
+
+
+@app.route('/api/companion/intervenants/<int:iid>', methods=['DELETE'])
+@login_required
+def companion_intervenants_delete(iid):
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM companion_intervenants WHERE id=%s", [iid])
+            conn.commit()
+    return jsonify({'ok': True})
 
 
 # ========== COMPANION — SONS IMMERSIFS ==========
