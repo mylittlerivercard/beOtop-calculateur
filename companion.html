@@ -1367,7 +1367,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <p>Base de données locale · Ateliers · Audios · Exercices</p>
   </div>
 
-  <div style="display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap">
+  <div style="display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap" id="admin-actions">
     <button class="btn-primary" onclick="openAddAtelier()">+ Atelier</button>
     <button class="btn-primary" onclick="openAddAudio()">+ Audio</button>
     <button class="btn-primary" onclick="openAddExercice()">+ Exercice</button>
@@ -1867,6 +1867,159 @@ function saveDB(db) {
 var DB = loadDB();
 
 /* ════════════════════════════════════════════
+   CONTENUS SERVEUR (ajoutés par les intervenants)
+   — fusionnés avec les contenus de démonstration
+════════════════════════════════════════════ */
+function _cloneArr(x) { return JSON.parse(JSON.stringify(x || [])); }
+
+/* Recharge les contenus depuis l'API et reconstruit chaque tableau
+   = contenus de démonstration (DEMO_DB) + contenus serveur. */
+function syncContenus(cb) {
+  fetch('/api/companion/contenus', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : { contenus: [] }; })
+    .then(function(d){
+      var byType = { audio: [], video: [], exercice: [], defi: [], podcast: [] };
+      (d.contenus || []).forEach(function(c){
+        if (!byType[c.type]) return;
+        c.id = 100000 + c.db_id;   // id front unique, sans collision avec les démos
+        byType[c.type].push(c);
+      });
+      DB.audios    = _cloneArr(DEMO_DB.audios).concat(byType.audio);
+      DB.videos    = _cloneArr(DEMO_DB.videos).concat(byType.video);
+      DB.exercices = _cloneArr(DEMO_DB.exercices).concat(byType.exercice);
+      DB.defis     = _cloneArr(DEMO_DB.defis).concat(byType.defi);
+      DB.podcasts  = _cloneArr(DEMO_DB.podcasts).concat(byType.podcast);
+      saveDB(DB);
+      if (cb) cb();
+    })
+    .catch(function(){ if (cb) cb(); });
+}
+
+/* Charge les intervenants depuis la base et reconstruit DB.intervenants
+   (en conservant les profils détaillés de démo quand le nom correspond). */
+function syncIntervenants(cb) {
+  fetch('/api/companion/intervenants', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : { intervenants: [] }; })
+    .then(function(d){
+      var demos = DEMO_DB.intervenants || [];
+      var list = (d.intervenants || []).map(function(s){
+        var demo = demos.find(function(dm){
+          return dm.nom === s.nom || dm.nom.indexOf(s.nom) === 0 || s.nom.indexOf(dm.nom) === 0;
+        }) || {};
+        var initiales = (s.nom || '?').split(' ').map(function(w){ return w[0] || ''; }).join('').toUpperCase().slice(0, 2);
+        return Object.assign({}, demo, {
+          id:          s.id,
+          nom:         s.nom,
+          specialite:  s.specialite || demo.specialite || '',
+          bio:         s.bio || demo.bio || '',
+          photo_url:   s.photo_url || demo.photo_url || '',
+          titre:       demo.titre || s.specialite || 'Intervenant beOtop',
+          tags:        (demo.tags && demo.tags.length) ? demo.tags : (s.specialite ? [s.specialite] : []),
+          photo_initiales: demo.photo_initiales || initiales,
+          photo_couleur:   demo.photo_couleur || '#00b4b4',
+          actif:       true,
+          _srv:        true
+        });
+      });
+      if (list.length) { DB.intervenants = list; saveDB(DB); }
+      if (cb) cb();
+    })
+    .catch(function(){ if (cb) cb(); });
+}
+
+function _contenuCreate(type, item, afterRender) {
+  fetch('/api/companion/contenus', {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: type, item: item })
+  })
+  .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+  .then(function(res){
+    if (!res.ok) { showToast('⚠ ' + (res.b.error || 'Erreur enregistrement')); return; }
+    syncContenus(function(){
+      closeModal(); renderAdmin(currentAdminTab); if (afterRender) afterRender();
+      showToast('✓ Contenu enregistré');
+    });
+  })
+  .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
+function _contenuUpdate(dbId, type, item, afterRender) {
+  fetch('/api/companion/contenus/' + dbId, {
+    method: 'PUT', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: type, item: item })
+  })
+  .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+  .then(function(res){
+    if (!res.ok) { showToast('⚠ ' + (res.b.error || 'Erreur')); return; }
+    syncContenus(function(){
+      closeModal(); renderAdmin(currentAdminTab); if (afterRender) afterRender();
+      showToast('✓ Contenu mis à jour');
+    });
+  })
+  .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
+function _contenuDelete(dbId, afterRender) {
+  fetch('/api/companion/contenus/' + dbId, { method: 'DELETE', credentials: 'include' })
+  .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+  .then(function(res){
+    if (!res.ok) { showToast('⚠ ' + (res.b.error || 'Erreur')); return; }
+    syncContenus(function(){
+      renderAdmin(currentAdminTab); if (afterRender) afterRender();
+      showToast('✓ Contenu supprimé');
+    });
+  })
+  .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
+/* ════════════════════════════════════════════
+   RÔLE COURANT + RESTRICTIONS ADMINISTRATION
+════════════════════════════════════════════ */
+/* Rempli par _init via /api/auth/me */
+var CURRENT_ME = null;
+
+/* Accès complet à l'Administration réservé à l'admin. */
+function _isAdminFull() { return CURRENT_ME && CURRENT_ME.role === 'admin'; }
+
+/* Dans l'Administration, un non-admin ne gère QUE ses propres contenus serveur. */
+function _adminList(arr) {
+  if (!_isAdminFull()) {
+    var nom = (CURRENT_ME && (CURRENT_ME.intervenant_nom || CURRENT_ME.nom)) || '__aucun__';
+    return (arr || []).filter(function(x){ return x.db_id && ((x.intervenant_nom || x.intervenant) === nom); });
+  }
+  return arr || [];
+}
+
+/* Masque pour les non-admins tout ce qui n'est pas la gestion de leurs contenus. */
+function applyAdminRestrictions() {
+  var isInterv = !_isAdminFull();
+  var actions = document.getElementById('admin-actions');
+  if (actions) {
+    actions.querySelectorAll('button').forEach(function(b){
+      var oc = b.getAttribute('onclick') || '';
+      var allowed = /openAddAudio|openAddExercice|openAddDefi|openAddPodcast|openAddVideo/.test(oc);
+      b.style.display = (isInterv && !allowed) ? 'none' : '';
+    });
+  }
+  var tabs = document.getElementById('admin-tabs');
+  if (tabs) {
+    tabs.querySelectorAll('button').forEach(function(b){
+      var oc = b.getAttribute('onclick') || '';
+      var allowed = /'audios'|'videos'|'exercices'|'defis'|'podcasts'/.test(oc);
+      b.style.display = (isInterv && !allowed) ? 'none' : '';
+    });
+  }
+  var hdr = document.querySelector('#view-admin .page-header');
+  if (hdr && isInterv) {
+    var h1 = hdr.querySelector('h1'); var p = hdr.querySelector('p');
+    if (h1) h1.innerHTML = 'Mes <em>contenus</em>';
+    if (p) p.textContent = 'Ajoutez et gérez vos propres contenus Companion';
+  }
+}
+
+/* ════════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════════ */
 function switchView(id) {
@@ -1895,7 +2048,16 @@ function switchView(id) {
   if (id === 'exercices') renderExercices();
   if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 200); }
   if (id === 'profil') renderProfil();
-  if (id === 'admin') renderAdmin('ateliers');
+  if (id === 'admin') {
+    applyAdminRestrictions();
+    var firstTab = _isAdminFull() ? 'ateliers' : 'audios';
+    currentAdminTab = firstTab;
+    document.querySelectorAll('#admin-tabs .cc-protocol-btn').forEach(function(b){
+      var oc = b.getAttribute('onclick') || '';
+      b.classList.toggle('active', oc.indexOf("'" + firstTab + "'") !== -1);
+    });
+    renderAdmin(firstTab);
+  }
   if (id === 'livreor') ldoLoad();
   if (id === 'intervenants') renderIntervenants();
   if (id === 'podcasts') renderPodcasts();
@@ -4839,7 +5001,7 @@ function renderAdmin(tab) {
     if (!DB.podcasts) DB.podcasts = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddPodcast()">\u002b Podcast</button></div>'
       + '<table><thead><tr><th>ID</th><th>Titre</th><th>Intervenant</th><th>Dur\u00e9e</th><th>Type</th><th>URL</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
-      + (DB.podcasts.length ? DB.podcasts.map(function(p) {
+      + (_adminList(DB.podcasts).length ? _adminList(DB.podcasts).map(function(p) {
           return '<tr><td>' + p.id + '</td><td style="font-weight:600;font-size:.82rem">' + p.titre + '</td>'
             + '<td style="font-size:.7rem;color:var(--text-dim)">' + (p.intervenant||'\u2014') + '</td>'
             + '<td style="font-size:.7rem">' + (p.duree||'\u2014') + '</td>'
@@ -4866,7 +5028,7 @@ function renderAdmin(tab) {
     if (!DB.defis) DB.defis = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddDefi()">\u002b D\u00e9fi cognitif</button></div>'
       + '<table><thead><tr><th>ID</th><th>Titre</th><th>Description</th><th>Intervenant</th><th>Dur\u00e9e</th><th>Audio</th><th>Actif</th><th>Action</th></tr></thead><tbody>'
-      + (DB.defis.length ? DB.defis.map(function(d) {
+      + (_adminList(DB.defis).length ? _adminList(DB.defis).map(function(d) {
           return '<tr>'
             + '<td>' + d.id + '</td>'
             + '<td style="font-weight:600;font-size:.82rem">' + d.titre + '</td>'
@@ -4887,7 +5049,7 @@ function renderAdmin(tab) {
 else if (tab === 'audios') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>Action</th>
-    </tr></thead><tbody>${DB.audios.map(a => `<tr>
+    </tr></thead><tbody>${_adminList(DB.audios).map(a => `<tr>
       <td>${a.id}</td><td>${a.icon} ${a.titre}</td><td>${a.categorie}</td><td>${a.duree}</td>
       <td style="font-size:.7rem;color:var(--text-dim)">${a.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editAudio(${a.id})">✎</button>
@@ -4897,7 +5059,7 @@ else if (tab === 'audios') {
     if (!DB.videos) DB.videos = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddVideo()">+ Vidéo</button></div>'
       + '<table><thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>URL</th><th>Action</th></tr></thead><tbody>'
-      + DB.videos.map(function(v) {
+      + _adminList(DB.videos).map(function(v) {
         return '<tr><td>' + v.id + '</td><td>' + (v.icon||'🎬') + ' ' + v.titre + '</td><td>' + v.categorie + '</td><td>' + (v.duree||'—') + '</td>'
           + '<td style="font-size:.7rem;color:var(--text-dim)">' + (v.intervenant||'—') + '</td>'
           + '<td style="font-size:.58rem;color:var(--text-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis">' + (v.url_video ? '✓' : '⚠ Vide') + '</td>'
@@ -4908,7 +5070,7 @@ else if (tab === 'audios') {
   } else if (tab === 'exercices') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Tags</th><th>Intervenant</th><th>Action</th>
-    </tr></thead><tbody>${DB.exercices.map(e => `<tr>
+    </tr></thead><tbody>${_adminList(DB.exercices).map(e => `<tr>
       <td>${e.id}</td><td>${e.icon} ${e.titre}</td><td>${e.categorie}</td><td>${e.tags.join(', ')}</td>
       <td style="font-size:.7rem;color:var(--text-dim)">${e.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editExercice(${e.id})">✎</button>
@@ -4971,19 +5133,15 @@ function openAddVideo() {
 function saveVideo() {
   const titre = document.getElementById('f-vi-titre').value.trim();
   if (!titre) { showToast('⚠ Titre requis'); return; }
-  if (!DB.videos) DB.videos = [];
-  const newId = Math.max(0, ...DB.videos.map(v => v.id), 0) + 1;
-  DB.videos.push({
-    id: newId, titre,
+  _contenuCreate('video', {
+    titre: titre,
     categorie: document.getElementById('f-vi-cat').value,
     duree: document.getElementById('f-vi-duree').value || '',
     icon: document.getElementById('f-vi-icon').value || '🎬',
     description: document.getElementById('f-vi-desc').value,
     url_video: document.getElementById('f-vi-url').value.trim(),
-    intervenant: document.getElementById('f-vi-intervenant') ? document.getElementById('f-vi-intervenant').value : '',
-  });
-  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderVideo();
-  showToast('Video ajoutee');
+    intervenant: document.getElementById('f-vi-intervenant') ? document.getElementById('f-vi-intervenant').value : ''
+  }, renderVideo);
 }
 
 function editVideo(id) {
@@ -5006,17 +5164,23 @@ function updateVideo(id) {
   if (!DB.videos) return;
   const v = DB.videos.find(x => x.id === id);
   if (!v) return;
-  v.titre = document.getElementById('f-vi-titre').value;
-  v.duree = document.getElementById('f-vi-duree').value;
-  v.icon  = document.getElementById('f-vi-icon').value;
-  v.description = document.getElementById('f-vi-desc').value;
-  v.url_video = document.getElementById('f-vi-url').value.trim();
+  var item = Object.assign({}, v, {
+    titre: document.getElementById('f-vi-titre').value,
+    duree: document.getElementById('f-vi-duree').value,
+    icon:  document.getElementById('f-vi-icon').value,
+    description: document.getElementById('f-vi-desc').value,
+    url_video: document.getElementById('f-vi-url').value.trim()
+  });
+  if (v.db_id) { _contenuUpdate(v.db_id, 'video', item, renderVideo); return; }
+  Object.assign(v, item);
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderVideo();
   showToast('Video mise a jour');
 }
 
 function deleteVideo(id) {
   if (!confirm('Supprimer cette video ?')) return;
+  var v = (DB.videos||[]).find(x => x.id === id);
+  if (v && v.db_id) { _contenuDelete(v.db_id, renderVideo); return; }
   DB.videos = (DB.videos||[]).filter(v => v.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('Video supprimee');
@@ -5122,10 +5286,8 @@ function openAddAudio() {
 function saveAudio() {
   const titre = document.getElementById('f-au-titre').value.trim();
   if (!titre) { showToast('⚠ Titre requis'); return; }
-  const newId = Math.max(0, ...DB.audios.map(a => a.id)) + 1;
-  DB.audios.push({
-    id: newId,
-    titre,
+  _contenuCreate('audio', {
+    titre: titre,
     categorie: document.getElementById('f-au-cat').value,
     duree: document.getElementById('f-au-duree').value || '10 min',
     icon: document.getElementById('f-au-icon').value || '🎵',
@@ -5133,9 +5295,7 @@ function saveAudio() {
     url_audio: document.getElementById('f-au-url').value.trim(),
     intervenant: document.getElementById('f-au-intervenant') ? document.getElementById('f-au-intervenant').value : '',
     statut: 'active'
-  });
-  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderAudio();
-  showToast('✓ Audio ajouté');
+  }, renderAudio);
 }
 
 function editAudio(id) {
@@ -5156,17 +5316,23 @@ function editAudio(id) {
 function updateAudio(id) {
   const a = DB.audios.find(x => x.id === id);
   if (!a) return;
-  a.titre = document.getElementById('f-au-titre').value;
-  a.duree = document.getElementById('f-au-duree').value;
-  a.icon  = document.getElementById('f-au-icon').value;
-  a.description = document.getElementById('f-au-desc').value;
-  a.url_audio = document.getElementById('f-au-url').value.trim();
+  var item = Object.assign({}, a, {
+    titre: document.getElementById('f-au-titre').value,
+    duree: document.getElementById('f-au-duree').value,
+    icon:  document.getElementById('f-au-icon').value,
+    description: document.getElementById('f-au-desc').value,
+    url_audio: document.getElementById('f-au-url').value.trim()
+  });
+  if (a.db_id) { _contenuUpdate(a.db_id, 'audio', item, renderAudio); return; }
+  Object.assign(a, item);
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderAudio();
   showToast('✓ Audio mis à jour');
 }
 
 function deleteAudio(id) {
   if (!confirm('Supprimer cet audio ?')) return;
+  var a = (DB.audios||[]).find(x => x.id === id);
+  if (a && a.db_id) { _contenuDelete(a.db_id, renderAudio); return; }
   DB.audios = DB.audios.filter(a => a.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('✓ Audio supprimé');
@@ -5201,9 +5367,8 @@ function openAddExercice() {
 function saveExercice() {
   const titre = document.getElementById('f-ex-titre').value.trim();
   if (!titre) { showToast('⚠ Titre requis'); return; }
-  const newId = Math.max(0, ...DB.exercices.map(e => e.id)) + 1;
-  DB.exercices.push({
-    id: newId, titre,
+  _contenuCreate('exercice', {
+    titre: titre,
     categorie: document.getElementById('f-ex-cat').value,
     indication: document.getElementById('f-ex-ind').value,
     tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
@@ -5212,9 +5377,7 @@ function saveExercice() {
     bg: 'rgba(90,138,106,.15)',
     url_video: document.getElementById('f-ex-url').value.trim(),
     intervenant: document.getElementById('f-ex-intervenant') ? document.getElementById('f-ex-intervenant').value : ''
-  });
-  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
-  showToast('✓ Exercice ajouté');
+  }, renderExercices);
 }
 
 function editExercice(id) {
@@ -5241,19 +5404,25 @@ function editExercice(id) {
 function updateExercice(id) {
   const e = DB.exercices.find(x => x.id === id);
   if (!e) return;
-  e.titre = document.getElementById('f-ex-titre').value;
-  e.indication = document.getElementById('f-ex-ind').value;
-  e.tags = document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  e.description = document.getElementById('f-ex-desc').value;
-  e.icon = document.getElementById('f-ex-icon').value;
-  e.url_video = document.getElementById('f-ex-url').value.trim();
-  e.intervenant = document.getElementById('f-ex-intervenant') ? document.getElementById('f-ex-intervenant').value : (e.intervenant || '');
+  var item = Object.assign({}, e, {
+    titre: document.getElementById('f-ex-titre').value,
+    indication: document.getElementById('f-ex-ind').value,
+    tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    description: document.getElementById('f-ex-desc').value,
+    icon: document.getElementById('f-ex-icon').value,
+    url_video: document.getElementById('f-ex-url').value.trim(),
+    intervenant: document.getElementById('f-ex-intervenant') ? document.getElementById('f-ex-intervenant').value : (e.intervenant || '')
+  });
+  if (e.db_id) { _contenuUpdate(e.db_id, 'exercice', item, renderExercices); return; }
+  Object.assign(e, item);
   saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderExercices();
   showToast('✓ Exercice mis à jour');
 }
 
 function deleteExercice(id) {
   if (!confirm('Supprimer cet exercice ?')) return;
+  var e = (DB.exercices||[]).find(x => x.id === id);
+  if (e && e.db_id) { _contenuDelete(e.db_id, renderExercices); return; }
   DB.exercices = DB.exercices.filter(e => e.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('✓ Exercice supprimé');
@@ -5353,6 +5522,8 @@ function ldoEscape(str) {
     /* Lire le site passé en paramètre URL (?site=demo-beotop) */
     var urlParams = new URLSearchParams(window.location.search);
     var siteParam = urlParams.get('site');
+    /* Lien direct vers un onglet (?view=admin depuis Mon Espace) */
+    var viewParam = urlParams.get('view') || (window.location.hash || '').replace('#', '');
     if (siteParam) {
       cachedSiteSlug = siteParam;
       if (DB.user && DB.user.site_slug !== siteParam) {
@@ -5366,6 +5537,7 @@ function ldoEscape(str) {
       fetch('/api/auth/me', { credentials: 'include' })
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(me){
+          CURRENT_ME = me;
           if (me) {
             // Mettre à jour DB.user avec les vraies données
             var parts = (me.nom || '').trim().split(' ');
@@ -5376,8 +5548,12 @@ function ldoEscape(str) {
           }
           renderDashboard();
           renderCCStats();
+          syncIntervenants(function(){ syncContenus(function(){ if (viewParam) switchView(viewParam); }); });
         })
-        .catch(function(){ renderDashboard(); renderCCStats(); });
+        .catch(function(){
+          renderDashboard(); renderCCStats();
+          syncIntervenants(function(){ syncContenus(function(){ if (viewParam) switchView(viewParam); }); });
+        });
     } catch(e){ console.error('[beOtop]',e); }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_init); else _init();
@@ -5541,37 +5717,29 @@ function saveDefi(existingId) {
   if (!titre || !titre.trim()) { showToast('\u26a0 Titre requis'); return; }
   if (!DB.defis) DB.defis = [];
   var actif = document.getElementById('f-df-actif') ? document.getElementById('f-df-actif').value !== '0' : true;
+  var item = {
+    titre:       titre.trim(),
+    description: (document.getElementById('f-df-desc')||{}).value||'',
+    url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
+    intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
+    duree:       (document.getElementById('f-df-duree')||{}).value||'',
+    actif:       actif
+  };
   if (existingId) {
     var d = DB.defis.find(function(x){ return x.id === existingId; });
-    if (d) {
-      d.titre       = titre.trim();
-      d.description = (document.getElementById('f-df-desc')||{}).value||'';
-      d.url_audio   = ((document.getElementById('f-df-url')||{}).value||'').trim();
-      d.intervenant = (document.getElementById('f-df-intervenant')||{}).value||'';
-      d.duree       = (document.getElementById('f-df-duree')||{}).value||'';
-      d.actif       = actif;
-    }
-  } else {
-    var newId = DB.defis.length ? Math.max.apply(null, DB.defis.map(function(x){ return x.id; })) + 1 : 1;
-    DB.defis.push({
-      id:          newId,
-      titre:       titre.trim(),
-      description: (document.getElementById('f-df-desc')||{}).value||'',
-      url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
-      intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
-      duree:       (document.getElementById('f-df-duree')||{}).value||'',
-      actif:       actif
-    });
+    if (d && d.db_id) { _contenuUpdate(d.db_id, 'defi', Object.assign({}, d, item), renderDefis); return; }
+    if (d) Object.assign(d, item);
+    saveDB(DB); closeModal(); renderAdmin('defis'); renderDefis();
+    showToast('\u2713 D\u00e9fi enregistr\u00e9');
+    return;
   }
-  saveDB(DB);
-  closeModal();
-  renderAdmin('defis');
-  renderDefis();
-  showToast('\u2713 D\u00e9fi enregistr\u00e9');
+  _contenuCreate('defi', item, renderDefis);
 }
 
 function deleteDefi(id) {
   if (!confirm('Supprimer ce d\u00e9fi ?')) return;
+  var d = (DB.defis||[]).find(function(x){ return x.id === id; });
+  if (d && d.db_id) { _contenuDelete(d.db_id, renderDefis); return; }
   DB.defis = (DB.defis||[]).filter(function(x){ return x.id !== id; });
   saveDB(DB);
   renderAdmin('defis');
@@ -5908,13 +6076,19 @@ function savePodcast(existingId) {
     duree: (document.getElementById('f-pod-duree')||{}).value||'',
     actif: (document.getElementById('f-pod-actif')||{}).value !== '0'
   };
-  if (existingId) { var p=DB.podcasts.find(function(x){return x.id===existingId;}); if(p) Object.assign(p,obj); }
-  else { obj.id = DB.podcasts.length ? Math.max.apply(null,DB.podcasts.map(function(x){return x.id;}))+1 : 1; DB.podcasts.push(obj); }
-  saveDB(DB); closeModal(); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast enregistr\u00e9');
+  if (existingId) {
+    var p = DB.podcasts.find(function(x){return x.id===existingId;});
+    if (p && p.db_id) { _contenuUpdate(p.db_id, 'podcast', Object.assign({}, p, obj), renderPodcasts); return; }
+    if (p) Object.assign(p, obj);
+    saveDB(DB); closeModal(); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast enregistr\u00e9'); return;
+  }
+  _contenuCreate('podcast', obj, renderPodcasts);
 }
 
 function deletePodcast(id) {
   if (!confirm('Supprimer ce podcast ?')) return;
+  var p = (DB.podcasts||[]).find(function(x){return x.id===id;});
+  if (p && p.db_id) { _contenuDelete(p.db_id, renderPodcasts); return; }
   DB.podcasts = (DB.podcasts||[]).filter(function(x){return x.id!==id;});
   saveDB(DB); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast supprim\u00e9');
 }
