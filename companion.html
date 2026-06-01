@@ -1398,6 +1398,18 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 </div>
 
 
+<!-- ══════════════ CONTENUS D'UN INTERVENANT ══════════════ -->
+<div class="view" id="view-intervenant-contenus">
+  <div class="page-header" style="display:flex;align-items:center;gap:.9rem">
+    <button onclick="backFromIntervenant()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;font-size:1rem;cursor:pointer;color:var(--text);flex-shrink:0">←</button>
+    <div>
+      <h1>Contenus de <em id="ivc-nom">—</em></h1>
+      <p>Tous les contenus publiés par cet intervenant</p>
+    </div>
+  </div>
+  <div id="ivc-grid"></div>
+</div>
+
 <!-- ══════════════ LIVRE D'OR ══════════════ -->
 <div class="view" id="view-livreor">
   <div class="page-header">
@@ -3780,6 +3792,7 @@ function renderVideo() {
       + '<div style="padding:.8rem 1rem">'
       + '<div class="audio-title">' + v.titre + '</div>'
       + '<div class="audio-meta"><span>' + v.categorie + '</span><span class="audio-duration">' + (v.duree||'') + '</span></div>'
+      + _invBadge(v.intervenant)
       + '<button class="audio-play-btn" style="margin-top:.6rem">▶ Regarder</button>'
       + '</div></div>';
   }).join('');
@@ -4505,6 +4518,54 @@ function _buildCatPills(arr, current, filterFn) {
   return html;
 }
 
+/* Badge intervenant cliquable affiché sur une vignette de contenu. */
+function _invBadge(nom) {
+  if (!nom) return '';
+  var safe = String(nom).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return '<div onclick="event.stopPropagation(); showIntervenantContenus(\'' + safe + '\')" '
+    + 'style="font-size:.62rem;color:var(--teal);margin-top:.35rem;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;font-weight:600">'
+    + '👤 ' + nom + '</div>';
+}
+
+/* Vue « tous les contenus d'un intervenant » + navigation retour. */
+var _prevView = 'dashboard';
+function _currentViewId() {
+  var v = document.querySelector('.view.active');
+  return v ? v.id.replace('view-', '') : 'dashboard';
+}
+function backFromIntervenant() { switchView(_prevView || 'dashboard'); }
+function showIntervenantContenus(nom) {
+  var cur = _currentViewId();
+  if (cur !== 'intervenant-contenus') _prevView = cur;
+  var nomEl = document.getElementById('ivc-nom');
+  if (nomEl) nomEl.textContent = nom;
+  var groups = [
+    { arr: DB.audios,    type: 'Audios',          fn: 'playAudio' },
+    { arr: DB.videos,    type: 'Vidéos',          fn: 'openVideo' },
+    { arr: DB.exercices, type: 'Exercices',       fn: 'openExercice' },
+    { arr: DB.defis,     type: 'Défis cognitifs', fn: 'playDefi' },
+    { arr: DB.podcasts,  type: 'Podcasts',        fn: 'openPodcast' }
+  ];
+  var html = ''; var total = 0;
+  groups.forEach(function(g){
+    var items = (g.arr || []).filter(function(x){ return (x.intervenant || '') === nom && x.actif !== false; });
+    if (!items.length) return;
+    total += items.length;
+    html += '<div style="font-size:.58rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:1.1rem 0 .5rem">' + g.type + ' · ' + items.length + '</div>';
+    items.forEach(function(it){
+      var sub = it.description || it.indication || '';
+      html += '<div class="card" style="cursor:pointer;padding:.8rem 1rem;margin-bottom:.5rem" onclick="' + g.fn + '(' + it.id + ')">'
+        + '<div style="font-size:.85rem;font-weight:600;color:var(--text)">' + (it.icon ? it.icon + ' ' : '') + it.titre + '</div>'
+        + (sub ? '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem">' + sub + '</div>' : '')
+        + '</div>';
+    });
+  });
+  if (!total) html = '<div style="padding:2.5rem;text-align:center;color:var(--text-muted);font-size:.78rem">Aucun contenu publié par cet intervenant pour le moment.</div>';
+  var grid = document.getElementById('ivc-grid');
+  if (grid) grid.innerHTML = html;
+  switchView('intervenant-contenus');
+}
+
 var CATS_AUDIO = [
   { id:'all', label:'Tout' }, { id:'sophrologie', label:'Sophrologie' },
   { id:'binaural', label:'Binaural' }, { id:'nsdr', label:'NSDR' },
@@ -4528,6 +4589,7 @@ function renderAudio() {
         <span>${a.categorie}</span>
         <span class="audio-duration">${a.duree}</span>
       </div>
+      ${_invBadge(a.intervenant)}
       <button class="audio-play-btn" onclick="playAudio(${a.id})">
         ${isPlaying ? '⏸ En lecture' : '▶ Écouter'}
       </button>
@@ -4613,6 +4675,7 @@ function renderExercices() {
       </div>
       <div class="ex-tags">${e.tags.map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
       <div class="ex-duration">${e.description}</div>
+      ${_invBadge(e.intervenant)}
     </div>`).join('');
 }
 
@@ -5771,7 +5834,7 @@ function renderDefis() {
       + '<div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(245,133,90,.06));border:1px solid rgba(0,180,180,.2);border-radius:14px">'
       + '<div style="font-size:1.6rem">\ud83e\udde9</div>'
       + '<div><div style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.04em">D\u00c9FIS COGNITIFS</div>'
-      + '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Cr\u00e9\u00e9s par <strong style="color:var(--text)">' + inv + '</strong> \u00b7 Neurosciences appliqu\u00e9es \u00b7 ' + nbLabel + '</div>'
+      + '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Cr\u00e9\u00e9s par <strong style="color:var(--teal);cursor:pointer" onclick="showIntervenantContenus(\'' + String(inv).replace(/'/g, "\\'") + '\')">' + inv + '</strong> \u00b7 Neurosciences appliqu\u00e9es \u00b7 ' + nbLabel + '</div>'
       + '</div></div></div>';
     // Cartes
     groupe.forEach(function(d) {
@@ -6203,7 +6266,7 @@ function renderPodcasts() {
       + '<div style="font-size:.6rem;color:var(--teal);font-weight:600">\u25b6 \u00c9couter</div>'
       + (p.duree ? '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">' + p.duree + '</div>' : '')
       + '</div></div>'
-      + (p.intervenant ? '<div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;text-align:right">' + p.intervenant + '</div>' : '')
+      + _invBadge(p.intervenant)
       + '</div>';
   }).join('');
 }
