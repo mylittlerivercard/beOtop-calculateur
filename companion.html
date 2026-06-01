@@ -5130,12 +5130,26 @@ function openAddVideo() {
   openModal('Ajouter une vidéo', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" placeholder="Sophrologie guidée 10 min"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-vi-cat">
-        <option value="sophrologie">Sophrologie</option>
-        <option value="yoga">Yoga bureau</option>
-        <option value="tms">TMS</option>
+      <select id="f-vi-cat" onchange="toggleNewCat('f-vi-cat','f-vi-newcat')">
+        <option value="anti-stress">Anti-stress</option>
+        <option value="bien-etre">Bien-être général</option>
+        <option value="coherence">Cohérence cardiaque</option>
+        <option value="energie">Énergie & vitalité</option>
+        <option value="etirements">Étirements bureau</option>
+        <option value="gestion-emotions">Gestion des émotions</option>
+        <option value="meditation">Méditation guidée</option>
         <option value="mindfulness">Mindfulness</option>
+        <option value="nutrition">Nutrition & santé</option>
+        <option value="posture">Posture & ergonomie</option>
+        <option value="relaxation">Relaxation</option>
+        <option value="resilience">Résilience</option>
+        <option value="sleep">Sommeil & récupération</option>
+        <option value="sophrologie">Sophrologie</option>
+        <option value="tms">TMS & douleurs</option>
+        <option value="yoga">Yoga bureau</option>
+        <option value="__new__">+ Nouvelle catégorie…</option>
       </select>
+      <input type="text" id="f-vi-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
@@ -5158,7 +5172,7 @@ function saveVideo() {
   if (!titre) { showToast('⚠ Titre requis'); return; }
   _contenuCreate('video', {
     titre: titre,
-    categorie: document.getElementById('f-vi-cat').value,
+    categorie: getCatValue('f-vi-cat','f-vi-newcat'),
     duree: document.getElementById('f-vi-duree').value || '',
     icon: document.getElementById('f-vi-icon').value || '🎬',
     description: document.getElementById('f-vi-desc').value,
@@ -5283,13 +5297,23 @@ function openAddAudio() {
   openModal('Ajouter un audio', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" placeholder="Relaxation profonde"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-au-cat">
-        <option value="sophrologie">Sophrologie</option>
-        <option value="binaural">Binaural</option>
-        <option value="nsdr">NSDR</option>
-        <option value="ciblé">Ciblé</option>
+      <select id="f-au-cat" onchange="toggleNewCat('f-au-cat','f-au-newcat')">
         <option value="ambiance">Ambiance</option>
+        <option value="anti-stress">Anti-stress</option>
+        <option value="binaural">Binaural</option>
+        <option value="coherence">Cohérence cardiaque</option>
+        <option value="energie">Énergie & activation</option>
+        <option value="focus">Focus & concentration</option>
+        <option value="meditation">Méditation guidée</option>
+        <option value="mindfulness">Mindfulness</option>
+        <option value="nsdr">NSDR</option>
+        <option value="relaxation">Relaxation</option>
+        <option value="sleep">Sommeil</option>
+        <option value="sophrologie">Sophrologie</option>
+        <option value="visualisation">Visualisation</option>
+        <option value="__new__">+ Nouvelle catégorie…</option>
       </select>
+      <input type="text" id="f-au-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
@@ -5311,7 +5335,7 @@ function saveAudio() {
   if (!titre) { showToast('⚠ Titre requis'); return; }
   _contenuCreate('audio', {
     titre: titre,
-    categorie: document.getElementById('f-au-cat').value,
+    categorie: getCatValue('f-au-cat','f-au-newcat'),
     duree: document.getElementById('f-au-duree').value || '10 min',
     icon: document.getElementById('f-au-icon').value || '🎵',
     description: document.getElementById('f-au-desc').value,
@@ -5365,11 +5389,23 @@ function openAddExercice() {
   openModal('Ajouter un exercice', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" placeholder="Cervicales express"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-ex-cat">
-        <option value="tms">TMS</option><option value="etirements">Étirements</option>
-        <option value="workout">Workout</option><option value="respiration">Respiration</option>
+      <select id="f-ex-cat" onchange="toggleNewCat('f-ex-cat','f-ex-newcat')">
+        <option value="anti-stress">Anti-stress</option>
+        <option value="cardio">Cardio léger</option>
+        <option value="coherence">Cohérence cardiaque</option>
+        <option value="energie">Énergie & réveil</option>
+        <option value="etirements">Étirements</option>
+        <option value="gestion-emotions">Gestion des émotions</option>
+        <option value="meditation">Méditation</option>
+        <option value="mindfulness">Mindfulness</option>
+        <option value="posture">Posture</option>
         <option value="relaxation">Relaxation</option>
+        <option value="respiration">Respiration</option>
+        <option value="tms">TMS</option>
+        <option value="workout">Workout express</option>
+        <option value="__new__">+ Nouvelle catégorie…</option>
       </select>
+      <input type="text" id="f-ex-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" placeholder="Douleurs nuque · Bureau"></div>
     <div class="form-field"><label>Tags (séparés par virgule)</label><input type="text" id="f-ex-tags" placeholder="5 min,Sans matériel,Assis"></div>
@@ -5392,7 +5428,7 @@ function saveExercice() {
   if (!titre) { showToast('⚠ Titre requis'); return; }
   _contenuCreate('exercice', {
     titre: titre,
-    categorie: document.getElementById('f-ex-cat').value,
+    categorie: getCatValue('f-ex-cat','f-ex-newcat'),
     indication: document.getElementById('f-ex-ind').value,
     tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     description: document.getElementById('f-ex-desc').value,
@@ -5601,6 +5637,35 @@ function ldoEscape(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+
+/* ════ NOUVELLE CATÉGORIE ════ */
+function toggleNewCat(selectId, inputId) {
+  var sel = document.getElementById(selectId);
+  var inp = document.getElementById(inputId);
+  if (!sel || !inp) return;
+  inp.style.display = sel.value === '__new__' ? 'block' : 'none';
+  if (sel.value === '__new__') { inp.focus(); }
+}
+
+function getCatValue(selectId, inputId) {
+  var sel = document.getElementById(selectId);
+  var inp = document.getElementById(inputId);
+  if (!sel) return '';
+  if (sel.value === '__new__') {
+    var newVal = (inp ? inp.value.trim() : '');
+    if (!newVal) return '';
+    /* Ajouter la nouvelle option au select pour la prochaine fois */
+    var opt = document.createElement('option');
+    opt.value = newVal.toLowerCase().replace(/\s+/g, '-');
+    opt.textContent = newVal;
+    sel.insertBefore(opt, sel.querySelector('option[value="__new__"]'));
+    sel.value = opt.value;
+    inp.style.display = 'none';
+    inp.value = '';
+    return opt.value;
+  }
+  return sel.value;
+}
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
@@ -5770,12 +5835,16 @@ function _defiForm(d) {
     + '<input id="f-df-desc" value="' + (v.description||'') + '" placeholder="Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL audio (chemin /audio/...)</label>'
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
+    + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"attention\">Attention & focus</option><option value=\"cognition\">Cognition générale</option><option value=\"creativite\">Créativité</option><option value=\"double-tache\">Double tâche</option><option value=\"flexibilite\">Flexibilité mentale</option><option value=\"inhibition\">Inhibition de réponse</option><option value=\"logique\">Logique</option><option value=\"memoire\">Mémoire de travail</option><option value=\"neurosciences\">Neurosciences appliquées</option><option value=\"reflexes\">Réflexes</option><option value=\"resilience\">Résilience</option><option value=\"vitesse\">Vitesse de traitement</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
     + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="">— Aucun —</option></select></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
     + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
+    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"anti-stress\">Anti-stress</option><option value=\"bien-etre\">Bien-être général</option><option value=\"cognition\">Cognition & mémoire</option><option value=\"energie\">Énergie & vitalité</option><option value=\"gestion-emotions\">Gestion des émotions</option><option value=\"meditation\">Méditation</option><option value=\"mindfulness\">Mindfulness</option><option value=\"neurosciences\">Neurosciences</option><option value=\"philosophie\">Philosophie & sens</option><option value=\"psychologie\">Psychologie positive</option><option value=\"relaxation\">Relaxation</option><option value=\"resilience\">Résilience</option><option value=\"sleep\">Sommeil</option><option value=\"sophrologie\">Sophrologie</option><option value=\"tms\">TMS & douleurs</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
     + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
@@ -5808,6 +5877,7 @@ function saveDefi(existingId) {
     titre:       titre.trim(),
     description: (document.getElementById('f-df-desc')||{}).value||'',
     url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
+    categorie: getCatValue('f-df-cat','f-df-newcat'),
     intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
     duree:       (document.getElementById('f-df-duree')||{}).value||'',
     actif:       actif
@@ -6159,6 +6229,7 @@ function savePodcast(existingId) {
     description: (document.getElementById('f-pod-desc')||{}).value||'',
     type_url: (document.getElementById('f-pod-type')||{}).value||'externe',
     url: ((document.getElementById('f-pod-url')||{}).value||'').trim(),
+    categorie: getCatValue('f-pod-cat','f-pod-newcat'),
     intervenant: (document.getElementById('f-pod-intervenant')||{}).value||'',
     duree: (document.getElementById('f-pod-duree')||{}).value||'',
     actif: (document.getElementById('f-pod-actif')||{}).value !== '0'
