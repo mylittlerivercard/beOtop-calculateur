@@ -1878,11 +1878,15 @@ function _cloneArr(x) { return JSON.parse(JSON.stringify(x || [])); }
    - conserve tous les contenus locaux (démos éditées + ajouts manuels)
    - ajoute les démos manquantes et complète les URLs embed vides depuis la démo
    - ajoute les contenus serveur (db_id) */
-function _mergeContenus(stored, demoArr, serverItems) {
-  stored = stored || []; demoArr = demoArr || [];
+function _mergeContenus(stored, demoArr, serverItems, deletedIds) {
+  stored = stored || []; demoArr = demoArr || []; deletedIds = deletedIds || [];
+  var isDeleted = function(id){ return deletedIds.indexOf(id) !== -1; };
   var byId = {};
-  stored.forEach(function(x){ if (x && !x.db_id && x.id != null) byId[x.id] = x; });
+  stored.forEach(function(x){
+    if (x && !x.db_id && x.id != null && !isDeleted(x.id)) byId[x.id] = x;
+  });
   demoArr.forEach(function(dm){
+    if (isDeleted(dm.id)) return;            // démo supprimée par l'utilisateur
     if (!byId[dm.id]) {
       byId[dm.id] = JSON.parse(JSON.stringify(dm));
     } else {
@@ -1893,6 +1897,15 @@ function _mergeContenus(stored, demoArr, serverItems) {
   });
   var locals = Object.keys(byId).map(function(k){ return byId[k]; });
   return locals.concat(serverItems || []);
+}
+
+/* Mémorise la suppression d'un contenu de démo pour qu'il ne réapparaisse pas. */
+function _markDemoDeleted(dbKey, id) {
+  var demoArr = DEMO_DB[dbKey] || [];
+  if (!demoArr.some(function(d){ return d.id === id; })) return;  // pas une démo
+  if (!DB._deletedDemos) DB._deletedDemos = {};
+  if (!DB._deletedDemos[dbKey]) DB._deletedDemos[dbKey] = [];
+  if (DB._deletedDemos[dbKey].indexOf(id) === -1) DB._deletedDemos[dbKey].push(id);
 }
 
 /* Recharge les contenus depuis l'API et reconstruit chaque tableau
@@ -1907,11 +1920,12 @@ function syncContenus(cb) {
         c.id = 100000 + c.db_id;   // id front unique, sans collision avec les démos
         byType[c.type].push(c);
       });
-      DB.audios    = _mergeContenus(DB.audios,    DEMO_DB.audios,    byType.audio);
-      DB.videos    = _mergeContenus(DB.videos,    DEMO_DB.videos,    byType.video);
-      DB.exercices = _mergeContenus(DB.exercices, DEMO_DB.exercices, byType.exercice);
-      DB.defis     = _mergeContenus(DB.defis,     DEMO_DB.defis,     byType.defi);
-      DB.podcasts  = _mergeContenus(DB.podcasts,  DEMO_DB.podcasts,  byType.podcast);
+      var del = DB._deletedDemos || {};
+      DB.audios    = _mergeContenus(DB.audios,    DEMO_DB.audios,    byType.audio,    del.audios);
+      DB.videos    = _mergeContenus(DB.videos,    DEMO_DB.videos,    byType.video,    del.videos);
+      DB.exercices = _mergeContenus(DB.exercices, DEMO_DB.exercices, byType.exercice, del.exercices);
+      DB.defis     = _mergeContenus(DB.defis,     DEMO_DB.defis,     byType.defi,     del.defis);
+      DB.podcasts  = _mergeContenus(DB.podcasts,  DEMO_DB.podcasts,  byType.podcast,  del.podcasts);
       saveDB(DB);
       if (cb) cb();
     })
@@ -5218,6 +5232,7 @@ function deleteVideo(id) {
   if (!confirm('Supprimer cette video ?')) return;
   var v = (DB.videos||[]).find(x => x.id === id);
   if (v && v.db_id) { _contenuDelete(v.db_id, renderVideo); return; }
+  _markDemoDeleted('videos', id);
   DB.videos = (DB.videos||[]).filter(v => v.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('Video supprimee');
@@ -5380,6 +5395,7 @@ function deleteAudio(id) {
   if (!confirm('Supprimer cet audio ?')) return;
   var a = (DB.audios||[]).find(x => x.id === id);
   if (a && a.db_id) { _contenuDelete(a.db_id, renderAudio); return; }
+  _markDemoDeleted('audios', id);
   DB.audios = DB.audios.filter(a => a.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('✓ Audio supprimé');
@@ -5482,6 +5498,7 @@ function deleteExercice(id) {
   if (!confirm('Supprimer cet exercice ?')) return;
   var e = (DB.exercices||[]).find(x => x.id === id);
   if (e && e.db_id) { _contenuDelete(e.db_id, renderExercices); return; }
+  _markDemoDeleted('exercices', id);
   DB.exercices = DB.exercices.filter(e => e.id !== id);
   saveDB(DB); renderAdmin(currentAdminTab);
   showToast('✓ Exercice supprimé');
@@ -5897,6 +5914,7 @@ function deleteDefi(id) {
   if (!confirm('Supprimer ce d\u00e9fi ?')) return;
   var d = (DB.defis||[]).find(function(x){ return x.id === id; });
   if (d && d.db_id) { _contenuDelete(d.db_id, renderDefis); return; }
+  _markDemoDeleted('defis', id);
   DB.defis = (DB.defis||[]).filter(function(x){ return x.id !== id; });
   saveDB(DB);
   renderAdmin('defis');
@@ -6247,6 +6265,7 @@ function deletePodcast(id) {
   if (!confirm('Supprimer ce podcast ?')) return;
   var p = (DB.podcasts||[]).find(function(x){return x.id===id;});
   if (p && p.db_id) { _contenuDelete(p.db_id, renderPodcasts); return; }
+  _markDemoDeleted('podcasts', id);
   DB.podcasts = (DB.podcasts||[]).filter(function(x){return x.id!==id;});
   saveDB(DB); renderAdmin('podcasts'); renderPodcasts(); showToast('\u2713 Podcast supprim\u00e9');
 }
