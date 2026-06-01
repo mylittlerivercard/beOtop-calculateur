@@ -4583,7 +4583,7 @@ function renderAudio() {
     const isPlaying = currentAudio && currentAudio.id === a.id;
     const bg = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ciblé:'rgba(200,169,110,.1)', ambiance:'rgba(90,138,106,.1)' };
     return `<div class="audio-card${isPlaying?' playing':''}" id="audio-card-${a.id}">
-      <div class="audio-thumb" style="background:${bg[a.categorie]||'var(--surface2)'}">${a.icon}</div>
+      ${a.photo ? `<img src="/static/${a.photo}" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0">` : `<div class="audio-thumb" style="background:${bg[a.categorie]||'var(--surface2)'}">${a.icon}</div>`}
       <div class="audio-title">${a.titre}</div>
       <div class="audio-meta">
         <span>${a.categorie}</span>
@@ -5403,6 +5403,7 @@ function openAddAudio() {
       <input type="text" id="f-au-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" placeholder="binaural.jpg"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji</div></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" placeholder="Description courte"></div>
     <div class="form-field"><label>URL audio (YouTube embed)</label><input type="text" id="f-au-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible · Vimeo aussi accepté</div></div>
@@ -5424,6 +5425,7 @@ function saveAudio() {
     titre: titre,
     categorie: getCatValue('f-au-cat','f-au-newcat'),
     duree: document.getElementById('f-au-duree').value || '10 min',
+    photo: document.getElementById('f-au-photo') ? document.getElementById('f-au-photo').value.trim() : '',
     icon: document.getElementById('f-au-icon').value || '🎵',
     description: document.getElementById('f-au-desc').value,
     url_audio: document.getElementById('f-au-url').value.trim(),
@@ -5438,6 +5440,7 @@ function editAudio(id) {
   openModal('Modifier ' + a.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" value="${a.titre}"></div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" value="${a.duree}"></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" value="${a.photo||''}" placeholder="binaural.jpg"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-au-icon" value="${a.icon}" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" value="${a.description}"></div>
     <div class="form-field"><label>URL audio (YouTube/Vimeo embed)</label><input type="text" id="f-au-url" value="${a.url_audio||''}"></div>
@@ -5455,7 +5458,8 @@ function updateAudio(id) {
     duree: document.getElementById('f-au-duree').value,
     icon:  document.getElementById('f-au-icon').value,
     description: document.getElementById('f-au-desc').value,
-    url_audio: document.getElementById('f-au-url').value.trim()
+    url_audio: document.getElementById('f-au-url').value.trim(),
+    photo: document.getElementById('f-au-photo') ? document.getElementById('f-au-photo').value.trim() : (a.photo||'')
   });
   if (a.db_id) { _contenuUpdate(a.db_id, 'audio', item, renderAudio); return; }
   Object.assign(a, item);
