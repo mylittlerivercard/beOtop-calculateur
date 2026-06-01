@@ -1955,15 +1955,18 @@ function syncContenus(cb) {
         .then(function(r){ return r.ok ? r.json() : {}; })
         .then(function(d){
           var rows = d[m.ep] || [];
-          if (rows.length) {
-            rows.forEach(function(x){
-              x.db_id = x.id; x._srv = true;
-              if (m.ep === 'posts') { x.texte = x.contenu; x.image_url = x.image; }
-            });
-            DB[m.key] = rows;
-          } else {
-            DB[m.key] = _cloneArr(DEMO_DB[m.key] || []);   // exemples uniquement si table vide
-          }
+          var serverTitles = {};
+          rows.forEach(function(x){
+            x.db_id = x.id; x.id = 100000 + x.id; x._srv = true;   // id front distinct des démos
+            if (m.ep === 'posts') { x.texte = x.contenu; x.image_url = x.image; }
+            serverTitles[(x.titre || '').toLowerCase()] = true;
+          });
+          // Démos toujours affichées (ex. défis de Laurent), sauf si un contenu
+          // serveur du même titre les remplace.
+          var demos = _cloneArr(DEMO_DB[m.key] || []).filter(function(dm){
+            return !serverTitles[(dm.titre || '').toLowerCase()];
+          });
+          DB[m.key] = demos.concat(rows);
           done();
         })
         .catch(done);
