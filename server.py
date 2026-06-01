@@ -12,6 +12,7 @@ import os
 import csv
 import io
 import sys
+import json
 import secrets
 from datetime import datetime, date
 from functools import wraps
@@ -363,6 +364,13 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_user  ON intervenants(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_intervenants_email ON intervenants(email)')
 
+        # Distingue les intervenants de contenu (visibles dans Companion)
+        # des simples apporteurs d'affaire.
+        cur.execute("""
+            ALTER TABLE intervenants
+            ADD COLUMN IF NOT EXISTS est_intervenant BOOLEAN DEFAULT TRUE
+        """)
+
         # Migration douce — colonnes V2 sur clients
         cur.execute("""
             ALTER TABLE clients
@@ -400,6 +408,22 @@ def init_db():
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_intervenant ON retribution_semestres(intervenant_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_retrib_periode     ON retribution_semestres(annee, semestre)')
+
+        # ── Contenus Companion ajoutés par les intervenants ───────────────────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_contenus (
+                id              SERIAL PRIMARY KEY,
+                created_at      TIMESTAMP DEFAULT NOW(),
+                type            TEXT NOT NULL,
+                titre           TEXT NOT NULL,
+                intervenant_id  INTEGER REFERENCES intervenants(id) ON DELETE SET NULL,
+                intervenant_nom TEXT,
+                actif           BOOLEAN DEFAULT TRUE,
+                data            JSONB NOT NULL DEFAULT '{}'
+            )
+        """)
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_contenus_type        ON companion_contenus(type)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_contenus_intervenant ON companion_contenus(intervenant_id)')
 
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
@@ -490,10 +514,13 @@ def logout():
 @login_required
 def me():
     user = get_current_user()
+    inv_id, inv_nom = _resolve_intervenant()
     return jsonify({
         'id': user['id'], 'email': user['email'],
         'nom': user['nom'], 'role': user['role'],
-        'client_id': user['client_id']
+        'client_id': user['client_id'],
+        'intervenant_id': inv_id,
+        'intervenant_nom': inv_nom
     })
 
 @app.route('/api/auth/change-password', methods=['POST'])
@@ -1994,6 +2021,161 @@ def companion_log_play():
     return jsonify({'ok': True, 'id': new_id}), 201
 
 
+# ========== COMPANION — CONTENUS AJOUTÉS PAR LES INTERVENANTS ==========
+
+CONTENU_TYPES = ('audio', 'video', 'exercice', 'defi', 'podcast')
+
+
+def _resolve_intervenant():
+    """Retourne (id, nom) de l'intervenant lié à l'utilisateur connecté, sinon (None, None)."""
+    uid = session.get('user_id')
+    if not uid:
+        return None, None
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, nom FROM intervenants WHERE user_id=%s ORDER BY id LIMIT 1",
+                [uid]
+            )
+            row = cur.fetchone()
+    return (row['id'], row['nom']) if row else (None, None)
+
+
+def _row_to_contenu(row):
+    """Aplati une ligne SQL en objet contenu pour le front."""
+    data = row.get('data') or {}
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except Exception:
+            data = {}
+    item = dict(data)
+    item['db_id']           = row['id']
+    item['type']            = row['type']
+    item['titre']           = row['titre']
+    item['intervenant']     = row.get('intervenant_nom') or item.get('intervenant') or ''
+    item['intervenant_nom'] = row.get('intervenant_nom') or ''
+    item['actif']           = row.get('actif', True)
+    return item
+
+
+@app.route('/api/companion/contenus', methods=['GET'])
+@login_required
+def companion_contenus_list():
+    """Liste les contenus ajoutés par les intervenants (visibles par tous les connectés)."""
+    type_filter = request.args.get('type')
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if type_filter:
+                cur.execute(
+                    "SELECT * FROM companion_contenus WHERE actif=TRUE AND type=%s ORDER BY id",
+                    [type_filter]
+                )
+            else:
+                cur.execute("SELECT * FROM companion_contenus WHERE actif=TRUE ORDER BY id")
+            rows = cur.fetchall()
+    return jsonify({'contenus': [_row_to_contenu(r) for r in rows]})
+
+
+@app.route('/api/companion/contenus', methods=['POST'])
+@intervenant_required
+def companion_contenus_create():
+    """Crée un contenu, rattaché à l'intervenant connecté."""
+    body = request.get_json() or {}
+    ctype = (body.get('type') or '').strip()
+    item  = body.get('item') or {}
+    titre = (item.get('titre') or '').strip()
+    if ctype not in CONTENU_TYPES:
+        return jsonify({'error': 'Type de contenu invalide'}), 400
+    if not titre:
+        return jsonify({'error': 'Titre requis'}), 400
+
+    inv_id, inv_nom = _resolve_intervenant()
+    # Admin sans fiche intervenant : on garde le nom choisi dans le formulaire
+    if not inv_nom:
+        inv_nom = (item.get('intervenant') or '').strip()
+
+    # On ne stocke pas les champs de contrôle dans data
+    clean = {k: v for k, v in item.items() if k not in ('db_id',)}
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO companion_contenus (type, titre, intervenant_id, intervenant_nom, actif, data)
+                VALUES (%s, %s, %s, %s, TRUE, %s::jsonb)
+                RETURNING *
+            """, [ctype, titre, inv_id, inv_nom, json.dumps(clean)])
+            row = cur.fetchone()
+            conn.commit()
+    return jsonify(_row_to_contenu(row)), 201
+
+
+@app.route('/api/companion/contenus/<int:cid>', methods=['PUT'])
+@intervenant_required
+def companion_contenus_update(cid):
+    """Modifie un contenu (propriétaire ou admin)."""
+    body = request.get_json() or {}
+    item = body.get('item') or {}
+    titre = (item.get('titre') or '').strip()
+    if not titre:
+        return jsonify({'error': 'Titre requis'}), 400
+
+    inv_id, _ = _resolve_intervenant()
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT intervenant_id FROM companion_contenus WHERE id=%s", [cid])
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'error': 'Contenu introuvable'}), 404
+            if session.get('role') != 'admin' and row['intervenant_id'] != inv_id:
+                return jsonify({'error': 'Accès refusé'}), 403
+            clean = {k: v for k, v in item.items() if k not in ('db_id',)}
+            actif = item.get('actif', True)
+            cur.execute("""
+                UPDATE companion_contenus
+                SET titre=%s, actif=%s, data=%s::jsonb
+                WHERE id=%s
+                RETURNING *
+            """, [titre, bool(actif), json.dumps(clean), cid])
+            updated = cur.fetchone()
+            conn.commit()
+    return jsonify(_row_to_contenu(updated))
+
+
+@app.route('/api/companion/contenus/<int:cid>', methods=['DELETE'])
+@intervenant_required
+def companion_contenus_delete(cid):
+    """Supprime un contenu (propriétaire ou admin)."""
+    inv_id, _ = _resolve_intervenant()
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT intervenant_id FROM companion_contenus WHERE id=%s", [cid])
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'error': 'Contenu introuvable'}), 404
+            if session.get('role') != 'admin' and row['intervenant_id'] != inv_id:
+                return jsonify({'error': 'Accès refusé'}), 403
+            cur.execute("DELETE FROM companion_contenus WHERE id=%s", [cid])
+            conn.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/companion/intervenants', methods=['GET'])
+@login_required
+def companion_intervenants_list():
+    """Liste publique (lecture) des intervenants actifs, pour Companion."""
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, nom, specialite, bio, photo_url, email
+                FROM intervenants
+                WHERE actif = TRUE AND COALESCE(est_intervenant, TRUE) = TRUE
+                ORDER BY nom
+            """)
+            rows = cur.fetchall()
+    return jsonify({'intervenants': [dict(r) for r in rows]})
+
+
 @app.route('/api/admin/intervenants/stats', methods=['GET'])
 @login_required
 @admin_required
@@ -2323,13 +2505,14 @@ def admin_create_intervenant():
                     return jsonify({'error': 'Email déjà utilisé'}), 409
 
             cur.execute("""
-                INSERT INTO intervenants (user_id, nom, email, specialite, bio, photo_url, taux_contenu, apporteur_affaire, actif)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+                INSERT INTO intervenants (user_id, nom, email, specialite, bio, photo_url, taux_contenu, apporteur_affaire, est_intervenant, actif)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
             """, [user_id, nom, email,
                   data.get('specialite', ''), data.get('bio', ''),
                   data.get('photo_url', ''),
                   float(data.get('taux_contenu', 30)),
                   bool(data.get('apporteur_affaire', False)),
+                  bool(data.get('est_intervenant', True)),
                   True])
             inv_id = cur.fetchone()['id']
             conn.commit()
@@ -2343,18 +2526,23 @@ def admin_create_intervenant():
 @admin_required
 def admin_update_intervenant(inv_id):
     data = request.get_json() or {}
+    # Mise à jour partielle : seuls les champs présents dans la requête sont modifiés.
+    cols = []
+    vals = []
+    for key in ('nom', 'email', 'specialite', 'bio', 'photo_url'):
+        if key in data:
+            cols.append(key + '=%s'); vals.append(data[key])
+    if 'taux_contenu' in data:
+        cols.append('taux_contenu=%s'); vals.append(float(data['taux_contenu']))
+    for key in ('apporteur_affaire', 'actif', 'est_intervenant'):
+        if key in data:
+            cols.append(key + '=%s'); vals.append(bool(data[key]))
+    if not cols:
+        return jsonify({'error': 'Aucun champ à mettre à jour'}), 400
+    vals.append(inv_id)
     with get_db() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                UPDATE intervenants
-                SET nom=%s, email=%s, specialite=%s, bio=%s, photo_url=%s,
-                    taux_contenu=%s, apporteur_affaire=%s, actif=%s
-                WHERE id=%s
-            """, [data.get('nom'), data.get('email'), data.get('specialite', ''),
-                  data.get('bio', ''), data.get('photo_url', ''),
-                  float(data.get('taux_contenu', 30)),
-                  bool(data.get('apporteur_affaire', False)),
-                  bool(data.get('actif', True)), inv_id])
+            cur.execute("UPDATE intervenants SET " + ", ".join(cols) + " WHERE id=%s", vals)
             conn.commit()
     return jsonify({'ok': True})
 
