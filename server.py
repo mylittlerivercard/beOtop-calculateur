@@ -121,6 +121,16 @@ def serialize_row(row):
             d[k] = v.isoformat()
     return d
 
+# Tables de contenus Companion (une table dédiée par type) → colonnes TEXT
+COMPANION_CONTENT_TABLES = {
+    'videos':    ['titre', 'categorie', 'description', 'url_video', 'duree', 'icon', 'intervenant'],
+    'audios':    ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'photo', 'intervenant'],
+    'exercices': ['titre', 'categorie', 'indication', 'description', 'duree', 'icon', 'intervenant'],
+    'defis':     ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'intervenant'],
+    'podcasts':  ['titre', 'categorie', 'description', 'url', 'type_url', 'duree', 'icon', 'intervenant'],
+    'posts':     ['titre', 'categorie', 'contenu', 'image', 'auteur'],
+}
+
 def init_db():
     print(">>> Initialisation de la base de donnees...", file=sys.stderr)
     try:
@@ -458,6 +468,16 @@ def init_db():
             )
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cint_site ON companion_intervenants(site_slug)')
+
+        # ── Tables de contenus Companion (une par type) ───────────────────────
+        for _t, _cols in COMPANION_CONTENT_TABLES.items():
+            _coldef = ', '.join(c + ' TEXT' for c in _cols)
+            cur.execute(
+                "CREATE TABLE IF NOT EXISTS companion_" + _t + " ("
+                "id SERIAL PRIMARY KEY, site_slug TEXT, " + _coldef + ", "
+                "actif BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT NOW())"
+            )
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_c" + _t + "_site ON companion_" + _t + "(site_slug)")
 
         conn.commit()
         cur.execute("SELECT COUNT(*) as n FROM users")
@@ -2291,6 +2311,75 @@ def companion_intervenants_delete(iid):
             cur.execute("DELETE FROM companion_intervenants WHERE id=%s", [iid])
             conn.commit()
     return jsonify({'ok': True})
+
+
+# ========== COMPANION — CONTENUS PAR TYPE (CRUD générique) ==========
+
+def _register_companion_crud(typ, cols):
+    """Enregistre GET/POST/PUT/DELETE /api/companion/<typ> sur companion_<typ>."""
+    table = 'companion_' + typ
+
+    def _list():
+        site = request.args.get('site_slug')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                if site:
+                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE AND "
+                                "(COALESCE(site_slug,'')=%s OR COALESCE(site_slug,'')='') ORDER BY id", [site])
+                else:
+                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE ORDER BY id")
+                rows = cur.fetchall()
+        return jsonify({typ: [serialize_row(r) for r in rows]})
+
+    def _create():
+        data = request.get_json() or {}
+        fields = ['site_slug'] + cols
+        vals = [data.get('site_slug', '') or ''] + [data.get(c, '') or '' for c in cols]
+        ph = ', '.join(['%s'] * len(fields))
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("INSERT INTO " + table + " (" + ', '.join(fields) + ", actif) "
+                            "VALUES (" + ph + ", TRUE) RETURNING *", vals)
+                row = cur.fetchone()
+                conn.commit()
+        return jsonify(serialize_row(row)), 201
+
+    def _update(rid):
+        data = request.get_json() or {}
+        sets = []; vals = []
+        for c in (['site_slug'] + cols):
+            if c in data:
+                sets.append(c + '=%s'); vals.append(data[c])
+        if 'actif' in data:
+            sets.append('actif=%s'); vals.append(bool(data['actif']))
+        if not sets:
+            return jsonify({'error': 'Aucun champ à mettre à jour'}), 400
+        vals.append(rid)
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE " + table + " SET " + ', '.join(sets) + " WHERE id=%s RETURNING *", vals)
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({'error': 'Introuvable'}), 404
+                conn.commit()
+        return jsonify(serialize_row(row))
+
+    def _delete(rid):
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM " + table + " WHERE id=%s", [rid])
+                conn.commit()
+        return jsonify({'ok': True})
+
+    base = 'cc_' + typ
+    app.add_url_rule('/api/companion/' + typ, base + '_list', login_required(_list), methods=['GET'])
+    app.add_url_rule('/api/companion/' + typ, base + '_create', login_required(_create), methods=['POST'])
+    app.add_url_rule('/api/companion/' + typ + '/<int:rid>', base + '_update', login_required(_update), methods=['PUT'])
+    app.add_url_rule('/api/companion/' + typ + '/<int:rid>', base + '_delete', login_required(_delete), methods=['DELETE'])
+
+
+for _typ, _cols in COMPANION_CONTENT_TABLES.items():
+    _register_companion_crud(_typ, _cols)
 
 
 # ========== COMPANION — SONS IMMERSIFS ==========
