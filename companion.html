@@ -1375,6 +1375,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="btn-primary" onclick="openAddPodcast()">+ Podcast</button>
     <button class="btn-primary" onclick="openAddPost()">+ Post interne</button>
     <button class="btn-secondary" onclick="exportDB()">⬇ Exporter JSON</button>
+    <button class="btn-secondary" onclick="document.getElementById('import-json-file').click()">⬆ Importer JSON</button>
+    <input type="file" id="import-json-file" accept="application/json,.json" style="display:none" onchange="importDBFile(this)">
     <button class="btn-primary" onclick="openAddIntervenant()">+ Intervenant</button>
     <button class="btn-ghost" onclick="resetDB()">↺ Réinitialiser démo</button>
   </div>
@@ -5456,6 +5458,70 @@ function exportDB() {
   a.href = url; a.download = 'beotop_companion_db.json';
   a.click(); URL.revokeObjectURL(url);
   showToast('✓ Base exportée');
+}
+
+/* Importe un export JSON et pousse les contenus vers le SERVEUR
+   (audios, vidéos, exercices, défis, podcasts). Ignore les démos non modifiées
+   et les contenus déjà présents côté serveur. */
+function importDBFile(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var data;
+    try { data = JSON.parse(e.target.result); }
+    catch (err) { showToast('⚠ Fichier JSON invalide'); return; }
+    _importContenus(data);
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+async function _importContenus(data) {
+  var typeMap = { audios: 'audio', videos: 'video', exercices: 'exercice', defis: 'defi', podcasts: 'podcast' };
+  var demoByType = {
+    audio: DEMO_DB.audios, video: DEMO_DB.videos, exercice: DEMO_DB.exercices,
+    defi: DEMO_DB.defis, podcast: DEMO_DB.podcasts
+  };
+  // Contenus serveur déjà présents (pour éviter les doublons)
+  var existing = {};
+  try {
+    var r = await fetch('/api/companion/contenus', { credentials: 'include' });
+    var d = await r.json();
+    (d.contenus || []).forEach(function(c){ existing[c.type + '|' + (c.titre || '').toLowerCase()] = true; });
+  } catch (e) {}
+
+  var toImport = [];
+  Object.keys(typeMap).forEach(function(key){
+    var stype = typeMap[key];
+    var demoIds = (demoByType[stype] || []).map(function(x){ return x.id; });
+    (data[key] || []).forEach(function(it){
+      if (!it || it.db_id) return;                               // déjà serveur
+      var hasUrl = it.url_audio || it.url_video || it.url;
+      if (demoIds.indexOf(it.id) !== -1 && !hasUrl) return;      // démo non modifiée
+      if (!it.titre) return;
+      if (existing[stype + '|' + (it.titre || '').toLowerCase()]) return; // doublon
+      var item = JSON.parse(JSON.stringify(it));
+      delete item.id; delete item.db_id;
+      toImport.push({ type: stype, item: item });
+    });
+  });
+
+  if (!toImport.length) { showToast('Aucun nouveau contenu à importer'); return; }
+  showToast('Import de ' + toImport.length + ' contenu(s)…');
+  var ok = 0;
+  for (var i = 0; i < toImport.length; i++) {
+    try {
+      var rr = await fetch('/api/companion/contenus', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toImport[i])
+      });
+      if (rr.ok) ok++;
+    } catch (e) {}
+  }
+  showToast('✓ ' + ok + '/' + toImport.length + ' contenu(s) importé(s) sur le serveur');
+  syncContenus(function(){ renderAdmin(currentAdminTab); });
 }
 
 function resetDB() {
