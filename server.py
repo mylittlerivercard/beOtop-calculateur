@@ -2366,6 +2366,11 @@ def _register_companion_crud(typ, cols):
         data = request.get_json() or {}
         fields = ['site_slug'] + cols
         vals = [data.get('site_slug', '') or ''] + [data.get(c, '') or '' for c in cols]
+        # Rattachement automatique à l'intervenant connecté (sauf admin)
+        if 'intervenant' in cols and session.get('role') != 'admin':
+            _, _inv_nom = _resolve_intervenant()
+            if _inv_nom:
+                vals[fields.index('intervenant')] = _inv_nom
         ph = ', '.join(['%s'] * len(fields))
         with get_db() as conn:
             with conn.cursor() as cur:
