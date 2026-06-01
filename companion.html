@@ -5937,44 +5937,21 @@ function renderDefis() {
   var catsEl = document.getElementById('defis-cats');
   if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentDefiCat, 'filterDefi');
   var list = currentDefiCat === 'all' ? all : all.filter(function(d){ return d.categorie === currentDefiCat; });
-  if (!list.length) { container.innerHTML = ''; return; }
+  if (!list.length) { container.innerHTML = '<div style="padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">Aucun défi dans ce thème.</div>'; return; }
 
-  // Grouper par intervenant pour l'en-tête
-  var intervenants = [];
-  list.forEach(function(d) {
-    var inv = d.intervenant || '(sans intervenant)';
-    if (intervenants.indexOf(inv) === -1) intervenants.push(inv);
-  });
-
-  var html = '';
-  intervenants.forEach(function(inv) {
-    var groupe = list.filter(function(d){ return (d.intervenant||'(sans intervenant)') === inv; });
-    var nbLabel = groupe.length + ' s\u00e9ance' + (groupe.length > 1 ? 's' : '') + ' guid\u00e9e' + (groupe.length > 1 ? 's' : '');
-    // En-tête groupe
-    html += '<div style="margin-top:.4rem;margin-bottom:.6rem">'
-      + '<div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(245,133,90,.06));border:1px solid rgba(0,180,180,.2);border-radius:14px">'
-      + '<div style="font-size:1.6rem">\ud83e\udde9</div>'
-      + '<div><div style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.04em">D\u00c9FIS COGNITIFS</div>'
-      + '<div style="font-size:.65rem;color:var(--text-dim);margin-top:.1rem">Cr\u00e9\u00e9s par <strong style="color:var(--teal);cursor:pointer" onclick="showIntervenantContenus(\'' + String(inv).replace(/'/g, "\\'") + '\')">' + inv + '</strong> \u00b7 Neurosciences appliqu\u00e9es \u00b7 ' + nbLabel + '</div>'
-      + '</div></div></div>';
-    // Cartes
-    groupe.forEach(function(d) {
-      var invPhoto = _getIntervenantPhoto(inv);
-      html += '<div class="card" style="cursor:pointer;padding:1rem;margin-bottom:.6rem" onclick="playDefi(' + d.id + ')">'
-        + '<div style="display:flex;align-items:center;gap:.9rem">'
-        + invPhoto
-        + '<div style="flex:1;min-width:0">'
-        + '<div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">' + d.titre + '</div>'
-        + '<div style="font-size:.62rem;color:var(--text-dim);line-height:1.4">' + (d.description||'') + '</div>'
-        + '</div>'
-        + '<div style="font-size:.6rem;color:var(--teal);font-weight:600;white-space:nowrap;flex-shrink:0">\u25b6 \u00c9couter</div>'
-        + '</div>'
-        + '<div style="font-size:.55rem;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;justify-content:flex-end;gap:.4rem">'
-        + '<span>' + inv + ' \u00b7 D\u00e9fi audio guid\u00e9' + (d.duree ? ' \u00b7 ' + d.duree : '') + '</span>'
-        + '</div></div>';
-    });
-  });
-  container.innerHTML = html;
+  // Grille de cartes côte à côte (même présentation que les audios/vidéos)
+  container.innerHTML = '<div class="audio-grid">' + list.map(function(d) {
+    var thumb = d.photo
+      ? '<img src="/static/' + d.photo + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0">'
+      : '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>';
+    return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
+      + thumb
+      + '<div class="audio-title">' + d.titre + '</div>'
+      + '<div class="audio-meta"><span>' + (d.categorie || 'défi') + '</span><span class="audio-duration">' + (d.duree || '') + '</span></div>'
+      + _invBadge(d.intervenant)
+      + '<button class="audio-play-btn">▶ Écouter</button>'
+      + '</div>';
+  }).join('') + '</div>';
 }
 
 function _getIntervenantPhoto(nom) {
