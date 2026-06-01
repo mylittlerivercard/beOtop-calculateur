@@ -4821,6 +4821,18 @@ function _playAudioFile(audio, url) {
   }, 100);
 }
 
+/* Lecture via iframe embed (SoundCloud, YouTube, Vimeo). */
+function _playAudioIframe(audio, url) {
+  _stopAudioFile();
+  if (typeof stopAllSons === 'function') stopAllSons();
+  if (typeof stopNativeAudio === 'function') stopNativeAudio();
+  openModal(audio.titre,
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
+    + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '')
+    + '<iframe src="' + url + '" width="100%" height="166" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border:0;border-radius:10px"></iframe>'
+  );
+}
+
 function playAudio(id) {
   var audio = DB.audios.find(function(a){ return a.id === id; });
   if (!audio) return;
@@ -4829,23 +4841,14 @@ function playAudio(id) {
   saveDB(DB);
   awardPoints('audio', audio.titre);
 
-  // Fichier audio réel (/static/*.mp3, .ogg, .wav) → lecteur HTML5, jamais le moteur génératif
+  // Routage selon le type de source — JAMAIS le moteur WebAudio génératif
+  // (celui-ci est réservé aux sons immersifs : forêt, pluie, océan…).
   var _u = (audio.url_audio || '').trim();
-  if (_isAudioFileUrl(_u)) { _playAudioFile(audio, _u); return; }
-
-  var durSec = parseDuration(audio.duree);
-  var steps = getAudioSteps(audio);
-  var hasSnd = ['sophrologie','binaural','nsdr','ambiance'].indexOf(audio.categorie) > -1;
-  startNativeSound(audio, durSec);
-  var firstTxt = steps.length ? steps[0].txt : audio.description;
-  var modalBody = '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + ' · ' + audio.duree + '</div>'
-    + buildNativeModal(firstTxt, audio.duree, '--gold', hasSnd);
-  openModal(audio.titre, modalBody);
-  runNativePlayer(steps, durSec, '--gold', function(){ showToast('Session terminee : ' + audio.titre); });
-  setTimeout(function() {
-    var btn = document.getElementById('native-stop-btn');
-    if (btn) btn.onclick = function(){ clearInterval(_nativeSessionTimer); stopNativeAudio(); closeModal(); };
-  }, 100);
+  if (!_u) { showToast('⚠ Aucune source audio — ajoutez une URL ou un fichier'); return; }
+  if (/w\.soundcloud\.com/i.test(_u))                                  { _playAudioIframe(audio, _u); return; } // SoundCloud → iframe
+  if (_isAudioFileUrl(_u))                                             { _playAudioFile(audio, _u);  return; } // /static/ ou .mp3/.ogg/.wav → new Audio()
+  if (/youtube\.com|youtu\.be|player\.vimeo\.com|vimeo\.com/i.test(_u)){ _playAudioIframe(audio, _u); return; } // YouTube/Vimeo → iframe
+  _playAudioFile(audio, _u);                                                                                    // autre URL externe → new Audio()
 }
 
 function parseDuration(str) {
