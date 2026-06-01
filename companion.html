@@ -5947,9 +5947,13 @@ function renderDefis() {
 
   // Grille de cartes côte à côte (même présentation que les audios/vidéos)
   container.innerHTML = '<div class="audio-grid">' + list.map(function(d) {
-    var imgSrc = d.photo ? ('/static/' + d.photo) : _intervenantPhotoUrl(d.intervenant);
+    var invPhoto = _intervenantPhotoUrl(d.intervenant);
+    var imgSrc = d.photo ? ('/static/' + d.photo) : invPhoto;
+    var avatar = (d.photo && invPhoto)
+      ? '<img src="' + invPhoto + '" alt="' + (d.intervenant || '') + '" title="' + (d.intervenant || '') + '" style="position:absolute;bottom:6px;right:6px;width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)" onerror="this.style.display=\'none\'">'
+      : '';
     var thumb = imgSrc
-      ? '<img src="' + imgSrc + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0" onerror="_sugImgErr(this)"><div class="audio-thumb" style="display:none;background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>'
+      ? '<div style="position:relative;border-radius:8px 8px 0 0;overflow:hidden"><img src="' + imgSrc + '" alt="' + d.titre + '" style="width:100%;height:90px;object-fit:cover;display:block" onerror="_sugImgErr(this)"><div class="audio-thumb" style="display:none;background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>' + avatar + '</div>'
       : '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + (d.icon || '🧩') + '</div>';
     return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
       + thumb
