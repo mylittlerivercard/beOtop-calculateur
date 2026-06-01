@@ -36,10 +36,10 @@ def add_headers(response):
         "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
-        "frame-src https://www.youtube.com https://player.vimeo.com; "
+        "frame-src https://www.youtube.com https://player.vimeo.com https://w.soundcloud.com; "
         "img-src 'self' data: https:; "
-        "media-src 'self' https://mylittlerivercard.github.io https://beotop-api.onrender.com blob:; "
-        "connect-src 'self' https://mylittlerivercard.github.io https://api.qrserver.com https://speech.platform.bing.com wss://speech.platform.bing.com; "
+        "media-src 'self' https://mylittlerivercard.github.io https://beotop-api.onrender.com https://soundcloud.com https://*.sndcdn.com blob:; "
+        "connect-src 'self' https://mylittlerivercard.github.io https://api.qrserver.com https://api.soundcloud.com https://speech.platform.bing.com wss://speech.platform.bing.com; "
     )
     return response
 
