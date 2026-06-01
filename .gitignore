@@ -1,2 +1,5 @@
 # Environnement virtuel Python local
 .venv/
+
+# Fichier de token local — ne jamais committer
+Token_beOtop
