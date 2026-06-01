@@ -1529,6 +1529,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
     <!-- ══ DÉFIS COGNITIFS — rendu dynamique depuis DB.defis ══ -->
+    <div id="defis-cats" class="audio-categories" style="grid-column:1/-1"></div>
     <div id="defis-container" style="grid-column:1/-1"></div>
     <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.8rem">🧠 Mémoire</div>
     <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
@@ -3742,11 +3743,7 @@ function renderVideo() {
   var catsEl = document.getElementById('video-cats');
   var grid   = document.getElementById('video-grid');
   if (!catsEl || !grid) return;
-  catsEl.innerHTML = CATS_VIDEO.map(function(c) {
-    var activeCls = c.id === currentVideoCat ? ' active' : '';
-    var onclick = 'filterVideo(\'' + c.id + '\')';
-    return '<div class="cat-pill' + activeCls + '" onclick="' + onclick + '">' + c.label + '</div>';
-  }).join('');
+  catsEl.innerHTML = _buildCatPills(DB.videos, currentVideoCat, 'filterVideo');
   var filtered = currentVideoCat === 'all' ? DB.videos : DB.videos.filter(function(v){ return v.categorie === currentVideoCat; });
   if (!filtered.length) {
     grid.innerHTML = "<div style=\"grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)\">Aucune video — Ajoutez depuis Administration</div>";
@@ -4492,6 +4489,22 @@ function renderCCStats() {
    AUDIO
 ════════════════════════════════════════════ */
 var currentAudio = null, playerTimer = null, playerSec = 0, playerTotalSec = 0, playerRunning = false;
+/* Construit dynamiquement les filtres de thème (catégories réellement présentes). */
+function _catLabel(c){ return (typeof c === 'string' && c.length) ? c.charAt(0).toUpperCase() + c.slice(1) : (c || ''); }
+function _buildCatPills(arr, current, filterFn) {
+  var cats = [];
+  (arr || []).forEach(function(it){
+    var c = it && it.categorie;
+    if (c && cats.indexOf(c) === -1) cats.push(c);
+  });
+  cats.sort();
+  var html = '<div class="cat-pill' + (current === 'all' ? ' active' : '') + '" onclick="' + filterFn + '(\'all\')">Tout</div>';
+  cats.forEach(function(c){
+    html += '<div class="cat-pill' + (current === c ? ' active' : '') + '" onclick="' + filterFn + '(\'' + c + '\')">' + _catLabel(c) + '</div>';
+  });
+  return html;
+}
+
 var CATS_AUDIO = [
   { id:'all', label:'Tout' }, { id:'sophrologie', label:'Sophrologie' },
   { id:'binaural', label:'Binaural' }, { id:'nsdr', label:'NSDR' },
@@ -4501,9 +4514,7 @@ var currentAudioCat = 'all';
 
 function renderAudio() {
   const catsEl = document.getElementById('audio-cats');
-  catsEl.innerHTML = CATS_AUDIO.map(c =>
-    `<div class="cat-pill${c.id === currentAudioCat ? ' active':''}" onclick="filterAudio('${c.id}')">${c.label}</div>`
-  ).join('');
+  catsEl.innerHTML = _buildCatPills(DB.audios, currentAudioCat, 'filterAudio');
 
   const filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(a => a.categorie === currentAudioCat);
   const grid = document.getElementById('audio-grid');
@@ -4588,9 +4599,7 @@ var currentExCat = 'all';
 
 function renderExercices() {
   const catsEl = document.getElementById('ex-cats');
-  catsEl.innerHTML = CATS_EX.map(c =>
-    `<div class="cat-pill${c.id === currentExCat ? ' active':''}" onclick="filterEx('${c.id}')">${c.label}</div>`
-  ).join('');
+  catsEl.innerHTML = _buildCatPills(DB.exercices, currentExCat, 'filterEx');
 
   const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
   document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
@@ -5734,10 +5743,16 @@ function getCatValue(selectId, inputId) {
 var _defiAudio = null;
 
 /* Rendu dynamique du bloc défis dans view-jeux */
+var currentDefiCat = 'all';
+function filterDefi(cat) { currentDefiCat = cat; renderDefis(); }
+
 function renderDefis() {
   var container = document.getElementById('defis-container');
   if (!container) return;
-  var list = (DB.defis || []).filter(function(d){ return d.actif !== false; });
+  var all = (DB.defis || []).filter(function(d){ return d.actif !== false; });
+  var catsEl = document.getElementById('defis-cats');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentDefiCat, 'filterDefi');
+  var list = currentDefiCat === 'all' ? all : all.filter(function(d){ return d.categorie === currentDefiCat; });
   if (!list.length) { container.innerHTML = ''; return; }
 
   // Grouper par intervenant pour l'en-tête
@@ -6158,10 +6173,16 @@ function openIntervenant(id) {
 /* ══════════════════════════════════════════
    PODCASTS
 ══════════════════════════════════════════ */
+var currentPodcastCat = 'all';
+function filterPodcast(cat) { currentPodcastCat = cat; renderPodcasts(); }
+
 function renderPodcasts() {
   var grid = document.getElementById('podcasts-grid');
   if (!grid) return;
-  var list = (DB.podcasts||[]).filter(function(p){ return p.actif !== false; });
+  var all = (DB.podcasts||[]).filter(function(p){ return p.actif !== false; });
+  var catsEl = document.getElementById('podcasts-cats');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentPodcastCat, 'filterPodcast');
+  var list = currentPodcastCat === 'all' ? all : all.filter(function(p){ return p.categorie === currentPodcastCat; });
   if (!list.length) {
     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucun podcast disponible.<br><span style="font-size:.65rem">Ajoutez des podcasts depuis Administration.</span></div>';
     return;
