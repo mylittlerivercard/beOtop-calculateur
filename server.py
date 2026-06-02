@@ -126,7 +126,7 @@ COMPANION_CONTENT_TABLES = {
     'videos':    ['titre', 'categorie', 'description', 'url_video', 'duree', 'icon', 'intervenant'],
     'audios':    ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'photo', 'intervenant'],
     'exercices': ['titre', 'categorie', 'indication', 'description', 'duree', 'icon', 'intervenant'],
-    'defis':     ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'intervenant'],
+    'defis':     ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'photo', 'intervenant'],
     'podcasts':  ['titre', 'categorie', 'description', 'url', 'type_url', 'duree', 'icon', 'intervenant'],
     'posts':     ['titre', 'categorie', 'contenu', 'image', 'auteur'],
 }
@@ -479,6 +479,9 @@ def init_db():
                 "id SERIAL PRIMARY KEY, site_slug TEXT, " + _coldef + ", "
                 "actif BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT NOW())"
             )
+            # Auto-réparation : ajoute toute colonne manquante aux tables existantes
+            for _c in _cols:
+                cur.execute("ALTER TABLE companion_" + _t + " ADD COLUMN IF NOT EXISTS " + _c + " TEXT")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_c" + _t + "_site ON companion_" + _t + "(site_slug)")
 
         # ── Migration unique : ancienne table JSONB companion_contenus → tables par type ──
