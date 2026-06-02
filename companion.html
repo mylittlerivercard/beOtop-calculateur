@@ -1998,6 +1998,8 @@ function syncIntervenants(cb) {
           photo:       s.photo || ex.photo || '',
           photo_url:   s.photo_url || ex.photo_url || '',
           titre:       s.titre || ex.titre || 'Intervenant beOtop',
+          site_url:    s.site_url || ex.site_url || '',
+          linkedin_url: s.linkedin_url || ex.linkedin_url || '',
           tags:        (s.tags && s.tags.length) ? s.tags : (ex.tags || []),
           photo_initiales: ex.photo_initiales || initiales,
           photo_couleur:   ex.photo_couleur || '#00b4b4',
@@ -6296,6 +6298,8 @@ function saveIntervenant(existingId) {
     bio: document.getElementById('f-inv-bio').value.trim(),
     photo: photoFile,
     photo_url: photoFile ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + photoFile) : '',
+    site_url: (document.getElementById('f-inv-site') || {}).value ? document.getElementById('f-inv-site').value.trim() : '',
+    linkedin_url: (document.getElementById('f-inv-linkedin') || {}).value ? document.getElementById('f-inv-linkedin').value.trim() : '',
     tags: tags
   };
   var inv = (DB.intervenants || []).find(function(i){ return i.id === existingId; });
@@ -6440,6 +6444,7 @@ function openIntervenant(id) {
     + '<div><div style="font-size:1.05rem;font-weight:600;color:var(--text)">' + inv.nom + '</div>'
     + '<div style="font-size:.7rem;color:var(--teal);margin-top:.2rem">' + (inv.titre||'') + '</div></div>'
     + '</div>'
+    + (inv.specialite ? '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:1rem;font-weight:500">' + inv.specialite + '</div>' : '')
     + (inv.bio ? '<div style="font-size:.75rem;color:var(--text);line-height:1.75;margin-bottom:1rem;padding:1rem;background:var(--surface2);border-radius:10px">' + inv.bio + '</div>' : '')
     + (tags ? '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">' + tags + '</div>' : '')
     + contenuHtml

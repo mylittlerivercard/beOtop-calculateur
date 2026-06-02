@@ -468,6 +468,8 @@ def init_db():
             )
         """)
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cint_site ON companion_intervenants(site_slug)')
+        cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS site_url TEXT")
+        cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS linkedin_url TEXT")
 
         # ── Tables de contenus Companion (une par type) ───────────────────────
         for _t, _cols in COMPANION_CONTENT_TABLES.items():
@@ -2259,6 +2261,7 @@ def _cint_to_dict(row):
         'nom': row.get('nom'), 'specialite': row.get('specialite'),
         'bio': row.get('bio'), 'photo': row.get('photo'),
         'photo_url': row.get('photo_url'), 'titre': row.get('titre'),
+        'site_url': row.get('site_url'), 'linkedin_url': row.get('linkedin_url'),
         'tags': tags, 'actif': row.get('actif', True)
     }
 
@@ -2299,11 +2302,12 @@ def companion_intervenants_create():
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO companion_intervenants
-                    (site_slug, nom, specialite, bio, photo, photo_url, titre, tags, actif)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,TRUE) RETURNING *
+                    (site_slug, nom, specialite, bio, photo, photo_url, titre, site_url, linkedin_url, tags, actif)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,TRUE) RETURNING *
             """, [data.get('site_slug', '') or '', nom, data.get('specialite', '') or '',
                   data.get('bio', '') or '', data.get('photo', '') or '', data.get('photo_url', '') or '',
-                  data.get('titre', '') or '', _cint_tags_str(data.get('tags'))])
+                  data.get('titre', '') or '', data.get('site_url', '') or '', data.get('linkedin_url', '') or '',
+                  _cint_tags_str(data.get('tags'))])
             row = cur.fetchone()
             conn.commit()
     return jsonify(_cint_to_dict(row)), 201
@@ -2314,7 +2318,7 @@ def companion_intervenants_create():
 def companion_intervenants_update(iid):
     data = request.get_json() or {}
     cols = []; vals = []
-    for key in ('site_slug', 'nom', 'specialite', 'bio', 'photo', 'photo_url', 'titre'):
+    for key in ('site_slug', 'nom', 'specialite', 'bio', 'photo', 'photo_url', 'titre', 'site_url', 'linkedin_url'):
         if key in data:
             cols.append(key + '=%s'); vals.append(data[key])
     if 'tags' in data:
