@@ -2873,20 +2873,45 @@ function renderStreakCard(sc) {
   if (!wrap) return;
   if (sc.streak === 0 && sc.prevStreak === 0) { wrap.innerHTML = ''; return; }
 
+  // Paliers / libellés / récompenses — calcul d'affichage local (n'altère pas calcStreakInfo)
+  var MS = [3, 7, 14, 30];
+  var MS_LABEL  = {3:'le premier palier', 7:'Première semaine', 14:'Deux semaines', 30:'Premier mois'};
+  var MS_REWARD = {3:'première constellation allumée', 7:'badge Première semaine',
+                   14:'accès contenu exclusif', 30:'badge Premier mois'};
+  var nextMs = null, prevMs = 0;
+  for (var k = 0; k < MS.length; k++) {
+    if (MS[k] <= sc.streak) prevMs = MS[k];
+    if (sc.streak < MS[k] && nextMs === null) nextMs = MS[k];
+  }
+
   // Contenu principal selon l'état
   var icon, title, sub;
   if (sc.state === 'safe') {
-    icon = '🔥'; title = 'Jours consécutifs'; sub = "Dernière activité aujourd'hui";
+    icon = '🔥'; title = 'Jours consécutifs'; sub = 'Continuez, vous y êtes presque !';
   } else if (sc.state === 'danger') {
-    icon = '🔥'; title = 'Série en jeu'; sub = "Aucune activité aujourd'hui";
+    icon = '🔥'; title = 'Série en jeu'; sub = 'Une séance ce soir protège votre série';
   } else if (sc.state === 'milestone') {
     icon = '⭐'; title = sc.streak + ' jours — ' + sc.milestoneLabel;
-    sub  = 'Prochain palier : ' + sc.milestoneNext + ' jours';
+    sub  = 'Vous avez construit une vraie habitude';
   } else { // new
     icon = '✦'; title = 'Nouveau départ';
-    sub  = (sc.prevStreak >= 3)
-      ? 'Votre précédente série : ' + sc.prevStreak + ' jours'
-      : 'Commencez votre première série';
+    sub  = 'Chaque jour compte, même celui-ci';
+  }
+
+  // Ligne de progression vers le prochain palier (sous le titre)
+  var progressHtml = '';
+  if (nextMs !== null) {
+    var remaining = nextMs - sc.streak;
+    var pct = Math.max(0, Math.min(100, Math.round((sc.streak - prevMs) / (nextMs - prevMs) * 100)));
+    progressHtml =
+        '<div style="margin-top:.45rem">'
+      +   '<div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.3rem">'
+      +     'Plus que ' + remaining + ' jour' + (remaining > 1 ? 's' : '') + ' pour ' + _streakEsc(MS_LABEL[nextMs])
+      +   '</div>'
+      +   '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">'
+      +     '<div style="height:100%;width:' + pct + '%;background:#1D9E75;border-radius:3px;transition:width .8s ease"></div>'
+      +   '</div>'
+      + '</div>';
   }
 
   // Bannière contextuelle (hors card)
@@ -2905,8 +2930,8 @@ function renderStreakCard(sc) {
       + '</span></div>';
   }
 
-  // Chaîne de 14 jours
-  var dotIcon = {done:'✓', safe:'✓', milestone:'✓', danger:'⏰', miss:'×', pending:''};
+  // Chaîne de 14 jours — jours manqués : cercle vide (plus de croix)
+  var dotIcon = {done:'✓', safe:'✓', milestone:'✓', danger:'⏰', miss:'', pending:''};
   var chainHtml = (sc.chain || []).map(function(c) {
     return '<div class="streak-day">'
       + '<div class="streak-dot sd-' + c.state + '">' + (dotIcon[c.state] || '') + '</div>'
@@ -2914,14 +2939,23 @@ function renderStreakCard(sc) {
       + '</div>';
   }).join('');
 
-  // Footer : meilleure série + joker éventuel
+  // Footer : meilleure série (uniquement si > série actuelle) + joker éventuel
+  var bestHtml = (sc.bestStreak > sc.streak)
+    ? '<span class="streak-best">Meilleure série : <strong>'
+      + sc.bestStreak + ' jour' + (sc.bestStreak > 1 ? 's' : '') + '</strong></span>'
+    : '';
   var joker = sc.showJoker
     ? '<span class="streak-joker-pill">🛡 Série protégée automatiquement · 1 joker restant ce mois</span>'
     : '';
-  var footer = '<div class="streak-footer">'
-    + '<span class="streak-best">Meilleure série : <strong>'
-    + sc.bestStreak + ' jour' + (sc.bestStreak > 1 ? 's' : '') + '</strong></span>'
-    + joker + '</div>';
+  var footer = (bestHtml || joker)
+    ? '<div class="streak-footer">' + bestHtml + joker + '</div>'
+    : '';
+
+  // Ligne récompense discrète (bas de carte)
+  var rewardHtml = (nextMs !== null && MS_REWARD[nextMs])
+    ? '<div style="font-size:11px;color:var(--text-muted);margin-top:.6rem">'
+      + 'À ' + nextMs + ' jours : ' + _streakEsc(MS_REWARD[nextMs]) + '</div>'
+    : '';
 
   wrap.innerHTML = banner
     + '<div class="card streak-card streak-' + sc.state + '">'
@@ -2932,11 +2966,13 @@ function renderStreakCard(sc) {
     +     '</div>'
     +     '<div class="streak-right">'
     +       '<div class="streak-title">' + _streakEsc(title) + '</div>'
-    +       '<div class="streak-sub">' + _streakEsc(sub) + '</div>'
+    +       progressHtml
+    +       '<div class="streak-sub" style="margin-top:.35rem">' + _streakEsc(sub) + '</div>'
     +     '</div>'
     +   '</div>'
     +   '<div class="streak-chain-14" id="streak-chain">' + chainHtml + '</div>'
     +   footer
+    +   rewardHtml
     + '</div>';
 }
 
