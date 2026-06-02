@@ -1753,7 +1753,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
       <div id="pg-bar" style="height:100%;background:linear-gradient(90deg,var(--gold-border),var(--gold));border-radius:4px;width:0%;transition:width 1s ease"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:.58rem;color:var(--text-muted)">
+    <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:12px;color:#555">
       <span id="pg-pts-niveau">0 pts dans ce niveau</span>
       <span id="pg-pts-restants"></span>
     </div>
@@ -1786,15 +1786,15 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="grid-3" style="gap:.7rem;margin-bottom:1rem">
     <div class="card" style="text-align:center;padding:1rem">
       <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-semaine">—</div>
-      <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Cette semaine</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Cette semaine</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
       <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-mois">—</div>
-      <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Ce mois</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Ce mois</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
       <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-streak">—</div>
-      <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Jours consécutifs</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Jours consécutifs</div>
     </div>
   </div>
 
@@ -1806,15 +1806,15 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div id="ciel-empty" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#6b7390;font-size:.78rem;text-align:center;pointer-events:none;padding:0 1rem">Votre ciel est encore vierge — chaque séance fera naître une étoile.</div>
       <div id="ciel-tip" style="display:none;position:absolute;background:rgba(10,8,28,0.96);border:1px solid rgba(200,180,255,0.18);border-radius:8px;padding:6px 10px;font-size:11px;color:#ece8ff;pointer-events:none;transform:translate(-50%,-115%);white-space:nowrap;z-index:5"></div>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:.45rem 1rem;margin-top:.7rem;font-size:.6rem;color:var(--text-muted)">
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#7c6fff"></span>Audio</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#ff6b8a"></span>Vidéo</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#00c9a0"></span>Jeux</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#f0b830"></span>Check-in</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#60c8ff"></span>Cohérence</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#ff9f50"></span>Exercice</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#c8f060"></span>Sons</span>
-      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#ff4d4d"></span>Podcast</span>
+    <div style="display:flex;flex-wrap:wrap;gap:.45rem 1rem;margin-top:.7rem;font-size:11px;opacity:1;color:var(--text)">
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#7c6fff"></span>Audio</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#ff6b8a"></span>Vidéo</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#00c9a0"></span>Jeux</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#f0b830"></span>Check-in</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#60c8ff"></span>Cohérence</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#ff9f50"></span>Exercice</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#c8f060"></span>Sons</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:#ff4d4d"></span>Podcast</span>
     </div>
   </div>
   <script>
@@ -1930,7 +1930,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       ctx.font="10px 'DM Sans',sans-serif"; ctx.textAlign="center";
       var R=Math.min(W,H)*0.30;
       Object.keys(CONST).forEach(function(type){
-        var c=CONST[type]; ctx.fillStyle=c.couleur+"88";
+        var c=CONST[type]; ctx.fillStyle="rgba(255,255,255,0.65)";
         ctx.fillText(c.nom, c.cx*W, c.cy*H - R*0.5 - 12);
       });
       for(var s=0;s<stars.length;s++){
@@ -3750,11 +3750,21 @@ function drawCheckinChart(canvas, data, periode) {
 
   ctx.clearRect(0, 0, W, H);
 
+  // Échelle Y dynamique — calculée depuis les données réelles pour laisser respirer les courbes
+  var _yKeys = ['energie', 'stress', 'focus'];
+  var _yVals = [];
+  data.forEach(function(d){ _yKeys.forEach(function(k){ var v = d[k]; if (typeof v === 'number' && !isNaN(v)) _yVals.push(v); }); });
+  var yMin = _yVals.length ? Math.max(0, Math.floor(Math.min.apply(null, _yVals)) - 1) : 0;
+  var yMax = _yVals.length ? Math.min(10, Math.ceil(Math.max.apply(null, _yVals)) + 1) : 10;
+  if (yMax - yMin < 1) yMax = Math.min(10, yMin + 1);
+  var ySpan = yMax - yMin;
+
   // Grille horizontale
   ctx.strokeStyle = 'rgba(0,0,0,.07)';
   ctx.lineWidth = 1;
-  for (var v = 1; v <= 10; v += 2) {
-    var y = PAD.top + cH - ((v-1)/9)*cH;
+  var _yStep = ySpan <= 6 ? 1 : 2;
+  for (var v = yMin; v <= yMax; v += _yStep) {
+    var y = PAD.top + cH - ((v - yMin)/ySpan)*cH;
     ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left+cW, y); ctx.stroke();
     ctx.fillStyle = '#3a5858'; ctx.font = '500 10px DM Sans,sans-serif'; ctx.textAlign = 'right';
     ctx.fillText(v, PAD.left-5, y+4);
@@ -3777,7 +3787,7 @@ function drawCheckinChart(canvas, data, periode) {
 
     data.forEach(function(d, i) {
       var x = PAD.left + (n > 1 ? i/(n-1) : 0.5) * cW;
-      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      var y = PAD.top + cH - ((d[s.key] - yMin)/ySpan)*cH;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
@@ -3789,7 +3799,7 @@ function drawCheckinChart(canvas, data, periode) {
     ctx.beginPath();
     data.forEach(function(d, i) {
       var x = PAD.left + (n > 1 ? i/(n-1) : 0.5) * cW;
-      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      var y = PAD.top + cH - ((d[s.key] - yMin)/ySpan)*cH;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.lineTo(PAD.left + cW, PAD.top+cH);
@@ -3800,7 +3810,7 @@ function drawCheckinChart(canvas, data, periode) {
     // Points
     data.forEach(function(d, i) {
       var x = PAD.left + (n > 1 ? i/(n-1) : 0.5) * cW;
-      var y = PAD.top + cH - ((d[s.key]-1)/9)*cH;
+      var y = PAD.top + cH - ((d[s.key] - yMin)/ySpan)*cH;
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI*2);
       ctx.fillStyle = '#fff'; ctx.fill();
@@ -3924,9 +3934,15 @@ function renderProgresData(d) {
   setEl('pg-semaine',       d.semaine || 0);
   setEl('pg-mois',          d.mois || 0);
   setEl('pg-streak',        (d.streak || 0) + (d.streak===1?' jour':' jours'));
-  // Barre
+  // Barre — points DANS le niveau actuel / total requis POUR ce niveau (pas le total global)
   var bar = document.getElementById('pg-bar');
-  if (bar) bar.style.width = (d.pct_niveau || 0) + '%';
+  var _dansNiv = (d.total || 0) - (niv.seuil || 0);
+  var _versNiv = (d.next_niveau && typeof d.next_niveau.seuil === 'number')
+    ? d.next_niveau.seuil - (niv.seuil || 0) : null;
+  var _pctNiv = (_versNiv && _versNiv > 0)
+    ? Math.min(Math.max(Math.round(_dansNiv / _versNiv * 100), 0), 100)
+    : (d.pct_niveau || 0);
+  if (bar) bar.style.width = _pctNiv + '%';
   // Label prochain niveau
   var nextNiv = d.next_niveau;
   var nextEl = document.getElementById('pg-next-label');
