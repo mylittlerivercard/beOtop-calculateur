@@ -2959,7 +2959,6 @@ def intervenant_stats():
             _invrow = cur.fetchone()
             inv = serialize_row(_invrow) if _invrow else None
             if not inv:
-                print(">>> [DBG stats] 404 — fiche intervenant introuvable par id", file=sys.stderr)
                 return jsonify({'error': 'Intervenant introuvable'}), 404
 
             # Clics par contenu sur la période
