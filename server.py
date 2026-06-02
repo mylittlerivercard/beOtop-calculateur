@@ -2923,12 +2923,10 @@ def intervenant_stats():
     """
     user_id = session.get('user_id')
     role    = session.get('role')
-    print(f">>> [DBG stats] user_id={user_id} role={role} args={dict(request.args)}", file=sys.stderr)
 
     # Admin peut consulter n'importe quel intervenant
     if role == 'admin' and request.args.get('intervenant_id'):
         inv_id = int(request.args.get('intervenant_id'))
-        print(f">>> [DBG stats] admin → inv_id={inv_id}", file=sys.stderr)
     else:
         # Trouver l'intervenant lié au user connecté (par user_id, sinon par email)
         with get_db() as conn:
@@ -2936,30 +2934,23 @@ def intervenant_stats():
                 cur.execute("SELECT email FROM users WHERE id=%s", [user_id])
                 _u = cur.fetchone()
                 _email = (_u['email'] if _u else '') or ''
-                print(f">>> [DBG stats] email du user = {_email!r}", file=sys.stderr)
                 cur.execute("""
-                    SELECT id, nom, user_id, actif, email FROM intervenants
+                    SELECT id FROM intervenants
                     WHERE user_id = %s
                        OR (COALESCE(email,'') <> '' AND LOWER(email) = LOWER(%s))
                     ORDER BY (user_id = %s) DESC, actif DESC, id
                     LIMIT 1
                 """, [user_id, _email, user_id])
                 row = cur.fetchone()
-                print(f">>> [DBG stats] résolution intervenant = {dict(row) if row else None}", file=sys.stderr)
-                cur.execute("SELECT id, nom, user_id, actif, email FROM intervenants WHERE user_id=%s OR LOWER(COALESCE(email,''))=LOWER(%s)", [user_id, _email])
-                print(f">>> [DBG stats] candidats (user_id OR email) = {[dict(r) for r in cur.fetchall()]}", file=sys.stderr)
         if not row:
-            print(">>> [DBG stats] 404 — aucun intervenant résolu", file=sys.stderr)
-            return jsonify({'error': 'Intervenant introuvable'}), 404
+            return jsonify({'error': 'Intervenant introuvable (connectez-vous avec le compte intervenant)'}), 404
         inv_id = row['id']
-        print(f">>> [DBG stats] inv_id retenu = {inv_id}", file=sys.stderr)
 
     # Période : semestre en cours par défaut
     today = date.today()
     annee    = int(request.args.get('annee',    today.year))
     semestre = int(request.args.get('semestre', 1 if today.month <= 6 else 2))
     sem_clause = _get_semestre_clause(annee, semestre)
-    print(f">>> [DBG stats] période annee={annee} semestre={semestre} | inv_id={inv_id}", file=sys.stderr)
 
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -2967,7 +2958,6 @@ def intervenant_stats():
             cur.execute("SELECT * FROM intervenants WHERE id=%s", [inv_id])
             _invrow = cur.fetchone()
             inv = serialize_row(_invrow) if _invrow else None
-            print(f">>> [DBG stats] fiche intervenant id={inv_id} → {inv.get('nom') if inv else None}", file=sys.stderr)
             if not inv:
                 print(">>> [DBG stats] 404 — fiche intervenant introuvable par id", file=sys.stderr)
                 return jsonify({'error': 'Intervenant introuvable'}), 404
