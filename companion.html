@@ -1157,7 +1157,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <div class="hero-chips">
           <button id="hero-cta-moment" onclick="switchView('audio')" style="display:none;align-items:center;gap:6px;background:#f0957a;color:#4A1B0C;border:1px solid #f0957a;border-radius:20px;padding:7px 15px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit"></button>
           <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
-          <span id="hero-social" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.40)"></span>
+          <span id="hero-social" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.70)"></span>
         </div>
       </div>
       <div class="hero-right" id="v3-hero-right">
@@ -2536,7 +2536,7 @@ function renderDashboard() {
     var _cta = null;
     if (_h >= 5 && _h < 12)       _cta = { icon: "ti-heart-rate",  text: "Cohérence cardiaque · 5 min" };
     else if (_h >= 12 && _h < 17) _cta = { icon: "ti-headphones",  text: "Micro-pause · Sons immersifs" };
-    else if (_h >= 17 && _h < 22) _cta = { icon: "ti-player-play", text: "Relaxation guidée · 7 min" };
+    else if (_h >= 17 && _h < 22) _cta = { icon: "ti-player-play", text: "Commencer · Relaxation 7 min" };
     if (_cta) {
       _ctaEl.innerHTML = '<i class="ti ' + _cta.icon + '"></i><span>' + _cta.text + "</span>";
       _ctaEl.style.display = "inline-flex";
@@ -2559,7 +2559,7 @@ function renderDashboard() {
       }
       _social = _obj.n;
     } catch (e) { _social = 4; }
-    _socEl.innerHTML = '<i class="ti ti-users" style="font-size:12px"></i><span>· ' + _social
+    _socEl.innerHTML = '<span style="margin-right:3px">•</span><i class="ti ti-users" style="font-size:12px"></i><span>' + _social
       + " collègue" + (_social > 1 ? "s" : "") + " actif" + (_social > 1 ? "s" : "") + " aujourd'hui</span>";
     _socEl.style.display = _social > 0 ? "inline-flex" : "none";
   }
@@ -2584,20 +2584,6 @@ function renderDashboard() {
   };
   var _sc = calcStreakInfo(_streakD);
   renderStreakCard(_sc);
-
-  // Streak intégré dans le sous-titre (remplace le badge standalone retiré)
-  var _subEl = document.getElementById('dash-greeting-sub');
-  if (_subEl) {
-    var _streakSuffix = '';
-    if (_sc.state === 'danger') {
-      _streakSuffix = ' · <span style="color:#FAC775">🔥 Série en jeu ce soir</span>';
-    } else if (_sc.streak >= 2) {
-      _streakSuffix = ' · 🔥 ' + _sc.streak + ' jours de suite';
-    }
-    var _subBase = _greetSub;
-    if (_streakSuffix) _subBase = _subBase.replace(/\s*[.?!]+\s*$/, '');
-    _subEl.innerHTML = _streakEsc(_subBase) + _streakSuffix;
-  }
 
   // Récupérer l'état réel des ateliers depuis l'API PIR, puis afficher
   _v3RefreshAteliers(function() {
@@ -2671,7 +2657,7 @@ function _v3Ticker() {
   if (!track) return;
   var items = [];
   DB.ateliers.forEach(function(a) {
-    if (a.statut === 'libre')    items.push({icon:a.icon, text:a.nom+' — disponible', cls:'libre'});
+    if (a.statut === 'libre')    items.push({icon:a.icon, text:a.nom, cls:'libre'});
     else if (a.statut==='occupe') items.push({icon:a.icon, text:a.nom+' — occupé',    cls:'occupe'});
     else                          items.push({icon:a.icon, text:a.nom+' — bientôt libre', cls:''});
   });
@@ -2937,10 +2923,10 @@ function renderStreakCard(sc) {
   if (sc.streak === 0 && sc.prevStreak === 0) { wrap.innerHTML = ''; return; }
 
   // Paliers / libellés / récompenses — calcul d'affichage local (n'altère pas calcStreakInfo)
-  var MS = [3, 7, 14, 30];
-  var MS_LABEL  = {3:'3 jours de suite', 7:'votre première semaine', 14:'deux semaines', 30:'un mois'};
-  var MS_REWARD = {3:'badge Premiers pas débloqué', 7:'badge Première semaine débloqué',
-                   14:'badge Régularité débloqué', 30:'badge Premier mois débloqué'};
+  var MS = [7, 14, 30];
+  var MS_LABEL  = {7:'votre première semaine complète', 14:'deux semaines', 30:'un mois'};
+  var MS_REWARD = {7:'votre première semaine complète.', 14:'deux semaines de régularité.',
+                   30:'un mois complet.'};
   var nextMs = null, prevMs = 0;
   for (var k = 0; k < MS.length; k++) {
     if (MS[k] <= sc.streak) prevMs = MS[k];
@@ -2969,7 +2955,7 @@ function renderStreakCard(sc) {
     progressHtml =
         '<div style="margin-top:.45rem">'
       +   '<div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.3rem">'
-      +     'Plus que ' + remaining + ' jour' + (remaining > 1 ? 's' : '') + ' pour ' + _streakEsc(MS_LABEL[nextMs])
+      +     'J-' + remaining + ' avant ' + _streakEsc(MS_LABEL[nextMs])
       +   '</div>'
       +   '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">'
       +     '<div style="height:100%;width:' + pct + '%;background:#1D9E75;border-radius:3px;transition:width .8s ease"></div>'
@@ -3024,8 +3010,8 @@ function renderStreakCard(sc) {
 
   // Ligne récompense discrète (bas de carte)
   var rewardHtml = (nextMs !== null && MS_REWARD[nextMs])
-    ? '<div style="font-size:11px;color:var(--text-muted);margin-top:.6rem">'
-      + 'À ' + nextMs + ' jours → ' + _streakEsc(MS_REWARD[nextMs]) + '</div>'
+    ? '<div style="font-size:12px;color:var(--text-muted);margin-top:.6rem">'
+      + 'À ' + nextMs + ' jours : ' + _streakEsc(MS_REWARD[nextMs]) + '</div>'
     : '';
 
   wrap.innerHTML = banner
