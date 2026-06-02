@@ -1961,10 +1961,11 @@ function syncContenus(cb) {
             if (m.ep === 'posts') { x.texte = x.contenu; x.image_url = x.image; }
             serverTitles[(x.titre || '').toLowerCase()] = true;
           });
-          // Démos toujours affichées (ex. défis de Laurent), sauf si un contenu
-          // serveur du même titre les remplace.
+          // Démos affichées, sauf si : remplacées par un contenu serveur de même
+          // titre, OU supprimées par l'utilisateur (registre _deletedDemos).
+          var del = (DB._deletedDemos && DB._deletedDemos[m.key]) || [];
           var demos = _cloneArr(DEMO_DB[m.key] || []).filter(function(dm){
-            return !serverTitles[(dm.titre || '').toLowerCase()];
+            return !serverTitles[(dm.titre || '').toLowerCase()] && del.indexOf(dm.id) === -1;
           });
           DB[m.key] = demos.concat(rows);
           done();
