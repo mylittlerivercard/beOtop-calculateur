@@ -1690,6 +1690,197 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     </div>
   </div>
 
+  <!-- ═══ MON CIEL BIEN-ÊTRE ═══ -->
+  <div class="card" style="margin-bottom:1rem;padding:1.2rem 1.3rem">
+    <div style="font-size:.6rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.9rem">Mon ciel bien-être</div>
+    <div id="ciel-wrap" style="position:relative;width:100%;height:520px;background:#060912;border-radius:12px;overflow:hidden">
+      <canvas id="ciel-canvas" style="display:block;width:100%;height:100%"></canvas>
+      <div id="ciel-empty" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#6b7390;font-size:.78rem;text-align:center;pointer-events:none;padding:0 1rem">Votre ciel est encore vierge — chaque séance fera naître une étoile.</div>
+      <div id="ciel-tip" style="display:none;position:absolute;background:rgba(10,8,28,0.96);border:1px solid rgba(200,180,255,0.18);border-radius:8px;padding:6px 10px;font-size:11px;color:#ece8ff;pointer-events:none;transform:translate(-50%,-115%);white-space:nowrap;z-index:5"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.45rem 1rem;margin-top:.7rem;font-size:.6rem;color:var(--text-muted)">
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#7c6fff"></span>Audio</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#ff6b8a"></span>Vidéo</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#00c9a0"></span>Jeux</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#f0b830"></span>Check-in</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#60c8ff"></span>Cohérence</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#ff9f50"></span>Exercice</span>
+      <span style="display:inline-flex;align-items:center;gap:.35rem"><span style="width:6px;height:6px;border-radius:50%;background:#c8f060"></span>Sons</span>
+    </div>
+  </div>
+  <script>
+  (function(){
+    // Clés = actions RÉELLES (podcast→exercice, posts→sons ; reservation non couvert)
+    var CONST = {
+      audio:    {nom:"Grande Ourse", couleur:"#7c6fff", cx:.20, cy:.17,
+                 stars:[[.05,.30],[.22,.32],[.38,.36],[.52,.46],[.55,.63],[.80,.58],[.82,.38]],
+                 edges:[[0,1],[1,2],[2,3],[3,6],[6,5],[5,4],[4,3]]},
+      cc:       {nom:"Petite Ourse", couleur:"#60c8ff", cx:.80, cy:.16,
+                 stars:[[.15,.14],[.28,.27],[.42,.42],[.64,.52],[.80,.44],[.82,.64],[.60,.68]],
+                 edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]},
+      video:    {nom:"Orion", couleur:"#ff6b8a", cx:.50, cy:.40,
+                 stars:[[.30,.18],[.68,.20],[.42,.50],[.52,.52],[.62,.54],[.40,.85],[.72,.82]],
+                 edges:[[0,1],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6],[5,6]]},
+      jeu:      {nom:"Cassiopée", couleur:"#00c9a0", cx:.17, cy:.44,
+                 stars:[[.08,.40],[.30,.62],[.50,.38],[.70,.66],[.92,.42]],
+                 edges:[[0,1],[1,2],[2,3],[3,4]]},
+      exercice: {nom:"Scorpion", couleur:"#ff9f50", cx:.83, cy:.45,
+                 stars:[[.12,.18],[.18,.30],[.30,.42],[.42,.54],[.55,.66],[.68,.76],[.80,.72],[.88,.58]],
+                 edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
+      checkin:  {nom:"Lion", couleur:"#f0b830", cx:.25, cy:.75,
+                 stars:[[.22,.62],[.28,.44],[.40,.32],[.55,.40],[.80,.50],[.60,.58]],
+                 edges:[[0,1],[1,2],[2,3],[3,4],[3,5],[5,0]]},
+      sons:     {nom:"Pléiades", couleur:"#c8f060", cx:.74, cy:.77,
+                 stars:[[.40,.30],[.55,.25],[.50,.45],[.62,.50],[.35,.50],[.48,.62],[.68,.38]],
+                 edges:[[0,1],[0,2],[2,3],[2,4],[3,6]]}
+    };
+
+    function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+    function hashSeed(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+    function bareme(t){ return (typeof BAREME!=="undefined" && BAREME[t]) ? BAREME[t] : 10; }
+    function actLabel(t){ return (typeof ACTION_LABELS!=="undefined" && ACTION_LABELS[t]) ? ACTION_LABELS[t] : t; }
+    function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+    var canvas, ctx, wrap, tipEl, emptyEl;
+    var W=0, H=0, DPR=1;
+    var bgStars=null, stars=[], edges=[];
+    var started=false, ro=null, pinned=null, hover=null;
+    var lastData={historique:[], repartition:[]};
+
+    function buildBgStars(){
+      var rng=mulberry32(987654321); bgStars=[];
+      for(var i=0;i<200;i++){ bgStars.push({rx:rng(), ry:rng(), r:0.2+rng()*0.9, a:0.05+rng()*0.35, ph:rng()*6.283}); }
+    }
+
+    function layout(){
+      if(!canvas) return;
+      var R=Math.min(W,H)*0.30;
+      stars=[]; edges=[];
+      var counts={}, ptsByType={}, labelByType={};
+      (lastData.repartition||[]).forEach(function(r){ counts[r.action]=r.nb||0; });
+      (lastData.historique||[]).forEach(function(h){
+        if(!ptsByType[h.action]) ptsByType[h.action]=[];
+        if(!labelByType[h.action]) labelByType[h.action]=[];
+        ptsByType[h.action].push(h.points); labelByType[h.action].push(h.label);
+      });
+      Object.keys(CONST).forEach(function(type){
+        var c=CONST[type], K=c.stars.length, A=counts[type]||0;
+        var pl=ptsByType[type]||[], ll=labelByType[type]||[], idxPos={};
+        for(var i=0;i<K;i++){
+          var lx=c.stars[i][0], ly=c.stars[i][1];
+          var x=c.cx*W+(lx-0.5)*R, y=c.cy*H+(ly-0.5)*R;
+          var acquired=i<A;
+          var pts=acquired ? (pl[i]!=null?pl[i]:bareme(type)) : 0;
+          var lab=acquired ? (ll[i]||actLabel(type)) : "";
+          stars.push({type:type,x:x,y:y,acquired:acquired,potential:!acquired,satellite:false,pts:pts,label:lab,color:c.couleur,nom:c.nom,phase:i*1.7+(hashSeed(type)%10)});
+          idxPos[i]=stars.length-1;
+        }
+        c.edges.forEach(function(e){
+          var sa=stars[idxPos[e[0]]], sb=stars[idxPos[e[1]]];
+          if(sa&&sb) edges.push({ax:sa.x,ay:sa.y,bx:sb.x,by:sb.y,color:c.couleur,both:(sa.acquired&&sb.acquired)});
+        });
+        if(A>K){
+          var rng=mulberry32(hashSeed(type+"_sat")), box=R*1.4;
+          for(var s=K;s<A;s++){
+            var sx=c.cx*W+(rng()-0.5)*box, sy=c.cy*H+(rng()-0.5)*box;
+            stars.push({type:type,x:sx,y:sy,acquired:true,potential:false,satellite:true,pts:(pl[s]!=null?pl[s]:bareme(type)),label:(ll[s]||actLabel(type)),color:c.couleur,nom:c.nom,phase:s*2.3+(hashSeed(type)%7)});
+          }
+        }
+      });
+      var any=false; for(var k=0;k<stars.length;k++){ if(stars[k].acquired){ any=true; break; } }
+      if(emptyEl) emptyEl.style.display = any ? "none" : "block";
+    }
+
+    function resize(){
+      if(!canvas||!wrap) return;
+      DPR=window.devicePixelRatio||1; W=wrap.clientWidth; H=wrap.clientHeight;
+      canvas.width=W*DPR; canvas.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+      layout();
+    }
+
+    function draw(ts){
+      if(!ctx) return;
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle="#060912"; ctx.fillRect(0,0,W,H);
+      if(bgStars){
+        for(var i=0;i<bgStars.length;i++){
+          var b=bgStars[i], tw=0.6+0.4*Math.sin(ts*0.001+b.ph);
+          ctx.beginPath(); ctx.arc(b.rx*W,b.ry*H,b.r,0,6.283);
+          ctx.fillStyle="rgba(255,255,255,"+(b.a*tw).toFixed(3)+")"; ctx.fill();
+        }
+      }
+      ctx.setLineDash([3,6]); ctx.lineWidth=0.8;
+      for(var e=0;e<edges.length;e++){
+        var ed=edges[e]; ctx.strokeStyle=ed.color+(ed.both?"28":"12");
+        ctx.beginPath(); ctx.moveTo(ed.ax,ed.ay); ctx.lineTo(ed.bx,ed.by); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.font="10px 'DM Sans',sans-serif"; ctx.textAlign="center";
+      var R=Math.min(W,H)*0.30;
+      Object.keys(CONST).forEach(function(type){
+        var c=CONST[type]; ctx.fillStyle=c.couleur+"88";
+        ctx.fillText(c.nom, c.cx*W, c.cy*H - R*0.5 - 12);
+      });
+      for(var s=0;s<stars.length;s++){
+        var st=stars[s];
+        if(st.potential){
+          ctx.beginPath(); ctx.arc(st.x,st.y,3,0,6.283); ctx.fillStyle=st.color+"26"; ctx.fill(); continue;
+        }
+        var base=st.satellite ? (3+Math.min(st.pts,40)/40*2) : (4+Math.min(st.pts,40)/40*4);
+        var rDraw=base*(1+Math.sin(ts*0.0014+st.phase)*0.14);
+        ctx.beginPath(); ctx.arc(st.x,st.y,rDraw*2.4,0,6.283); ctx.fillStyle=st.color+"18"; ctx.fill();
+        ctx.beginPath(); ctx.arc(st.x,st.y,rDraw*1.6,0,6.283); ctx.fillStyle=st.color+"28"; ctx.fill();
+        ctx.beginPath(); ctx.arc(st.x,st.y,rDraw,0,6.283); ctx.fillStyle=st.color; ctx.fill();
+        ctx.beginPath(); ctx.arc(st.x-rDraw*0.3,st.y-rDraw*0.3,rDraw*0.4,0,6.283); ctx.fillStyle="rgba(255,255,255,0.28)"; ctx.fill();
+        st._r=rDraw;
+      }
+      requestAnimationFrame(draw);
+    }
+
+    function nearest(mx,my){
+      var best=null, bd=1e9;
+      for(var s=0;s<stars.length;s++){
+        var st=stars[s]; if(!st.acquired) continue;
+        var d=Math.sqrt((mx-st.x)*(mx-st.x)+(my-st.y)*(my-st.y)), tol=(st._r||5)*4;
+        if(d<tol && d<bd){ bd=d; best=st; }
+      }
+      return best;
+    }
+    function showTip(st){
+      if(!tipEl) return;
+      if(!st){ if(!pinned) tipEl.style.display="none"; return; }
+      tipEl.innerHTML="<div style=\"font-weight:600\">"+esc(st.label||actLabel(st.type))+"</div><div style=\"opacity:.7;margin-top:2px\">"+esc(st.nom)+" · "+esc(actLabel(st.type))+" · "+st.pts+" pts</div>";
+      tipEl.style.left=st.x+"px"; tipEl.style.top=st.y+"px"; tipEl.style.display="block";
+    }
+    function bindEvents(){
+      canvas.addEventListener("mousemove",function(ev){
+        var rc=canvas.getBoundingClientRect(); var st=nearest(ev.clientX-rc.left, ev.clientY-rc.top);
+        hover=st; if(!pinned) showTip(st);
+      });
+      canvas.addEventListener("mouseleave",function(){ hover=null; if(!pinned) showTip(null); });
+      function tap(ev){
+        var t=(ev.touches&&ev.touches[0])?ev.touches[0]:ev, rc=canvas.getBoundingClientRect();
+        var st=nearest(t.clientX-rc.left, t.clientY-rc.top);
+        if(st){ pinned=st; showTip(st); } else { pinned=null; tipEl.style.display="none"; }
+      }
+      canvas.addEventListener("click",tap);
+      canvas.addEventListener("touchstart",function(ev){ tap(ev); }, {passive:true});
+    }
+
+    window.renderConstellation=function(historique, repartition){
+      canvas=document.getElementById("ciel-canvas"); wrap=document.getElementById("ciel-wrap");
+      tipEl=document.getElementById("ciel-tip"); emptyEl=document.getElementById("ciel-empty");
+      if(!canvas||!wrap) return;
+      ctx=canvas.getContext("2d");
+      lastData={historique:historique||[], repartition:repartition||[]};
+      if(!bgStars) buildBgStars();
+      resize();
+      if(!ro && window.ResizeObserver){ ro=new ResizeObserver(function(){ resize(); }); ro.observe(wrap); }
+      if(!started){ started=true; bindEvents(); requestAnimationFrame(draw); }
+    };
+  })();
+  </script>
+
   <!-- Répartition par activité -->
   <div class="card" style="margin-bottom:1rem;padding:1.2rem 1.3rem">
     <div style="font-size:.6rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.9rem">Répartition ce mois</div>
@@ -3386,6 +3577,7 @@ function renderProgresData(d) {
       }).join('');
     }
   }
+  if (typeof renderConstellation === 'function') { try { renderConstellation(d.historique, d.repartition); } catch(e){ console.warn('ciel', e); } }
 }
 
 
