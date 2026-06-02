@@ -143,12 +143,15 @@ input, select, textarea { font-family: inherit; }
   color: #00b4b4; border-left-color: #00b4b4;
   background: rgba(0,180,180,.08);
 }
-.nav-icon { font-size: 1rem; width: 18px; flex-shrink: 0; }
+.nav-item i { font-size: 18px; color: rgba(0,0,0,0.35); vertical-align: middle; }
+.nav-item.active i { color: #028090; }
 .nav-badge {
-  margin-left: auto; font-size: .55rem; font-weight: 500;
-  background: rgba(0,180,180,.1); color: #00b4b4;
-  border: 1px solid rgba(0,180,180,.25); border-radius: 10px;
-  padding: .1rem .4rem;
+  margin-left: auto;
+  background: #f5855a; color: white;
+  font-size: 11px; font-weight: 500;
+  min-width: 18px; height: 18px;
+  border-radius: 9px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .nav-bottom { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
 .version-tag { font-size: .58rem; color: var(--text-muted); }
@@ -1081,57 +1084,57 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 <nav class="sidenav">
   <div class="nav-section-label">Principal</div>
   <div class="nav-item active" onclick="switchView('dashboard')">
-    <span class="nav-icon">🏠</span><span>Tableau de bord</span>
+    <i class="ti ti-layout-dashboard" aria-hidden="true"></i><span>Tableau de bord</span>
   </div>
   <div class="nav-item" onclick="switchView('reservation')">
-    <span class="nav-icon">📅</span><span>Réserver un atelier</span>
+    <i class="ti ti-calendar" aria-hidden="true"></i><span>Réservations</span>
     <span class="nav-badge" id="badge-libres">—</span>
   </div>
 
   <div class="nav-item" onclick="switchView('intervenants')">
-    <span class="nav-icon">🎓</span><span>Intervenants</span>
+    <i class="ti ti-users" aria-hidden="true"></i><span>Intervenants</span>
   </div>
 
   <div class="nav-section-label">Bien-être</div>
   <div class="nav-item" onclick="switchView('coherence')">
-    <span class="nav-icon">💓</span><span>Respiration & Cohérence</span>
+    <i class="ti ti-heart-rate" aria-hidden="true"></i><span>Respiration & Cohérence</span>
   </div>
   <div class="nav-item" onclick="switchView('audio')">
-    <span class="nav-icon">🎧</span><span>Bibliothèque audio</span>
+    <i class="ti ti-headphones" aria-hidden="true"></i><span>Bibliothèque audio</span>
   </div>
   <div class="nav-item" onclick="switchView('sons')">
-    <span class="nav-icon">🌿</span><span>Sons immersifs</span>
+    <i class="ti ti-wave-sine" aria-hidden="true"></i><span>Sons immersifs</span>
   </div>
   <div class="nav-item" onclick="switchView('video')">
-    <span class="nav-icon">🎬</span><span>Bibliothèque vidéo</span>
+    <i class="ti ti-video" aria-hidden="true"></i><span>Bibliothèque vidéo</span>
   </div>
   <div class="nav-item" onclick="switchView('exercices')">
-    <span class="nav-icon">⚡</span><span>Exercices express</span>
+    <i class="ti ti-bolt" aria-hidden="true"></i><span>Exercices express</span>
   </div>
   <div class="nav-item" onclick="switchView('jeux')">
-    <span class="nav-icon">🧠</span><span>Jeux cérébraux</span>
+    <i class="ti ti-puzzle" aria-hidden="true"></i><span>Jeux cérébraux</span>
   </div>
   <div class="nav-item" onclick="switchView('podcasts')">
-    <span class="nav-icon">🎙️</span><span>Podcasts</span>
+    <i class="ti ti-microphone" aria-hidden="true"></i><span>Podcasts</span>
   </div>
   <div class="nav-item" onclick="switchView('posts')">
-    <span class="nav-icon">📋</span><span>Posts internes</span>
+    <i class="ti ti-notes" aria-hidden="true"></i><span>Posts internes</span>
   </div>
 
   <div class="nav-section-label">Suivi</div>
   <div class="nav-item" onclick="switchView('progres')">
-    <span class="nav-icon">🏆</span><span>Mes progrès</span>
+    <i class="ti ti-trophy" aria-hidden="true"></i><span>Mes progrès</span>
   </div>
   <div class="nav-item" onclick="switchView('profil')">
-    <span class="nav-icon">👤</span><span>Mon profil</span>
+    <i class="ti ti-user" aria-hidden="true"></i><span>Mon profil</span>
   </div>
   <div class="nav-item" onclick="switchView('livreor')">
-    <span class="nav-icon">💬</span><span>Livre d'or</span>
+    <i class="ti ti-book" aria-hidden="true"></i><span>Livre d'or</span>
   </div>
 
   <div class="nav-section-label">Gestion</div>
   <div class="nav-item" onclick="switchView('admin')">
-    <span class="nav-icon">⚙️</span><span>Administration</span>
+    <i class="ti ti-settings" aria-hidden="true"></i><span>Administration</span>
   </div>
 
   <div class="nav-bottom">
