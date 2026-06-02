@@ -2924,10 +2924,19 @@ def intervenant_stats():
     if role == 'admin' and request.args.get('intervenant_id'):
         inv_id = int(request.args.get('intervenant_id'))
     else:
-        # Trouver l'intervenant lié au user connecté
+        # Trouver l'intervenant lié au user connecté (par user_id, sinon par email)
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT id FROM intervenants WHERE user_id=%s AND actif=TRUE", [user_id])
+                cur.execute("SELECT email FROM users WHERE id=%s", [user_id])
+                _u = cur.fetchone()
+                _email = (_u['email'] if _u else '') or ''
+                cur.execute("""
+                    SELECT id FROM intervenants
+                    WHERE user_id = %s
+                       OR (COALESCE(email,'') <> '' AND LOWER(email) = LOWER(%s))
+                    ORDER BY (user_id = %s) DESC, actif DESC, id
+                    LIMIT 1
+                """, [user_id, _email, user_id])
                 row = cur.fetchone()
         if not row:
             return jsonify({'error': 'Intervenant introuvable'}), 404
