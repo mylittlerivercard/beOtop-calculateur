@@ -2818,10 +2818,10 @@ function calcStreakInfo(d) {
   const hasToday = activeDates.has(todayStr);
   const hour     = new Date().getHours();
   const streak   = d.streak || 0;
-  const MILESTONES = [3, 7, 14, 30];
-  const MILESTONE_LABELS = {3:'3 jours', 7:'première semaine',
+  const MILESTONES = [7, 14, 30];
+  const MILESTONE_LABELS = {7:'première semaine',
                              14:'deux semaines', 30:'premier mois'};
-  const MILESTONE_NEXT   = {3:7, 7:14, 14:30, 30:60};
+  const MILESTONE_NEXT   = {7:14, 14:30, 30:60};
 
   // État principal
   let state;
