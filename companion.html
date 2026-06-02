@@ -2875,9 +2875,9 @@ function renderStreakCard(sc) {
 
   // Paliers / libellés / récompenses — calcul d'affichage local (n'altère pas calcStreakInfo)
   var MS = [3, 7, 14, 30];
-  var MS_LABEL  = {3:'le premier palier', 7:'Première semaine', 14:'Deux semaines', 30:'Premier mois'};
-  var MS_REWARD = {3:'première constellation allumée', 7:'badge Première semaine',
-                   14:'accès contenu exclusif', 30:'badge Premier mois'};
+  var MS_LABEL  = {3:'3 jours de suite', 7:'votre première semaine', 14:'deux semaines', 30:'un mois'};
+  var MS_REWARD = {3:'badge Premiers pas débloqué', 7:'badge Première semaine débloqué',
+                   14:'badge Régularité débloqué', 30:'badge Premier mois débloqué'};
   var nextMs = null, prevMs = 0;
   for (var k = 0; k < MS.length; k++) {
     if (MS[k] <= sc.streak) prevMs = MS[k];
@@ -2902,7 +2902,7 @@ function renderStreakCard(sc) {
   var progressHtml = '';
   if (nextMs !== null) {
     var remaining = nextMs - sc.streak;
-    var pct = Math.max(0, Math.min(100, Math.round((sc.streak - prevMs) / (nextMs - prevMs) * 100)));
+    var pct = Math.max(0, Math.min(100, Math.round(sc.streak / nextMs * 100)));
     progressHtml =
         '<div style="margin-top:.45rem">'
       +   '<div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.3rem">'
@@ -2910,6 +2910,14 @@ function renderStreakCard(sc) {
       +   '</div>'
       +   '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">'
       +     '<div style="height:100%;width:' + pct + '%;background:#1D9E75;border-radius:3px;transition:width .8s ease"></div>'
+      +   '</div>'
+      + '</div>';
+  } else {
+    // streak >= 30 : tous les paliers atteints, barre pleine
+    progressHtml =
+        '<div style="margin-top:.45rem">'
+      +   '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">'
+      +     '<div style="height:100%;width:100%;background:#1D9E75;border-radius:3px;transition:width .8s ease"></div>'
       +   '</div>'
       + '</div>';
   }
@@ -2954,7 +2962,7 @@ function renderStreakCard(sc) {
   // Ligne récompense discrète (bas de carte)
   var rewardHtml = (nextMs !== null && MS_REWARD[nextMs])
     ? '<div style="font-size:11px;color:var(--text-muted);margin-top:.6rem">'
-      + 'À ' + nextMs + ' jours : ' + _streakEsc(MS_REWARD[nextMs]) + '</div>'
+      + 'À ' + nextMs + ' jours → ' + _streakEsc(MS_REWARD[nextMs]) + '</div>'
     : '';
 
   wrap.innerHTML = banner
