@@ -2358,14 +2358,11 @@ def _register_companion_crud(typ, cols):
     table = 'companion_' + typ
 
     def _list():
-        site = request.args.get('site_slug')
+        # Bibliothèque de contenus PARTAGÉE : visible par tous les sites/clients,
+        # quel que soit le site_slug d'origine (les sons restent, eux, par site).
         with get_db() as conn:
             with conn.cursor() as cur:
-                if site:
-                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE AND "
-                                "(COALESCE(site_slug,'')=%s OR COALESCE(site_slug,'')='') ORDER BY id", [site])
-                else:
-                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE ORDER BY id")
+                cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE ORDER BY id")
                 rows = cur.fetchall()
         return jsonify({typ: [serialize_row(r) for r in rows]})
 
