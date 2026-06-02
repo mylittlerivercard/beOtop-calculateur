@@ -6259,7 +6259,7 @@ function _intervenantForm(inv) {
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Photo — nom du fichier dans /static/ GitHub</label>'
     + '<div style="display:flex;gap:.5rem;align-items:center;margin-top:.3rem">'
     + '<span style="font-size:.62rem;color:var(--text-muted);white-space:nowrap;padding:.6rem .5rem;background:var(--surface2);border-radius:9px 0 0 9px;border:1px solid var(--border2);border-right:none">static/</span>'
-    + '<input id="f-inv-photo" value="' + (v.photo_url ? v.photo_url.split('/static/').pop() : '') + '" placeholder="photo-laurent.jpg" style="flex:1;padding:.6rem .8rem;border-radius:0 9px 9px 0;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + '<input id="f-inv-photo" value="' + (v.photo || (v.photo_url ? v.photo_url.split('/').pop() : '') || '') + '" placeholder="photo-laurent.jpg" style="flex:1;padding:.6rem .8rem;border-radius:0 9px 9px 0;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '</div>'
     + '<div style="font-size:.58rem;color:var(--text-muted);margin-top:.3rem">Uploadez le fichier dans /static/ sur GitHub · Formats : jpg, png, webp</div>'
     + '</div>'
