@@ -1154,14 +1154,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <div class="hero-date"  id="v3-date"></div>
         <div class="hero-greeting"><span id="dash-greeting">Bonjour</span>, <em id="dash-prenom">—</em></div>
         <div id="dash-greeting-sub" style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:.15rem"></div>
-        <div id="streak-hero-wrap"></div>
         <div class="hero-chips">
           <button id="hero-cta-moment" onclick="switchView('audio')" style="display:none;align-items:center;gap:6px;background:#f0957a;color:#4A1B0C;border:1px solid #f0957a;border-radius:20px;padding:7px 15px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit"></button>
           <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
           <span id="hero-social" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.40)"></span>
         </div>
       </div>
-      <div class="hero-right">
+      <div class="hero-right" id="v3-hero-right">
         <svg width="88" height="88" viewBox="0 0 88 88">
           <circle class="ring-track" cx="44" cy="44" r="36"/>
           <circle class="ring-fill" id="v3-ring-fill" cx="44" cy="44" r="36"
@@ -2584,8 +2583,21 @@ function renderDashboard() {
                   .map(function(s){ return { date: s.date }; })
   };
   var _sc = calcStreakInfo(_streakD);
-  renderStreakBadge(_sc);
   renderStreakCard(_sc);
+
+  // Streak intégré dans le sous-titre (remplace le badge standalone retiré)
+  var _subEl = document.getElementById('dash-greeting-sub');
+  if (_subEl) {
+    var _streakSuffix = '';
+    if (_sc.state === 'danger') {
+      _streakSuffix = ' · <span style="color:#FAC775">🔥 Série en jeu ce soir</span>';
+    } else if (_sc.streak >= 2) {
+      _streakSuffix = ' · 🔥 ' + _sc.streak + ' jours de suite';
+    }
+    var _subBase = _greetSub;
+    if (_streakSuffix) _subBase = _subBase.replace(/\s*[.?!]+\s*$/, '');
+    _subEl.innerHTML = _streakEsc(_subBase) + _streakSuffix;
+  }
 
   // Récupérer l'état réel des ateliers depuis l'API PIR, puis afficher
   _v3RefreshAteliers(function() {
@@ -2645,14 +2657,12 @@ function _v3Ring() {
   var count = (DB.cc_sessions || []).filter(function(s){ return new Date(s.date) >= m; }).length;
   var fill = document.getElementById('v3-ring-fill');
   var lbl  = document.getElementById('v3-ring-val');
+  var right = document.getElementById('v3-hero-right');
+  // Cohérence 0 : masquer complètement le cercle, ne l'afficher que si count > 0
+  if (right) right.style.display = count > 0 ? '' : 'none';
+  if (count === 0) return;
   if (fill) setTimeout(function(){ fill.style.strokeDashoffset = String(226 * (1 - Math.min(count/20,1))); }, 300);
-  if (lbl) {
-    if (count === 0) {
-      lbl.innerHTML = '<span style="font-size:10px;color:rgba(255,255,255,0.35);line-height:1.15;display:inline-block">ce soir<br>?</span>';
-    } else {
-      lbl.textContent = count + '/20';
-    }
-  }
+  if (lbl) lbl.textContent = count + '/20';
 }
 
 /* ── Ticker ── */
