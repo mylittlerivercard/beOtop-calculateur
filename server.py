@@ -1842,6 +1842,7 @@ POINTS_BAREME = {
     'reservation':  25,
     'sons':         10,
     'video':        15,
+    'podcast':      15,
 }
 
 # Niveaux
