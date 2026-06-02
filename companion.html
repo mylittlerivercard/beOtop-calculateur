@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>beOtop Companion</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css" rel="stylesheet">
 <style>
 :root {
   /* ── Palette beOtop ── */
@@ -1151,11 +1152,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div>
         <div class="hero-time" id="v3-clock">--:--</div>
         <div class="hero-date"  id="v3-date"></div>
-        <div class="hero-greeting">Bonjour, <em id="dash-prenom">—</em></div>
+        <div class="hero-greeting"><span id="dash-greeting">Bonjour</span>, <em id="dash-prenom">—</em></div>
+        <div id="dash-greeting-sub" style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:.15rem"></div>
         <div id="streak-hero-wrap"></div>
         <div class="hero-chips">
+          <button id="hero-cta-moment" onclick="switchView('audio')" style="display:none;align-items:center;gap:6px;background:#f0957a;color:#4A1B0C;border:1px solid #f0957a;border-radius:20px;padding:7px 15px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit"></button>
           <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
-          <div class="hero-chip coral" id="v3-streak-chip" style="display:none">🔥 <span id="v3-streak-txt"></span></div>
+          <span id="hero-social" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.40)"></span>
         </div>
       </div>
       <div class="hero-right">
@@ -2505,12 +2508,62 @@ function renderDashboard() {
   // Topbar
   var udEl = document.getElementById('user-display');
   var uaEl = document.getElementById('user-avatar');
-  if (udEl) udEl.textContent = u.prenom + ' ' + (u.nom||'')[0] + '.';
+  if (udEl) {
+    var _navName = u.prenom || u.nom || "Vous";
+    if (_navName.indexOf(" ") !== -1) _navName = _navName.split(" ")[0];
+    udEl.textContent = _navName;
+  }
   if (uaEl) uaEl.textContent = u.initiales || (u.prenom[0] + (u.nom||'R')[0]);
 
   // Prénom hero
   var prenomEl = document.getElementById('dash-prenom');
   if (prenomEl) prenomEl.textContent = u.prenom;
+
+  // Salutation contextuelle selon l'heure + sous-titre
+  var _h = new Date().getHours();
+  var _greet, _greetSub;
+  if (_h >= 5 && _h < 12)       { _greet = "Bonjour";        _greetSub = "Commencez bien cette journée."; }
+  else if (_h >= 12 && _h < 18) { _greet = "Bon après-midi"; _greetSub = "Une pause s'impose ?"; }
+  else if (_h >= 18 && _h < 22) { _greet = "Bonsoir";        _greetSub = "Une courte séance avant de partir ?"; }
+  else                          { _greet = "Bonne nuit";     _greetSub = "Prenez soin de vous."; }
+  var _gEl  = document.getElementById('dash-greeting');
+  if (_gEl)  _gEl.textContent  = _greet;
+  var _gsEl = document.getElementById('dash-greeting-sub');
+  if (_gsEl) _gsEl.textContent = _greetSub;
+
+  // CTA suggestion du moment selon l'heure → bibliothèque audio
+  var _ctaEl = document.getElementById('hero-cta-moment');
+  if (_ctaEl) {
+    var _cta = null;
+    if (_h >= 5 && _h < 12)       _cta = { icon: "ti-heart-rate",  text: "Cohérence cardiaque · 5 min" };
+    else if (_h >= 12 && _h < 17) _cta = { icon: "ti-headphones",  text: "Micro-pause · Sons immersifs" };
+    else if (_h >= 17 && _h < 22) _cta = { icon: "ti-player-play", text: "Relaxation guidée · 7 min" };
+    if (_cta) {
+      _ctaEl.innerHTML = '<i class="ti ' + _cta.icon + '"></i><span>' + _cta.text + "</span>";
+      _ctaEl.style.display = "inline-flex";
+    } else {
+      _ctaEl.style.display = "none";
+    }
+  }
+
+  // Preuve sociale — collègues actifs aujourd'hui (statique localStorage, maj 1×/jour)
+  var _socEl = document.getElementById('hero-social');
+  if (_socEl) {
+    var _social = 4;
+    try {
+      var _today = new Date().toISOString().slice(0, 10);
+      var _raw = localStorage.getItem("bcst_social");
+      var _obj = _raw ? JSON.parse(_raw) : null;
+      if (!_obj || _obj.date !== _today) {
+        _obj = { date: _today, n: 2 + Math.floor(Math.random() * 7) }; // 2..8
+        localStorage.setItem("bcst_social", JSON.stringify(_obj));
+      }
+      _social = _obj.n;
+    } catch (e) { _social = 4; }
+    _socEl.innerHTML = '<i class="ti ti-users" style="font-size:12px"></i><span>· ' + _social
+      + " collègue" + (_social > 1 ? "s" : "") + " actif" + (_social > 1 ? "s" : "") + " aujourd'hui</span>";
+    _socEl.style.display = _social > 0 ? "inline-flex" : "none";
+  }
 
   // Date hero
   var dateEl = document.getElementById('v3-date');
@@ -2593,7 +2646,13 @@ function _v3Ring() {
   var fill = document.getElementById('v3-ring-fill');
   var lbl  = document.getElementById('v3-ring-val');
   if (fill) setTimeout(function(){ fill.style.strokeDashoffset = String(226 * (1 - Math.min(count/20,1))); }, 300);
-  if (lbl)  lbl.textContent = count + ' / 20';
+  if (lbl) {
+    if (count === 0) {
+      lbl.innerHTML = '<span style="font-size:10px;color:rgba(255,255,255,0.35);line-height:1.15;display:inline-block">ce soir<br>?</span>';
+    } else {
+      lbl.textContent = count + '/20';
+    }
+  }
 }
 
 /* ── Ticker ── */
@@ -2731,12 +2790,6 @@ function _v3KPIs() {
   _v3CountUp('kpi-cc',      cc.length,       '',    500);
   var kst = document.getElementById('kpi-streak');
   if (kst) kst.textContent = streak + ' j';
-  var sChip = document.getElementById('v3-streak-chip');
-  var sTxt  = document.getElementById('v3-streak-txt');
-  if (sChip && sTxt) {
-    sTxt.textContent = streak + ' jour' + (streak>1?'s':'') + ' consécutif' + (streak>1?'s':'');
-    sChip.style.display = streak >= 2 ? 'inline-flex' : 'none';
-  }
 }
 
 
