@@ -30,7 +30,7 @@ def add_headers(response):
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Accept-Ranges'] = 'bytes'
         return response
-    # Autoriser YouTube et Vimeo en iframe (contenu Compagnon)
+    # Autoriser YouTube et Vimeo en iframe (contenu Companion)
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
@@ -277,7 +277,7 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_res_date    ON reservations(date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_res_atelier ON reservations(atelier)')
 
-        # Tables Compagnon
+        # Tables Companion
         cur.execute("""
             CREATE TABLE IF NOT EXISTS companion_checkins (
                 id          SERIAL PRIMARY KEY,
@@ -1664,7 +1664,7 @@ def cancel_reservation(res_id):
     return jsonify({'ok': True})
 
 
-# ========== COMPAGNON — CHECK-IN & COHÉRENCE CARDIAQUE ==========
+# ========== COMPANION — CHECK-IN & COHÉRENCE CARDIAQUE ==========
 
 @app.route('/api/companion/checkin', methods=['POST'])
 @login_required
@@ -1778,7 +1778,7 @@ def companion_cc_history():
 @app.route('/api/companion/stats', methods=['GET'])
 @login_required
 def companion_stats():
-    """KPIs mensuels pour l'onglet Compagnon du dashboard."""
+    """KPIs mensuels pour l'onglet Companion du dashboard."""
     user_id = session.get('user_id')
     with get_db() as conn:
         with conn.cursor() as cur:
@@ -2780,7 +2780,7 @@ def companion_qvct():
                 alertes.append({
                     'niveau': 'orange', 'icone': '😴',
                     'titre': f'{inactifs} utilisateur(s) sans activité depuis 7 jours',
-                    'detail': 'Aucune action Compagnon enregistrée cette semaine'
+                    'detail': 'Aucune action Companion enregistrée cette semaine'
                 })
 
     return jsonify({
