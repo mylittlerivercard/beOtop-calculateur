@@ -492,6 +492,106 @@ input[type=range]::-webkit-slider-thumb {
   background: rgba(0,180,180,.08); border: 1px solid rgba(0,180,180,.25); color: #00b4b4;
 }
 
+/* ══ STREAK (série de jours consécutifs) ══ */
+.streak-card {
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,180,180,.15);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.4rem;
+  font-family: 'DM Sans', sans-serif;
+}
+.streak-card.streak-danger    { border: 1px solid #EF9F27; }
+.streak-card.streak-milestone { border: 1px solid #BA7517; }
+
+.streak-main { display: flex; align-items: center; gap: 1.1rem; }
+.streak-left {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-width: 70px;
+}
+.streak-big-icon { font-size: 1.9rem; line-height: 1; }
+.streak-big-num  { font-size: 2.2rem; font-weight: 600; line-height: 1.1; }
+.streak-card.streak-safe      .streak-big-icon { color: #1D9E75; }
+.streak-card.streak-safe      .streak-big-num  { color: #0F6E56; }
+.streak-card.streak-danger    .streak-big-icon { color: #EF9F27; }
+.streak-card.streak-danger    .streak-big-num  { color: #854F0B; }
+.streak-card.streak-milestone .streak-big-icon { color: #BA7517; }
+.streak-card.streak-milestone .streak-big-num  { color: #633806; }
+.streak-card.streak-new       .streak-big-icon { color: #8aa0a0; }
+.streak-card.streak-new       .streak-big-num  { color: #8aa0a0; }
+.streak-right  { flex: 1; }
+.streak-title  { font-size: .95rem; font-weight: 600; color: var(--text); margin-bottom: .15rem; }
+.streak-sub    { font-size: .72rem; color: var(--text-muted); }
+
+.streak-chain-14 {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 4px; margin: 1.1rem 0 .9rem;
+}
+.streak-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.streak-dot {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; color: #fff; font-size: 11px; line-height: 1;
+  position: relative;
+}
+.streak-dot.sd-done      { width: 22px; height: 22px; background: #1D9E75; }
+.streak-dot.sd-safe      { width: 26px; height: 26px; background: #085041; }
+.streak-dot.sd-milestone { width: 26px; height: 26px; background: #BA7517; }
+.streak-dot.sd-milestone::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid #EF9F27; animation: streak-ring 1.8s ease-out infinite;
+}
+.streak-dot.sd-danger {
+  width: 26px; height: 26px; background: transparent;
+  border: 2px solid #EF9F27; color: #EF9F27;
+  animation: streak-dotpulse 2s ease-in-out infinite;
+}
+.streak-dot.sd-pending {
+  width: 22px; height: 22px; background: transparent;
+  border: 1px dashed rgba(0,0,0,.20);
+}
+.streak-dot.sd-miss {
+  width: 22px; height: 22px; background: var(--bg3);
+  color: #9bb0b0; font-size: 10px;
+}
+.streak-day-label { font-size: 9px; color: var(--text-muted); }
+
+.streak-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+  border-top: 1px solid var(--border); padding-top: .8rem;
+}
+.streak-best { font-size: .72rem; color: var(--text-muted); }
+.streak-best strong { color: var(--text); }
+.streak-joker-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; padding: 3px 9px; border-radius: 20px;
+  background: var(--bg3); color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.streak-banner {
+  border-radius: 8px; padding: 9px 13px; font-size: 12px;
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-bottom: 8px; line-height: 1.4; border: 1px solid;
+  font-family: 'DM Sans', sans-serif;
+}
+.streak-banner.sb-danger    { background: rgba(239,159,39,.10); border-color: #FAC775; color: var(--text); }
+.streak-banner.sb-milestone { background: rgba(186,117,23,.10); border-color: #BA7517; color: var(--text); }
+.streak-banner.sb-new       { background: var(--bg3);          border-color: var(--border); color: var(--text); }
+
+@keyframes streak-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.07); }
+}
+@keyframes streak-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes streak-dotpulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
 /* ══ ADMIN ══ */
 .db-table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .72rem; }
@@ -1052,6 +1152,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <div class="hero-time" id="v3-clock">--:--</div>
         <div class="hero-date"  id="v3-date"></div>
         <div class="hero-greeting">Bonjour, <em id="dash-prenom">—</em></div>
+        <div id="streak-hero-wrap"></div>
         <div class="hero-chips">
           <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
           <div class="hero-chip coral" id="v3-streak-chip" style="display:none">🔥 <span id="v3-streak-txt"></span></div>
@@ -1076,6 +1177,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
   <!-- CONTENU -->
   <div style="padding:1.8rem 2rem">
+
+    <div id="streak-card-wrap"></div>
 
     <div class="sec">Suggéré pour vous</div>
     <div class="sug-grid-wrap"><div class="sug-grid" id="v3-sug-grid"></div></div>
@@ -2421,6 +2524,16 @@ function renderDashboard() {
   _v3KPIs();
   renderHistoryRecent();
 
+  // Streak : badge hero + carte accueil dès l'ouverture du dashboard
+  var _streakD = {
+    streak: (typeof calcStreak === 'function' ? calcStreak() : 0),
+    historique: [].concat(DB.sessions || [], DB.cc_sessions || [])
+                  .map(function(s){ return { date: s.date }; })
+  };
+  var _sc = calcStreakInfo(_streakD);
+  renderStreakBadge(_sc);
+  renderStreakCard(_sc);
+
   // Récupérer l'état réel des ateliers depuis l'API PIR, puis afficher
   _v3RefreshAteliers(function() {
     _v3Ticker();
@@ -2642,6 +2755,189 @@ function calcStreak() {
   document.getElementById('kpi-streak').textContent = streak + ' j';
   document.getElementById('profile-streak').textContent = streak;
   return streak;
+}
+
+/* ── STREAK : badge hero + carte accueil ──
+   calcStreakInfo(d) calcule l'état d'affichage à partir des données scores.
+   (Nommée calcStreakInfo et non calcStreak pour ne pas écraser la fonction
+    calcStreak() existante sans argument utilisée par les KPIs.) */
+function calcStreakInfo(d) {
+  const activeDates = new Set(
+    (d.historique || []).map(function(h){ return (h.date || '').slice(0, 10); })
+  );
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const hasToday = activeDates.has(todayStr);
+  const hour     = new Date().getHours();
+  const streak   = d.streak || 0;
+  const MILESTONES = [3, 7, 14, 30];
+  const MILESTONE_LABELS = {3:'3 jours', 7:'première semaine',
+                             14:'deux semaines', 30:'premier mois'};
+  const MILESTONE_NEXT   = {3:7, 7:14, 14:30, 30:60};
+
+  // État principal
+  let state;
+  if (streak > 0 && MILESTONES.includes(streak) && hasToday)
+    state = 'milestone';
+  else if (streak > 0 && !hasToday && hour >= 16)
+    state = 'danger';
+  else if (streak === 0 && !hasToday)
+    state = 'new';
+  else
+    state = 'safe';
+
+  // Joker (retour après rupture d'une série ≥ 5 jours)
+  const jokerKey   = 'bcst_joker_' + todayStr.slice(0, 7);
+  const prevStreak = parseInt(localStorage.getItem('bcst_prev_streak') || '0');
+  const showJoker  = (streak <= 1 && prevStreak >= 5
+                      && !localStorage.getItem(jokerKey));
+  if (showJoker) localStorage.setItem(jokerKey, '1');
+  localStorage.setItem('bcst_prev_streak', streak);
+
+  // Chaîne de 14 jours
+  const chain = [];
+  for (var i = 13; i >= 0; i--) {
+    var d14 = new Date();
+    d14.setDate(d14.getDate() - i);
+    var ds   = d14.toISOString().slice(0, 10);
+    var isT  = (ds === todayStr);
+    var s14;
+    if (isT) {
+      if (hasToday)
+        s14 = (state === 'milestone') ? 'milestone' : 'safe';
+      else
+        s14 = (hour >= 16) ? 'danger' : 'pending';
+    } else {
+      s14 = activeDates.has(ds) ? 'done' : 'miss';
+    }
+    var shortLabel = (i === 0) ? 'Auj.'
+      : d14.toLocaleDateString('fr-FR', {weekday:'short'}).slice(0, 2);
+    chain.push({ds: ds, isToday: isT, state: s14, label: shortLabel});
+  }
+
+  return {
+    streak: streak,
+    state: state,
+    hasToday: hasToday,
+    prevStreak: prevStreak,
+    showJoker: showJoker,
+    chain: chain,
+    milestoneLabel: MILESTONE_LABELS[streak] || '',
+    milestoneNext:  MILESTONE_NEXT[streak] || (streak + 30),
+    bestStreak: Math.max(streak, prevStreak)
+  };
+}
+
+function _streakEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderStreakBadge(sc) {
+  var wrap = document.getElementById('streak-hero-wrap');
+  if (!wrap) return;
+  // Premier jour sans aucune série passée → rien
+  if (sc.streak === 0 && sc.prevStreak === 0) { wrap.innerHTML = ''; return; }
+
+  var label = '', extra = '';
+  if (sc.state === 'safe') {
+    label = '🔥 ' + sc.streak + ' jour' + (sc.streak > 1 ? 's' : '') + ' de suite';
+    extra = 'background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.90);'
+          + 'border:1px solid rgba(255,255,255,0.22);';
+  } else if (sc.state === 'danger') {
+    label = '🔥 Série en jeu · encore ce soir';
+    extra = 'background:rgba(239,159,39,0.18);color:#FAC775;'
+          + 'border:1px solid rgba(239,159,39,0.45);'
+          + 'animation:streak-pulse 2s ease-in-out infinite;';
+  } else if (sc.state === 'milestone') {
+    label = '⭐ ' + sc.streak + ' jours — ' + sc.milestoneLabel;
+    extra = 'background:rgba(186,117,23,0.22);color:#FAC775;'
+          + 'border:1px solid rgba(240,168,0,0.50);'
+          + 'animation:streak-pulse 2s ease-in-out infinite;';
+  } else { // new
+    if (sc.prevStreak >= 3) {
+      label = '✦ Retour · Vous aviez ' + sc.prevStreak + ' jours';
+      extra = 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.55);'
+            + 'border:1px solid rgba(255,255,255,0.12);';
+    } else {
+      wrap.innerHTML = ''; return;
+    }
+  }
+
+  var base = 'display:inline-flex;align-items:center;gap:7px;padding:5px 14px;'
+           + 'border-radius:20px;font-family:\'DM Sans\',sans-serif;font-size:12px;'
+           + 'font-weight:500;margin-bottom:12px;transition:all 0.3s;';
+  wrap.innerHTML = '<div style="' + base + extra + '">' + _streakEsc(label) + '</div>';
+}
+
+function renderStreakCard(sc) {
+  var wrap = document.getElementById('streak-card-wrap');
+  if (!wrap) return;
+  if (sc.streak === 0 && sc.prevStreak === 0) { wrap.innerHTML = ''; return; }
+
+  // Contenu principal selon l'état
+  var icon, title, sub;
+  if (sc.state === 'safe') {
+    icon = '🔥'; title = 'Jours consécutifs'; sub = "Dernière activité aujourd'hui";
+  } else if (sc.state === 'danger') {
+    icon = '🔥'; title = 'Série en jeu'; sub = "Aucune activité aujourd'hui";
+  } else if (sc.state === 'milestone') {
+    icon = '⭐'; title = sc.streak + ' jours — ' + sc.milestoneLabel;
+    sub  = 'Prochain palier : ' + sc.milestoneNext + ' jours';
+  } else { // new
+    icon = '✦'; title = 'Nouveau départ';
+    sub  = (sc.prevStreak >= 3)
+      ? 'Votre précédente série : ' + sc.prevStreak + ' jours'
+      : 'Commencez votre première série';
+  }
+
+  // Bannière contextuelle (hors card)
+  var banner = '';
+  if (sc.state === 'danger') {
+    banner = '<div class="streak-banner sb-danger"><span>⏰</span><span>'
+      + 'Votre série de ' + sc.streak + ' jours est en jeu — il vous reste jusqu\'à ce soir.'
+      + '</span></div>';
+  } else if (sc.state === 'milestone') {
+    banner = '<div class="streak-banner sb-milestone"><span>⭐</span><span>'
+      + 'Première ' + _streakEsc(sc.milestoneLabel) + ' complète. Vous avez construit une habitude.'
+      + '</span></div>';
+  } else if (sc.state === 'new' && sc.prevStreak >= 3) {
+    banner = '<div class="streak-banner sb-new"><span>↩</span><span>'
+      + 'Votre série de ' + sc.prevStreak + ' jours s\'est arrêtée. Nouvelle série en cours.'
+      + '</span></div>';
+  }
+
+  // Chaîne de 14 jours
+  var dotIcon = {done:'✓', safe:'✓', milestone:'✓', danger:'⏰', miss:'×', pending:''};
+  var chainHtml = (sc.chain || []).map(function(c) {
+    return '<div class="streak-day">'
+      + '<div class="streak-dot sd-' + c.state + '">' + (dotIcon[c.state] || '') + '</div>'
+      + '<div class="streak-day-label">' + _streakEsc(c.label) + '</div>'
+      + '</div>';
+  }).join('');
+
+  // Footer : meilleure série + joker éventuel
+  var joker = sc.showJoker
+    ? '<span class="streak-joker-pill">🛡 Série protégée automatiquement · 1 joker restant ce mois</span>'
+    : '';
+  var footer = '<div class="streak-footer">'
+    + '<span class="streak-best">Meilleure série : <strong>'
+    + sc.bestStreak + ' jour' + (sc.bestStreak > 1 ? 's' : '') + '</strong></span>'
+    + joker + '</div>';
+
+  wrap.innerHTML = banner
+    + '<div class="card streak-card streak-' + sc.state + '">'
+    +   '<div class="streak-main">'
+    +     '<div class="streak-left">'
+    +       '<div class="streak-big-icon">' + icon + '</div>'
+    +       '<div class="streak-big-num">' + sc.streak + '</div>'
+    +     '</div>'
+    +     '<div class="streak-right">'
+    +       '<div class="streak-title">' + _streakEsc(title) + '</div>'
+    +       '<div class="streak-sub">' + _streakEsc(sub) + '</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="streak-chain-14" id="streak-chain">' + chainHtml + '</div>'
+    +   footer
+    + '</div>';
 }
 
 function renderHistoryRecent() {
@@ -3582,6 +3878,10 @@ function renderProgresData(d) {
     }
   }
   if (typeof renderConstellation === 'function') { try { renderConstellation(d.historique, d.repartition); } catch(e){ console.warn('ciel', e); } }
+  // Streak : badge hero + carte accueil
+  var sc = calcStreakInfo(d);
+  renderStreakBadge(sc);
+  renderStreakCard(sc);
 }
 
 
