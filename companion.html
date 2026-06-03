@@ -1125,6 +1125,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item" onclick="switchView('progres')">
     <i class="ti ti-trophy" aria-hidden="true"></i><span>Mes progrès</span>
   </div>
+  <div class="nav-item" onclick="switchView('challenges')">
+    <i class="ti ti-target" aria-hidden="true"></i><span>Challenges</span>
+  </div>
   <div class="nav-item" onclick="switchView('profil')">
     <i class="ti ti-user" aria-hidden="true"></i><span>Mon profil</span>
   </div>
@@ -1742,6 +1745,27 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     </div>
   </div>
   <div id="jeu-zone"></div>
+</div>
+
+<!-- ═══ CHALLENGES ═══ -->
+<div class="view" id="view-challenges">
+  <div class="page-header">
+    <h1>Mes <em>challenges</em></h1>
+    <p>Relevez vos défis de la semaine · Régularité · Variété</p>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
+    <div>
+      <div style="font-size:.6rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.15em">Cette semaine</div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem">Réinitialisation chaque dimanche</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:2rem;font-weight:300;color:var(--gold);line-height:1" id="ch-count">0/5</div>
+      <div style="font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em">défis relevés</div>
+    </div>
+  </div>
+
+  <div id="ch-list"></div>
 </div>
 
 <!-- ═══ MES PROGRÈS ═══ -->
@@ -2434,6 +2458,67 @@ function applyAdminRestrictions() {
 }
 
 /* ════════════════════════════════════════════
+   CHALLENGES — défis hebdomadaires (set prédéfini)
+   Progression calculée depuis les données réelles.
+   Semaine = depuis dimanche (cohérent avec renderProgres).
+════════════════════════════════════════════ */
+function renderChallenges() {
+  var listEl  = document.getElementById('ch-list');
+  var countEl = document.getElementById('ch-count');
+  if (!listEl) return;
+
+  var now = new Date();
+  var semStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  semStart.setDate(semStart.getDate() - now.getDay());
+  function inWeek(d) { return d && new Date(d) >= semStart; }
+
+  var weekPoints = (DB.points || []).filter(function(p){ return inWeek(p.date); });
+  var nbCheckins  = (DB.checkins || []).filter(function(c){ return inWeek(c.date); }).length;
+  var nbCC        = (DB.cc_sessions || []).filter(function(s){ return inWeek(s.date); }).length;
+  var nbAudioSons = weekPoints.filter(function(p){ return p.action === 'audio' || p.action === 'sons'; }).length;
+  var cats = {};
+  weekPoints.forEach(function(p){ if (p.action) cats[p.action] = true; });
+  var nbCats  = Object.keys(cats).length;
+  var streak  = (typeof calcStreak === 'function' ? calcStreak() : 0);
+
+  var challenges = [
+    { icon:'📝', titre:'Régularité',     desc:'Faites 5 check-ins cette semaine',             cur:nbCheckins,  cible:5, unite:'check-ins' },
+    { icon:'💓', titre:'Cœur posé',      desc:'3 séances de cohérence cardiaque',             cur:nbCC,        cible:3, unite:'séances' },
+    { icon:'🎧', titre:'Détente sonore', desc:'4 séances audio ou sons immersifs',            cur:nbAudioSons, cible:4, unite:'séances' },
+    { icon:'🧭', titre:'Exploration',    desc:'Essayez 3 catégories d’activités différentes', cur:nbCats,      cible:3, unite:'catégories' },
+    { icon:'🔥', titre:'Série',          desc:'Maintenez 7 jours consécutifs',                cur:streak,      cible:7, unite:'jours' }
+  ];
+
+  var done = 0;
+  listEl.innerHTML = challenges.map(function(ch) {
+    var cur = Math.min(ch.cur, ch.cible);
+    var pct = ch.cible > 0 ? Math.min(Math.round(ch.cur / ch.cible * 100), 100) : 0;
+    var ok  = ch.cur >= ch.cible;
+    if (ok) done++;
+    var barColor = ok ? '#1D9E75' : 'var(--gold)';
+    var pill = ok
+      ? '<span style="font-size:.6rem;font-weight:600;color:#0F6E56;background:rgba(29,158,117,.14);border:1px solid rgba(29,158,117,.3);border-radius:20px;padding:.15rem .6rem;white-space:nowrap">✓ Relevé</span>'
+      : '<span style="font-size:.62rem;color:var(--text-muted);white-space:nowrap">' + cur + '/' + ch.cible + ' ' + ch.unite + '</span>';
+    return '<div class="card" style="margin-bottom:.7rem;padding:1rem 1.2rem">'
+      +   '<div style="display:flex;align-items:center;gap:.9rem">'
+      +     '<div style="font-size:1.5rem;line-height:1">' + ch.icon + '</div>'
+      +     '<div style="flex:1;min-width:0">'
+      +       '<div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.15rem">'
+      +         '<span style="font-size:.85rem;font-weight:600;color:var(--text)">' + ch.titre + '</span>' + pill
+      +       '</div>'
+      +       '<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">' + ch.desc + '</div>'
+      +       '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">'
+      +         '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:3px;transition:width .8s ease"></div>'
+      +       '</div>'
+      +     '</div>'
+      +   '</div>'
+      + '</div>';
+  }).join('');
+
+  if (countEl) countEl.textContent = done + '/' + challenges.length;
+}
+
+/* ════════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════════ */
 function switchView(id) {
@@ -2461,6 +2546,7 @@ function switchView(id) {
   if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
   if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 200); }
+  if (id === 'challenges') renderChallenges();
   if (id === 'profil') renderProfil();
   if (id === 'admin') {
     applyAdminRestrictions();
