@@ -4243,10 +4243,8 @@ function renderProgresData(d) {
     }
   }
   if (typeof renderConstellation === 'function') { try { renderConstellation(d.historique, d.repartition); } catch(e){ console.warn('ciel', e); } }
-  // Streak : badge hero + carte accueil
-  var sc = calcStreakInfo(d);
-  renderStreakBadge(sc);
-  renderStreakCard(sc);
+  // NB : la carte streak (#streak-card-wrap) appartient à l'accueil et est rendue par renderDashboard.
+  // Ne pas la (re)rendre ici — la vue Mes progrès calcule un streak=0 et viderait la carte de l'accueil.
 }
 
 
