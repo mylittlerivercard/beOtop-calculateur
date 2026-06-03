@@ -34,8 +34,8 @@ def add_headers(response):
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "font-src 'self' https://fonts.gstatic.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
         "frame-src https://www.youtube.com https://player.vimeo.com https://w.soundcloud.com; "
         "img-src 'self' data: https:; "
         "media-src 'self' https://mylittlerivercard.github.io https://beotop-api.onrender.com https://soundcloud.com https://*.sndcdn.com blob:; "
