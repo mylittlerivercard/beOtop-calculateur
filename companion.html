@@ -3176,7 +3176,7 @@ function renderStreakBadge(sc) {
 function renderStreakCard(sc) {
   var wrap = document.getElementById('streak-card-wrap');
   if (!wrap) return;
-  if (sc.streak === 0 && sc.prevStreak === 0) { wrap.innerHTML = ''; return; }
+  // Carte toujours visible (3e cadre de l'accueil) : à streak 0, état 'new' = "Nouveau départ" + J-7.
 
   // Paliers / libellés / récompenses — calcul d'affichage local (n'altère pas calcStreakInfo)
   var MS = [7, 14, 30];
