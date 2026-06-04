@@ -272,6 +272,8 @@
 .ca-top-badge { font-size:.6rem; padding:.15rem .5rem; border-radius:20px; background:rgba(201,169,110,.1); color:var(--gold); }
 @media(max-width:700px){ .ca-charts{ grid-template-columns:1fr; } }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 <div class="topbar">
@@ -582,6 +584,20 @@
         <a id="btn-ouvrir-app" href="/companion" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;border-radius:9px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);color:var(--gold);font-size:.72rem;font-family:'Jost',sans-serif;text-decoration:none">
           ↗ Ouvrir l'app
         </a>
+        <div id="export-btns" style="display:inline-flex;gap:.5rem;margin-left:auto">
+          <button onclick="exportCSV()"
+            style="padding:6px 14px;border-radius:8px;border:1px solid #028090;
+                   background:white;color:#028090;font-size:.8rem;
+                   font-weight:500;cursor:pointer">
+            ⬇ CSV
+          </button>
+          <button onclick="exportPDF()"
+            style="padding:6px 14px;border-radius:8px;border:none;
+                   background:#028090;color:white;font-size:.8rem;
+                   font-weight:500;cursor:pointer">
+            ⬇ PDF
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1621,6 +1637,7 @@ function loadCompanion() {
   fetch('/api/dashboard/companion-analytics?site_slug=' + siteSlug + '&days=' + period, { credentials:'include' })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
+      window._caPeriod = period; window._caSite = siteSlug; window._caData = d || null;
       if (!d) { console.warn('companion analytics: no data'); return; }
 
       /* KPIs */
@@ -1714,6 +1731,219 @@ function loadCompanion() {
 function setText(id, val) {
   var el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+/* ════════════════════════════════════════════
+   EXPORT STATISTIQUES COMPANION — CSV & PDF
+   Utilise window._caData (alimentée par loadCompanion).
+════════════════════════════════════════════ */
+var _CA_CATS = [
+  { key:'top_audio',     label:'Bibliothèque audio' },
+  { key:'top_video',     label:'Bibliothèque vidéo' },
+  { key:'top_exercices', label:'Exercices express' },
+  { key:'top_sons',      label:'Sons immersifs' },
+  { key:'top_jeux',      label:'Jeux cognitifs' },
+  { key:'top_cc',        label:'Respiration & Cohérence' },
+  { key:'top_podcast',   label:'Podcasts' },
+  { key:'top_posts',     label:'Posts internes' }
+];
+var _CA_ACTION_LABELS = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo', podcast:'Podcast', posts:'Posts internes' };
+
+function _caToday() { return new Date().toISOString().slice(0, 10); }
+function _caSlug()  { return (window._caSite || 'site') || 'site'; }
+function _caFilename(ext) { return 'beotop_stats_' + _caSlug() + '_' + _caToday() + '.' + ext; }
+function _caPeriodLabel() {
+  var map = { '7':'7 derniers jours', '30':'30 derniers jours', '90':'3 derniers mois', '365':'12 derniers mois' };
+  var p = String(window._caPeriod || '30');
+  return map[p] || (p + ' jours');
+}
+function _caDownload(content, filename, mime) {
+  var blob = new Blob([content], { type: mime });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function exportCSV() {
+  var d = window._caData;
+  var rows = [];
+  function cell(v){ v = (v == null ? '' : String(v)); return /[";\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function line(arr){ rows.push(arr.map(cell).join(';')); }
+  function blank(){ rows.push(''); }
+
+  line(['beOtop — Rapport de statistiques']);
+  line(['Site', _caSlug()]);
+  line(['Période', _caPeriodLabel()]);
+  line(['Généré le', _caToday()]);
+
+  if (!d) {
+    blank(); line(['Aucune donnée sur cette période']);
+  } else {
+    blank(); blank(); line(['Top activités utilisées']);
+    line(['Rang', 'Activité', "Nombre d'utilisations"]);
+    var ta = d.top_actions || [];
+    if (!ta.length) line(['Aucune donnée sur cette période']);
+    else ta.forEach(function(a, i){ line([i + 1, _CA_ACTION_LABELS[a.action] || a.action, a.nb]); });
+
+    blank(); blank(); line(['Activité par jour de semaine']);
+    line(['Jour', 'Sessions']);
+    var jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    var wd = d.weekdays || [];
+    if (!wd.length) line(['Aucune donnée sur cette période']);
+    else wd.forEach(function(w){ line([jours[w.dow] || w.dow, w.nb]); });
+
+    blank(); blank(); line(['Classement global tous contenus']);
+    line(['Rang', 'Contenu', 'Type', 'Nombre']);
+    var tg = d.top_global || [];
+    if (!tg.length) line(['Aucune donnée sur cette période']);
+    else tg.forEach(function(it, i){ line([i + 1, it.label, _CA_ACTION_LABELS[it.action] || it.action, it.nb]); });
+
+    blank(); blank(); line(['Top contenus par catégorie']);
+    var any4 = false;
+    _CA_CATS.forEach(function(c){
+      var items = d[c.key] || [];
+      if (!items.length) return;
+      any4 = true;
+      blank(); line([c.label]);
+      line(['Rang', 'Contenu', 'Nombre']);
+      items.forEach(function(it, i){ line([i + 1, it.label, it.nb]); });
+    });
+    if (!any4) { blank(); line(['Aucune donnée sur cette période']); }
+  }
+
+  _caDownload('﻿' + rows.join('\r\n'), _caFilename('csv'), 'text/csv;charset=utf-8;');
+}
+
+function exportPDF() {
+  if (!window.jspdf || !window.jspdf.jsPDF) { alert('Librairie PDF non disponible'); return; }
+  var JsPDF = window.jspdf.jsPDF;
+  var doc = new JsPDF({ unit:'mm', format:'a4' });
+  var pageW = doc.internal.pageSize.getWidth();
+  var pageH = doc.internal.pageSize.getHeight();
+  var TEAL = [2, 128, 144], ALT = [240, 247, 247];
+  var today = _caToday();
+  var d = window._caData;
+
+  // En-tête
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(24); doc.setTextColor(2, 128, 144);
+  doc.text('beOtop', 14, 20);
+  doc.setFontSize(15); doc.setTextColor(40, 40, 40);
+  doc.text('Rapport de statistiques', 14, 30);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(90, 90, 90);
+  doc.text('Site : ' + _caSlug() + '   ·   Période : ' + _caPeriodLabel() + '   ·   Généré le ' + today, 14, 37);
+  doc.setDrawColor(2, 128, 144); doc.setLineWidth(0.6); doc.line(14, 41, pageW - 14, 41);
+
+  function addFooters() {
+    var n = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+      doc.text('beOtop - Rapport confidentiel - ' + today, pageW / 2, pageH - 8, { align:'center' });
+    }
+  }
+
+  if (!d) {
+    doc.setFontSize(12); doc.setTextColor(120, 120, 120);
+    doc.text('Aucune donnée sur cette période', 14, 55);
+    addFooters();
+    doc.save(_caFilename('pdf'));
+    return;
+  }
+
+  // KPIs bandeau (4 encadrés)
+  var kpis = [
+    { label:'Sessions totales',    val: d.sessions_total || 0 },
+    { label:'Utilisateurs actifs', val: d.users_actifs   || 0 },
+    { label:'Check-ins',           val: d.nb_checkins     || 0 },
+    { label:'Sessions cohérence',  val: d.nb_cc           || 0 }
+  ];
+  var gap = 4, by = 48, bh = 20, bw = (pageW - 28 - 3 * gap) / 4;
+  kpis.forEach(function(k, i){
+    var x = 14 + i * (bw + gap);
+    doc.setFillColor(240, 247, 247); doc.setDrawColor(2, 128, 144); doc.setLineWidth(0.3);
+    doc.roundedRect(x, by, bw, bh, 2, 2, 'FD');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(2, 128, 144);
+    doc.text(String(k.val), x + bw / 2, by + 9, { align:'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(90, 90, 90);
+    doc.text(k.label, x + bw / 2, by + 15, { align:'center' });
+  });
+
+  var headStyles = { fillColor: TEAL, textColor: 255, fontStyle:'bold' };
+  var alt = { fillColor: ALT };
+
+  // Top activités
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(2, 128, 144);
+  doc.text('Top activités utilisées', 14, by + bh + 10);
+  var ta = (d.top_actions || []).map(function(a, i){ return [String(i + 1), _CA_ACTION_LABELS[a.action] || a.action, String(a.nb)]; });
+  doc.autoTable({
+    startY: by + bh + 13,
+    head: [['Rang', 'Activité', 'Utilisations']],
+    body: ta.length ? ta : [['-', 'Aucune donnée sur cette période', '-']],
+    headStyles: headStyles, alternateRowStyles: alt, styles:{ fontSize:9 }, margin:{ left:14, right:14 }
+  });
+
+  // Page 2 — Activité par jour + Classement global
+  doc.addPage();
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(2, 128, 144);
+  doc.text('Activité par jour de semaine', 14, 18);
+  var jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  var wd = (d.weekdays || []).map(function(w){ return [jours[w.dow] || String(w.dow), String(w.nb)]; });
+  doc.autoTable({
+    startY: 21,
+    head: [['Jour', 'Sessions']],
+    body: wd.length ? wd : [['Aucune donnée sur cette période', '-']],
+    headStyles: headStyles, alternateRowStyles: alt, styles:{ fontSize:9 }, margin:{ left:14, right:14 }
+  });
+
+  var yGlobal = doc.lastAutoTable.finalY + 10;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(2, 128, 144);
+  doc.text('Classement global - tous contenus', 14, yGlobal);
+  var medals = ['🥇', '🥈', '🥉'];
+  var tg = (d.top_global || []).map(function(it, i){
+    var rank = (i < 3 ? medals[i] + ' ' : '') + (i + 1);
+    return [rank, it.label, _CA_ACTION_LABELS[it.action] || it.action, String(it.nb)];
+  });
+  doc.autoTable({
+    startY: yGlobal + 3,
+    head: [['Rang', 'Contenu', 'Type', 'Nombre']],
+    body: tg.length ? tg : [['-', 'Aucune donnée sur cette période', '-', '-']],
+    headStyles: headStyles, alternateRowStyles: alt, styles:{ fontSize:9 }, margin:{ left:14, right:14 }
+  });
+
+  // Page 3 — Top contenus par catégorie (2 colonnes)
+  doc.addPage();
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(2, 128, 144);
+  doc.text('Top contenus par catégorie', 14, 18);
+  var colW = (pageW - 28 - 6) / 2;
+  var colX = [14, 14 + colW + 6];
+  var colY = [26, 26];
+  var hasCat = false;
+  _CA_CATS.forEach(function(c){
+    var items = d[c.key] || [];
+    if (!items.length) return;
+    hasCat = true;
+    var col = (colY[0] <= colY[1]) ? 0 : 1;
+    if (colY[col] > pageH - 40) { doc.addPage(); colY = [20, 20]; col = 0; }
+    var body = items.map(function(it, i){ return [String(i + 1), it.label, String(it.nb)]; });
+    doc.autoTable({
+      startY: colY[col],
+      margin: { left: colX[col] },
+      tableWidth: colW,
+      head: [[{ content:c.label, colSpan:3, styles:{ halign:'left', fillColor: TEAL, textColor:255 } }], ['Rang', 'Contenu', 'Nombre']],
+      body: body,
+      headStyles: headStyles, alternateRowStyles: alt, styles:{ fontSize:8, cellPadding:1.5 }
+    });
+    colY[col] = doc.lastAutoTable.finalY + 6;
+  });
+  if (!hasCat) {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(120, 120, 120);
+    doc.text('Aucune donnée sur cette période', 14, 30);
+  }
+
+  addFooters();
+  doc.save(_caFilename('pdf'));
 }
 
 function setBar(barId, valId, val, max) {
