@@ -791,6 +791,7 @@ function buildSiteBar(){
   var sel=document.createElement('select');sel.className='period-sel';
   sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){currentPeriod=this.value;loadStats();};bar.appendChild(sel);
+  bar.appendChild(_exportBtns('exportCSV_Utilisateurs()','exportPDF_Utilisateurs()'));
 }
 function updateActiveChip(){
   document.querySelectorAll('#site-bar .site-chip').forEach(function(c){var isAll=currentSite===null&&c.textContent==='Tous les sites';c.classList.toggle('active',c.dataset.slug===currentSite||isAll);});
@@ -801,6 +802,7 @@ function updateActiveChip(){
 
 async function loadStats(){
   var d=await fetch('/api/stats?period='+currentPeriod+(currentSite?'&site='+currentSite:''),{credentials:'include'}).then(function(r){return r.json();}).catch(function(){return{total_seances:0};});
+  window._statsData=d;window._statsSite=currentSite;window._statsPeriod=currentPeriod;
   realSeancesTotal=d.total_seances||0;
   document.getElementById('kpi-total').textContent=fnum(realSeancesTotal);
   var pL={today:"Aujourd'hui",week:'sur les 7 derniers jours',month:'sur les 30 derniers jours',ytd:'depuis le 1er janvier',q1:'1er trimestre '+new Date().getFullYear(),q2:'2e trimestre '+new Date().getFullYear(),q3:'3e trimestre '+new Date().getFullYear(),q4:'4e trimestre '+new Date().getFullYear()};
@@ -845,12 +847,14 @@ function buildSensorBar(){
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(sensorSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' · '+s.ville:'');c.onclick=function(){sensorSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active');});c.classList.add('active');loadSensorStats();};bar.appendChild(c);});
   var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today' selected>Aujourd'hui</option><option value='week'>7 jours</option><option value='month'>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.onchange=function(){sensorPeriod=this.value;loadSensorStats();};bar.appendChild(sel);
+  bar.appendChild(_exportBtns('exportCSV_Capteurs()','exportPDF_Capteurs()'));
 }
 
 async function loadSensorStats(){
   if(!sensorSite){showSensorEmpty();return;}
   var d=await fetch('/api/sensors/stats?site_slug='+sensorSite+'&period='+sensorPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
   if(!d){showSensorEmpty();return;}
+  window._sensorData=d;
   document.getElementById('s-kpi-passages').textContent=fnum(d.total_passages||0);
   document.getElementById('s-kpi-passages-sub').textContent='~'+Math.round((d.total_passages||0)/2)+' personnes estimées';
   var occ=d.occupation_par_atelier||[];
@@ -1835,10 +1839,15 @@ async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
   }
 
   // Rechargement + bouton déclencheur selon le tab
-  const isQVCT = containerId === 'view-qvct';
-  const reloadFn = isQVCT ? (typeof loadQvct === 'function' ? loadQvct : null)
-                          : (typeof loadCompanion === 'function' ? loadCompanion : null);
-  const btn = document.querySelector(isQVCT ? 'button[onclick="exportQVCTPDF()"]' : 'button[onclick="exportPDF()"]');
+  const _tabs = {
+    'view-companion': { reload: 'loadCompanion',  btn: 'button[onclick="exportPDF()"]' },
+    'view-qvct':      { reload: 'loadQvct',        btn: 'button[onclick="exportQVCTPDF()"]' },
+    'view-capteurs':  { reload: 'loadSensorStats', btn: 'button[onclick="exportPDF_Capteurs()"]' },
+    'view-stats':     { reload: 'loadStats',       btn: 'button[onclick="exportPDF_Utilisateurs()"]' }
+  };
+  const _cfg = _tabs[containerId] || {};
+  const reloadFn = (_cfg.reload && typeof window[_cfg.reload] === 'function') ? window[_cfg.reload] : null;
+  const btn = _cfg.btn ? document.querySelector(_cfg.btn) : null;
   const originalText = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Génération…'; btn.disabled = true; }
 
@@ -1846,7 +1855,8 @@ async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
     // Attendre que les données soient rendues : un KPI clé ne doit plus afficher "—" / "400"
     const kpiEl = container.querySelector('[id*="sessions"]')
                || container.querySelector('.ca-kpi-val')
-               || container.querySelector('.qvct-big');
+               || container.querySelector('.qvct-big')
+               || container.querySelector('.kpi-val');
     const kpiTxt = kpiEl ? kpiEl.textContent.trim() : '';
     if (kpiEl && (kpiTxt === '—' || kpiTxt === '400' || kpiTxt === '')) {
       if (reloadFn) {
@@ -1973,6 +1983,159 @@ async function exportQVCTPDF() {
       return 'Site : ' + (qvctSite || '—') + '   ·   Période : ' + _qvctPeriodLabel();
     }
   );
+}
+
+/* ════ Helpers partagés exports Capteurs / Utilisateurs ════ */
+function _periodLabel(p) {
+  var map = { today:"Aujourd'hui", week:'7 jours', month:'30 jours', ytd:'Depuis janvier', q1:'1er trimestre', q2:'2e trimestre', q3:'3e trimestre', q4:'4e trimestre' };
+  return map[p] || p || '';
+}
+function _exportBtns(csvFn, pdfFn) {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:inline-flex;gap:.5rem;margin-left:auto';
+  var csv = document.createElement('button');
+  csv.setAttribute('onclick', csvFn);
+  csv.style.cssText = 'padding:6px 14px;border-radius:8px;border:1px solid #028090;background:white;color:#028090;font-size:.8rem;font-weight:500;cursor:pointer';
+  csv.textContent = '⬇ CSV';
+  var pdf = document.createElement('button');
+  pdf.setAttribute('onclick', pdfFn);
+  pdf.style.cssText = 'padding:6px 14px;border-radius:8px;border:none;background:#028090;color:white;font-size:.8rem;font-weight:500;cursor:pointer';
+  pdf.textContent = '⬇ PDF';
+  wrap.appendChild(csv); wrap.appendChild(pdf);
+  return wrap;
+}
+// Construit un CSV (séparateur virgule, BOM UTF-8). rows = tableau de (tableau de cellules | chaîne).
+function _csvBuild(rows) {
+  function cell(v){ v = (v == null ? '' : String(v)); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  return '﻿' + rows.map(function(r){ return Array.isArray(r) ? r.map(cell).join(',') : cell(r); }).join('\r\n');
+}
+
+/* ════ Retours capteurs ════ */
+async function exportPDF_Capteurs() {
+  const today = new Date().toISOString().slice(0, 10);
+  return _captureAndExport(
+    'view-capteurs',
+    'beOtop — Retours capteurs',
+    'beotop_rapport_capteurs_' + today + '.pdf',
+    function () {
+      return 'Site : ' + (typeof sensorSite !== 'undefined' && sensorSite ? sensorSite : '—')
+        + '   ·   Période : ' + _periodLabel(typeof sensorPeriod !== 'undefined' ? sensorPeriod : '');
+    }
+  );
+}
+
+function exportCSV_Capteurs() {
+  var d = window._sensorData;
+  var site = (typeof sensorSite !== 'undefined' && sensorSite) ? sensorSite : 'site';
+  var today = new Date().toISOString().slice(0, 10);
+  var rows = [];
+  rows.push(['beOtop — Retours capteurs']);
+  rows.push(['Site', site]);
+  rows.push(['Période', _periodLabel(typeof sensorPeriod !== 'undefined' ? sensorPeriod : '')]);
+  rows.push(['Généré le', today]);
+
+  if (!d) {
+    rows.push([]); rows.push(['Aucune donnée sur cette période']);
+  } else {
+    // Section 1 — Occupation par atelier (fusion occupation + sessions)
+    rows.push([]); rows.push([]); rows.push(['Occupation par atelier']);
+    rows.push(['Atelier', 'Sessions', 'Taux occupation %', 'Durée moyenne (min)']);
+    var occ = d.occupation_par_atelier || [];
+    var sess = d.sessions_par_atelier || [];
+    var bySess = {};
+    sess.forEach(function(a){ bySess[a.atelier] = a; });
+    var byOcc = {};
+    occ.forEach(function(a){ byOcc[a.atelier] = a; });
+    var names = {};
+    occ.forEach(function(a){ names[a.atelier] = true; });
+    sess.forEach(function(a){ names[a.atelier] = true; });
+    var keys = Object.keys(names);
+    if (!keys.length) rows.push(['Aucune donnée sur cette période']);
+    else keys.forEach(function(at){
+      var o = byOcc[at] || {}, s = bySess[at] || {};
+      var dureeMin = s.duree_moy_sec ? Math.round(s.duree_moy_sec / 60) : '';
+      rows.push([at, (s.nb_sessions != null ? s.nb_sessions : ''), (o.taux_occupation != null ? o.taux_occupation : ''), dureeMin]);
+    });
+
+    // Section 2 — Signaux par heure (donnée disponible : passages_par_heure)
+    rows.push([]); rows.push([]); rows.push(['Passages par heure']);
+    rows.push(['Heure', 'Nb passages']);
+    var pph = d.passages_par_heure || [];
+    if (!pph.length) rows.push(['Aucune donnée sur cette période']);
+    else pph.forEach(function(r){ rows.push([String(r.h).padStart(2, '0') + 'h', r.n]); });
+  }
+
+  _caDownload(_csvBuild(rows), 'beotop_capteurs_' + site + '_' + today + '.csv', 'text/csv;charset=utf-8;');
+}
+
+/* ════ Retours utilisateurs ════ */
+async function exportPDF_Utilisateurs() {
+  const today = new Date().toISOString().slice(0, 10);
+  return _captureAndExport(
+    'view-stats',
+    'beOtop — Retours utilisateurs',
+    'beotop_rapport_utilisateurs_' + today + '.pdf',
+    function () {
+      return 'Site : ' + (typeof currentSite !== 'undefined' && currentSite ? currentSite : 'Tous les sites')
+        + '   ·   Période : ' + _periodLabel(typeof currentPeriod !== 'undefined' ? currentPeriod : '');
+    }
+  );
+}
+
+function exportCSV_Utilisateurs() {
+  var d = window._statsData;
+  var site = (typeof currentSite !== 'undefined' && currentSite) ? currentSite : 'tous';
+  var today = new Date().toISOString().slice(0, 10);
+  var rows = [];
+  rows.push(['beOtop — Retours utilisateurs']);
+  rows.push(['Site', site]);
+  rows.push(['Période', _periodLabel(typeof currentPeriod !== 'undefined' ? currentPeriod : '')]);
+  rows.push(['Généré le', today]);
+
+  if (!d) {
+    rows.push([]); rows.push(['Aucune donnée sur cette période']);
+  } else {
+    // Note : pas de retours individuels (données agrégées kiosque, RGPD k-anonymat)
+    rows.push([]); rows.push(['Retours individuels non disponibles (données agrégées · RGPD)']);
+
+    // Scores moyens disponibles : ressenti en sortie (mood)
+    rows.push([]); rows.push([]); rows.push(['Ressenti en sortie']);
+    rows.push(['Ressenti', 'Nombre', '%']);
+    var mood = d.by_mood || [];
+    var totMood = mood.reduce(function(s, m){ return s + (m.n || 0); }, 0);
+    if (!mood.length) rows.push(['Aucune donnée sur cette période']);
+    else mood.forEach(function(m){ rows.push([m.mood, m.n, totMood ? Math.round(m.n / totMood * 100) : 0]); });
+
+    // Séances par département
+    rows.push([]); rows.push([]); rows.push(['Séances par département']);
+    rows.push(['Département', 'Séances']);
+    var deps = d.by_departement || [];
+    if (!deps.length) rows.push(['Aucune donnée sur cette période']);
+    else deps.forEach(function(x){ rows.push([x.label, x.n]); });
+
+    // Ateliers utilisés
+    rows.push([]); rows.push([]); rows.push(['Ateliers utilisés']);
+    rows.push(['Atelier', 'Séances']);
+    var ats = d.by_atelier || [];
+    if (!ats.length) rows.push(['Aucune donnée sur cette période']);
+    else ats.forEach(function(x){ rows.push([x.atelier, x.n]); });
+
+    // Fréquentation par heure
+    rows.push([]); rows.push([]); rows.push(['Fréquentation par heure']);
+    rows.push(['Heure', 'Séances']);
+    var hrs = d.by_hour || [];
+    if (!hrs.length) rows.push(['Aucune donnée sur cette période']);
+    else hrs.forEach(function(x){ rows.push([String(x.h).padStart(2, '0') + 'h', x.n]); });
+
+    // Tendance quotidienne
+    rows.push([]); rows.push([]); rows.push(['Tendance quotidienne']);
+    rows.push(['Date', 'Séances']);
+    var days = d.by_day || [];
+    if (!days.length) rows.push(['Aucune donnée sur cette période']);
+    else days.forEach(function(x){ rows.push([(x.date || x.day || x.label || x.d || ''), x.n]); });
+  }
+
+  _caDownload(_csvBuild(rows), 'beotop_utilisateurs_' + site + '_' + today + '.csv', 'text/csv;charset=utf-8;');
 }
 
 function setBar(barId, valId, val, max) {
