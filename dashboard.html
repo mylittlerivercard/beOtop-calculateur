@@ -933,6 +933,7 @@ function buildQvctBar(){
   sites.forEach(function(s){var c=document.createElement('div');c.className='site-chip'+(qvctSite===s.slug?' active':'');c.dataset.slug=s.slug;c.textContent=s.nom+(s.ville?' · '+s.ville:'');c.onclick=function(){qvctSite=s.slug;bar.querySelectorAll('.site-chip').forEach(function(x){x.classList.remove('active');});c.classList.add('active');loadEffInp();loadQvct();};bar.appendChild(c);});
   var sel=document.createElement('select');sel.className='period-sel';sel.innerHTML="<option value='today'>Aujourd'hui</option><option value='week'>7 jours</option><option value='month' selected>30 jours</option><option value='ytd'>Depuis jan.</option><option value='q1'>1er trimestre</option><option value='q2'>2e trimestre</option><option value='q3'>3e trimestre</option><option value='q4'>4e trimestre</option>";
   sel.value=qvctPeriod;sel.onchange=function(){qvctPeriod=this.value;loadQvct();};bar.appendChild(sel);
+  var pdfBtn=document.createElement('button');pdfBtn.setAttribute('onclick','exportQVCTPDF()');pdfBtn.style.cssText='padding:6px 14px;border-radius:8px;border:none;background:#028090;color:white;font-size:.8rem;font-weight:500;cursor:pointer;margin-left:auto';pdfBtn.textContent='⬇ PDF';bar.appendChild(pdfBtn);
   loadEffInp();
 }
 
@@ -1816,49 +1817,48 @@ function exportCSV() {
   _caDownload('﻿' + rows.join('\r\n'), _caFilename('csv'), 'text/csv;charset=utf-8;');
 }
 
-async function exportPDF() {
+function _qvctPeriodLabel() {
+  var map = { today:"Aujourd'hui", week:'7 jours', month:'30 jours', ytd:'Depuis janvier', q1:'1er trimestre', q2:'2e trimestre', q3:'3e trimestre', q4:'4e trimestre' };
+  return map[qvctPeriod] || qvctPeriod;
+}
+
+/* Logique commune de capture + export PDF (Companion & QVCT). */
+async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
   const { jsPDF } = window.jspdf;
 
-  // Conteneur principal du tab Companion (KPIs, graphiques, tableaux)
-  const container = document.getElementById('view-companion')
-    || document.getElementById('ca-companion-content')
-    || document.querySelector('[id*="companion"]')
-    || document.querySelector('.ca-section');
-
-  if (!container) {
-    alert('Contenu non trouvé'); return;
-  }
+  // Conteneur principal du tab (KPIs, graphiques, tableaux)
+  const container = document.getElementById(containerId)
+    || document.querySelector('[id*="' + containerId + '"]');
+  if (!container) { alert('Contenu non trouvé'); return; }
   if (typeof html2canvas !== 'function') {
     alert('Librairie de capture (html2canvas) non disponible'); return;
   }
 
-  // Feedback visuel pendant la génération
-  const btn = document.querySelector('button[onclick="exportPDF()"]');
+  // Rechargement + bouton déclencheur selon le tab
+  const isQVCT = containerId === 'view-qvct';
+  const reloadFn = isQVCT ? (typeof loadQvct === 'function' ? loadQvct : null)
+                          : (typeof loadCompanion === 'function' ? loadCompanion : null);
+  const btn = document.querySelector(isQVCT ? 'button[onclick="exportQVCTPDF()"]' : 'button[onclick="exportPDF()"]');
   const originalText = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Génération…'; btn.disabled = true; }
 
   try {
-    // Attendre que les données soient rendues
-    // Vérifier qu'un KPI clé n'affiche plus "—"
+    // Attendre que les données soient rendues : un KPI clé ne doit plus afficher "—" / "400"
     const kpiEl = container.querySelector('[id*="sessions"]')
-               || container.querySelector('.ca-kpi-val');
-    if (kpiEl && kpiEl.textContent.trim() === '—') {
-      // Les données ne sont pas encore chargées
-      // Déclencher le rechargement si une fonction existe
-      if (typeof loadCompanion === 'function') {
-        await new Promise(resolve => {
-          loadCompanion();
-          setTimeout(resolve, 2000); // attendre 2s
-        });
+               || container.querySelector('.ca-kpi-val')
+               || container.querySelector('.qvct-big');
+    const kpiTxt = kpiEl ? kpiEl.textContent.trim() : '';
+    if (kpiEl && (kpiTxt === '—' || kpiTxt === '400' || kpiTxt === '')) {
+      if (reloadFn) {
+        await new Promise(resolve => { reloadFn(); setTimeout(resolve, 2000); });
       } else {
         await new Promise(r => setTimeout(r, 2000));
       }
     } else {
-      // Données présentes mais laisser les canvas Chart.js finir
       await new Promise(r => setTimeout(r, 300));
     }
 
-    // Capture haute résolution
+    // Capture haute résolution (onclone : recopier les canvas Chart.js)
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
@@ -1866,8 +1866,6 @@ async function exportPDF() {
       backgroundColor: '#ffffff',
       logging: false,
       onclone: (clonedDoc) => {
-        // Copier le contenu des canvas Chart.js
-        // (html2canvas ne capture pas les canvas dynamiques)
         const origCanvases = container.querySelectorAll('canvas');
         const cloneCanvases = clonedDoc.querySelectorAll('canvas');
         origCanvases.forEach((orig, i) => {
@@ -1888,82 +1886,93 @@ async function exportPDF() {
 
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // En-tête sur chaque page
+    // En-tête teal sur chaque page
     const addHeader = (doc, pageNum) => {
-      doc.setFillColor(2, 128, 144); // teal beOtop
+      doc.setFillColor(2, 128, 144);
       doc.rect(0, 0, 210, 12, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text('beOtop — Rapport Companion Analytics', 10, 8);
+      doc.text(titre, 10, 8);
       const today = new Date().toLocaleDateString('fr-FR');
       doc.text('Page ' + pageNum + ' — ' + today, 200, 8, { align: 'right' });
     };
 
-    // Découper l'image en pages A4
-    const contentHeight = pageHeight - 20; // marge haut/bas
-    let position = 0;
+    const contentHeight = pageHeight - 20;
     let pageNum = 1;
-
     addHeader(doc, pageNum);
 
-    // Première page : ajouter un bandeau titre
+    // Page 1 : bandeau titre + sous-titre (site / période)
     doc.setTextColor(2, 128, 144);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    // Site slug et période réels (helpers alimentés par loadCompanion)
-    const siteTxt = (typeof _caSlug === 'function' ? _caSlug() : 'site');
-    const periodTxt = (typeof _caPeriodLabel === 'function' ? _caPeriodLabel() : '12 derniers mois');
-    doc.text('beOtop Companion — Analytics', 10, 20);
+    doc.text(titre, 10, 20);
     doc.setFontSize(9);
     doc.setTextColor(90, 112, 112);
     doc.setFont('helvetica', 'normal');
-    doc.text('Site : ' + siteTxt + '   ·   Période : ' + periodTxt, 10, 27);
+    doc.text(labelFn(), 10, 27);
     doc.setDrawColor(2, 128, 144);
     doc.setLineWidth(0.5);
     doc.line(10, 30, 200, 30);
 
-    // Image du dashboard découpée en pages
+    // Image du dashboard découpée en pages A4
     let yOffset = 0;
-    const firstPageContentY = 35; // après le titre
+    const firstPageContentY = 35;
     const firstPageContentH = contentHeight - 35 + 12;
 
-    // Page 1 : portion de l'image
-    doc.addImage(imgData, 'PNG', 5, firstPageContentY, 200,
-      Math.min(imgHeight, firstPageContentH));
+    doc.addImage(imgData, 'PNG', 5, firstPageContentY, 200, Math.min(imgHeight, firstPageContentH));
     yOffset += firstPageContentH;
 
-    // Pages suivantes
     while (yOffset < imgHeight) {
       doc.addPage();
       pageNum++;
       addHeader(doc, pageNum);
       const remainingH = imgHeight - yOffset;
       const sliceH = Math.min(contentHeight, remainingH);
-      // Décaler l'image pour afficher la portion suivante
-      doc.addImage(imgData, 'PNG', 5, 14 - (yOffset * 200 / imgWidth),
-        200, imgHeight);
+      doc.addImage(imgData, 'PNG', 5, 14 - (yOffset * 200 / imgWidth), 200, imgHeight);
       yOffset += sliceH;
     }
 
-    // Pied de page final
+    // Pied de page sur chaque page
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(160, 160, 160);
-      doc.text(
-        'beOtop EURL — Document confidentiel — ' + new Date().toLocaleDateString('fr-FR'),
-        105, 293, { align: 'center' }
-      );
+      doc.text('beOtop EURL — Document confidentiel — ' + new Date().toLocaleDateString('fr-FR'), 105, 293, { align: 'center' });
     }
 
-    const today2 = new Date().toISOString().slice(0,10);
-    doc.save('beotop_rapport_companion_' + today2 + '.pdf');
+    doc.save(nomFichier);
 
   } finally {
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
+}
+
+async function exportPDF() {
+  const today = new Date().toISOString().slice(0, 10);
+  return _captureAndExport(
+    'view-companion',
+    'beOtop Companion — Analytics',
+    'beotop_rapport_companion_' + today + '.pdf',
+    function () {
+      const siteTxt = (typeof _caSlug === 'function' ? _caSlug() : 'site');
+      const periodTxt = (typeof _caPeriodLabel === 'function' ? _caPeriodLabel() : '12 derniers mois');
+      return 'Site : ' + siteTxt + '   ·   Période : ' + periodTxt;
+    }
+  );
+}
+
+async function exportQVCTPDF() {
+  const today = new Date().toISOString().slice(0, 10);
+  return _captureAndExport(
+    'view-qvct',
+    'beOtop QVCT — Analyse',
+    'beotop_rapport_qvct_' + today + '.pdf',
+    function () {
+      return 'Site : ' + (qvctSite || '—') + '   ·   Période : ' + _qvctPeriodLabel();
+    }
+  );
 }
 
 function setBar(barId, valId, val, max) {
