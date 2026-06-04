@@ -33,8 +33,8 @@ def add_headers(response):
     # Autoriser YouTube et Vimeo en iframe (contenu Companion)
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
         "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
         "frame-src https://www.youtube.com https://player.vimeo.com https://w.soundcloud.com; "
         "img-src 'self' data: https:; "
