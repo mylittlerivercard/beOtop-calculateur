@@ -4804,6 +4804,7 @@ function openVideo(id) {
     return;
   }
   logPlay('video', v.titre, v.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  awardPoints('video', v.titre);
   openModal(v.titre,
     '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
     + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
