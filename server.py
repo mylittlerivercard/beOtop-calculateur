@@ -3955,6 +3955,39 @@ def companion_analytics():
             """, [site_slug, days])
             top_jeux = [serialize_row(r) for r in cur.fetchall()]
 
+            # Cohérence cardiaque
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'cc'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'cc'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_cc = [serialize_row(r) for r in cur.fetchall()]
+
+            # Podcasts
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'podcast'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'podcast'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_podcast = [serialize_row(r) for r in cur.fetchall()]
+
+            # Posts internes
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'posts'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'posts'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_posts = [serialize_row(r) for r in cur.fetchall()]
+
             # Top global toutes catégories confondues
             cur.execute("""
                 SELECT action, label, COUNT(*) as nb
@@ -3987,6 +4020,9 @@ def companion_analytics():
         'top_exercices':       top_exercices,
         'top_sons':            top_sons,
         'top_jeux':            top_jeux,
+        'top_cc':              top_cc,
+        'top_podcast':         top_podcast,
+        'top_posts':           top_posts,
         'top_global':          top_global,
     })
 
