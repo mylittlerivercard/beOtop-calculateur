@@ -1838,16 +1838,47 @@ async function exportPDF() {
   if (btn) { btn.textContent = 'Génération…'; btn.disabled = true; }
 
   try {
+    // Attendre que les données soient rendues
+    // Vérifier qu'un KPI clé n'affiche plus "—"
+    const kpiEl = container.querySelector('[id*="sessions"]')
+               || container.querySelector('.ca-kpi-val');
+    if (kpiEl && kpiEl.textContent.trim() === '—') {
+      // Les données ne sont pas encore chargées
+      // Déclencher le rechargement si une fonction existe
+      if (typeof loadCompanion === 'function') {
+        await new Promise(resolve => {
+          loadCompanion();
+          setTimeout(resolve, 2000); // attendre 2s
+        });
+      } else {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    } else {
+      // Données présentes mais laisser les canvas Chart.js finir
+      await new Promise(r => setTimeout(r, 300));
+    }
+
     // Capture haute résolution
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: container.scrollWidth,
-      windowHeight: container.scrollHeight
+      logging: false,
+      onclone: (clonedDoc) => {
+        // Copier le contenu des canvas Chart.js
+        // (html2canvas ne capture pas les canvas dynamiques)
+        const origCanvases = container.querySelectorAll('canvas');
+        const cloneCanvases = clonedDoc.querySelectorAll('canvas');
+        origCanvases.forEach((orig, i) => {
+          if (cloneCanvases[i]) {
+            const ctx = cloneCanvases[i].getContext('2d');
+            cloneCanvases[i].width = orig.width;
+            cloneCanvases[i].height = orig.height;
+            ctx.drawImage(orig, 0, 0);
+          }
+        });
+      }
     });
 
     const imgData = canvas.toDataURL('image/png');
