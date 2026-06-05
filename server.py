@@ -542,7 +542,9 @@ except Exception as e:
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if 'user_id' not in session:
+        # Le role 'demo' (acces public lecture seule) est autorise ; les ecritures
+        # sont bloquees globalement par _demo_guard (before_request).
+        if 'user_id' not in session and session.get('role') != 'demo':
             return jsonify({'error': 'Non authentifie', 'redirect': '/login'}), 401
         return f(*args, **kwargs)
     return decorated
@@ -4246,6 +4248,43 @@ def v1_companion_impact():
         'timeline':         timeline,
         'interpretation':   'Sessions précédées check-in ±2h vs sessions sans check-in',
     })
+
+
+@app.route('/demo')
+def demo_access():
+    """
+    Connecte automatiquement tout visiteur en lecture seule sur demo-beotop.
+    Pas de mot de passe. Redirige vers /dashboard.
+    Rôle 'demo' : accès lecture seule, pas d'écriture, pas de back-office.
+    """
+    session.clear()
+    session['user_id'] = 0
+    session['role'] = 'demo'
+    session['client_id'] = 18
+    session['nom'] = 'Visiteur démo'
+    session['email'] = 'demo@beotop.fr'
+    return redirect('/dashboard')
+
+
+# Garde-fou global du mode démo : verrouille toute écriture et le back-office.
+# Centralisé ici (plutôt que route par route) pour garantir qu'aucune route
+# d'écriture POST/PUT/PATCH/DELETE ne puisse jamais être atteinte en démo.
+_DEMO_WRITE_OK = {'/api/auth/login', '/api/auth/logout'}
+
+@app.before_request
+def _demo_guard():
+    if session.get('role') != 'demo':
+        return  # comportement inchangé pour les sessions authentifiées / anonymes
+    path = request.path or ''
+    # Connexion réelle / déconnexion : autorisées (n'écrivent pas de données métier).
+    if path in _DEMO_WRITE_OK:
+        return
+    # Lecture seule stricte : aucune écriture en base.
+    if request.method not in ('GET', 'HEAD', 'OPTIONS'):
+        return jsonify({'error': 'Accès démo — lecture seule'}), 403
+    # Back-office interdit en démo : on renvoie vers le dashboard.
+    if path == '/admin' or path.startswith('/api/admin'):
+        return redirect('/dashboard')
 
 
 if __name__ == '__main__':
