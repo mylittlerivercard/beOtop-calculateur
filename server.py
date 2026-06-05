@@ -4095,6 +4095,36 @@ def v1_correlation():
                     AND ss.duree_sec > 180
             """, [site_slug])
             global_row = serialize_row(cur.fetchone())
+            # Score de récupération Companion — delta énergie/stress/focus
+            # Principe : check-in Companion dans les 2h précédant une session kiosque
+            # = mood objectif avant. Session kiosque = mood déclaré après.
+            cur.execute(f"""
+                SELECT
+                    COUNT(*) as n_companion,
+                    ROUND(AVG(cc.energie), 1) as energie_moy_avant,
+                    ROUND(AVG(cc.stress), 1) as stress_moy_avant,
+                    ROUND(AVG(cc.focus), 1) as focus_moy_avant,
+                    ROUND(100.0 * COUNT(
+                        CASE WHEN s.mood IN ('Rechargé','Mieux') THEN 1 END
+                    ) / NULLIF(COUNT(*), 0), 1) as taux_recuperation_companion,
+                    ROUND(AVG(
+                        CASE WHEN s.mood = 'Mieux'    THEN 10
+                             WHEN s.mood = 'Rechargé' THEN 7
+                             WHEN s.mood = 'Neutre'   THEN 4
+                             WHEN s.mood = 'Épuisé'   THEN 1
+                        END
+                    ), 1) as score_mood_sortie
+                FROM companion_checkins cc
+                JOIN sessions s
+                    ON s.site_slug = cc.site_slug
+                    AND (s.date + s.heure) BETWEEN cc.created_at
+                                                AND cc.created_at + INTERVAL '2 hours'
+                WHERE cc.site_slug = %s
+                    AND {ts_clause.replace('s.created_at', 'cc.created_at')}
+                    AND cc.energie IS NOT NULL
+                    AND s.mood IS NOT NULL
+            """, [site_slug])
+            companion_row = serialize_row(cur.fetchone()) or {}
     return jsonify({
         'site_slug':    site_slug,
         'period':       period,
@@ -4103,6 +4133,15 @@ def v1_correlation():
         'duree_moy':    global_row.get('duree_moy_globale', 0),
         'ateliers':     ateliers,
         'methode':      'croisement kiosque×PIR ±45min, sessions>3min, n≥3',
+        'companion_correlation': {
+            'n':                 companion_row.get('n_companion', 0),
+            'energie_moy_avant': companion_row.get('energie_moy_avant', 0),
+            'stress_moy_avant':  companion_row.get('stress_moy_avant', 0),
+            'focus_moy_avant':   companion_row.get('focus_moy_avant', 0),
+            'taux_recuperation': companion_row.get('taux_recuperation_companion', 0),
+            'score_mood_sortie': companion_row.get('score_mood_sortie', 0),
+            'interpretation':    'check-in Companion ±2h avant session kiosque',
+        },
     })
 
 
