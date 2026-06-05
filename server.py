@@ -4145,5 +4145,108 @@ def v1_correlation():
     })
 
 
+@app.route('/api/v1/companion-impact', methods=['GET'])
+@login_required
+def v1_companion_impact():
+    """
+    Calcule l'impact de l'usage Companion sur la récupération.
+    Compare les sessions kiosque précédées d'un check-in Companion
+    vs les sessions sans check-in préalable.
+    """
+    site_slug = request.args.get('site_slug')
+    period    = request.args.get('period', 'month')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    # Contrôle accès identique à v1_correlation
+    if session.get('role') not in ('admin', 'demo'):
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+    period_clauses = {
+        'today': "s.created_at >= CURRENT_DATE",
+        'week':  "s.created_at >= NOW() - INTERVAL '7 days'",
+        'month': "s.created_at >= NOW() - INTERVAL '30 days'",
+        'ytd':   "s.created_at >= DATE_TRUNC('year', CURRENT_DATE)",
+    }
+    ts_clause = period_clauses.get(period, period_clauses['month'])
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Sessions AVEC check-in Companion préalable
+            cur.execute(f"""
+                SELECT
+                    COUNT(*) as n,
+                    ROUND(100.0 * COUNT(
+                        CASE WHEN s.mood IN ('Rechargé','Mieux') THEN 1 END
+                    ) / NULLIF(COUNT(*), 0), 1) as taux_recuperation,
+                    ROUND(AVG(cc.energie), 1) as energie_avant,
+                    ROUND(AVG(cc.stress), 1) as stress_avant
+                FROM sessions s
+                JOIN companion_checkins cc
+                    ON cc.site_slug = s.site_slug
+                    AND cc.created_at BETWEEN (s.date + s.heure) - INTERVAL '2 hours'
+                                          AND (s.date + s.heure)
+                WHERE s.site_slug = %s
+                    AND {ts_clause}
+                    AND s.mood IS NOT NULL
+            """, [site_slug])
+            avec_companion = serialize_row(cur.fetchone()) or {}
+
+            # Sessions SANS check-in Companion préalable
+            cur.execute(f"""
+                SELECT
+                    COUNT(*) as n,
+                    ROUND(100.0 * COUNT(
+                        CASE WHEN s.mood IN ('Rechargé','Mieux') THEN 1 END
+                    ) / NULLIF(COUNT(*), 0), 1) as taux_recuperation
+                FROM sessions s
+                WHERE s.site_slug = %s
+                    AND {ts_clause}
+                    AND s.mood IS NOT NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM companion_checkins cc
+                        WHERE cc.site_slug = s.site_slug
+                        AND cc.created_at BETWEEN (s.date + s.heure) - INTERVAL '2 hours'
+                                              AND (s.date + s.heure)
+                    )
+            """, [site_slug])
+            sans_companion = serialize_row(cur.fetchone()) or {}
+
+            # Evolution score énergie/stress sur la période (timeline)
+            cur.execute(f"""
+                SELECT
+                    DATE_TRUNC('week', created_at) as semaine,
+                    ROUND(AVG(energie), 1) as energie_moy,
+                    ROUND(AVG(stress), 1) as stress_moy,
+                    ROUND(AVG(focus), 1) as focus_moy,
+                    COUNT(*) as n_checkins
+                FROM companion_checkins
+                WHERE site_slug = %s
+                    AND {ts_clause.replace('s.created_at', 'created_at')}
+                    AND energie IS NOT NULL
+                GROUP BY DATE_TRUNC('week', created_at)
+                ORDER BY semaine ASC
+            """, [site_slug])
+            timeline = [serialize_row(r) for r in cur.fetchall()]
+
+    # Delta taux récupération avec vs sans Companion
+    taux_avec  = float(avec_companion.get('taux_recuperation') or 0)
+    taux_sans  = float(sans_companion.get('taux_recuperation') or 0)
+    delta      = round(taux_avec - taux_sans, 1)
+
+    return jsonify({
+        'site_slug':        site_slug,
+        'period':           period,
+        'avec_companion':   avec_companion,
+        'sans_companion':   sans_companion,
+        'delta_recuperation': delta,
+        'timeline':         timeline,
+        'interpretation':   'Sessions précédées check-in ±2h vs sessions sans check-in',
+    })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
