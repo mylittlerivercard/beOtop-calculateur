@@ -606,6 +606,19 @@ def logout():
 @login_required
 def me():
     user = get_current_user()
+    if user is None:
+        # Mode demo : pas de ligne users (user_id=0), on renvoie une identite synthetique.
+        if session.get('role') == 'demo':
+            return jsonify({
+                'id': 0,
+                'email': session.get('email', 'demo@beotop.fr'),
+                'nom': session.get('nom', 'Visiteur démo'),
+                'role': 'demo',
+                'client_id': session.get('client_id'),
+                'intervenant_id': None,
+                'intervenant_nom': None
+            })
+        return jsonify({'error': 'Non authentifie', 'redirect': '/login'}), 401
     inv_id, inv_nom = _resolve_intervenant()
     return jsonify({
         'id': user['id'], 'email': user['email'],
@@ -1528,6 +1541,13 @@ def export_csv():
 @app.route('/api/client/sites', methods=['GET'])
 @login_required
 def client_get_sites():
+    # Mode demo : n'exposer que le site vitrine demo-beotop.
+    if session.get('role') == 'demo':
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM sites WHERE slug='demo-beotop'")
+                sites = cur.fetchall()
+        return jsonify([serialize_row(s) for s in sites])
     client_id = session.get('client_id')
     if not client_id and session.get('role') != 'admin':
         return jsonify([])
