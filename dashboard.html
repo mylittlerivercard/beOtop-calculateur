@@ -464,6 +464,13 @@
       <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Fréquence moyenne</div><div class="qvct-big" id="q-frequence" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-frequence-sub">usage par collaborateur</div></div>
       <div class="qvct-score" style="--accent:var(--cream)"><div class="qvct-score-lbl">Atelier phare</div><div class="qvct-big" id="q-pointe" style="font-size:1rem;margin-top:.6rem;color:var(--cream)">—</div><div class="qvct-sub" id="q-pointe-sub">le plus utilisé sur la période</div></div>
     </div>
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-title">&#127981; Corrélation phygitale V1 — Score de récupération mesuré</div>
+      <div style="font-size:.65rem;color:var(--muted);margin-bottom:1rem">
+        Croisement objectif capteurs PIR × déclaratif kiosque · fenêtre temporelle ±45 min · sessions > 3 min
+      </div>
+      <div id="corr-block"><div class="sensor-empty">Chargement...</div></div>
+    </div>
     <div class="qvct-grid-3">
       <div class="card"><div class="card-title">Distribution du ressenti</div><div id="q-mood-dist"></div></div>
       <div class="card"><div class="card-title">Ateliers — part d'activité</div><div id="q-ateliers-part"></div></div>
@@ -946,7 +953,40 @@ async function loadQvct(){
   var dk=await fetch('/api/stats?period='+qvctPeriod+'&site='+qvctSite,{credentials:'include'}).then(function(r){return r.json();}).catch(function(){return{};});
   var dc=await fetch('/api/sensors/stats?site_slug='+qvctSite+'&period='+qvctPeriod,{credentials:'include'}).then(function(r){return r.ok?r.json():{};}).catch(function(){return{};});
   _qD=dk;_qS=dc;renderQvct();
+  loadCorrelation();
   loadCompanionStats();
+}
+
+async function loadCorrelation() {
+  if (!qvctSite) return;
+  var d = await fetch('/api/v1/correlation?site_slug=' + qvctSite + '&period=' + qvctPeriod, {credentials: 'include'})
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .catch(function() { return null; });
+  if (!d || !d.n_total) {
+    document.getElementById('corr-block').innerHTML = '<div class="sensor-empty">Données insuffisantes pour calculer la corrélation sur cette période.</div>';
+    return;
+  }
+  var html = '<div class="kpi-row" style="margin-bottom:1rem">'
+    + '<div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Score récupération global</div><div class="kpi-val">' + d.score_global + '%</div><div class="kpi-sub">' + d.n_total + ' sessions croisées PIR×kiosque</div></div>'
+    + '<div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Durée moyenne en espace</div><div class="kpi-val">' + d.duree_moy + ' min</div><div class="kpi-sub">sessions > 3 min retenues</div></div>'
+    + '<div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Méthode</div><div class="kpi-val" style="font-size:.7rem;margin-top:.4rem">Croisement kiosque × PIR</div><div class="kpi-sub">fenêtre ±45 min</div></div>'
+    + '</div>';
+  if (d.ateliers && d.ateliers.length) {
+    html += '<div class="card"><div class="card-title">Taux de récupération par atelier</div>';
+    var max = d.ateliers[0].taux_recuperation;
+    d.ateliers.forEach(function(a) {
+      var pct = a.taux_recuperation;
+      var col = pct >= 75 ? 'var(--sage)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+      html += '<div class="atelier-row">'
+        + '<div class="atelier-name" style="width:180px">' + a.atelier + '</div>'
+        + '<div class="atelier-bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;--bar-color:' + col + '"></div></div></div>'
+        + '<div class="atelier-taux" style="color:' + col + '">' + pct + '%</div>'
+        + '<div style="font-size:.6rem;color:var(--muted);margin-left:.5rem">n=' + a.n + ' · ' + a.duree_moy_min + ' min</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('corr-block').innerHTML = html;
 }
 
 function renderQvct(){
