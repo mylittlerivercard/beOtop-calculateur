@@ -343,6 +343,7 @@ function submitSession(){
     sessions.push({heure:heure,dept:state.dept,ateliers:state.ateliers.join(', '),mood:state.mood,id:d.id});
     document.getElementById('session-log').textContent='✓ Enregistré · id #'+d.id+' · '+sessions.length+' séance(s) aujourd\'hui';
     setSyncStatus('ok');
+    localStorage.setItem('last_kiosk_session', Date.now());
   })
   .catch(function(){
     var off=JSON.parse(localStorage.getItem('beotop_offline')||'[]');
