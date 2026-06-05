@@ -4027,5 +4027,84 @@ def companion_analytics():
     })
 
 
+@app.route('/api/v1/correlation', methods=['GET'])
+@login_required
+def v1_correlation():
+    site_slug = request.args.get('site_slug')
+    period    = request.args.get('period', 'month')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
+    period_clauses = {
+        'today': "s.created_at >= CURRENT_DATE",
+        'week':  "s.created_at >= NOW() - INTERVAL '7 days'",
+        'month': "s.created_at >= NOW() - INTERVAL '30 days'",
+        'ytd':   "s.created_at >= DATE_TRUNC('year', CURRENT_DATE)",
+    }
+    ts_clause = period_clauses.get(period, period_clauses['month'])
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT
+                    split_part(s.ateliers, ',', 1) as atelier,
+                    COUNT(*) as n,
+                    ROUND(100.0 * COUNT(CASE WHEN s.mood IN ('Rechargé','Mieux') THEN 1 END) / COUNT(*), 1) as taux_recuperation,
+                    ROUND(AVG(ss.duree_sec)/60.0, 1) as duree_moy_min,
+                    COUNT(CASE WHEN s.mood = 'Mieux'    THEN 1 END) as n_mieux,
+                    COUNT(CASE WHEN s.mood = 'Rechargé' THEN 1 END) as n_recharge,
+                    COUNT(CASE WHEN s.mood = 'Neutre'   THEN 1 END) as n_neutre,
+                    COUNT(CASE WHEN s.mood = 'Épuisé'   THEN 1 END) as n_epuise
+                FROM sessions s
+                JOIN sensor_sessions ss
+                    ON ss.site_slug = s.site_slug
+                    AND ss.atelier ILIKE '%%' || split_part(s.ateliers, ',', 1) || '%%'
+                    AND (s.date + s.heure) BETWEEN ss.debut - INTERVAL '45 min'
+                                                AND ss.fin   + INTERVAL '45 min'
+                WHERE s.site_slug = %s
+                    AND {ts_clause}
+                    AND s.mood IS NOT NULL
+                    AND s.ateliers IS NOT NULL
+                    AND ss.duree_sec > 180
+                GROUP BY split_part(s.ateliers, ',', 1)
+                HAVING COUNT(*) >= 3
+                ORDER BY taux_recuperation DESC
+            """, [site_slug])
+            ateliers = [serialize_row(r) for r in cur.fetchall()]
+            cur.execute(f"""
+                SELECT
+                    COUNT(*) as n_total,
+                    ROUND(100.0 * COUNT(CASE WHEN s.mood IN ('Rechargé','Mieux') THEN 1 END) / COUNT(*), 1) as score_global,
+                    ROUND(AVG(ss.duree_sec)/60.0, 1) as duree_moy_globale
+                FROM sessions s
+                JOIN sensor_sessions ss
+                    ON ss.site_slug = s.site_slug
+                    AND ss.atelier ILIKE '%%' || split_part(s.ateliers, ',', 1) || '%%'
+                    AND (s.date + s.heure) BETWEEN ss.debut - INTERVAL '45 min'
+                                                AND ss.fin   + INTERVAL '45 min'
+                WHERE s.site_slug = %s
+                    AND {ts_clause}
+                    AND s.mood IS NOT NULL
+                    AND s.ateliers IS NOT NULL
+                    AND ss.duree_sec > 180
+            """, [site_slug])
+            global_row = serialize_row(cur.fetchone())
+    return jsonify({
+        'site_slug':    site_slug,
+        'period':       period,
+        'score_global': global_row.get('score_global', 0),
+        'n_total':      global_row.get('n_total', 0),
+        'duree_moy':    global_row.get('duree_moy_globale', 0),
+        'ateliers':     ateliers,
+        'methode':      'croisement kiosque×PIR ±45min, sessions>3min, n≥3',
+    })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
