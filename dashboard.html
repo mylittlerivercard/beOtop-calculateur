@@ -618,6 +618,17 @@
       <div class="ca-kpi"><span class="ca-kpi-val" id="ca-livreor">—</span><span class="ca-kpi-lbl">Témoignages</span></div>
     </div>
 
+    <!-- Impact Companion sur la récupération -->
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-title">🔗 Impact Companion sur la récupération</div>
+      <div style="font-size:.65rem;color:var(--muted);margin-bottom:1rem">
+        Comparaison sessions précédées d'un check-in Companion (±2h) vs sessions sans check-in préalable
+      </div>
+      <div id="companion-impact-block">
+        <div class="sensor-empty">Chargement...</div>
+      </div>
+    </div>
+
     <!-- Charts row 1 -->
     <div class="ca-charts">
       <!-- Répartition activités -->
@@ -1704,6 +1715,70 @@ function calcROI(){
 var cpRefreshTimer = null;
 
 
+async function loadCompanionImpact() {
+  // Le tab Companion utilise window._caSite / window._caPeriod (jours) ; on mappe
+  // les jours vers les périodes attendues par /api/v1/companion-impact.
+  var companionSite = window._caSite || currentSite || (sites.length ? sites[0].slug : '');
+  var _pmap = {'7':'week', '30':'month', '90':'ytd', '365':'ytd'};
+  var companionPeriod = _pmap[String(window._caPeriod || '30')] || 'month';
+  if (!companionSite) return;
+  var d = await fetch(
+    '/api/v1/companion-impact?site_slug=' + companionSite + '&period=' + companionPeriod,
+    {credentials: 'include'}
+  ).then(function(r) { return r.ok ? r.json() : null; })
+   .catch(function() { return null; });
+
+  var el = document.getElementById('companion-impact-block');
+  if (!el) return;
+
+  if (!d || (!d.avec_companion.n && !d.sans_companion.n)) {
+    el.innerHTML = '<div class="sensor-empty">Données insuffisantes — activez les check-ins Companion sur ce site.</div>';
+    return;
+  }
+
+  var delta = d.delta_recuperation;
+  var deltaCol = delta > 0 ? 'var(--sage)' : delta < 0 ? 'var(--red)' : 'var(--muted)';
+  var deltaSign = delta > 0 ? '+' : '';
+
+  var html = '<div class="kpi-row" style="margin-bottom:1rem">'
+    + '<div class="kpi"><div class="kpi-label">Sessions avec check-in préalable</div>'
+    + '<div class="kpi-val">' + (d.avec_companion.taux_recuperation || '—') + '%</div>'
+    + '<div class="kpi-sub">n=' + (d.avec_companion.n || 0) + ' sessions</div></div>'
+
+    + '<div class="kpi"><div class="kpi-label">Sessions sans check-in</div>'
+    + '<div class="kpi-val">' + (d.sans_companion.taux_recuperation || '—') + '%</div>'
+    + '<div class="kpi-sub">n=' + (d.sans_companion.n || 0) + ' sessions</div></div>'
+
+    + '<div class="kpi"><div class="kpi-label">Impact Companion</div>'
+    + '<div class="kpi-val" style="color:' + deltaCol + '">' + deltaSign + delta + '%</div>'
+    + '<div class="kpi-sub">delta taux récupération</div></div>'
+    + '</div>';
+
+  if (d.avec_companion.n > 0) {
+    html += '<div style="font-size:.65rem;color:var(--muted);margin-bottom:1rem">'
+      + 'Score moyen avant session — Énergie : <strong>' + (d.avec_companion.energie_avant || '—') + '/10</strong>'
+      + ' · Stress : <strong>' + (d.avec_companion.stress_avant || '—') + '/10</strong>'
+      + '</div>';
+  }
+
+  if (d.timeline && d.timeline.length > 1) {
+    html += '<div class="ca-chart-title" style="margin-bottom:.5rem">Évolution énergie/stress — check-ins Companion</div>';
+    html += '<div id="companion-impact-timeline" style="height:60px;display:flex;align-items:flex-end;gap:2px">';
+    var maxE = Math.max.apply(null, d.timeline.map(function(t) { return t.energie_moy || 0; }).concat([1]));
+    d.timeline.forEach(function(t) {
+      var pct = Math.round((t.energie_moy || 0) / 10 * 100);
+      var sem = (t.semaine || '').slice(5, 10);
+      html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+        + '<div style="width:100%;background:var(--sage);border-radius:3px 3px 0 0;height:' + pct + '%"></div>'
+        + '<div style="font-size:.5rem;color:var(--muted)">' + sem + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
 function loadCompanion() {
   var period = (document.getElementById('ca-period') || {}).value || '30';
   var siteSlug = currentSite || (sites.length ? sites[0].slug : '');
@@ -1711,6 +1786,7 @@ function loadCompanion() {
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
       window._caPeriod = period; window._caSite = siteSlug; window._caData = d || null;
+      loadCompanionImpact();
       if (!d) { console.warn('companion analytics: no data'); return; }
 
       /* KPIs */
