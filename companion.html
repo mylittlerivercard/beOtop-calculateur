@@ -2063,6 +2063,21 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 </div>
 
+<!-- SUGGESTION CHECK-IN APRÈS SESSION -->
+<div id="checkin-suggestion-banner" style="display:none;position:fixed;bottom:1rem;
+  left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1209;
+  padding:.6rem 1.2rem;border-radius:12px;font-size:.7rem;gap:.8rem;
+  align-items:center;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3)">
+  <span>Vous sortez d'une session — comment vous sentez-vous ?</span>
+  <button onclick="openCheckin();this.closest('#checkin-suggestion-banner').style.display='none'"
+    style="background:rgba(0,0,0,.2);border:none;color:#1a1209;
+    padding:.3rem .8rem;border-radius:8px;cursor:pointer;font-size:.7rem">
+    Check-in rapide
+  </button>
+  <button onclick="this.closest('#checkin-suggestion-banner').style.display='none'"
+    style="background:none;border:none;color:#1a1209;cursor:pointer;font-size:.8rem">✕</button>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -2593,6 +2608,8 @@ function closeModal() {
     var parts = k.split('|');
     if (parts.length === 2) logPlayEnd(parts[0], parts[1]);
   });
+  // Retour de session : proposer un check-in si une session kiosque est récente.
+  suggestCheckinAfterSession();
 }
 
 function formatDate(iso) {
@@ -3310,6 +3327,29 @@ function renderHistoryRecent() {
       </div>
       <div class="history-time">${formatDate(s.date)}</div>
     </div>`).join('');
+}
+
+// Suggère un check-in si une session kiosque a eu lieu dans les 30 dernières minutes.
+function suggestCheckinAfterSession() {
+  var lastSession = localStorage.getItem('last_kiosk_session');
+  if (!lastSession) return;
+  var diff = (Date.now() - parseInt(lastSession)) / 60000;
+  if (diff > 30) return;
+
+  var banner = document.getElementById('checkin-suggestion-banner');
+  if (banner) {
+    banner.style.display = 'flex';
+    setTimeout(function() { banner.style.display = 'none'; }, 10000);
+  }
+}
+
+// Ouvre la section check-in (vue d'accueil) depuis le bandeau de suggestion.
+function openCheckin() {
+  if (typeof switchView === 'function') switchView('dashboard');
+  var sec = document.getElementById('checkin-section');
+  if (sec) {
+    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 async function submitCheckin() {
