@@ -962,6 +962,7 @@ async function loadCorrelation() {
   var d = await fetch('/api/v1/correlation?site_slug=' + qvctSite + '&period=' + qvctPeriod, {credentials: 'include'})
     .then(function(r) { return r.ok ? r.json() : null; })
     .catch(function() { return null; });
+  window.correlationData = d || null;
   if (!d || !d.n_total) {
     document.getElementById('corr-block').innerHTML = '<div class="sensor-empty">Données insuffisantes pour calculer la corrélation sur cette période.</div>';
     return;
@@ -1480,10 +1481,37 @@ function renderAtelierMoodHeatmap(byAtelierMood){
   el.innerHTML=html;
 }
 
+// Bloc CSV Corrélation Phygitale V1 — lu depuis window.correlationData (pas de refetch).
+function _qvctCorrelationCsv(){
+  function cell(v){ v=(v==null?'':String(v)); return /[";\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+  function line(arr){ return arr.map(cell).join(';'); }
+  var d=window.correlationData;
+  if(!d){ return 'Corrélation V1;Données non disponibles'; }
+  var rows=[];
+  rows.push('CORRÉLATION PHYGITALE V1');
+  rows.push(line(['Score récupération global', (d.score_global!=null?d.score_global:'—')+'%', (d.n_total||0)+' sessions croisées PIR×kiosque']));
+  rows.push(line(['Durée moyenne en espace', (d.duree_moy!=null?d.duree_moy:'—')+' min', 'sessions > 3 min retenues']));
+  rows.push(line(['Méthode', d.methode||'croisement kiosque×PIR ±45min', '', '']));
+  rows.push('');
+  rows.push('TAUX DE RÉCUPÉRATION PAR ATELIER');
+  rows.push(line(['Atelier','Taux récupération','N sessions','Durée moy (min)']));
+  var ats=d.ateliers||[];
+  if(!ats.length){ rows.push('Aucun atelier sur cette période'); }
+  else ats.forEach(function(a){ rows.push(line([a.atelier, (a.taux_recuperation!=null?a.taux_recuperation:'—')+'%', a.n, a.duree_moy_min])); });
+  return rows.join('\r\n');
+}
+
 function exportQVCT(){
   var today=new Date().toISOString().slice(0,10);
   var from=qvctPeriod==='week'?new Date(Date.now()-7*86400000).toISOString().slice(0,10):qvctPeriod==='month'?new Date(Date.now()-30*86400000).toISOString().slice(0,10):new Date(Date.now()-365*86400000).toISOString().slice(0,10);
-  window.open('/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:''),'_blank');
+  var url='/api/export?from='+from+'&to='+today+(qvctSite?'&site='+qvctSite:'');
+  // Récupère le CSV serveur existant, puis ajoute le bloc Corrélation V1 en fin de fichier.
+  // En cas d'échec réseau, on retombe sur le comportement d'origine (ouverture directe).
+  fetch(url,{credentials:'include'}).then(function(r){return r.ok?r.text():null;}).then(function(csv){
+    if(csv===null){window.open(url,'_blank');return;}
+    var body=csv.replace(/^﻿/,'')+'\r\n\r\n'+_qvctCorrelationCsv();
+    _caDownload('﻿'+body, 'beotop_qvct_'+(qvctSite||'site')+'_'+today+'.csv', 'text/csv;charset=utf-8;');
+  }).catch(function(){window.open(url,'_blank');});
 }
 
 // ═══ ROI ═══
