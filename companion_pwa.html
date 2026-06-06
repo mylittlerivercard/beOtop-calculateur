@@ -1277,9 +1277,48 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 }
 @keyframes drawerFade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes drawerUp   { from { transform: translateY(100%) } to { transform: translateY(0) } }
+/* ══ SPLASH SCREEN ══ */
+#splash {
+  position: fixed; inset: 0; z-index: 9998;
+  background: linear-gradient(145deg, #002626 0%, #004d4d 50%, #001a1a 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.2rem;
+  transition: opacity .5s ease, visibility .5s ease;
+}
+#splash.hidden {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+#splash .splash-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem; font-weight: 300; letter-spacing: .12em;
+  background: linear-gradient(135deg, #00b4b4, #f5855a);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#splash .splash-logo span { font-style: italic; font-weight: 300; }
+#splash .splash-sub {
+  font-size: .65rem; color: rgba(255,255,255,.4);
+  letter-spacing: .2em; text-transform: uppercase;
+  font-family: 'DM Sans', sans-serif;
+}
+#splash .splash-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #00b4b4; animation: splashPulse 1.2s infinite;
+}
+@keyframes splashPulse {
+  0%, 100% { opacity: .3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="splash-logo">beOtop <span>Companion</span></div>
+  <div class="splash-sub">Espace bien-être</div>
+  <div class="splash-dot"></div>
+</div>
 
 <div id="pwa-install-banner">
   <div class="pwa-inner">
@@ -8045,6 +8084,16 @@ if ('serviceWorker' in navigator) {
       .catch(function(err) { console.warn('[PWA] Échec SW :', err); });
   });
 }
+
+function hideSplash() {
+  var splash = document.getElementById('splash');
+  if (!splash) return;
+  setTimeout(function() {
+    splash.classList.add('hidden');
+    setTimeout(function() { splash.remove(); }, 500);
+  }, 1200);
+}
+window.addEventListener('load', hideSplash);
 
 function bnavSwitch(view) {
   switchView(view);
