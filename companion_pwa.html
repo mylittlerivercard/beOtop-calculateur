@@ -192,8 +192,17 @@ input, select, textarea { font-family: inherit; }
 
 /* ══ MAIN CONTENT ══ */
 .main-content { flex: 1; overflow-y: auto; }
-.view { display: none; padding: 2rem; }
+.view {
+  display: none;
+  padding: 2rem;
+  animation: viewFadeIn .22s ease both;
+}
 .view.active { display: block; }
+
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ══ PAGE HEADER ══ */
 .page-header { margin-bottom: 2rem; }
@@ -814,6 +823,10 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
   /* Vues */
   .view { padding: 1rem; }
+  @keyframes viewFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   /* Cards stats (grille 2 colonnes sur mobile) */
   .stats-grid,
@@ -2876,7 +2889,12 @@ function switchView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
-  if (view) view.classList.add('active');
+  if (view) {
+    view.style.animation = 'none';
+    view.offsetHeight; /* force reflow */
+    view.style.animation = '';
+    view.classList.add('active');
+  }
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n => {
     if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'"))
