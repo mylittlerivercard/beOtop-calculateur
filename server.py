@@ -618,7 +618,7 @@ def auth_login():
     session['nom']       = user['nom']
     return jsonify({
         'ok': True, 'role': user['role'], 'nom': user['nom'],
-        'redirect': '/admin' if user['role'] == 'admin' else ('/mon-espace' if user['role'] == 'intervenant' else '/dashboard')
+        'redirect': '/admin' if user['role'] == 'admin' else ('/mon-espace' if user['role'] == 'intervenant' else '/companion_pwa')
     })
 
 @app.route('/api/auth/logout', methods=['POST'])
