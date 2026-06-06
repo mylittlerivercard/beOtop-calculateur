@@ -915,6 +915,79 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   /* Constellation canvas mobile */
   #bcst-home-canvas { height: 200px !important; }
   #home-ciel-wrap > div[style*="height:300px"] { height: 200px !important; }
+
+  /* ── Cohérence cardiaque mobile ── */
+  .cc-container {
+    grid-template-columns: 1fr !important;
+  }
+  .cc-sidebar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: .6rem !important;
+  }
+  .cc-player {
+    padding: 1.2rem !important;
+    min-height: 280px !important;
+  }
+  .breathe-ring {
+    width: 140px !important;
+    height: 140px !important;
+  }
+  .cc-timer {
+    font-size: 2rem !important;
+  }
+  #cc-protocols {
+    flex-wrap: wrap !important;
+    gap: .4rem !important;
+  }
+  .cc-protocol-btn {
+    font-size: .65rem !important;
+    padding: .35rem .7rem !important;
+  }
+
+  /* ── Calendrier réservation mobile ── */
+  #cal-header-fixed {
+    position: relative !important;
+    top: auto !important;
+  }
+  #view-reservation .page-header h1 {
+    font-size: 1.4rem !important;
+  }
+  #view-reservation > div[style*="flex-wrap:wrap"] {
+    flex-direction: column !important;
+    gap: .5rem !important;
+  }
+
+  /* ── Vues génériques mobile ── */
+  .page-header h1 {
+    font-size: 1.4rem !important;
+  }
+  .page-header p {
+    font-size: .68rem !important;
+  }
+  .cc-stats {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── Profil mobile ── */
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  .profile-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: .8rem !important;
+  }
+
+  /* ── Audio/Exercices mobile ── */
+  .audio-grid, .exercise-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: .6rem !important;
+  }
+  .audio-card { padding: 0 0 .8rem !important; }
+  .audio-title { font-size: .75rem !important; padding: 0 .8rem !important; }
+  .audio-meta  { padding: 0 .8rem !important; }
+  .audio-play-btn { margin: .5rem .8rem 0 !important; }
 }
 
 /* Désactiver sélection texte sur éléments interactifs */
