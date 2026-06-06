@@ -799,6 +799,12 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .grid-3, .atelier-grid, .audio-grid, .exercise-grid { grid-template-columns: repeat(2,1fr); }
 }
 
+@media (max-width: 768px) {
+  .sidenav { display: none !important; }
+  .app-shell { padding-bottom: 72px; }
+  .main-content { width: 100% !important; min-width: 0 !important; }
+}
+
 /* ════════════════════════════════════════════
    DASHBOARD V3 — CSS MODERNE
 ════════════════════════════════════════════ */
