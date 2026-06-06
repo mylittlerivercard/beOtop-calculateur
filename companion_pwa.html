@@ -1429,6 +1429,37 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   to   { transform: translateY(0);     opacity: 1; }
 }
 #offline-banner span { color: #f5855a; font-weight: 600; }
+/* ══ SKELETON SCREENS ══ */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(0,180,180,.06) 25%,
+    rgba(0,180,180,.12) 50%,
+    rgba(0,180,180,.06) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+.sk-line   { height: 12px; margin-bottom: 8px; }
+.sk-line.w80 { width: 80%; }
+.sk-line.w60 { width: 60%; }
+.sk-line.w40 { width: 40%; }
+.sk-block  { border-radius: 12px; }
+.sk-card {
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,180,180,.1);
+  border-radius: 14px; padding: 1rem;
+  margin-bottom: .8rem;
+}
+#sk-dashboard {
+  padding: 1rem;
+  display: none;
+}
+#sk-dashboard.visible { display: block; }
 </style>
 </head>
 <body>
@@ -2477,6 +2508,36 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 </div>
 
+<!-- SKELETON DASHBOARD -->
+<div id="sk-dashboard">
+  <!-- Hero skeleton -->
+  <div style="background:linear-gradient(125deg,#002626,#004d4d);padding:1.5rem 1rem;margin-bottom:0">
+    <div class="skeleton sk-line" style="width:120px;height:48px;margin-bottom:.8rem"></div>
+    <div class="skeleton sk-line w60" style="height:18px;margin-bottom:.5rem"></div>
+    <div class="skeleton sk-line w40" style="height:14px"></div>
+  </div>
+  <!-- KPIs skeleton -->
+  <div style="padding:1rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem">
+      <div class="sk-card"><div class="skeleton sk-line w40" style="height:10px;margin-bottom:.5rem"></div><div class="skeleton sk-line" style="height:28px;width:60px"></div></div>
+      <div class="sk-card"><div class="skeleton sk-line w40" style="height:10px;margin-bottom:.5rem"></div><div class="skeleton sk-line" style="height:28px;width:60px"></div></div>
+      <div class="sk-card"><div class="skeleton sk-line w40" style="height:10px;margin-bottom:.5rem"></div><div class="skeleton sk-line" style="height:28px;width:60px"></div></div>
+      <div class="sk-card"><div class="skeleton sk-line w40" style="height:10px;margin-bottom:.5rem"></div><div class="skeleton sk-line" style="height:28px;width:60px"></div></div>
+    </div>
+    <!-- Cards skeleton -->
+    <div class="sk-card">
+      <div class="skeleton sk-line w60" style="height:14px;margin-bottom:.8rem"></div>
+      <div class="skeleton sk-line w80" style="height:10px"></div>
+      <div class="skeleton sk-line w60" style="height:10px"></div>
+      <div class="skeleton sk-line w40" style="height:10px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+      <div class="sk-card"><div class="skeleton sk-block" style="height:80px;margin-bottom:.6rem"></div><div class="skeleton sk-line w80" style="height:10px"></div></div>
+      <div class="sk-card"><div class="skeleton sk-block" style="height:80px;margin-bottom:.6rem"></div><div class="skeleton sk-line w80" style="height:10px"></div></div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /main-content -->
 </div><!-- /app-shell -->
 
@@ -3256,6 +3317,12 @@ function renderConstellationHome(historique, repartition) {
    DASHBOARD
 ════════════════════════════════════════════ */
 function renderDashboard() {
+  var skEl = document.getElementById('sk-dashboard');
+  var dashView = document.getElementById('view-dashboard');
+  if (skEl && dashView) {
+    skEl.classList.add('visible');
+    dashView.style.visibility = 'hidden';
+  }
   var u = DB.user;
 
   // Topbar
@@ -3329,6 +3396,11 @@ function renderDashboard() {
   _v3Ring();
   _v3KPIs();
   renderHistoryRecent();
+
+  var skEl2 = document.getElementById('sk-dashboard');
+  var dashView2 = document.getElementById('view-dashboard');
+  if (skEl2) skEl2.classList.remove('visible');
+  if (dashView2) dashView2.style.visibility = 'visible';
 
   // Streak : badge hero + carte accueil dès l'ouverture du dashboard
   var _streakD = {
