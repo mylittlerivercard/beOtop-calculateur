@@ -3311,6 +3311,7 @@ function switchView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
+  sessionStorage.setItem('beotop_last_view', id);
   if (view) {
     view.style.animation = 'none';
     view.offsetHeight; /* force reflow */
@@ -7688,6 +7689,8 @@ function getCatValue(selectId, inputId) {
     var siteParam = urlParams.get('site');
     /* Lien direct vers un onglet (?view=admin depuis Mon Espace) */
     var viewParam = urlParams.get('view') || (window.location.hash || '').replace('#', '');
+    var savedView = sessionStorage.getItem('beotop_last_view');
+    var targetView = viewParam || savedView || 'dashboard';
     if (siteParam) {
       cachedSiteSlug = siteParam;
       if (DB.user && DB.user.site_slug !== siteParam) {
@@ -7712,11 +7715,11 @@ function getCatValue(selectId, inputId) {
           }
           renderDashboard();
           renderCCStats();
-          syncIntervenants(function(){ syncContenus(function(){ if (viewParam) switchView(viewParam); }); });
+          syncIntervenants(function(){ syncContenus(function(){ if (targetView !== 'dashboard') switchView(targetView); }); });
         })
         .catch(function(){
           renderDashboard(); renderCCStats();
-          syncIntervenants(function(){ syncContenus(function(){ if (viewParam) switchView(viewParam); }); });
+          syncIntervenants(function(){ syncContenus(function(){ if (targetView !== 'dashboard') switchView(targetView); }); });
         });
     } catch(e){ console.error('[beOtop]',e); }
   }
@@ -8582,6 +8585,7 @@ function obFinish() {
     setTimeout(function() { ob.remove(); }, 400);
   }
   localStorage.setItem('beotop_onboarding_done', '1');
+  sessionStorage.removeItem('beotop_last_view');
 }
 
 window.addEventListener('online', function() {
