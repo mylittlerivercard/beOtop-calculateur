@@ -1068,9 +1068,61 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .ldo-card-date   { font-size: .6rem; color: var(--text-muted); }
 .ldo-empty { text-align: center; padding: 3rem 1rem; font-size: .78rem; color: var(--text-muted); }
 .ldo-empty .ldo-empty-icon { font-size: 2.5rem; margin-bottom: .8rem; display: block; }
+/* ══ BANDEAU INSTALL PWA ══ */
+#pwa-install-banner {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: #1A2E35;
+  border-top: 1px solid rgba(0,180,180,.3);
+  padding: .9rem 1.2rem;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.18);
+}
+#pwa-install-banner .pwa-inner {
+  max-width: 480px; margin: 0 auto;
+  display: flex; align-items: flex-start; gap: .9rem;
+}
+#pwa-install-banner .pwa-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, #00b4b4, #f5855a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+#pwa-install-banner .pwa-text { flex: 1; }
+#pwa-install-banner .pwa-title {
+  font-size: .82rem; font-weight: 600; color: #fff;
+  margin-bottom: .2rem;
+}
+#pwa-install-banner .pwa-steps {
+  font-size: .72rem; color: rgba(255,255,255,.7);
+  line-height: 1.5;
+}
+#pwa-install-banner .pwa-steps b { color: #00b4b4; }
+#pwa-install-banner .pwa-close {
+  background: none; border: none; color: rgba(255,255,255,.5);
+  font-size: 1.1rem; cursor: pointer; padding: 0; flex-shrink: 0;
+  line-height: 1;
+}
+#pwa-install-banner .pwa-btn-android {
+  display: none;
+  margin-top: .6rem; padding: .5rem 1rem;
+  background: #00b4b4; color: #fff; border: none;
+  border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer;
+}
 </style>
 </head>
 <body>
+
+<div id="pwa-install-banner">
+  <div class="pwa-inner">
+    <div class="pwa-icon">🌿</div>
+    <div class="pwa-text">
+      <div class="pwa-title">Installer beOtop Companion</div>
+      <div class="pwa-steps" id="pwa-steps-text"></div>
+      <button class="pwa-btn-android" id="btn-install-pwa">⬇ Installer l'application</button>
+    </div>
+    <button class="pwa-close" onclick="closePwaBanner()">✕</button>
+  </div>
+</div>
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -7741,11 +7793,53 @@ if ('serviceWorker' in navigator) {
       .catch(function(err) { console.warn('[PWA] Échec SW :', err); });
   });
 }
-let deferredPrompt = null;
+
+function closePwaBanner() {
+  document.getElementById('pwa-install-banner').style.display = 'none';
+  sessionStorage.setItem('pwa-banner-closed', '1');
+}
+
+function showPwaBanner() {
+  if (sessionStorage.getItem('pwa-banner-closed')) return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (window.navigator.standalone === true) return;
+  document.getElementById('pwa-install-banner').style.display = 'block';
+}
+
+var deferredPrompt = null;
+
 window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault(); deferredPrompt = e;
-  var btn = document.getElementById('btn-install-pwa');
-  if (btn) { btn.style.display = 'inline-flex'; btn.addEventListener('click', function() { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function() { deferredPrompt = null; }); }); }
+  e.preventDefault();
+  deferredPrompt = e;
+  var stepsEl = document.getElementById('pwa-steps-text');
+  var btnAndroid = document.querySelector('.pwa-btn-android');
+  if (stepsEl) stepsEl.innerHTML = 'Accès rapide depuis votre écran d\'accueil';
+  if (btnAndroid) btnAndroid.style.display = 'block';
+  showPwaBanner();
+});
+
+window.addEventListener('appinstalled', function() {
+  document.getElementById('pwa-install-banner').style.display = 'none';
+  deferredPrompt = null;
+});
+
+document.getElementById('btn-install-pwa').addEventListener('click', function() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function() { deferredPrompt = null; });
+});
+
+window.addEventListener('load', function() {
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isAndroid = /android/i.test(navigator.userAgent);
+  var stepsEl = document.getElementById('pwa-steps-text');
+  if (isIOS && !window.navigator.standalone) {
+    if (stepsEl) stepsEl.innerHTML = '1. Tape <b>Partager</b> ⬆ en bas de Safari<br>2. Puis <b>"Sur l\'écran d\'accueil"</b>';
+    showPwaBanner();
+  } else if (isAndroid && !deferredPrompt) {
+    if (stepsEl) stepsEl.innerHTML = 'Menu <b>⋮</b> → <b>"Ajouter à l\'écran d\'accueil"</b>';
+    showPwaBanner();
+  }
 });
 </script>
 
