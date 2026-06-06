@@ -1323,6 +1323,94 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   0%, 100% { opacity: .3; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.4); }
 }
+/* ══ ONBOARDING ══ */
+#onboarding {
+  display: none;
+  position: fixed; inset: 0; z-index: 9997;
+  background: linear-gradient(160deg, #001a1a 0%, #003030 50%, #001010 100%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  overflow: hidden;
+}
+#onboarding.active { display: flex; }
+.ob-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 300; letter-spacing: .12em;
+  background: linear-gradient(135deg, #00b4b4, #f5855a);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: .3rem;
+}
+.ob-tagline {
+  font-size: .65rem; color: rgba(255,255,255,.4);
+  letter-spacing: .2em; text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+.ob-slides {
+  width: 100%; max-width: 360px;
+  position: relative; overflow: hidden;
+  flex: 1; max-height: 320px;
+}
+.ob-slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 0 1rem;
+  opacity: 0; transform: translateX(40px);
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.ob-slide.active {
+  opacity: 1; transform: translateX(0);
+  pointer-events: auto;
+}
+.ob-slide.exit {
+  opacity: 0; transform: translateX(-40px);
+}
+.ob-icon {
+  font-size: 3.5rem; margin-bottom: 1.2rem;
+  filter: drop-shadow(0 0 20px rgba(0,180,180,.4));
+}
+.ob-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 300;
+  color: rgba(255,255,255,.95); margin-bottom: .6rem;
+}
+.ob-desc {
+  font-size: .78rem; color: rgba(255,255,255,.55);
+  line-height: 1.7; max-width: 280px;
+}
+.ob-dots {
+  display: flex; gap: .5rem; margin: 1.5rem 0 1.2rem;
+}
+.ob-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  transition: all .3s;
+}
+.ob-dot.active {
+  background: #00b4b4; width: 20px; border-radius: 3px;
+}
+.ob-btn {
+  width: 100%; max-width: 360px;
+  padding: .9rem; border-radius: 14px;
+  background: linear-gradient(135deg, #00b4b4, #02C39A);
+  color: #fff; border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9rem; font-weight: 600;
+  cursor: pointer; letter-spacing: .03em;
+  box-shadow: 0 4px 20px rgba(0,180,180,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.ob-btn:active { transform: scale(.97); }
+.ob-skip {
+  margin-top: .8rem;
+  background: none; border: none;
+  color: rgba(255,255,255,.3); font-size: .7rem;
+  cursor: pointer; padding: .4rem;
+  font-family: 'DM Sans', sans-serif;
+}
 </style>
 </head>
 <body>
@@ -1331,6 +1419,41 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="splash-logo">beOtop <span>Companion</span></div>
   <div class="splash-sub">Espace bien-être</div>
   <div class="splash-dot"></div>
+</div>
+
+<div id="onboarding">
+  <div class="ob-logo">beOtop <span style="font-style:italic;font-weight:300">Companion</span></div>
+  <div class="ob-tagline">Votre espace bien-être</div>
+  <div class="ob-slides">
+    <div class="ob-slide active" data-slide="0">
+      <div class="ob-icon">🌿</div>
+      <div class="ob-title">Bienvenue</div>
+      <div class="ob-desc">Votre espace personnel de récupération et de bien-être au travail, disponible à tout moment.</div>
+    </div>
+    <div class="ob-slide" data-slide="1">
+      <div class="ob-icon">🏃</div>
+      <div class="ob-title">Réservez en 2 taps</div>
+      <div class="ob-desc">Consultez les ateliers disponibles en temps réel et réservez votre créneau directement depuis l'app.</div>
+    </div>
+    <div class="ob-slide" data-slide="2">
+      <div class="ob-icon">🧠</div>
+      <div class="ob-title">Contenus bien-être</div>
+      <div class="ob-desc">Cohérence cardiaque, sons immersifs, défis cognitifs, exercices express — tout pour recharger vos ressources.</div>
+    </div>
+    <div class="ob-slide" data-slide="3">
+      <div class="ob-icon">🔥</div>
+      <div class="ob-title">Suivez vos progrès</div>
+      <div class="ob-desc">Streaks, points, niveau — chaque séance compte. Construisez une habitude de récupération durable.</div>
+    </div>
+  </div>
+  <div class="ob-dots" id="ob-dots">
+    <div class="ob-dot active"></div>
+    <div class="ob-dot"></div>
+    <div class="ob-dot"></div>
+    <div class="ob-dot"></div>
+  </div>
+  <button class="ob-btn" id="ob-btn" onclick="obNext()">Suivant</button>
+  <button class="ob-skip" onclick="obSkip()">Passer</button>
 </div>
 
 <div id="pwa-install-banner">
@@ -8108,10 +8231,50 @@ function hideSplash() {
   if (!splash) return;
   setTimeout(function() {
     splash.classList.add('hidden');
-    setTimeout(function() { splash.remove(); }, 500);
+    setTimeout(function() { splash.remove(); maybeShowOnboarding(); }, 500);
   }, 1200);
 }
 window.addEventListener('load', hideSplash);
+
+var _obSlide = 0;
+var _obTotal = 4;
+
+function obShowSlide(idx) {
+  document.querySelectorAll('.ob-slide').forEach(function(s, i) {
+    s.classList.remove('active', 'exit');
+    if (i === idx) s.classList.add('active');
+    else if (i < idx) s.classList.add('exit');
+  });
+  document.querySelectorAll('.ob-dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === idx);
+  });
+  var btn = document.getElementById('ob-btn');
+  if (btn) btn.textContent = idx >= _obTotal - 1 ? 'Commencer' : 'Suivant';
+}
+
+function obNext() {
+  _obSlide++;
+  if (_obSlide >= _obTotal) { obFinish(); return; }
+  obShowSlide(_obSlide);
+}
+
+function obSkip() { obFinish(); }
+
+function obFinish() {
+  var ob = document.getElementById('onboarding');
+  if (ob) {
+    ob.style.opacity = '0';
+    ob.style.transition = 'opacity .4s';
+    setTimeout(function() { ob.remove(); }, 400);
+  }
+  localStorage.setItem('beotop_onboarding_done', '1');
+}
+
+function maybeShowOnboarding() {
+  if (localStorage.getItem('beotop_onboarding_done')) return;
+  var ob = document.getElementById('onboarding');
+  if (ob) ob.classList.add('active');
+}
 
 function bnavSwitch(view) {
   switchView(view);
