@@ -843,6 +843,35 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .notif-btn { width: 28px; height: 28px; font-size: .85rem; }
   .avatar { width: 28px; height: 28px; font-size: .58rem; }
   .user-pill { padding: .25rem .5rem .25rem .3rem; gap: .35rem; }
+
+  /* Touch feedback — compression au tap */
+  .bottom-nav-item:active,
+  .more-drawer-item:active,
+  .nav-item:active,
+  .btn:active,
+  button:active,
+  .card:active,
+  .atelier-card:active,
+  .quick-card:active,
+  .content-card:active {
+    transform: scale(0.96) !important;
+    opacity: 0.85 !important;
+    transition: transform 0.08s, opacity 0.08s !important;
+  }
+
+  /* Supprimer le highlight bleu natif iOS/Android au tap */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Curseur pointer sur tous les éléments cliquables */
+  [onclick], button, .nav-item, .bottom-nav-item, .more-drawer-item {
+    cursor: pointer;
+  }
+}
+
+/* Désactiver sélection texte sur éléments interactifs */
+.bottom-nav-item, .more-drawer-item, .nav-item {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ════════════════════════════════════════════
