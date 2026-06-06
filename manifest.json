@@ -1,0 +1,20 @@
+{
+  "name": "beOtop Companion",
+  "short_name": "Companion",
+  "description": "Votre espace de récupération et bien-être au travail",
+  "start_url": "/companion_pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ecf5f5",
+  "theme_color": "#00b4b4",
+  "lang": "fr",
+  "icons": [
+    { "src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Respiration & Cohérence", "short_name": "Cohérence", "url": "/companion_pwa#coherence" },
+    { "name": "Bibliothèque audio", "short_name": "Audio", "url": "/companion_pwa#audio" }
+  ]
+}

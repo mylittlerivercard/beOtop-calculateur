@@ -53,6 +53,30 @@ def serve_html(filename):
     except FileNotFoundError:
         return Response(f'<h1>Fichier introuvable : {filename}</h1>', status=404, mimetype='text/html')
 
+@app.route('/manifest.json')
+def serve_manifest():
+    path = os.path.join(BASE_DIR, 'manifest.json')
+    try:
+        with open(path, encoding='utf-8') as f:
+            return Response(f.read(), mimetype='application/manifest+json')
+    except FileNotFoundError:
+        return Response('{}', status=404, mimetype='application/json')
+
+@app.route('/sw.js')
+def serve_sw():
+    path = os.path.join(BASE_DIR, 'sw.js')
+    try:
+        with open(path, encoding='utf-8') as f:
+            return Response(f.read(), mimetype='application/javascript', headers={'Service-Worker-Allowed': '/'})
+    except FileNotFoundError:
+        return Response('', status=404, mimetype='application/javascript')
+
+@app.route('/companion_pwa')
+def companion_pwa_page():
+    if 'user_id' not in session:
+        return redirect('/login')
+    return serve_html('companion_pwa.html')
+
 # ========== BASE DE DONNEES ==========
 
 def get_db():
