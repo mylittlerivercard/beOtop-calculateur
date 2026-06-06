@@ -802,7 +802,8 @@ async function loadUsers(){
       '<td>' + (u.client_nom || '—') + '</td>' +
       '<td><span class="pill ' + (u.actif ? 'ok' : 'off') + '">' + (u.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td><button class="btn-sm" onclick="openUserEdit(' + u.id + ')">Modifier</button> ' +
-      '<button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button></td>' +
+      '<button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button> ' +
+      '<button class="btn-sm" style="color:#c0392b;border-color:rgba(192,57,43,.3)" onclick="deleteUser(' + u.id + ',\'' + (u.email || '').replace(/'/g, "\\'") + '\')">Supprimer</button></td>' +
       '</tr>';
   });
 }
@@ -863,6 +864,14 @@ async function createUser(){
     box.classList.add('show');
     loadUsers();
   } else { toast(d.error || 'Erreur'); }
+}
+
+async function deleteUser(id, email){
+  if(!confirm('Supprimer définitivement le compte ' + email + ' ?\nCette action est irréversible.')) return;
+  var r = await fetch('/api/admin/users/' + id, {method:'DELETE', credentials:'include'});
+  var d = await r.json();
+  if(d.ok){ toast('Compte supprimé ✓'); loadUsers(); }
+  else { toast(d.error || 'Erreur'); }
 }
 
 async function resetPw(id){

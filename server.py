@@ -895,6 +895,20 @@ def admin_reset_password(user_id):
             conn.commit()
     return jsonify({'ok': True, 'new_password': new_pw})
 
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == session.get('user_id'):
+        return jsonify({'error': 'Impossible de supprimer votre propre compte'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM users WHERE id=%s", [user_id])
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Utilisateur introuvable'}), 404
+            conn.commit()
+    return jsonify({'ok': True})
+
 # ========== KIOSQUE ==========
 
 @app.route('/api/kiosk/<site_slug>/session', methods=['POST'])
