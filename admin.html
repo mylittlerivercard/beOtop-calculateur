@@ -348,6 +348,8 @@
     <div class="field"><label>Rôle</label>
       <select id="u-role">
         <option value="client">Client (DRH / DAF)</option>
+        <option value="manager">Manager</option>
+        <option value="intervenant">Intervenant</option>
         <option value="admin">Admin beOtop</option>
       </select>
     </div>
@@ -356,6 +358,36 @@
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-user')">Annuler</button>
       <button class="btn btn-primary" onclick="createUser()">Créer l'utilisateur</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT USER -->
+<div class="modal-overlay" id="modal-user-edit">
+  <div class="modal">
+    <h3>Modifier l'utilisateur</h3>
+    <input id="ue-id" type="hidden">
+    <div class="field"><label>Email</label><input id="ue-email" type="email" disabled style="opacity:.6"></div>
+    <div class="field"><label>Nom</label><input id="ue-nom" type="text" placeholder="Prénom Nom"></div>
+    <div class="field"><label>Rôle</label>
+      <select id="ue-role">
+        <option value="client">Client (DRH / DAF)</option>
+        <option value="manager">Manager</option>
+        <option value="intervenant">Intervenant</option>
+        <option value="admin">Admin beOtop</option>
+      </select>
+    </div>
+    <div class="field"><label>Client associé</label><select id="ue-client"><option value="">— Aucun (admin) —</option></select></div>
+    <div class="field"><label>Statut</label>
+      <select id="ue-actif">
+        <option value="1">Actif</option>
+        <option value="0">Inactif</option>
+      </select>
+    </div>
+    <div class="result-box" id="ue-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user-edit')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateUser()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -758,18 +790,57 @@ async function loadUsers(){
   sel.innerHTML = '<option value="">— Aucun (admin) —</option>';
   clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
 
+  _usersCache = {};
   var tbl = document.getElementById('users-table');
   tbl.innerHTML = '<tr><th>Email</th><th>Nom</th><th>Rôle</th><th>Client</th><th>Statut</th><th>Actions</th></tr>';
   users.forEach(function(u){
+    _usersCache[u.id] = u;
     tbl.innerHTML += '<tr>' +
       '<td class="td-main">' + u.email + '</td>' +
       '<td>' + (u.nom || '—') + '</td>' +
       '<td><span class="pill ' + (u.role === 'admin' ? 'admin' : 'client') + '">' + u.role + '</span></td>' +
       '<td>' + (u.client_nom || '—') + '</td>' +
       '<td><span class="pill ' + (u.actif ? 'ok' : 'off') + '">' + (u.actif ? 'Actif' : 'Inactif') + '</span></td>' +
-      '<td><button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button></td>' +
+      '<td><button class="btn-sm" onclick="openUserEdit(' + u.id + ')">Modifier</button> ' +
+      '<button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button></td>' +
       '</tr>';
   });
+}
+
+var _usersCache = {};
+
+function openUserEdit(id){
+  var u = _usersCache[id];
+  if(!u) return;
+  document.getElementById('ue-id').value      = u.id;
+  document.getElementById('ue-email').value   = u.email;
+  document.getElementById('ue-nom').value     = u.nom || '';
+  document.getElementById('ue-role').value    = u.role || 'client';
+  document.getElementById('ue-actif').value   = u.actif ? '1' : '0';
+  // Peupler le select des clients (réutilise la liste déjà chargée dans #u-client)
+  var src = document.getElementById('u-client');
+  var dst = document.getElementById('ue-client');
+  dst.innerHTML = src.innerHTML;
+  dst.value = u.client_id || '';
+  document.getElementById('ue-result').classList.remove('show');
+  openModal('modal-user-edit');
+}
+
+async function updateUser(){
+  var id = document.getElementById('ue-id').value;
+  var r = await fetch('/api/admin/users/' + id, {
+    method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nom:       document.getElementById('ue-nom').value,
+      role:      document.getElementById('ue-role').value,
+      client_id: document.getElementById('ue-client').value || null,
+      actif:     document.getElementById('ue-actif').value
+    })
+  });
+  var d = await r.json();
+  if(d.ok){ toast('Utilisateur modifié ✓'); closeModal('modal-user-edit'); loadUsers(); }
+  else { toast(d.error || 'Erreur'); }
 }
 
 async function createUser(){

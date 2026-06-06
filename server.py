@@ -862,6 +862,27 @@ def admin_create_user():
                 return jsonify({'error': 'Email deja utilise'}), 409
     return jsonify({'ok': True, 'tmp_password': tmp_pw}), 201
 
+@app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+@login_required
+@admin_required
+def admin_update_user(user_id):
+    data = request.get_json() or {}
+    role = (data.get('role') or 'client').strip()
+    if role not in ('admin', 'client', 'intervenant', 'manager'):
+        return jsonify({'error': 'Rôle invalide'}), 400
+    client_id = data.get('client_id') or None
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET nom=%s, role=%s, client_id=%s, actif=%s WHERE id=%s",
+                [data.get('nom', ''), role, client_id,
+                 int(data.get('actif', 1)), user_id]
+            )
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Utilisateur introuvable'}), 404
+            conn.commit()
+    return jsonify({'ok': True})
+
 @app.route('/api/admin/users/<int:user_id>/reset-password', methods=['POST'])
 @login_required
 @admin_required
