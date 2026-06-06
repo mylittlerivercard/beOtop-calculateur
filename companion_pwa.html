@@ -879,6 +879,42 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   [onclick], button, .nav-item, .bottom-nav-item, .more-drawer-item {
     cursor: pointer;
   }
+
+  /* Dashboard mobile-first */
+  .kpi-grid-v3 { grid-template-columns: 1fr 1fr !important; gap: .6rem !important; }
+  .qa-grid-v3  { grid-template-columns: 1fr 1fr !important; gap: .6rem !important; }
+  .kpi-val-v3  { font-size: 1.6rem !important; }
+  .qa-card-v3  { padding: .7rem !important; }
+  .qa-icon-v3  { font-size: 1.4rem !important; }
+  .qa-label-v3 { font-size: .68rem !important; }
+
+  /* Check-in mobile : sliders en colonne */
+  .sliders-v3  { grid-template-columns: 1fr !important; gap: .8rem !important; }
+  .checkin-v3  { padding: 1rem !important; border-radius: 1rem !important; }
+  .checkin-v3-label { font-size: .6rem !important; }
+  .btn-cta-v3  { font-size: .78rem !important; padding: .65rem 1.2rem !important; }
+
+  /* Suggestion carousel : cartes plus larges */
+  .sug-card    { flex: 0 0 160px !important; }
+  .sug-photo   { height: 85px !important; }
+  .sug-title   { font-size: .78rem !important; }
+  .sug-sub     { font-size: .6rem !important; }
+  .sug-cta     { font-size: .6rem !important; margin-top: .5rem !important; }
+
+  /* Sections labels */
+  .sec { font-size: .55rem !important; margin-bottom: .7rem !important; }
+
+  /* Padding contenu dashboard */
+  #view-dashboard > div[style*="padding"] {
+    padding: 1rem !important;
+  }
+
+  /* KPI cohérence (ring) — masqué mobile déjà géré, forcer */
+  .hero-right { display: none !important; }
+
+  /* Constellation canvas mobile */
+  #bcst-home-canvas { height: 200px !important; }
+  #home-ciel-wrap > div[style*="height:300px"] { height: 200px !important; }
 }
 
 /* Désactiver sélection texte sur éléments interactifs */
