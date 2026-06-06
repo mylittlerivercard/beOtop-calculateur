@@ -3,6 +3,7 @@ const CACHE_NAME = 'beotop-companion-v1';
 
 const PRECACHE_URLS = [
   '/companion_pwa',
+  '/manifest.json',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap',

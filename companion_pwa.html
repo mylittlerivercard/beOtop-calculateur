@@ -1411,9 +1411,32 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   cursor: pointer; padding: .4rem;
   font-family: 'DM Sans', sans-serif;
 }
+/* ══ BANNIÈRE OFFLINE ══ */
+#offline-banner {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9990;
+  background: #1a2e35;
+  border-bottom: 1px solid rgba(245,133,90,.3);
+  padding: .5rem 1rem;
+  text-align: center;
+  font-size: .72rem; color: rgba(255,255,255,.8);
+  font-family: 'DM Sans', sans-serif;
+  animation: slideDown .3s ease;
+}
+#offline-banner.visible { display: block; }
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+#offline-banner span { color: #f5855a; font-weight: 600; }
 </style>
 </head>
 <body>
+
+<div id="offline-banner">
+  <span>📡 Hors ligne</span> — Les données affichées sont issues du cache.
+  La synchronisation reprendra automatiquement.
+</div>
 
 <div id="splash">
   <div class="splash-logo">beOtop <span>Companion</span></div>
@@ -8268,6 +8291,25 @@ function obFinish() {
     setTimeout(function() { ob.remove(); }, 400);
   }
   localStorage.setItem('beotop_onboarding_done', '1');
+}
+
+window.addEventListener('online', function() {
+  var b = document.getElementById('offline-banner');
+  if (b) { b.classList.remove('visible'); }
+  showToast('✓ Connexion rétablie');
+});
+
+window.addEventListener('offline', function() {
+  var b = document.getElementById('offline-banner');
+  if (b) { b.classList.add('visible'); }
+});
+
+// Vérifier l'état au chargement
+if (!navigator.onLine) {
+  window.addEventListener('load', function() {
+    var b = document.getElementById('offline-banner');
+    if (b) b.classList.add('visible');
+  });
 }
 
 function maybeShowOnboarding() {
