@@ -1133,6 +1133,75 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   background: #00b4b4; color: #fff; border: none;
   border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer;
 }
+/* ══ BOTTOM NAV BAR (mobile) ══ */
+.bottom-nav { display: none; }
+@media (max-width: 900px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9000;
+    background: #fff;
+    border-top: 1px solid rgba(0,0,0,.07);
+    box-shadow: 0 -2px 16px rgba(0,0,0,.06);
+    padding: .35rem .25rem;
+    padding-bottom: calc(.35rem + env(safe-area-inset-bottom));
+  }
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .15rem;
+  background: none; border: none; cursor: pointer;
+  padding: .35rem .2rem;
+  color: #6b8585; font-size: .6rem; font-weight: 600;
+  transition: color .2s;
+}
+.bottom-nav-item i { font-size: 1.35rem; line-height: 1; }
+.bottom-nav-item.active { color: #00b4b4; }
+
+/* ══ DRAWERS (bottom sheets) ══ */
+.more-drawer { display: none; position: fixed; inset: 0; z-index: 9500; }
+.more-drawer.open { display: block; }
+.more-drawer-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.4);
+  animation: drawerFade .2s ease;
+}
+.more-drawer-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 1.2rem 1.2rem;
+  padding-bottom: calc(1.4rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 30px rgba(0,0,0,.2);
+  animation: drawerUp .25s cubic-bezier(.16,1,.3,1);
+}
+.more-drawer-panel::before {
+  content: ""; display: block; width: 38px; height: 4px;
+  border-radius: 2px; background: rgba(0,0,0,.15);
+  margin: 0 auto .9rem;
+}
+.more-drawer-title {
+  font-size: .82rem; font-weight: 700; color: #1a3535;
+  margin-bottom: 1rem; text-align: center;
+}
+.more-drawer-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem;
+}
+.more-drawer-item {
+  display: flex; flex-direction: column; align-items: center; gap: .4rem;
+  font-size: .62rem; font-weight: 600; color: #1a3535;
+  text-align: center; cursor: pointer;
+  padding: .5rem .2rem; border-radius: 10px;
+  transition: background .15s;
+}
+.more-drawer-item:hover { background: rgba(0,180,180,.06); }
+.more-drawer-item i {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+@keyframes drawerFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes drawerUp   { from { transform: translateY(100%) } to { transform: translateY(0) } }
 </style>
 </head>
 <body>
@@ -2137,6 +2206,89 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
 </div><!-- /main-content -->
 </div><!-- /app-shell -->
+
+<!-- BOTTOM NAV BAR -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-item active" id="bnav-dashboard" onclick="bnavSwitch('dashboard')">
+    <i class="ti ti-layout-dashboard"></i>
+    <span>Accueil</span>
+  </button>
+  <button class="bottom-nav-item" id="bnav-reservation" onclick="bnavSwitch('reservation')">
+    <i class="ti ti-calendar"></i>
+    <span>Réserver</span>
+  </button>
+  <button class="bottom-nav-item" id="bnav-contenus" onclick="openContenuDrawer()">
+    <i class="ti ti-sparkles"></i>
+    <span>Contenus</span>
+  </button>
+  <button class="bottom-nav-item" id="bnav-progres" onclick="bnavSwitch('progres')">
+    <i class="ti ti-trophy"></i>
+    <span>Progrès</span>
+  </button>
+  <button class="bottom-nav-item" id="bnav-more" onclick="openMoreDrawer()">
+    <i class="ti ti-dots"></i>
+    <span>Plus</span>
+  </button>
+</nav>
+
+<!-- DRAWER CONTENUS -->
+<div class="more-drawer" id="contenus-drawer">
+  <div class="more-drawer-overlay" onclick="closeContenuDrawer()"></div>
+  <div class="more-drawer-panel">
+    <div class="more-drawer-title">Contenus bien-être</div>
+    <div class="more-drawer-grid">
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('audio');closeContenuDrawer()">
+        <i class="ti ti-headphones" style="background:rgba(130,100,220,.12);color:#8264DC"></i>Audio
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('video');closeContenuDrawer()">
+        <i class="ti ti-video" style="background:rgba(240,164,0,.12);color:#F0A500"></i>Vidéo
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('jeux');closeContenuDrawer()">
+        <i class="ti ti-puzzle" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Jeux
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('sons');closeContenuDrawer()">
+        <i class="ti ti-wave-sine" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Sons
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('exercices');closeContenuDrawer()">
+        <i class="ti ti-bolt" style="background:rgba(244,132,95,.12);color:#F4845F"></i>Exercices
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('podcasts');closeContenuDrawer()">
+        <i class="ti ti-microphone" style="background:rgba(130,100,220,.12);color:#8264DC"></i>Podcasts
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('coherence');closeContenuDrawer()">
+        <i class="ti ti-heart-rate" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Cohérence
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('posts');closeContenuDrawer()">
+        <i class="ti ti-notes" style="background:rgba(240,164,0,.12);color:#F0A500"></i>Posts
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER PLUS -->
+<div class="more-drawer" id="more-drawer">
+  <div class="more-drawer-overlay" onclick="closeMoreDrawer()"></div>
+  <div class="more-drawer-panel">
+    <div class="more-drawer-title">Navigation</div>
+    <div class="more-drawer-grid">
+      <div class="more-drawer-item" onclick="bnavSwitch('intervenants');closeMoreDrawer()">
+        <i class="ti ti-users" style="background:rgba(244,132,95,.12);color:#F4845F"></i>Intervenants
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitch('challenges');closeMoreDrawer()">
+        <i class="ti ti-target" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Challenges
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitch('profil');closeMoreDrawer()">
+        <i class="ti ti-user" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Profil
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitch('livreor');closeMoreDrawer()">
+        <i class="ti ti-book" style="background:rgba(130,100,220,.12);color:#8264DC"></i>Livre d'or
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitch('admin');closeMoreDrawer()">
+        <i class="ti ti-settings" style="background:rgba(120,120,120,.1);color:#888"></i>Admin
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
@@ -7817,6 +7969,45 @@ if ('serviceWorker' in navigator) {
       .then(function(reg) { console.log('[PWA] SW enregistré :', reg.scope); })
       .catch(function(err) { console.warn('[PWA] Échec SW :', err); });
   });
+}
+
+function bnavSwitch(view) {
+  switchView(view);
+  document.querySelectorAll('.bottom-nav-item').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  var map = {
+    dashboard: 'bnav-dashboard',
+    reservation: 'bnav-reservation',
+    progres: 'bnav-progres'
+  };
+  var targetId = map[view] || 'bnav-more';
+  var el = document.getElementById(targetId);
+  if (el) el.classList.add('active');
+}
+
+function bnavSwitchContenus(view) {
+  switchView(view);
+  document.querySelectorAll('.bottom-nav-item').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  document.getElementById('bnav-contenus').classList.add('active');
+}
+
+function openContenuDrawer() {
+  document.getElementById('contenus-drawer').classList.add('open');
+}
+
+function closeContenuDrawer() {
+  document.getElementById('contenus-drawer').classList.remove('open');
+}
+
+function openMoreDrawer() {
+  document.getElementById('more-drawer').classList.add('open');
+}
+
+function closeMoreDrawer() {
+  document.getElementById('more-drawer').classList.remove('open');
 }
 
 function closePwaBanner() {
