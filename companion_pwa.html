@@ -3957,6 +3957,7 @@ async function submitCheckin() {
   /* Enregistrement local */
   DB.checkins.push({ date: new Date().toISOString(), label: 'Check-in', detail, energie, stress, focus });
   saveDB(DB);
+  haptic('success');
 
   /* Enregistrement serveur */
   try {
@@ -4288,6 +4289,7 @@ async function confirmerReservation() {
   saveDB(DB);
 
   closeResModal();
+  haptic('success');
   showToast('✓ ' + calSelected.atelier + ' · ' + calDuree + ' min à ' + calSelected.heure);
   renderHistoryRecent();
   renderCalendrier();
@@ -4748,6 +4750,7 @@ async function awardPoints(action, label) {
   if (!DB.points) DB.points = [];
   DB.points.push({ action, label, points: pts, date: new Date().toISOString() });
   saveDB(DB);
+  haptic('medium');
   // API
   try {
     var slug = await getSiteSlug();
@@ -8372,6 +8375,7 @@ function obShowSlide(idx) {
 }
 
 function obNext() {
+  haptic('light');
   _obSlide++;
   if (_obSlide >= _obTotal) { obFinish(); return; }
   obShowSlide(_obSlide);
@@ -8415,6 +8419,7 @@ function maybeShowOnboarding() {
 }
 
 function bnavSwitch(view) {
+  haptic('light');
   switchView(view);
   document.querySelectorAll('.bottom-nav-item').forEach(function(el) {
     el.classList.remove('active');
@@ -8438,6 +8443,7 @@ function bnavSwitchContenus(view) {
 }
 
 function openContenuDrawer() {
+  haptic('light');
   document.getElementById('contenus-drawer').classList.add('open');
 }
 
@@ -8446,11 +8452,22 @@ function closeContenuDrawer() {
 }
 
 function openMoreDrawer() {
+  haptic('light');
   document.getElementById('more-drawer').classList.add('open');
 }
 
 function closeMoreDrawer() {
   document.getElementById('more-drawer').classList.remove('open');
+}
+
+/* ══ HAPTIC FEEDBACK ══ */
+function haptic(type) {
+  if (!navigator.vibrate) return;
+  if (type === 'light')    navigator.vibrate(10);
+  else if (type === 'medium') navigator.vibrate(25);
+  else if (type === 'success') navigator.vibrate([15, 30, 15]);
+  else if (type === 'error')   navigator.vibrate([50, 30, 50]);
+  else navigator.vibrate(10);
 }
 
 /* ══ SWIPE HORIZONTAL entre les 5 onglets principaux ══ */
