@@ -82,6 +82,7 @@ input, select, textarea { font-family: inherit; }
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: .9rem 2rem;
+  padding-top: env(safe-area-inset-top);
   background: rgba(248,250,250,.96);
   border-bottom: 1px solid rgba(0,180,180,.2);
   position: sticky; top: 0; z-index: 100;
@@ -1653,6 +1654,40 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 @media (min-width: 901px) {
   #fab-session { display: none !important; }
   #fab-menu    { display: none !important; }
+}
+/* ══ SAFE AREA INSETS — iPhone notch / Dynamic Island ══ */
+@supports (padding-top: env(safe-area-inset-top)) {
+
+  .topbar {
+    padding-top: max(.6rem, calc(.6rem + env(safe-area-inset-top)));
+  }
+
+  #splash,
+  #onboarding {
+    padding-top: max(2rem, calc(2rem + env(safe-area-inset-top)));
+    padding-bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom)));
+  }
+
+  #offline-banner {
+    padding-top: max(.5rem, calc(.5rem + env(safe-area-inset-top)));
+  }
+
+  #fab-session {
+    bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+  }
+
+  #fab-menu {
+    bottom: max(142px, calc(142px + env(safe-area-inset-bottom)));
+  }
+
+  #pwa-install-banner {
+    padding-bottom: max(.9rem, calc(.9rem + env(safe-area-inset-bottom)));
+  }
+
+  .toast {
+    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom)));
+  }
+
 }
 </style>
 </head>
