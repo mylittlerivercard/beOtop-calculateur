@@ -2976,6 +2976,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div class="more-drawer-item" onclick="bnavSwitch('admin');closeMoreDrawer()">
         <i class="ti ti-settings" style="background:rgba(120,120,120,.1);color:#888"></i>Admin
       </div>
+      <div class="more-drawer-item" onclick="closeMoreDrawer();logoutPwa()">
+        <i class="ti ti-logout" style="background:rgba(226,75,74,.12);color:#E24B4A"></i>Se déconnecter
+      </div>
     </div>
   </div>
 </div>
@@ -8912,6 +8915,13 @@ function openContenuDrawer() {
 
 function closeContenuDrawer() {
   document.getElementById('contenus-drawer').classList.remove('open');
+}
+
+function logoutPwa() {
+  if (!confirm('Se déconnecter ?')) return;
+  fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    .then(function(){ window.location.href = '/login'; })
+    .catch(function(){ window.location.href = '/login'; });
 }
 
 function openMoreDrawer() {
