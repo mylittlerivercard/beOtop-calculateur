@@ -889,6 +889,20 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .qa-icon-v3  { font-size: 1.4rem !important; }
   .qa-label-v3 { font-size: .68rem !important; }
 
+  /* Streak — bande 14 jours adaptée mobile (anti-débordement) */
+  .streak-chain-14 { gap: 2px !important; }
+  .streak-dot.sd-done,
+  .streak-dot.sd-pending,
+  .streak-dot.sd-miss {
+    width: 18px !important; height: 18px !important; font-size: 9px !important;
+  }
+  .streak-dot.sd-safe,
+  .streak-dot.sd-milestone,
+  .streak-dot.sd-danger {
+    width: 20px !important; height: 20px !important;
+  }
+  .streak-day-label { font-size: 8px !important; }
+
   /* Check-in mobile : sliders en colonne */
   .sliders-v3  { grid-template-columns: 1fr !important; gap: .8rem !important; }
   .checkin-v3  { padding: 1rem !important; border-radius: 1rem !important; }
