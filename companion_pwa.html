@@ -3147,6 +3147,32 @@ var DB = loadDB();
     sessions.push({ date: iso(off, 16, 30), label: au.label, detail: au.detail, duree: au.duree });
   });
 
+  // Points → alimente le ciel bien-être (regroupé par action).
+  // Comptes calibrés pour un ciel partiellement allumé, réaliste pour 1 semaine.
+  var POINTS_SEED = [
+    { action: 'checkin',  label: 'Check-in',            points: 10, n: 7 },
+    { action: 'audio',    label: 'Séance audio',         points: 15, n: 4 },
+    { action: 'cc',       label: 'Cohérence cardiaque',  points: 20, n: 3 },
+    { action: 'jeu',      label: 'Jeu cognitif',         points: 10, n: 2 },
+    { action: 'exercice', label: 'Exercice express',     points: 15, n: 2 },
+    { action: 'sons',     label: 'Sons immersifs',       points: 10, n: 1 },
+    { action: 'video',    label: 'Vidéo guidée',         points: 15, n: 1 },
+  ];
+  var points = [];
+  var _pOff = 0;
+  POINTS_SEED.forEach(function(grp) {
+    for (var k = 0; k < grp.n; k++) {
+      points.push({
+        action: grp.action,
+        label:  grp.label,
+        points: grp.points,
+        date:   iso(_pOff % 7, 10, 0)   // réparti sur les 7 derniers jours
+      });
+      _pOff++;
+    }
+  });
+  DB.points = points;
+
   DB.sessions    = sessions;
   DB.cc_sessions = cc;
   DB.checkins    = checkins;
