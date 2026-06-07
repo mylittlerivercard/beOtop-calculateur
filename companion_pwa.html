@@ -1714,6 +1714,44 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   .dash-block[data-block="ciel"]     { order: 6; }
   .dash-block[data-block="activite"] { order: 7; }
 }
+/* ══ PWA-ACCUEIL-FINITIONS — overflow streak + lisibilité + masquage accès rapide (mobile) ══ */
+@media (max-width: 900px) {
+
+  /* (a) Bande 14 jours du streak : tailles réduites + marge pour l'anneau pulsant */
+  .streak-chain-14 {
+    gap: 2px !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+  }
+  .streak-dot.sd-done,
+  .streak-dot.sd-pending,
+  .streak-dot.sd-miss {
+    width: 18px !important; height: 18px !important; font-size: 9px !important;
+  }
+  .streak-dot.sd-safe,
+  .streak-dot.sd-milestone,
+  .streak-dot.sd-danger {
+    width: 20px !important; height: 20px !important;
+  }
+  .streak-day-label { font-size: 8px !important; }
+
+  /* (b) Lisibilité : textes agrandis */
+  .sec               { font-size: .68rem !important; }
+  .kpi-label-v3      { font-size: .66rem !important; }
+  .kpi-sub-v3        { font-size: .62rem !important; }
+  .checkin-v3-label  { font-size: .74rem !important; }
+  .sl-grp-v3 label   { font-size: .82rem !important; }
+  .sl-vals-v3        { font-size: .64rem !important; }
+  .sl-vals-v3 .sl-mid{ font-size: .76rem !important; }
+  .sug-title         { font-size: .9rem  !important; }
+  .sug-sub           { font-size: .7rem  !important; }
+  .sug-cta           { font-size: .72rem !important; }
+  .streak-title      { font-size: 1rem   !important; }
+
+  /* (c) Masquer la section "Accès rapide" */
+  .dash-block[data-block="acces"] { display: none !important; }
+
+}
 </style>
 </head>
 <body>
