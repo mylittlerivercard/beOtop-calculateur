@@ -3079,6 +3079,83 @@ function saveDB(db) {
 
 var DB = loadDB();
 
+/* ══════════════ SEED DÉMO (déclenché par ?seed=demo, reset par ?seed=reset) ══════════════
+   N'altère JAMAIS un compte réel : ne s'exécute que sur paramètre d'URL explicite. */
+(function maybeSeedDemo() {
+  var p = new URLSearchParams(window.location.search);
+  var mode = p.get('seed');
+  if (!mode) return;
+
+  if (mode === 'reset') {
+    DB.sessions = []; DB.cc_sessions = []; DB.checkins = []; DB.points = [];
+    saveDB(DB);
+    window.location.replace(window.location.pathname);
+    return;
+  }
+
+  if (mode !== 'demo') return;
+
+  var now = Date.now();
+  var DAY = 86400000;
+  function iso(offsetDays, hour, min) {
+    var d = new Date(now - offsetDays * DAY);
+    d.setHours(hour || 10, min || 0, 0, 0);
+    return d.toISOString();
+  }
+
+  // Ateliers beOtop — UNIQUEMENT les technologies réelles (aucun atelier générique)
+  var ATELIERS = [
+    { label: 'Méridienne P127',        detail: 'Position 127° · 20 min',        duree: 20 },
+    { label: 'Cocon de Sieste',        detail: 'Micro-sieste guidée · 15 min',  duree: 15 },
+    { label: 'Neurosonic',             detail: 'Basses fréquences · 25 min',    duree: 25 },
+    { label: 'Luminothérapie',         detail: 'Lumière · 20 min',              duree: 20 },
+    { label: 'Bol d\'Air Jacquier',    detail: 'Oxygénation · 12 min',          duree: 12 },
+    { label: 'Sons immersifs',         detail: 'Casque audio · 18 min',         duree: 18 },
+  ];
+  var AUDIOS = [
+    { label: 'Respiration carrée',     detail: 'Respiration · 4 min',           duree: 4 },
+    { label: 'Scan corporel',          detail: 'Relaxation · 10 min',           duree: 10 },
+  ];
+
+  // Couverture consécutive des 7 derniers jours (today inclus) → streak = 7,
+  // avec volume suffisant pour les KPIs du mois en cours.
+  var sessions = [];
+  var cc = [];
+  var checkins = [];
+
+  // 1 séance + 1 check-in par jour sur 7 jours, + densité supplémentaire récente
+  for (var off = 0; off <= 6; off++) {
+    var a = ATELIERS[off % ATELIERS.length];
+    sessions.push({ date: iso(off, 11, 15), label: a.label, detail: a.detail, duree: a.duree });
+    // un check-in chaque jour (énergie/stress/focus variés, réalistes)
+    var en = 5 + ((off * 2) % 4);          // 5..8
+    var st = 4 + ((off + 1) % 4);          // 4..7
+    var fo = 5 + ((off + 2) % 4);          // 5..8
+    checkins.push({
+      date: iso(off, 9, 30), label: 'Check-in',
+      detail: 'Énergie ' + en + '/10 · Stress ' + st + '/10 · Focus ' + fo + '/10',
+      energie: en, stress: st, focus: fo
+    });
+  }
+  // Cohérence cardiaque sur quelques jours récents (today, -2, -4)
+  [0, 2, 4].forEach(function(off) {
+    cc.push({ date: iso(off, 14, 0), label: 'Cohérence cardiaque', detail: '3-6-5 · 5 min', duree: 5 });
+  });
+  // Densité supplémentaire en début de mois courant (audios) pour gonfler le volume
+  [1, 3, 5].forEach(function(off, i) {
+    var au = AUDIOS[i % AUDIOS.length];
+    sessions.push({ date: iso(off, 16, 30), label: au.label, detail: au.detail, duree: au.duree });
+  });
+
+  DB.sessions    = sessions;
+  DB.cc_sessions = cc;
+  DB.checkins    = checkins;
+  saveDB(DB);
+
+  // Recharge sans le paramètre pour repartir sur un état propre
+  window.location.replace(window.location.pathname);
+})();
+
 /* ════════════════════════════════════════════
    CONTENUS SERVEUR (ajoutés par les intervenants)
    — fusionnés avec les contenus de démonstration
