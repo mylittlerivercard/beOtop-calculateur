@@ -164,17 +164,17 @@ input, select, textarea { font-family: inherit; }
 .nav-item[onclick*="dashboard"] i    { background: rgba(0,180,180,.12);  color: #00b4b4; }
 .nav-item[onclick*="reservation"] i  { background: rgba(240,164,0,.12);   color: #F0A500; }
 .nav-item[onclick*="intervenants"] i { background: rgba(244,132,95,.12);  color: #F4845F; }
-.nav-item[onclick*="coherence"] i    { background: rgba(0,200,154,.12);   color: #02C39A; }
+.nav-item[onclick*="coherence"] i    { background: rgba(0,180,180,.12);   color: #009090; }
 .nav-item[onclick*="audio"] i        { background: rgba(130,100,220,.12); color: #8264DC; }
 .nav-item[onclick*="sons"] i         { background: rgba(0,180,180,.12);   color: #00b4b4; }
 .nav-item[onclick*="video"] i        { background: rgba(240,164,0,.12);   color: #F0A500; }
 .nav-item[onclick*="exercices"] i    { background: rgba(244,132,95,.12);  color: #F4845F; }
-.nav-item[onclick*="jeux"] i         { background: rgba(0,200,154,.12);   color: #02C39A; }
+.nav-item[onclick*="jeux"] i         { background: rgba(0,180,180,.12);   color: #009090; }
 .nav-item[onclick*="podcasts"] i     { background: rgba(130,100,220,.12); color: #8264DC; }
 .nav-item[onclick*="posts"] i        { background: rgba(240,164,0,.12);   color: #F0A500; }
 .nav-item[onclick*="progres"] i      { background: rgba(0,180,180,.12);   color: #00b4b4; }
 .nav-item[onclick*="challenges"] i   { background: rgba(244,132,95,.12);  color: #F4845F; }
-.nav-item[onclick*="profil"] i       { background: rgba(0,200,154,.12);   color: #02C39A; }
+.nav-item[onclick*="profil"] i       { background: rgba(0,180,180,.12);   color: #009090; }
 .nav-item[onclick*="livre"] i        { background: rgba(130,100,220,.12); color: #8264DC; }
 .nav-item[onclick*="settings"] i     { background: rgba(120,120,120,.1);  color: #888; }
 .nav-item.active i {
@@ -1519,7 +1519,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .ob-btn {
   width: 100%; max-width: 360px;
   padding: .9rem; border-radius: 14px;
-  background: linear-gradient(135deg, #00b4b4, #02C39A);
+  background: linear-gradient(135deg, #00b4b4, #009090);
   color: #fff; border: none;
   font-family: 'DM Sans', sans-serif;
   font-size: .9rem; font-weight: 600;
@@ -1615,7 +1615,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   z-index: 8000;
   width: 52px; height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00b4b4, #02C39A);
+  background: linear-gradient(135deg, #00b4b4, #009090);
   border: none;
   box-shadow: 0 4px 20px rgba(0,180,180,.4);
   cursor: pointer;
@@ -2882,7 +2882,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <i class="ti ti-video" style="background:rgba(240,164,0,.12);color:#F0A500"></i>Vidéo
       </div>
       <div class="more-drawer-item" onclick="bnavSwitchContenus('jeux');closeContenuDrawer()">
-        <i class="ti ti-puzzle" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Jeux
+        <i class="ti ti-puzzle" style="background:rgba(0,180,180,.12);color:#009090"></i>Jeux
       </div>
       <div class="more-drawer-item" onclick="bnavSwitchContenus('sons');closeContenuDrawer()">
         <i class="ti ti-wave-sine" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Sons
@@ -2894,7 +2894,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <i class="ti ti-microphone" style="background:rgba(130,100,220,.12);color:#8264DC"></i>Podcasts
       </div>
       <div class="more-drawer-item" onclick="bnavSwitchContenus('coherence');closeContenuDrawer()">
-        <i class="ti ti-heart-rate" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Cohérence
+        <i class="ti ti-heart-rate" style="background:rgba(0,180,180,.12);color:#009090"></i>Cohérence
       </div>
       <div class="more-drawer-item" onclick="bnavSwitchContenus('posts');closeContenuDrawer()">
         <i class="ti ti-notes" style="background:rgba(240,164,0,.12);color:#F0A500"></i>Posts
@@ -2916,7 +2916,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <i class="ti ti-target" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Challenges
       </div>
       <div class="more-drawer-item" onclick="bnavSwitch('profil');closeMoreDrawer()">
-        <i class="ti ti-user" style="background:rgba(0,200,154,.12);color:#02C39A"></i>Profil
+        <i class="ti ti-user" style="background:rgba(0,180,180,.12);color:#009090"></i>Profil
       </div>
       <div class="more-drawer-item" onclick="bnavSwitch('livreor');closeMoreDrawer()">
         <i class="ti ti-book" style="background:rgba(130,100,220,.12);color:#8264DC"></i>Livre d'or
@@ -2963,13 +2963,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <i class="ti ti-calendar" style="color:#F0A500"></i>Réserver un atelier
   </div>
   <div class="fab-item" onclick="closeFab();bnavSwitch('coherence')">
-    <i class="ti ti-heart-rate" style="color:#02C39A"></i>Cohérence cardiaque
+    <i class="ti ti-heart-rate" style="color:#009090"></i>Cohérence cardiaque
   </div>
   <div class="fab-item" onclick="closeFab();bnavSwitchContenus('audio')">
     <i class="ti ti-headphones" style="color:#8264DC"></i>Bibliothèque audio
   </div>
   <div class="fab-item" onclick="closeFab();bnavSwitchContenus('jeux')">
-    <i class="ti ti-puzzle" style="color:#02C39A"></i>Défi cognitif
+    <i class="ti ti-puzzle" style="color:#009090"></i>Défi cognitif
   </div>
 </div>
 <button id="fab-session" onclick="toggleFab()">
