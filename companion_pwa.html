@@ -4100,6 +4100,11 @@ function _streakEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+  function _streakCap(s) {
+    s = String(s == null ? '' : s);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
 function renderStreakBadge(sc) {
   var wrap = document.getElementById('streak-hero-wrap');
   if (!wrap) return;
@@ -4199,7 +4204,7 @@ function renderStreakCard(sc) {
       + '</span></div>';
   } else if (sc.state === 'milestone') {
     banner = '<div class="streak-banner sb-milestone"><span>⭐</span><span>'
-      + 'Première ' + _streakEsc(sc.milestoneLabel) + ' complète. Vous avez construit une habitude.'
+      + _streakCap(_streakEsc(sc.milestoneLabel)) + ' — objectif atteint. Vous avez construit une habitude.'
       + '</span></div>';
   } else if (sc.state === 'new' && sc.prevStreak >= 3) {
     banner = '<div class="streak-banner sb-new"><span>↩</span><span>'
