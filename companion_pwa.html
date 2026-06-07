@@ -2922,6 +2922,45 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 </nav>
 
 <!-- DRAWER CONTENUS -->
+<div class="view" id="view-ressources">
+  <div class="page-header">
+    <h1>Ressources <em>utiles</em></h1>
+    <p>Des liens pour aller plus loin. Les liens externes s'ouvrent dans un nouvel onglet — beOtop n'enregistre pas vos consultations.</p>
+  </div>
+
+  <div style="margin-bottom:1.6rem">
+    <div class="sec">Comprendre la QVCT &amp; les RPS</div>
+    <a href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;background:rgba(255,255,255,.7);border:1px solid rgba(14,59,59,.10);border-radius:14px;padding:14px 16px;margin-top:10px">
+      <div style="font-weight:600;color:#1B2E2E">Qualité de vie au travail — repères<span style="color:#E2641E;font-size:.8rem;font-weight:500"> · [lien à compléter]</span></div>
+      <div style="color:#5C6E6E;font-size:.9rem">Comprendre les risques psychosociaux et la démarche QVCT.</div>
+    </a>
+    <a href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;background:rgba(255,255,255,.7);border:1px solid rgba(14,59,59,.10);border-radius:14px;padding:14px 16px;margin-top:10px">
+      <div style="font-weight:600;color:#1B2E2E">Guide RPS de votre entreprise<span style="color:#E2641E;font-size:.8rem;font-weight:500"> · [lien à compléter]</span></div>
+      <div style="color:#5C6E6E;font-size:.9rem">Le dispositif de prévention propre à votre organisation.</div>
+    </a>
+  </div>
+
+  <div style="margin-bottom:1.6rem">
+    <div class="sec">Besoin de parler</div>
+    <a href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;background:rgba(255,255,255,.7);border:1px solid rgba(14,59,59,.10);border-radius:14px;padding:14px 16px;margin-top:10px">
+      <div style="font-weight:600;color:#1B2E2E">Médecine du travail / ligne d'écoute<span style="color:#E2641E;font-size:.8rem;font-weight:500"> · [lien à compléter]</span></div>
+      <div style="color:#5C6E6E;font-size:.9rem">Un interlocuteur dédié, à contacter en toute confidentialité selon les modalités de votre entreprise.</div>
+    </a>
+  </div>
+
+  <div style="margin-bottom:1rem">
+    <div class="sec">beOtop</div>
+    <a href="https://beotop.fr" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;background:rgba(255,255,255,.7);border:1px solid rgba(14,59,59,.10);border-radius:14px;padding:14px 16px;margin-top:10px">
+      <div style="font-weight:600;color:#1B2E2E">Site beOtop<span style="color:#00b4b4;font-size:.8rem;font-weight:500"> · beotop.fr</span></div>
+      <div style="color:#5C6E6E;font-size:.9rem">En savoir plus sur les espaces de récupération.</div>
+    </a>
+    <a href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;background:rgba(255,255,255,.7);border:1px solid rgba(14,59,59,.10);border-radius:14px;padding:14px 16px;margin-top:10px">
+      <div style="font-weight:600;color:#1B2E2E">Guide des ateliers<span style="color:#E2641E;font-size:.8rem;font-weight:500"> · [lien à compléter]</span></div>
+      <div style="color:#5C6E6E;font-size:.9rem">Comment se déroule chaque technologie de récupération.</div>
+    </a>
+  </div>
+</div>
+
 <div class="more-drawer" id="contenus-drawer">
   <div class="more-drawer-overlay" onclick="closeContenuDrawer()"></div>
   <div class="more-drawer-panel">
@@ -2975,6 +3014,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       </div>
       <div class="more-drawer-item" onclick="bnavSwitch('admin');closeMoreDrawer()">
         <i class="ti ti-settings" style="background:rgba(120,120,120,.1);color:#888"></i>Admin
+      </div>
+      <div class="more-drawer-item" onclick="bnavSwitch('ressources');closeMoreDrawer()">
+        <i class="ti ti-link" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Ressources
       </div>
       <div class="more-drawer-item" onclick="closeMoreDrawer();logoutPwa()">
         <i class="ti ti-logout" style="background:rgba(226,75,74,.12);color:#E24B4A"></i>Se déconnecter
