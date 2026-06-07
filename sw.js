@@ -1,5 +1,5 @@
-/* beOtop Companion — Service Worker v2.0 */
-const CACHE_NAME = 'beotop-companion-v2';
+/* beOtop Companion — Service Worker v3.0 */
+const CACHE_NAME = 'beotop-companion-v3';
 
 const PRECACHE_URLS = [
   '/companion_pwa',
