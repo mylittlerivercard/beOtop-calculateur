@@ -1794,6 +1794,16 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .checkin-v3 {
   background: linear-gradient(135deg, #161C28, #232C42) !important;
 }
+/* ══ PWA-HERO-CLAIR — hero transparent (fond clair de page) + texte sombre ══ */
+.hero { background: transparent !important; }
+.hero::before { display: none !important; }
+.hero-time     { color: var(--text) !important; }
+.hero-date     { color: var(--text-muted) !important; }
+.hero-greeting { color: var(--text) !important; }
+#dash-greeting-sub { color: var(--text-muted) !important; }
+#hero-social   { color: var(--text-muted) !important; }
+.hero-chip.teal  { background: rgba(0,140,140,.12) !important; border-color: rgba(0,140,140,.4) !important; color: #0A6A6A !important; }
+.hero-chip.coral { background: rgba(245,133,90,.15) !important; border-color: rgba(245,133,90,.5) !important; color: #9A3D1D !important; }
 </style>
 </head>
 <body>
