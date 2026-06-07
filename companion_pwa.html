@@ -1689,6 +1689,17 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   }
 
 }
+/* ══ ACCUEIL MOBILE — réordonnancement des sections ══ */
+@media (max-width: 900px) {
+  #dash-content { display: flex; flex-direction: column; }
+  .dash-block[data-block="checkin"]  { order: 1; }
+  .dash-block[data-block="acces"]    { order: 2; }
+  .dash-block[data-block="suggere"]  { order: 3; }
+  .dash-block[data-block="cemois"]   { order: 4; }
+  .dash-block[data-block="streak"]   { order: 5; }
+  .dash-block[data-block="ciel"]     { order: 6; }
+  .dash-block[data-block="activite"] { order: 7; }
+}
 </style>
 </head>
 <body>
@@ -1874,9 +1885,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <!-- CONTENU -->
-  <div style="padding:1.8rem 2rem">
+  <div style="padding:1.8rem 2rem" id="dash-content">
 
-    <div id="home-ciel-wrap" style="margin-bottom:1rem">
+    <div id="home-ciel-wrap" class="dash-block" data-block="ciel" style="margin-bottom:1rem">
       <div style="display:flex;align-items:baseline; justify-content:space-between; padding:.5rem 0 .6rem">
         <span style="font-size:.7rem;font-weight:500; color:var(--text-muted);text-transform:uppercase; letter-spacing:.12em">Mon ciel bien-être</span>
         <span id="home-ciel-score" style="font-size:.65rem;color:var(--text-muted)"></span>
@@ -1890,11 +1901,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div id="bcst-home-legend" style="display:flex;flex-wrap:wrap;gap:.4rem .8rem; margin-top:.55rem;font-size:.58rem; color:var(--text-dim)"></div>
     </div>
 
-    <div id="streak-card-wrap"></div>
+    <div class="dash-block" data-block="streak"><div id="streak-card-wrap"></div></div>
 
+    <div class="dash-block" data-block="suggere">
     <div class="sec">Suggéré pour vous</div>
     <div class="sug-grid-wrap"><div class="sug-grid" id="v3-sug-grid"></div></div>
+    </div>
 
+    <div class="dash-block" data-block="checkin">
     <div class="sec">Check-in du jour</div>
     <div class="checkin-v3" id="checkin-section">
       <div class="checkin-v3-label">Comment vous sentez-vous ?</div>
@@ -1932,7 +1946,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <button class="btn-primary" onclick="switchView('reservation')">Réserver →</button>
       </div>
     </div>
+    </div>
 
+    <div class="dash-block" data-block="cemois">
     <div class="sec" style="margin-top:1rem">Ce mois</div>
     <div class="kpi-grid-v3">
       <div class="kpi-card-v3"><div class="kpi-label-v3">Séances</div><div class="kpi-val-v3" id="kpi-seances">—</div><div class="kpi-sub-v3">sessions personnelles</div></div>
@@ -1940,7 +1956,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div class="kpi-card-v3"><div class="kpi-label-v3">Cohérence</div><div class="kpi-val-v3" id="kpi-cc">—</div><div class="kpi-sub-v3">sessions complètes</div></div>
       <div class="kpi-card-v3"><div class="kpi-label-v3">Streak</div><div class="kpi-val-v3" id="kpi-streak">—</div><div class="kpi-sub-v3">jours consécutifs</div></div>
     </div>
+    </div>
 
+    <div class="dash-block" data-block="acces">
     <div class="sec">Accès rapide</div>
     <div class="qa-grid-v3">
       <div class="qa-card-v3" onclick="switchView('coherence')"><img src="/static/cardiaque.jpg" style="width:72px;height:60px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;margin:0 auto .4rem"><div class="qa-label-v3">Cohérence cardiaque</div></div>
@@ -1948,9 +1966,12 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div class="qa-card-v3" onclick="switchView('jeux')"><img src="/static/jeux_cerebraux.jpg" style="width:72px;height:60px;object-fit:cover;border-radius:10px;display:block;margin:0 auto .4rem"><div class="qa-label-v3">Jeux cérébraux</div></div>
       <div class="qa-card-v3" onclick="switchView('exercices')"><img src="/static/exercice_express.jpg" style="width:72px;height:60px;object-fit:cover;border-radius:10px;display:block;margin:0 auto .4rem"><div class="qa-label-v3">Exercice express</div></div>
     </div>
+    </div>
 
+    <div class="dash-block" data-block="activite">
     <div class="sec">Activité récente</div>
     <div class="card-v3" id="history-recent"></div>
+    </div>
 
   </div>
 </div>
