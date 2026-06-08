@@ -8585,16 +8585,20 @@ function renderPosts() {
   grid.innerHTML = list.map(function(p) {
     var img = p.image_url ? '<img src="' + p.image_url + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:.8rem;display:block" onerror="this.style.display=\'none\'">' : '';
 
-    // Détecter si le lien est une URL YouTube embed
-    var isYoutube = p.lien && (p.lien.includes('youtube.com/embed') || p.lien.includes('youtu.be'));
-    var isVimeo   = p.lien && p.lien.includes('player.vimeo.com');
+    // Source vidéo : champ dédié (url_video/video) sinon le lien externe
+    var videoSrc = p.url_video || p.video || p.lien || '';
+    // Détecter si la source est une URL YouTube/Vimeo embed
+    var isYoutube = videoSrc && (videoSrc.includes('youtube.com/embed') || videoSrc.includes('youtu.be') || videoSrc.includes('youtube.com/watch'));
+    var isVimeo   = videoSrc && videoSrc.includes('player.vimeo.com');
     var embedUrl  = '';
-    if (isYoutube && p.lien.includes('watch?v=')) {
+    if (isYoutube && videoSrc.includes('watch?v=')) {
       // Convertir watch?v= en embed si nécessaire
-      embedUrl = p.lien.replace('watch?v=', 'embed/').replace('www.youtube.com', 'www.youtube.com');
+      embedUrl = videoSrc.replace('watch?v=', 'embed/');
     } else if (isYoutube || isVimeo) {
-      embedUrl = p.lien;
+      embedUrl = videoSrc;
     }
+    // Si la vidéo provient d'un champ dédié, le lien externe reste cliquable
+    var embedFromLien = embedUrl && embedUrl === p.lien;
 
     var mediaHtml = '';
     if (embedUrl) {
@@ -8605,7 +8609,7 @@ function renderPosts() {
       mediaHtml = img;
     }
 
-    var lienBtn = (p.lien && !embedUrl) ? '<a href="' + p.lien + '" target="_blank" rel="noopener" onclick="logPostClic(' + p.id + ')" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;padding:.45rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">\ud83d\udd17 Lire la suite</a>' : '';
+    var lienBtn = (p.lien && !embedFromLien) ? '<a href="' + p.lien + '" target="_blank" rel="noopener" onclick="logPostClic(' + p.id + ')" style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;padding:.45rem 1rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:10px;color:var(--teal);font-size:.72rem;font-weight:600;text-decoration:none">\ud83d\udd17 Lire la suite</a>' : '';
 
     return '<div class="card" style="padding:1.2rem" onclick="logPostClic(' + p.id + ')">'
       + mediaHtml
