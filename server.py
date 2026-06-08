@@ -152,7 +152,7 @@ COMPANION_CONTENT_TABLES = {
     'exercices': ['titre', 'categorie', 'indication', 'description', 'duree', 'icon', 'intervenant'],
     'defis':     ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'photo', 'intervenant'],
     'podcasts':  ['titre', 'categorie', 'description', 'url', 'type_url', 'duree', 'icon', 'intervenant'],
-    'posts':     ['titre', 'categorie', 'contenu', 'image', 'auteur'],
+    'posts':     ['titre', 'categorie', 'contenu', 'image', 'lien', 'auteur'],
 }
 
 def init_db():

@@ -8677,6 +8677,7 @@ function savePost(existingId) {
     categorie: '',
     contenu: (document.getElementById('f-post-texte')||{}).value||'',
     image: ((document.getElementById('f-post-img')||{}).value||'').trim(),
+    lien: ((document.getElementById('f-post-lien')||{}).value||'').trim(),
     auteur: (document.getElementById('f-post-auteur')||{}).value||'',
     actif: (document.getElementById('f-post-actif')||{}).value !== '0'
   };
