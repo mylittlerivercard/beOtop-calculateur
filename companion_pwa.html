@@ -190,6 +190,9 @@ input, select, textarea { font-family: inherit; }
 }
 .nav-bottom { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
 .version-tag { font-size: .58rem; color: var(--text-muted); }
+.nav-logout { color: #E24B4A; }
+.nav-logout i { color: #E24B4A; }
+.nav-logout:hover { background: rgba(226,75,74,.08); color: #c43b3a; }
 
 /* ══ MAIN CONTENT ══ */
 .main-content { flex: 1; overflow-y: auto; }
@@ -1946,6 +1949,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <div class="nav-bottom">
+    <div class="nav-item nav-logout" onclick="logoutPwa()" role="button" tabindex="0" title="Se déconnecter">
+      <i class="ti ti-logout" aria-hidden="true"></i><span>Se déconnecter</span>
+    </div>
     <div class="version-tag">beOtop Companion</div>
   </div>
 </nav>
