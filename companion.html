@@ -153,8 +153,11 @@ input, select, textarea { font-family: inherit; }
   border-radius: 9px; padding: 0 5px;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.nav-bottom { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
-.version-tag { font-size: .58rem; color: var(--text-muted); }
+.nav-bottom { margin-top: auto; padding: .6rem 0 1rem; border-top: 1px solid var(--border); }
+.version-tag { font-size: .58rem; color: var(--text-muted); padding: .4rem 1.2rem 0; }
+.nav-logout { color: #b4534b; }
+.nav-logout i { color: #c96a60; }
+.nav-logout:hover { color: #a23a31; background: rgba(196,106,96,.08); }
 
 /* ══ MAIN CONTENT ══ */
 .main-content { flex: 1; overflow-y: auto; }
@@ -1141,6 +1144,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <div class="nav-bottom">
+    <div class="nav-item nav-logout" onclick="logoutCompanion()" role="button" tabindex="0" title="Se déconnecter">
+      <i class="ti ti-logout" aria-hidden="true"></i><span>Déconnexion</span>
+    </div>
     <div class="version-tag">beOtop Companion v0.1<br>Base de données locale</div>
   </div>
 </nav>
@@ -2520,6 +2526,15 @@ function renderChallenges() {
 /* ════════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════════ */
+async function logoutCompanion() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  } catch (e) {
+    /* on redirige quand même */
+  }
+  window.location.href = '/login';
+}
+
 function switchView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
