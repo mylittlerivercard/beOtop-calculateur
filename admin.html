@@ -320,6 +320,7 @@
     <div class="field"><label>Nom du site *</label><input id="s-nom" type="text" placeholder="ex. Siège Paris"></div>
     <div class="field"><label>Ville</label><input id="s-ville" type="text" placeholder="ex. Paris 9e"></div>
     <div class="field"><label>Nb employés déclarés sur site</label><input id="s-salaries" type="number" placeholder="ex. 400"></div>
+    <div class="field"><label>Email du manager (optionnel)</label><input id="s-email" type="email" placeholder="manager@entreprise.fr"><div style="font-size:.62rem;color:#6b6070;margin-top:.3rem">Si renseigné, crée un compte Manager (accès dashboard) rattaché à ce client. Un mot de passe temporaire sera généré.</div></div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
         <input id="s-companion" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleCompanionTarif(this.checked)">
@@ -774,7 +775,24 @@ async function createSite(){
   var d = await r.json();
   if(d.ok){
     var box = document.getElementById('s-result');
-    box.innerHTML = 'Site créé ✓<br><strong>URL kiosque :</strong> ' + window.location.origin + '/kiosk/' + d.slug;
+    var msg = 'Site créé ✓<br><strong>URL kiosque :</strong> ' + window.location.origin + '/kiosk/' + d.slug;
+    var mgrEmail = document.getElementById('s-email').value.trim().toLowerCase();
+    if (mgrEmail) {
+      var ru = await fetch('/api/admin/users', {
+        method:'POST', credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email: mgrEmail, role: 'manager', client_id: parseInt(client_id), nom: '' })
+      });
+      var du = await ru.json();
+      if (ru.ok && du.ok) {
+        msg += '<br><br><strong>Compte Manager créé :</strong> ' + mgrEmail
+             + '<br><strong>Mot de passe temporaire :</strong> ' + du.tmp_password
+             + '<br><span style="font-size:.62rem;color:#6b6070">À communiquer au manager ; il pourra le changer.</span>';
+      } else {
+        msg += '<br><span style="color:#c0392b">Compte Manager non créé : ' + (du.error || 'erreur') + '</span>';
+      }
+    }
+    box.innerHTML = msg;
     box.classList.add('show');
     loadSites();
   } else { toast(d.error || 'Erreur'); }
