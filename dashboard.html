@@ -294,6 +294,7 @@
     <div class="tab"        id="tab-qvct"     onclick="switchTab('qvct')">&#128203; Analyse QVCT</div>
     <div class="tab"        id="tab-realtime" onclick="switchTab('realtime')">&#128994; Disponibilité</div>
     <div class="tab"        id="tab-companion"    onclick="switchTab('companion')">&#128241; Companion</div>
+    <div class="tab" id="tab-multisites" onclick="switchTab('multisites')" style="display:none">&#127970; Multi-sites</div>
     <div class="tab" id="tab-inscriptions" onclick="switchTab('inscriptions')" style="display:none">&#128273; Inscriptions</div>
   </div>
 
@@ -774,6 +775,7 @@ function switchTab(tab){
   else{stopRealtimeRefresh();}
   if(tab==='companion'){loadCompanion();}
   if(tab==='inscriptions'){loadInscriptions();}
+  if(tab==='multisites'){loadMultisites();}
 }
 
 async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login';}
@@ -785,6 +787,7 @@ async function init(){
   var data=await fetch('/api/client/sites',{credentials:'include'}).then(function(r){return r.json();}).catch(function(){return[];});
   sites=data;buildSiteBar();
   if(sites.length){currentSite=sites[0].slug;sensorSite=sites[0].slug;qvctSite=sites[0].slug;updateActiveChip();}
+  if(sites.length>1){var tm=document.getElementById('tab-multisites');if(tm)tm.style.display='';}
   loadStats();
   loadSeancesROI();
   setTimeout(function(){
@@ -2556,6 +2559,17 @@ function showToast(msg) {
 
 </script>
 
+  <!-- ═══ VIEW MULTI-SITES ═══ -->
+  <div class="view" id="view-multisites">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.8rem">
+      <div>
+        <div class="page-title" style="font-size:1.1rem;margin-bottom:.2rem">🏢 Vue <em>multi-sites</em></div>
+        <div class="page-sub" style="margin-bottom:0">Comparatif consolidé de tous vos sites</div>
+      </div>
+    </div>
+    <div id="ms-content"><div class="page-sub">Chargement…</div></div>
+  </div>
+
   <!-- ═══ VIEW INSCRIPTIONS QR ═══ -->
   <div class="view" id="view-inscriptions">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.8rem">
@@ -2803,6 +2817,42 @@ async function regenToken(siteId) {
   var r = await fetch('/api/admin/sites/'+siteId+'/invite-token',{method:'POST',credentials:'include'});
   if (r.ok){showToast('✓ Nouveau lien généré');loadInscriptions();}
   else showToast('⚠ Erreur');
+}
+
+async function loadMultisites(){
+  var url='/api/client/stats/consolidated?period='+currentPeriod;
+  if(window._userRole==='admin'&&sites.length&&sites[0].client_id)url+='&client_id='+sites[0].client_id;
+  var d=await fetch(url,{credentials:'include'}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+  var box=document.getElementById('ms-content');
+  if(!box)return;
+  if(!d||!d.sites){box.innerHTML='<div class="page-sub">Aucune donnée disponible.</div>';return;}
+  var t=d.totaux||{};
+  var html='<div class="kpi-row">'
+    +'<div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">Sites actifs</div><div class="kpi-val">'+(t.nb_sites||0)+'</div></div>'
+    +'<div class="kpi" style="--accent:var(--mist)"><div class="kpi-label">Séances</div><div class="kpi-val">'+(t.nb_seances||0)+'</div><div class="kpi-sub">'+d.period+'</div></div>'
+    +'<div class="kpi" style="--accent:var(--sage)"><div class="kpi-label">Récupération globale</div><div class="kpi-val">'+(t.taux_recuperation!=null?t.taux_recuperation+'%':'—')+'</div></div>'
+    +'</div>';
+  html+='<div class="card"><div class="card-title">Comparatif par site</div><table style="width:100%;border-collapse:collapse;font-size:.72rem">'
+    +'<thead><tr><th style="text-align:left;padding:.4rem">Site</th><th style="text-align:left;padding:.4rem">Ville</th><th style="text-align:right;padding:.4rem">Salariés</th><th style="text-align:right;padding:.4rem">Séances</th><th style="text-align:right;padding:.4rem">Récup.</th><th></th></tr></thead><tbody>';
+  d.sites.forEach(function(s){
+    html+='<tr style="border-top:1px solid rgba(200,169,110,.12)">'
+      +'<td style="padding:.4rem;font-weight:600">'+(s.nom||'')+'</td>'
+      +'<td style="padding:.4rem;color:var(--muted)">'+(s.ville||'—')+'</td>'
+      +'<td style="padding:.4rem;text-align:right">'+(s.nb_salaries||0)+'</td>'
+      +'<td style="padding:.4rem;text-align:right">'+(s.nb_seances||0)+'</td>'
+      +'<td style="padding:.4rem;text-align:right">'+(s.taux_recuperation!=null?s.taux_recuperation+'%':'—')+'</td>'
+      +'<td style="padding:.4rem;text-align:right"><button onclick="goToSite(\''+s.slug+'\')" style="font-size:.6rem;padding:.25rem .6rem;border-radius:5px;background:rgba(122,158,181,.1);border:1px solid rgba(122,158,181,.25);color:var(--mist);cursor:pointer;font-family:\'Jost\',sans-serif">Détail →</button></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div>';
+  box.innerHTML=html;
+}
+
+function goToSite(slug){
+  currentSite=slug;
+  updateActiveChip();
+  switchTab('stats');
+  loadStats();
 }
 
 async function generateAllTokens() {

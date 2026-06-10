@@ -1642,6 +1642,76 @@ def client_update_effectif(site_slug):
             conn.commit()
     return jsonify({'ok': True, 'site_slug': site_slug, 'nb_salaries': int(nb)})
 
+@app.route('/api/client/stats/consolidated', methods=['GET'])
+@login_required
+def client_stats_consolidated():
+    """Stats agrégées sur tous les sites du client (ou d'un client ciblé pour admin)."""
+    role = session.get('role')
+    period = request.args.get('period', 'month')
+
+    if role == 'admin':
+        client_id = request.args.get('client_id')
+        if not client_id:
+            return jsonify({'error': 'client_id requis pour un admin'}), 400
+        try:
+            client_id = int(client_id)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'client_id invalide'}), 400
+    else:
+        client_id = session.get('client_id')
+        if not client_id:
+            return jsonify({'error': 'Aucun client associé à ce compte'}), 403
+
+    period_clauses = {
+        'today': "se.created_at >= CURRENT_DATE",
+        'week':  "se.created_at >= NOW() - INTERVAL '7 days'",
+        'month': "se.created_at >= NOW() - INTERVAL '30 days'",
+        'ytd':   "se.created_at >= DATE_TRUNC('year', CURRENT_DATE)",
+    }
+    ts_clause = period_clauses.get(period, period_clauses['month'])
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT
+                    si.id, si.nom, si.slug, si.ville, si.nb_salaries,
+                    COUNT(se.id)                                                   AS nb_seances,
+                    ROUND(100.0 * COUNT(
+                        CASE WHEN se.mood IN ('Rechargé','Mieux') THEN 1 END
+                    ) / NULLIF(COUNT(se.id), 0), 1)                                AS taux_recuperation
+                FROM sites si
+                LEFT JOIN sessions se
+                    ON se.site_id = si.id AND {ts_clause}
+                WHERE si.client_id = %s AND si.actif = 1
+                GROUP BY si.id, si.nom, si.slug, si.ville, si.nb_salaries
+                ORDER BY nb_seances DESC
+            """, [client_id])
+            rows = cur.fetchall()
+
+            cur.execute(f"""
+                SELECT
+                    COUNT(se.id)                                                   AS nb_seances,
+                    ROUND(100.0 * COUNT(
+                        CASE WHEN se.mood IN ('Rechargé','Mieux') THEN 1 END
+                    ) / NULLIF(COUNT(se.id), 0), 1)                                AS taux_recuperation
+                FROM sites si
+                LEFT JOIN sessions se
+                    ON se.site_id = si.id AND {ts_clause}
+                WHERE si.client_id = %s AND si.actif = 1
+            """, [client_id])
+            totaux_row = cur.fetchone()
+
+    return jsonify({
+        'client_id': client_id,
+        'period':    period,
+        'sites':     [serialize_row(r) for r in rows],
+        'totaux': {
+            'nb_sites':          len(rows),
+            'nb_seances':        totaux_row['nb_seances']        or 0,
+            'taux_recuperation': totaux_row['taux_recuperation'] or 0,
+        }
+    })
+
 # ========== RÉSERVATIONS ==========
 
 @app.route('/api/reservations', methods=['GET'])
