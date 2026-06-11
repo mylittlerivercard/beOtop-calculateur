@@ -674,12 +674,37 @@ async function loadClients(){
       '<td>' + (c.apporteur_nom ? '<span style="font-size:.65rem;padding:.15rem .5rem;background:rgba(160,104,32,.1);border-radius:6px;color:#a06820">' + c.apporteur_nom + '</span>' : '—') + '</td>' +
       '<td><span class="pill ' + (c.actif ? 'ok' : 'off') + '">' + (c.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td style="display:flex;gap:.3rem">' +
+        '<button class="btn-sm" onclick="openEditClient(' + c.id + ')">Modifier</button>' +
         '<button class="btn-sm" onclick="openApporteurModal(' + c.id + ',\'' + (c.nom||'').replace(/'/g,"\\'") + '\',' + (c.apporteur_id||'null') + ')">💰 Apporteur</button>' +
       '</td>' +
       '</tr>';
   });
 }
 
+function openEditClient(id){
+  var c = (clientsList || []).find(function(x){ return x.id === id; });
+  if(!c) return;
+  document.getElementById('ce-id').value = c.id;
+  document.getElementById('ce-nom').value = c.nom || '';
+  document.getElementById('ce-contact-nom').value = c.contact_nom || '';
+  document.getElementById('ce-contact-email').value = c.contact_email || '';
+  document.getElementById('ce-actif').value = (c.actif !== undefined ? c.actif : 1);
+  document.getElementById('ce-result').innerHTML = '';
+  openModal('modal-client-edit');
+}
+async function saveClient(){
+  var id = document.getElementById('ce-id').value;
+  var nom = document.getElementById('ce-nom').value.trim();
+  if(!nom){ toast('Nom requis'); return; }
+  var r = await fetch('/api/admin/clients/' + id, {
+    method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ nom: nom, contact_nom: document.getElementById('ce-contact-nom').value, contact_email: document.getElementById('ce-contact-email').value, actif: parseInt(document.getElementById('ce-actif').value) })
+  });
+  var d = await r.json();
+  if(d.ok){ closeModal('modal-client-edit'); toast('Client mis à jour ✓'); loadClients(); }
+  else { toast(d.error || 'Erreur'); }
+}
 function startSiteFor(clientId, fromClient){
   loadSites().then(function(){
     resetSiteForm();
@@ -1377,6 +1402,22 @@ loadOverview();
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-site-edit')">Annuler</button>
       <button class="btn btn-primary" onclick="saveSite()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-client-edit" onclick="if(event.target===this)closeModal('modal-client-edit')">
+  <div class="modal">
+    <h3>Modifier le client</h3>
+    <input type="hidden" id="ce-id">
+    <div class="field"><label>Nom de l'entreprise *</label><input id="ce-nom" type="text"></div>
+    <div class="field"><label>Nom du contact</label><input id="ce-contact-nom" type="text"></div>
+    <div class="field"><label>Email du contact</label><input id="ce-contact-email" type="email"></div>
+    <div class="field"><label>Statut</label><select id="ce-actif"><option value="1">Actif</option><option value="0">Inactif</option></select></div>
+    <div class="result-box" id="ce-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-client-edit')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveClient()">Enregistrer</button>
     </div>
   </div>
 </div>
