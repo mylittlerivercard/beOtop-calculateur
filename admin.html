@@ -417,6 +417,27 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="modal-intervenant-edit" onclick="if(event.target===this)closeModal('modal-intervenant-edit')">
+  <div class="modal">
+    <h3>Modifier l'intervenant</h3>
+    <input type="hidden" id="ie-id">
+    <div class="field"><label>Nom complet *</label><input id="ie-nom" type="text" style="width:100%;box-sizing:border-box"></div>
+    <div class="field"><label>Email</label><input id="ie-email" type="email"></div>
+    <div class="field"><label>Spécialité</label><input id="ie-spec" type="text"></div>
+    <div class="field"><label>Bio</label><textarea id="ie-bio" rows="3" style="width:100%;padding:.5rem .7rem;border-radius:7px;border:1px solid rgba(0,0,0,.09);font-family:inherit;font-size:.8rem;resize:vertical"></textarea></div>
+    <div class="field"><label>URL photo</label><input id="ie-photo" type="text"></div>
+    <div class="field"><label>Taux de rétribution contenu (%)</label><input id="ie-taux" type="number" min="0" max="100"></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:.6rem;cursor:pointer"><input id="ie-apporteur" type="checkbox" style="width:16px;height:16px;cursor:pointer">Apporteur d'affaire</label></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:.6rem;cursor:pointer"><input id="ie-est-intervenant" type="checkbox" style="width:16px;height:16px;cursor:pointer">Intervenant de contenu — visible dans le Companion</label></div>
+    <div class="field"><label>Statut</label><select id="ie-actif"><option value="1">Actif</option><option value="0">Inactif</option></select></div>
+    <div class="result-box" id="ie-result"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-intervenant-edit')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveIntervenant()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-intervenant">
   <div class="modal">
     <h3>Nouvel intervenant</h3>
@@ -710,6 +731,45 @@ function copyCreds(email, pwd, btn){
   navigator.clipboard.writeText(t).then(function(){
     if(btn){ var o=btn.textContent; btn.textContent='Copié ✓'; setTimeout(function(){ btn.textContent=o; },1500); }
   }).catch(function(){ if(btn) btn.textContent='Copie impossible'; });
+}
+function openEditIntervenant(id){
+  var v = (window._intervList || []).find(function(x){ return x.id === id; });
+  if(!v) return;
+  document.getElementById('ie-id').value = v.id;
+  document.getElementById('ie-nom').value = v.nom || '';
+  document.getElementById('ie-email').value = v.email || '';
+  document.getElementById('ie-spec').value = v.specialite || '';
+  document.getElementById('ie-bio').value = v.bio || '';
+  document.getElementById('ie-photo').value = v.photo_url || '';
+  document.getElementById('ie-taux').value = (v.taux_contenu != null ? v.taux_contenu : 30);
+  document.getElementById('ie-apporteur').checked = !!v.apporteur_affaire;
+  document.getElementById('ie-est-intervenant').checked = (v.est_intervenant !== false);
+  document.getElementById('ie-actif').value = (v.actif ? 1 : 0);
+  document.getElementById('ie-result').innerHTML = '';
+  openModal('modal-intervenant-edit');
+}
+async function saveIntervenant(){
+  var id = document.getElementById('ie-id').value;
+  var nom = document.getElementById('ie-nom').value.trim();
+  if(!nom){ toast('Nom requis'); return; }
+  var r = await fetch('/api/admin/intervenants/' + id, {
+    method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nom: nom,
+      email: document.getElementById('ie-email').value,
+      specialite: document.getElementById('ie-spec').value,
+      bio: document.getElementById('ie-bio').value,
+      photo_url: document.getElementById('ie-photo').value,
+      taux_contenu: parseFloat(document.getElementById('ie-taux').value) || 0,
+      apporteur_affaire: document.getElementById('ie-apporteur').checked,
+      est_intervenant: document.getElementById('ie-est-intervenant').checked,
+      actif: document.getElementById('ie-actif').value === '1'
+    })
+  });
+  var d = await r.json();
+  if(d.ok){ closeModal('modal-intervenant-edit'); toast('Intervenant mis à jour ✓'); loadIntervenants(); }
+  else { toast(d.error || 'Erreur'); }
 }
 function startSiteFor(clientId, fromClient){
   loadSites().then(function(){
@@ -1056,6 +1116,7 @@ async function saveApporteur() {
 // ── Intervenants ──
 async function loadIntervenants() {
   var data = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
+  window._intervList = data;
   var tbl = document.getElementById('intervenants-table');
   tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>';
   if (!data.length) {
@@ -1071,6 +1132,7 @@ async function loadIntervenants() {
       '<td>' + (inv.total_clics || 0) + ' clics · ' + (inv.total_duree_min || 0) + ' min</td>' +
       '<td><span class="pill ' + (inv.actif ? 'ok' : 'off') + '">' + (inv.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td style="display:flex;gap:.3rem">' +
+        '<button class="btn-sm" onclick="openEditIntervenant(' + inv.id + ')">Modifier</button>' +
         '<button class="btn-sm" onclick="viewIntervenantStats(' + inv.id + ')">📊 Stats</button>' +
         '<button class="btn-sm" onclick="toggleContenu(' + inv.id + ',' + (inv.est_intervenant !== false) + ')">' + (inv.est_intervenant !== false ? '👤 Companion ✓' : '👤 Companion ✗') + '</button>' +
         '<button class="btn-sm" onclick="toggleIntervenant(' + inv.id + ',' + inv.actif + ')">' + (inv.actif ? 'Désactiver' : 'Activer') + '</button>' +
