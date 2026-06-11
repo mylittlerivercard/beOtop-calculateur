@@ -705,6 +705,12 @@ async function saveClient(){
   if(d.ok){ closeModal('modal-client-edit'); toast('Client mis à jour ✓'); loadClients(); }
   else { toast(d.error || 'Erreur'); }
 }
+function copyCreds(email, pwd, btn){
+  var t = 'Identifiant : ' + email + '\nMot de passe : ' + pwd;
+  navigator.clipboard.writeText(t).then(function(){
+    if(btn){ var o=btn.textContent; btn.textContent='Copié ✓'; setTimeout(function(){ btn.textContent=o; },1500); }
+  }).catch(function(){ if(btn) btn.textContent='Copie impossible'; });
+}
 function startSiteFor(clientId, fromClient){
   loadSites().then(function(){
     resetSiteForm();
@@ -742,7 +748,9 @@ async function createClient(){
   var d = await r.json();
   if(d.ok){
     var box = document.getElementById('c-result');
-    box.innerHTML = 'Client créé ✓<br><strong>Login :</strong> ' + (document.getElementById('c-contact-email').value || '—') + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password + '<br><br><button class="btn btn-primary" onclick="startSiteFor(' + d.client_id + ',true)">Ajouter le premier site &rarr;</button>';
+    var cemail = (document.getElementById('c-contact-email').value || '').trim();
+    var ccopy = cemail ? ' <button class="btn btn-ghost" onclick="copyCreds(\'' + cemail + '\',\'' + d.tmp_password + '\',this)">Copier les identifiants</button>' : '';
+    box.innerHTML = 'Client créé ✓<br><strong>Login :</strong> ' + (cemail || '—') + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password + '<br><br><button class="btn btn-primary" onclick="startSiteFor(' + d.client_id + ',true)">Ajouter le premier site &rarr;</button>' + ccopy;
     box.classList.add('show');
     loadClients();
   } else { toast(d.error || 'Erreur'); }
@@ -864,7 +872,7 @@ async function createSite(){
       if (ru.ok && du.ok) {
         msg += '<br><br><strong>Compte Manager créé :</strong> ' + mgrEmail
              + '<br><strong>Mot de passe temporaire :</strong> ' + du.tmp_password
-             + '<br><span style="font-size:.62rem;color:#6b6070">À communiquer au manager ; il pourra le changer.</span>';
+             + '<br><span style="font-size:.62rem;color:#6b6070">À communiquer au manager ; il pourra le changer.</span>' + ' <button class="btn btn-ghost" onclick="copyCreds(\'' + mgrEmail + '\',\'' + du.tmp_password + '\',this)">Copier les identifiants</button>';
       } else {
         msg += '<br><span style="color:#c0392b">Compte Manager non créé : ' + (du.error || 'erreur') + '</span>';
       }
