@@ -1949,6 +1949,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 
   <div class="nav-bottom">
+    <div class="nav-item" onclick="openPwdModal()" role="button" tabindex="0" title="Changer mon mot de passe">
+      <i class="ti ti-key" aria-hidden="true"></i><span>Changer mot de passe</span>
+    </div>
     <div class="nav-item nav-logout" onclick="logoutPwa()" role="button" tabindex="0" title="Se déconnecter">
       <i class="ti ti-logout" aria-hidden="true"></i><span>Se déconnecter</span>
     </div>
@@ -3023,6 +3026,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       </div>
       <div class="more-drawer-item" onclick="bnavSwitch('ressources');closeMoreDrawer()">
         <i class="ti ti-link" style="background:rgba(0,180,180,.12);color:#00b4b4"></i>Ressources
+      </div>
+      <div class="more-drawer-item" onclick="closeMoreDrawer();openPwdModal()">
+        <i class="ti ti-key" style="background:rgba(2,128,144,.12);color:#028090"></i>Changer mot de passe
       </div>
       <div class="more-drawer-item" onclick="closeMoreDrawer();logoutPwa()">
         <i class="ti ti-logout" style="background:rgba(226,75,74,.12);color:#E24B4A"></i>Se déconnecter
@@ -8857,6 +8863,20 @@ function logPlayEnd(contentType, contentLabel) {
 }
 </script>
 
+<div id="pwd-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);align-items:center;justify-content:center" onclick="if(event.target===this)closePwdModal()">
+  <div style="background:#fff;border-radius:16px;padding:1.6rem;width:min(420px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <strong style="font-size:1rem">Changer mon mot de passe</strong>
+      <button onclick="closePwdModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">&times;</button>
+    </div>
+    <input id="pwd-old" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem">
+    <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+    <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+    <div id="pwd-msg" style="font-size:.78rem;margin-top:.6rem;min-height:1rem"></div>
+    <button onclick="submitPwd()" style="width:100%;margin-top:.4rem;padding:.7rem;border:none;border-radius:8px;background:#028090;color:#fff;font-size:.9rem;cursor:pointer">Valider</button>
+  </div>
+</div>
+
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -8975,6 +8995,20 @@ function logoutPwa() {
   fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     .then(function(){ window.location.href = '/login'; })
     .catch(function(){ window.location.href = '/login'; });
+}
+function openPwdModal(){['pwd-old','pwd-new','pwd-confirm'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pwd-msg').textContent='';document.getElementById('pwd-modal').style.display='flex';}
+function closePwdModal(){document.getElementById('pwd-modal').style.display='none';}
+async function submitPwd(){
+  var oldp=document.getElementById('pwd-old').value,newp=document.getElementById('pwd-new').value,conf=document.getElementById('pwd-confirm').value,msg=document.getElementById('pwd-msg');
+  if(newp.length<6){msg.style.color='#c0392b';msg.textContent='Le nouveau mot de passe doit faire au moins 6 caractères.';return;}
+  if(newp!==conf){msg.style.color='#c0392b';msg.textContent='La confirmation ne correspond pas.';return;}
+  msg.style.color='#888';msg.textContent='Enregistrement…';
+  try{
+    var r=await fetch('/api/auth/change-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:oldp,new_password:newp})});
+    var d=await r.json();
+    if(r.ok&&d.ok){msg.style.color='#1e8449';msg.textContent='Mot de passe modifié ✓';setTimeout(closePwdModal,1200);}
+    else{msg.style.color='#c0392b';msg.textContent=(d&&d.error)||'Erreur.';}
+  }catch(e){msg.style.color='#c0392b';msg.textContent='Erreur réseau.';}
 }
 
 function openMoreDrawer() {
