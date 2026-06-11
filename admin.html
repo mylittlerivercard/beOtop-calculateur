@@ -173,7 +173,7 @@
         <div class="page-title">Sites</div>
         <div class="page-sub">Espaces beOtop déployés</div>
       </div>
-      <div class="btn-add" onclick="openModal('modal-site')">+ Nouveau site</div>
+      <div class="btn-add" onclick="startSiteFor(null,false)">+ Nouveau site</div>
     </div>
     <div class="card">
       <table class="tbl" id="sites-table">
@@ -317,6 +317,7 @@
 <div class="modal-overlay" id="modal-site">
   <div class="modal">
     <h3>Nouveau site</h3>
+    <div id="s-onboard-banner" style="display:none;background:rgba(2,128,144,.08);border:1px solid rgba(2,128,144,.25);border-radius:8px;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.72rem;color:#028090">Premier site de ce client. Renseignez-le (avec l'email du manager si vous l'avez), ou fermez : vous pourrez ajouter d'autres sites à tout moment.</div>
     <div class="field"><label>Client *</label><select id="s-client"></select></div>
     <div class="field"><label>Nom du site *</label><input id="s-nom" type="text" placeholder="ex. Siège Paris"></div>
     <div class="field"><label>Ville</label><input id="s-ville" type="text" placeholder="ex. Paris 9e"></div>
@@ -679,6 +680,28 @@ async function loadClients(){
   });
 }
 
+function startSiteFor(clientId, fromClient){
+  loadSites().then(function(){
+    resetSiteForm();
+    if(clientId) document.getElementById('s-client').value = clientId;
+    document.getElementById('s-onboard-banner').style.display = fromClient ? 'block' : 'none';
+    closeModal('modal-client');
+    openModal('modal-site');
+    var n=document.getElementById('s-nom'); if(n) n.focus();
+  });
+}
+function resetSiteForm(){
+  ['s-nom','s-ville','s-salaries','s-email','s-tarif'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='';});
+  var c=document.getElementById('s-companion'); if(c){ c.checked=false; toggleCompanionTarif(false); }
+  var res=document.getElementById('s-result'); if(res){ res.innerHTML=''; res.classList.remove('show'); }
+}
+function addAnotherSite(){
+  var keep=document.getElementById('s-client').value;
+  resetSiteForm();
+  document.getElementById('s-client').value=keep;
+  document.getElementById('s-onboard-banner').style.display='none';
+  var n=document.getElementById('s-nom'); if(n) n.focus();
+}
 async function createClient(){
   var nom = document.getElementById('c-nom').value.trim();
   if(!nom){ toast('Nom requis'); return; }
@@ -694,7 +717,7 @@ async function createClient(){
   var d = await r.json();
   if(d.ok){
     var box = document.getElementById('c-result');
-    box.innerHTML = 'Client créé ✓<br><strong>Login :</strong> ' + (document.getElementById('c-contact-email').value || '—') + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password;
+    box.innerHTML = 'Client créé ✓<br><strong>Login :</strong> ' + (document.getElementById('c-contact-email').value || '—') + '<br><strong>Mot de passe temporaire :</strong> ' + d.tmp_password + '<br><br><button class="btn btn-primary" onclick="startSiteFor(' + d.client_id + ',true)">Ajouter le premier site &rarr;</button>';
     box.classList.add('show');
     loadClients();
   } else { toast(d.error || 'Erreur'); }
@@ -821,6 +844,7 @@ async function createSite(){
         msg += '<br><span style="color:#c0392b">Compte Manager non créé : ' + (du.error || 'erreur') + '</span>';
       }
     }
+    msg += '<br><br><button class="btn btn-primary" onclick="addAnotherSite()">+ Ajouter un autre site</button> <button class="btn btn-ghost" onclick="closeModal(\'modal-site\')">Terminer</button>';
     box.innerHTML = msg;
     box.classList.add('show');
     loadSites();
