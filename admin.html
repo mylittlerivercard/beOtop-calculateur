@@ -781,7 +781,7 @@ async function createSite(){
       var ru = await fetch('/api/admin/users', {
         method:'POST', credentials:'include',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: mgrEmail, role: 'manager', client_id: parseInt(client_id), nom: '' })
+        body: JSON.stringify({ email: mgrEmail, role: 'manager', client_id: parseInt(client_id), site_id: d.site_id, nom: '' })
       });
       var du = await ru.json();
       if (ru.ok && du.ok) {
