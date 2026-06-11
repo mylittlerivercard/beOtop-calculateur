@@ -494,6 +494,7 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cint_site ON companion_intervenants(site_slug)')
         cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS site_url TEXT")
         cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS linkedin_url TEXT")
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS site_id INTEGER REFERENCES sites(id) ON DELETE SET NULL")
 
         # ── Tables de contenus Companion (une par type) ───────────────────────
         for _t, _cols in COMPANION_CONTENT_TABLES.items():
@@ -615,6 +616,7 @@ def auth_login():
     session['user_id']   = user['id']
     session['role']      = user['role']
     session['client_id'] = user['client_id']
+    session['site_id']   = user.get('site_id')
     session['nom']       = user['nom']
     return jsonify({
         'ok': True, 'role': user['role'], 'nom': user['nom'],
@@ -648,6 +650,7 @@ def me():
         'id': user['id'], 'email': user['email'],
         'nom': user['nom'], 'role': user['role'],
         'client_id': user['client_id'],
+        'site_id': user.get('site_id'),
         'intervenant_id': inv_id,
         'intervenant_nom': inv_nom
     })
@@ -853,9 +856,9 @@ def admin_create_user():
         with conn.cursor() as cur:
             try:
                 cur.execute(
-                    "INSERT INTO users (email, password, nom, role, client_id) VALUES (%s,%s,%s,%s,%s)",
+                    "INSERT INTO users (email, password, nom, role, client_id, site_id) VALUES (%s,%s,%s,%s,%s,%s)",
                     [email, generate_password_hash(tmp_pw), data.get('nom',''),
-                     data.get('role','client'), data.get('client_id')]
+                     data.get('role','client'), data.get('client_id'), data.get('site_id')]
                 )
                 conn.commit()
             except psycopg2.IntegrityError:
@@ -1108,9 +1111,13 @@ def sensors_stats():
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -1191,9 +1198,13 @@ def sensors_passages_list():
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -1230,9 +1241,13 @@ def sensors_passages_export():
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -1277,9 +1292,13 @@ def get_site_filter(site_slug=None):
             return "site_slug = %s", [site_slug]
         return "1=1", []
     else:
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 sites = cur.fetchall()
         slugs = [s['slug'] for s in sites]
         if not slugs:
@@ -1614,6 +1633,8 @@ def client_get_sites():
         with conn.cursor() as cur:
             if session.get('role') == 'admin':
                 cur.execute("SELECT s.*, c.nom as client_nom FROM sites s JOIN clients c ON s.client_id=c.id ORDER BY c.nom, s.nom")
+            elif session.get('site_id'):
+                cur.execute("SELECT * FROM sites WHERE id=%s AND client_id=%s AND actif=1 ORDER BY nom", [session.get('site_id'), client_id])
             else:
                 cur.execute("SELECT * FROM sites WHERE client_id=%s AND actif=1 ORDER BY nom", [client_id])
             sites = cur.fetchall()
@@ -1723,9 +1744,13 @@ def get_reservations():
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -1762,9 +1787,13 @@ def create_reservation():
     # Vérifier accès
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -4187,9 +4216,13 @@ def v1_correlation():
         return jsonify({'error': 'site_slug requis'}), 400
     if session.get('role') != 'admin':
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
@@ -4311,9 +4344,13 @@ def v1_companion_impact():
     # Contrôle accès identique à v1_correlation
     if session.get('role') not in ('admin', 'demo'):
         client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
                 slugs = [r['slug'] for r in cur.fetchall()]
         if site_slug not in slugs:
             return jsonify({'error': 'Accès refusé'}), 403
