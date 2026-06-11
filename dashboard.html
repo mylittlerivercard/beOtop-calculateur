@@ -281,6 +281,7 @@
   <div class="topbar-right">
     <span class="user-name" id="user-name"></span>
     <a id="admin-link" href="/admin" style="display:none;padding:.4rem .9rem;border-radius:8px;font-size:.75rem;font-weight:500;color:var(--gold);border:1px solid rgba(200,169,110,.3);text-decoration:none;background:rgba(200,169,110,.08)">⚙ Back-office</a>
+    <button class="btn-logout" onclick="openPwdModal()" style="margin-right:.4rem">Changer mot de passe</button>
     <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
   </div>
 </div>
@@ -706,6 +707,22 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="pwd-modal" onclick="if(event.target===this)closePwdModal()">
+  <div class="modal-box" style="width:min(420px,90vw)">
+    <div class="modal-header">
+      <div><div style="font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em">Sécurité</div><div style="font-size:1rem;color:var(--text);margin-top:.2rem">Changer mon mot de passe</div></div>
+      <button onclick="closePwdModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted)">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input id="pwd-old" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" style="padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem">
+      <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password" style="padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+      <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" style="padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+      <div id="pwd-msg" style="font-size:.78rem;margin-top:.6rem;min-height:1rem"></div>
+      <button class="btn-logout" onclick="submitPwd()" style="margin-top:.4rem">Valider</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var BASE_400={siege:{absenteisme:511056,presenteisme:235872,turnover:485376,accidents:32000},industrie:{absenteisme:369787,presenteisme:493200,turnover:217980,accidents:32000}};
 var CTP_BASE={siege:{am:17500,im:6250,maint:2100,form:1960,com:2970,anim:2000},industrie:{am:17500,im:6500,maint:2100,form:1960,com:2970,anim:1970}};
@@ -779,6 +796,20 @@ function switchTab(tab){
 }
 
 async function doLogout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});window.location.href='/login';}
+function openPwdModal(){['pwd-old','pwd-new','pwd-confirm'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pwd-msg').textContent='';document.getElementById('pwd-modal').style.display='block';}
+function closePwdModal(){document.getElementById('pwd-modal').style.display='none';}
+async function submitPwd(){
+  var oldp=document.getElementById('pwd-old').value,newp=document.getElementById('pwd-new').value,conf=document.getElementById('pwd-confirm').value,msg=document.getElementById('pwd-msg');
+  if(newp.length<6){msg.style.color='#c0392b';msg.textContent='Le nouveau mot de passe doit faire au moins 6 caractères.';return;}
+  if(newp!==conf){msg.style.color='#c0392b';msg.textContent='La confirmation ne correspond pas.';return;}
+  msg.style.color='var(--muted)';msg.textContent='Enregistrement…';
+  try{
+    var r=await fetch('/api/auth/change-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:oldp,new_password:newp})});
+    var d=await r.json();
+    if(r.ok&&d.ok){msg.style.color='#1e8449';msg.textContent='Mot de passe modifié ✓';setTimeout(closePwdModal,1200);}
+    else{msg.style.color='#c0392b';msg.textContent=(d&&d.error)||'Erreur.';}
+  }catch(e){msg.style.color='#c0392b';msg.textContent='Erreur réseau.';}
+}
 
 async function init(){
   var me=await fetch('/api/auth/me',{credentials:'include'}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
