@@ -122,6 +122,7 @@
   <div class="sidebar-footer">
     <div style="font-size:.62rem;color:#6b6070;margin-bottom:.6rem" id="user-info"></div>
     <a href="/dashboard" style="display:block;width:100%;padding:.55rem;border-radius:8px;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.3);color:#c8a96e;font-size:.72rem;font-weight:500;text-align:center;text-decoration:none;margin-bottom:.5rem">📊 Dashboard analytique</a>
+    <button class="btn-logout" onclick="openPwdModal()" style="margin-bottom:.5rem">Changer mot de passe</button>
     <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
   </div>
 </div>
@@ -457,6 +458,20 @@
   </div>
 </div>
 
+<div id="pwd-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);align-items:center;justify-content:center" onclick="if(event.target===this)closePwdModal()">
+  <div style="background:#fff;border-radius:16px;padding:1.6rem;width:min(420px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <strong style="font-size:1rem">Changer mon mot de passe</strong>
+      <button onclick="closePwdModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">&times;</button>
+    </div>
+    <input id="pwd-old" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem">
+    <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+    <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
+    <div id="pwd-msg" style="font-size:.78rem;margin-top:.6rem;min-height:1rem"></div>
+    <button onclick="submitPwd()" style="width:100%;margin-top:.4rem;padding:.7rem;border:none;border-radius:8px;background:#028090;color:#fff;font-size:.9rem;cursor:pointer">Valider</button>
+  </div>
+</div>
+
 <script>
 var clientsList = [];
 
@@ -591,6 +606,20 @@ function toast(msg){
 async function doLogout(){
   await fetch('/api/auth/logout', {method:'POST', credentials:'include'});
   window.location.href = '/login';
+}
+function openPwdModal(){['pwd-old','pwd-new','pwd-confirm'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pwd-msg').textContent='';document.getElementById('pwd-modal').style.display='flex';}
+function closePwdModal(){document.getElementById('pwd-modal').style.display='none';}
+async function submitPwd(){
+  var oldp=document.getElementById('pwd-old').value,newp=document.getElementById('pwd-new').value,conf=document.getElementById('pwd-confirm').value,msg=document.getElementById('pwd-msg');
+  if(newp.length<6){msg.style.color='#c0392b';msg.textContent='Le nouveau mot de passe doit faire au moins 6 caractères.';return;}
+  if(newp!==conf){msg.style.color='#c0392b';msg.textContent='La confirmation ne correspond pas.';return;}
+  msg.style.color='#888';msg.textContent='Enregistrement…';
+  try{
+    var r=await fetch('/api/auth/change-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:oldp,new_password:newp})});
+    var d=await r.json();
+    if(r.ok&&d.ok){msg.style.color='#1e8449';msg.textContent='Mot de passe modifié ✓';setTimeout(closePwdModal,1200);}
+    else{msg.style.color='#c0392b';msg.textContent=(d&&d.error)||'Erreur.';}
+  }catch(e){msg.style.color='#c0392b';msg.textContent='Erreur réseau.';}
 }
 
 async function loadMe(){
