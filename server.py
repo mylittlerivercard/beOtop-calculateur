@@ -1782,7 +1782,7 @@ def create_reservation():
     duree_min   = int(data.get('duree_min', 20))
     if not all([site_slug, atelier, heure_debut]):
         return jsonify({'error': 'site_slug, atelier, heure_debut requis'}), 400
-    if duree_min not in [10, 15, 20]:
+    if duree_min not in [10, 15, 20, 30]:
         return jsonify({'error': 'duree_min doit être 10, 15 ou 20'}), 400
     # Vérifier accès
     if session.get('role') != 'admin':
