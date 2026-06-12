@@ -1278,6 +1278,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <p id="res-source-tunnel" style="font-size:.7rem;color:var(--text-muted)">Chargement…</p>
 </div>
 
+<div id="tunnel-date-selector" style="display:flex;align-items:center;gap:.3rem;margin-bottom:1.2rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:.3rem .6rem;width:fit-content"></div>
+
 <!-- Tunnel étape 1 : choix atelier -->
 <div id="tunnel-step1">
   <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem">
@@ -2579,7 +2581,7 @@ function switchView(id) {
       n.classList.add('active');
   });
   if (id === 'dashboard') renderDashboard();
-  if (id === 'reservation') renderTunnel();
+  if (id === 'reservation') { calDate = new Date(); renderTunnel(); }
   if (id === 'sons') renderSons();
   if (id === 'video') renderVideo();
   if (id === 'jeux') {
@@ -3762,6 +3764,15 @@ function tunnelShowPlanning() {
   if (!isVisible) renderCalendrier();
 }
 
+function tunnelNavDate(d) {
+  var next = new Date(calDate);
+  next.setDate(next.getDate() + d);
+  var today = new Date(); today.setHours(0,0,0,0);
+  if (next < today) return;
+  calDate = next;
+  renderTunnel();
+}
+
 async function renderTunnel() {
   tunnelShowStep(1);
   document.getElementById('tunnel-planning-full').style.display = 'none';
@@ -3803,6 +3814,18 @@ async function renderTunnel() {
   } else {
     srcEl.textContent = '🟡 Hors-ligne';
     calAteliers = DB.ateliers.filter(function(a) { return !ACCESSOIRES.includes(a.nom); });
+  }
+
+  // Mettre à jour le sélecteur de date dans le tunnel
+  var isToday = calDateStr(calDate) === calDateStr(new Date());
+  var dateLabel = calDate.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  var dateSel = document.getElementById('tunnel-date-selector');
+  if (dateSel) {
+    dateSel.innerHTML =
+      '<button onclick="tunnelNavDate(-1)" style="background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:.2rem .5rem">‹</button>' +
+      '<span style="font-size:.78rem;color:var(--text);min-width:160px;text-align:center;display:inline-block">' + (isToday ? '📅 ' : '') + dateLabel + '</span>' +
+      '<button onclick="tunnelNavDate(+1)" style="background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-muted);padding:.2rem .5rem">›</button>' +
+      (isToday ? '' : '<button onclick="calDate=new Date();renderTunnel()" style="background:none;border:none;font-size:.65rem;color:var(--text-muted);cursor:pointer;padding:.2rem .5rem;border-left:1px solid var(--border)">Auj.</button>');
   }
 
   /* Rendre les cards ateliers */
