@@ -3473,8 +3473,12 @@ function calDateStr(d) {
   return d.toISOString().slice(0, 10);
 }
 
-function calNav(delta) {
-  calDate.setDate(calDate.getDate() + delta);
+function calNav(d) {
+  var next = new Date(calDate);
+  next.setDate(next.getDate() + d);
+  var today = new Date(); today.setHours(0,0,0,0);
+  if (next < today) return; // bloquer navigation vers le passé
+  calDate = next;
   renderCalendrier();
 }
 
@@ -3825,10 +3829,12 @@ function tunnelSelectAtelier(nom) {
   document.getElementById('tunnel-atelier-label').textContent = nom;
 
   /* Calculer les créneaux libres pour cet atelier */
+  var isToday = calDateStr(calDate) === calDateStr(new Date());
   var nowMin  = new Date().getHours() * 60 + new Date().getMinutes();
   var slots   = [];
   for (var m = HEURES_DEBUT * 60; m < HEURES_FIN * 60; m += SLOT_MIN) {
-    if (m <= nowMin) continue; // créneaux passés exclus
+    if (isToday && m <= nowMin) continue;
+    if (!isToday && calDate < new Date(new Date().toDateString())) continue;
     var reserved = calReservations.some(function(r) {
       var rStart = parseHM(r.heure_debut.slice(0,5));
       var rEnd   = parseHM(r.heure_fin.slice(0,5));
