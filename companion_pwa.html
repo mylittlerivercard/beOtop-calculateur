@@ -2091,13 +2091,54 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
 <!-- ══════════════ RÉSERVATION ══════════════ -->
 <div class="view" id="view-reservation">
-  <div class="page-header">
-    <h1>Réserver un <em>atelier</em></h1>
-    <p>Calendrier du jour · Créneaux disponibles en temps réel</p>
-  </div>
+<div class="page-header">
+  <h1>Réserver un <em>atelier</em></h1>
+  <p id="res-source-tunnel" style="font-size:.7rem;color:var(--text-muted)">Chargement…</p>
+</div>
 
-  <!-- Barre de contrôle -->
-  <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap">
+<!-- Tunnel étape 1 : choix atelier -->
+<div id="tunnel-step1">
+  <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem">
+    Étape 1 · Choisir un atelier
+  </div>
+  <div id="tunnel-ateliers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem"></div>
+</div>
+
+<!-- Tunnel étape 2 : choix créneau -->
+<div id="tunnel-step2" style="display:none">
+  <button onclick="tunnelBack(1)" style="background:none;border:none;color:var(--text-muted);font-size:.72rem;cursor:pointer;padding:0;margin-bottom:1rem">← Changer d'atelier</button>
+  <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem">
+    Étape 2 · Choisir un créneau — <span id="tunnel-atelier-label" style="color:var(--text);text-transform:none;letter-spacing:0"></span>
+  </div>
+  <div id="tunnel-slots-wrap" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+  <div id="tunnel-slots-empty" style="display:none;font-size:.75rem;color:var(--text-muted);padding:1.2rem 0">Aucun créneau disponible pour cet atelier aujourd'hui.</div>
+</div>
+
+<!-- Tunnel étape 3 : durée + confirmation -->
+<div id="tunnel-step3" style="display:none">
+  <button onclick="tunnelBack(2)" style="background:none;border:none;color:var(--text-muted);font-size:.72rem;cursor:pointer;padding:0;margin-bottom:1rem">← Changer de créneau</button>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.4rem;max-width:420px">
+    <div id="tunnel-confirm-header" style="font-size:1rem;font-weight:400;margin-bottom:.3rem"></div>
+    <div id="tunnel-confirm-sub" style="font-size:.68rem;color:var(--text-muted);margin-bottom:1.2rem"></div>
+    <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem">Durée</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1.4rem" id="tunnel-duree-btns">
+      <button class="duree-btn active" data-d="15" onclick="tunnelSelectDuree(15)">15 min</button>
+      <button class="duree-btn" data-d="20" onclick="tunnelSelectDuree(20)">20 min</button>
+      <button class="duree-btn" data-d="30" onclick="tunnelSelectDuree(30)">30 min</button>
+    </div>
+    <button onclick="tunnelConfirmer()" style="width:100%;padding:.9rem;border-radius:10px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));border:1px solid var(--gold-border);color:var(--gold);font-size:.85rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
+    <div id="tunnel-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
+  </div>
+</div>
+
+<!-- Lien vue planning complète (secondaire) -->
+<div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)">
+  <button onclick="tunnelShowPlanning()" style="background:none;border:none;color:var(--text-muted);font-size:.7rem;cursor:pointer;text-decoration:underline">Vue planning complète ↗</button>
+</div>
+
+<!-- Planning complet (masqué par défaut) -->
+<div id="tunnel-planning-full" style="display:none;margin-top:1.2rem">
+  <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:.3rem .5rem">
       <button class="btn-ghost" style="padding:.2rem .5rem;font-size:.9rem" onclick="calNav(-1)">‹</button>
       <span id="cal-date-label" style="font-size:.75rem;color:var(--text);min-width:130px;text-align:center"></span>
@@ -2108,42 +2149,34 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div id="res-source" style="font-size:.6rem;color:var(--text-muted);padding:.2rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:8px">⏳</div>
     <button class="btn-secondary" style="margin-left:auto;font-size:.68rem;padding:.4rem .9rem" onclick="renderCalendrier()">↻ Actualiser</button>
   </div>
-
-  <!-- Légende -->
-  <div style="display:flex;gap:1rem;margin-bottom:.9rem;font-size:.6rem;color:var(--text-dim);flex-wrap:wrap">
-    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--gold-dim);border:1px solid var(--gold-border);vertical-align:middle;margin-right:3px"></span>Réservé</span>
-    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);vertical-align:middle;margin-right:3px"></span>Occupé (capteur)</span>
-    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(90,138,106,.12);border:1px solid rgba(90,138,106,.3);vertical-align:middle;margin-right:3px"></span>Disponible</span>
-  </div>
-
-  <!-- Calendrier : header fixe séparé + grille scrollable -->
   <div id="cal-header-fixed" style="overflow-x:auto;border:1px solid var(--border2);border-radius:12px 12px 0 0;background:var(--bg3);position:sticky;top:53px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.1)">
     <div id="cal-header-inner" style="min-width:700px"></div>
   </div>
   <div style="overflow-x:auto;border:1px solid var(--border2);border-top:none;border-radius:0 0 12px 12px">
     <div id="calendrier-wrap" style="min-width:700px"></div>
   </div>
+</div>
 
-  <!-- Modal de réservation -->
-  <div id="modal-res" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
-    <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
-        <div>
-          <div style="font-size:1.6rem;font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
-          <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem" id="mres-sub">—</div>
-        </div>
-        <button onclick="closeResModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.9rem">✕</button>
+<!-- Modal réservation (conservée pour compatibilité avec le planning complet) -->
+<div id="modal-res" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
+      <div>
+        <div style="font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
+        <div style="font-size:.65rem;color:var(--text-dim);margin-top:.2rem" id="mres-sub">—</div>
       </div>
-      <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.12em">Choisir une durée</div>
-      <div style="display:flex;gap:.5rem;margin-bottom:1.4rem">
-        <button class="duree-btn" data-d="10" onclick="selectDuree(10)">10 min</button>
-        <button class="duree-btn active" data-d="15" onclick="selectDuree(15)">15 min</button>
-        <button class="duree-btn" data-d="20" onclick="selectDuree(20)">20 min</button>
-      </div>
-      <button onclick="confirmerReservation()" style="width:100%;padding:.8rem;border-radius:10px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid var(--gold-border);color:var(--gold);font-size:.82rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
-      <div id="mres-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
+      <button onclick="closeResModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.9rem">✕</button>
     </div>
+    <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.12em">Choisir une durée</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1.4rem">
+      <button class="duree-btn" data-d="10" onclick="selectDuree(10)">10 min</button>
+      <button class="duree-btn active" data-d="15" onclick="selectDuree(15)">15 min</button>
+      <button class="duree-btn" data-d="20" onclick="selectDuree(20)">20 min</button>
+    </div>
+    <button onclick="confirmerReservation()" style="width:100%;padding:.8rem;border-radius:10px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid var(--gold-border);color:var(--gold);font-size:.82rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
+    <div id="mres-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
   </div>
+</div>
 </div>
 
 <!-- ══════════════ COHÉRENCE CARDIAQUE ══════════════ -->
