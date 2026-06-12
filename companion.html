@@ -1319,7 +1319,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 </div>
 
 <!-- Planning complet (masqué par défaut) -->
-<div id="tunnel-planning-full" style="display:none;margin-top:1.2rem">
+<div id="tunnel-planning-full" style="display:none;margin-top:1.2rem;max-height:420px;overflow:hidden;border-radius:12px">
   <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:.3rem .5rem">
       <button class="btn-ghost" style="padding:.2rem .5rem;font-size:.9rem" onclick="calNav(-1)">‹</button>
@@ -1334,7 +1334,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div id="cal-header-fixed" style="overflow-x:auto;border:1px solid var(--border2);border-radius:12px 12px 0 0;background:var(--bg3);position:sticky;top:53px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.1)">
     <div id="cal-header-inner" style="min-width:700px"></div>
   </div>
-  <div style="overflow-x:auto;border:1px solid var(--border2);border-top:none;border-radius:0 0 12px 12px">
+  <div style="overflow-x:auto;overflow-y:auto;max-height:280px;border:1px solid var(--border2);border-top:none;border-radius:0 0 12px 12px">
     <div id="calendrier-wrap" style="min-width:700px"></div>
   </div>
 </div>
