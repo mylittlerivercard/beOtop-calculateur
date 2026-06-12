@@ -2046,9 +2046,17 @@ async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
       await new Promise(r => setTimeout(r, 300));
     }
 
+    // Forcer largeur A4 (794px) pour que le contenu ne soit pas rogné
+    const _prevWidth = container.style.width;
+    const _prevMaxWidth = container.style.maxWidth;
+    container.style.width = '794px';
+    container.style.maxWidth = '794px';
+    await new Promise(r => setTimeout(r, 200));
+
     // Capture haute résolution (onclone : recopier les canvas Chart.js)
     const canvas = await html2canvas(container, {
       scale: 2,
+      width: 794,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -2067,6 +2075,8 @@ async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
       }
     });
 
+    container.style.width = _prevWidth;
+    container.style.maxWidth = _prevMaxWidth;
     const imgData = canvas.toDataURL('image/png');
     const imgWidth = 210; // A4 largeur mm
     const pageHeight = 297; // A4 hauteur mm
