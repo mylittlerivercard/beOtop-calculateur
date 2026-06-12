@@ -4974,10 +4974,13 @@ function tunnelSelectAtelier(nom) {
   for (var m = HEURES_DEBUT * 60; m < HEURES_FIN * 60; m += SLOT_MIN) {
     if (isToday && m <= nowMin) continue;
     if (!isToday && calDate < new Date(new Date().toDateString())) continue;
+    var DUREE_MAX = 30; // durée max proposée
     var reserved = calReservations.some(function(r) {
+      if (r.atelier !== nom) return false;
       var rStart = parseHM(r.heure_debut.slice(0,5));
       var rEnd   = parseHM(r.heure_fin.slice(0,5));
-      return r.atelier === nom && m >= rStart && m < rEnd;
+      // slot en chevauchement : débute avant rEnd ET se terminerait après rStart
+      return (m < rEnd) && (m + DUREE_MAX > rStart);
     });
     if (!reserved) slots.push(m);
   }
@@ -5033,6 +5036,22 @@ function tunnelSelectDuree(d) {
 async function tunnelConfirmer() {
   var errEl = document.getElementById('tunnel-error');
   errEl.style.display = 'none';
+
+  // Vérification conflit côté client
+  var debut = parseHM(tunnelState.heure);
+  var fin   = debut + tunnelState.duree;
+  var conflit = calReservations.some(function(r) {
+    if (r.atelier !== tunnelState.atelier) return false;
+    var rStart = parseHM(r.heure_debut.slice(0,5));
+    var rEnd   = parseHM(r.heure_fin.slice(0,5));
+    return debut < rEnd && fin > rStart;
+  });
+  if (conflit) {
+    errEl.textContent = 'Ce créneau chevauche une réservation existante.';
+    errEl.style.display = 'block';
+    return;
+  }
+
   const siteSlug = await getSiteSlug();
 
   if (siteSlug) {
