@@ -2579,7 +2579,7 @@ function switchView(id) {
       n.classList.add('active');
   });
   if (id === 'dashboard') renderDashboard();
-  if (id === 'reservation') renderCalendrier();
+  if (id === 'reservation') renderTunnel();
   if (id === 'sons') renderSons();
   if (id === 'video') renderVideo();
   if (id === 'jeux') {
@@ -3493,6 +3493,9 @@ function parseHM(str) {
 }
 
 async function renderCalendrier() {
+  // Appelée uniquement depuis le planning complet
+  const planningEl = document.getElementById('tunnel-planning-full');
+  if (planningEl && planningEl.style.display === 'none') return; // ne pas exécuter si planning masqué
   clearTimeout(realtimeTimer);
   const wrap = document.getElementById('calendrier-wrap');
   const srcEl = document.getElementById('res-source');
@@ -3731,6 +3734,205 @@ async function confirmerReservation() {
 
 /* Alias pour compatibilité switchView */
 function renderAteliers() { renderCalendrier(); }
+
+/* ════════════════════════════════════════════
+   TUNNEL RÉSERVATION (3 étapes)
+   ════════════════════════════════════════════ */
+
+var tunnelState = { atelier: null, heure: null, duree: 15 };
+
+function tunnelShowStep(n) {
+  [1,2,3].forEach(function(i) {
+    var el = document.getElementById('tunnel-step' + i);
+    if (el) el.style.display = (i === n) ? '' : 'none';
+  });
+}
+
+function tunnelBack(n) { tunnelShowStep(n); }
+
+function tunnelShowPlanning() {
+  var el = document.getElementById('tunnel-planning-full');
+  if (!el) return;
+  var isVisible = el.style.display !== 'none';
+  el.style.display = isVisible ? 'none' : '';
+  if (!isVisible) renderCalendrier();
+}
+
+async function renderTunnel() {
+  tunnelShowStep(1);
+  document.getElementById('tunnel-planning-full').style.display = 'none';
+
+  const srcEl = document.getElementById('res-source-tunnel');
+  const grid  = document.getElementById('tunnel-ateliers-grid');
+  grid.innerHTML = '<div style="font-size:.72rem;color:var(--text-muted)">⏳ Chargement…</div>';
+
+  const ACCESSOIRES = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
+  const siteSlug = await getSiteSlug();
+
+  /* Occupation PIR */
+  let occData = null;
+  if (siteSlug) {
+    try {
+      const r = await fetch('/api/sensors/occupation/current?site_slug=' + siteSlug, { credentials: 'include' });
+      if (r.ok) occData = await r.json();
+    } catch(e) {}
+  }
+
+  /* Réservations du jour */
+  calReservations = [];
+  if (siteSlug) {
+    try {
+      const r = await fetch('/api/reservations?site_slug=' + siteSlug + '&date=' + calDateStr(calDate), { credentials: 'include' });
+      if (r.ok) calReservations = await r.json();
+    } catch(e) {}
+  }
+
+  /* Construire liste ateliers */
+  if (occData && occData.ateliers && Object.keys(occData.ateliers).length > 0) {
+    srcEl.textContent = '🟢 Données PIR temps réel';
+    calAteliers = Object.entries(occData.ateliers)
+      .filter(([nom]) => !ACCESSOIRES.includes(nom))
+      .map(([nom, occupe]) => ({
+        nom, statut: occupe ? 'occupe' : 'libre',
+        ...(ATELIERS_META_COMPANION[nom] || { icon: '⚙️' })
+      }));
+  } else {
+    srcEl.textContent = '🟡 Hors-ligne';
+    calAteliers = DB.ateliers.filter(function(a) { return !ACCESSOIRES.includes(a.nom); });
+  }
+
+  /* Rendre les cards ateliers */
+  grid.innerHTML = '';
+  calAteliers.forEach(function(a) {
+    var libre = a.statut === 'libre';
+    var card = document.createElement('div');
+    card.style.cssText = 'border:1px solid ' + (libre ? 'rgba(0,180,180,.35)' : 'rgba(239,68,68,.25)') + ';border-radius:14px;padding:1.1rem;cursor:' + (libre ? 'pointer' : 'default') + ';background:' + (libre ? 'rgba(0,180,180,.06)' : 'rgba(239,68,68,.04)') + ';transition:all .15s';
+    card.innerHTML =
+      '<div style="font-size:1.6rem;margin-bottom:.5rem">' + (a.icon || '⚙️') + '</div>' +
+      '<div style="font-size:.82rem;font-weight:500;color:var(--text);margin-bottom:.3rem">' + a.nom + '</div>' +
+      '<div style="font-size:.62rem;font-weight:600;color:' + (libre ? 'var(--green)' : 'var(--red)') + ';text-transform:uppercase;letter-spacing:.08em">' + (libre ? '● Libre' : '● Occupé') + '</div>';
+    if (libre) {
+      card.onclick = function() { tunnelSelectAtelier(a.nom); };
+      card.onmouseover = function() { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = 'var(--shadow-md)'; };
+      card.onmouseout  = function() { card.style.transform = ''; card.style.boxShadow = ''; };
+    }
+    grid.appendChild(card);
+  });
+}
+
+function tunnelSelectAtelier(nom) {
+  tunnelState.atelier = nom;
+  document.getElementById('tunnel-atelier-label').textContent = nom;
+
+  /* Calculer les créneaux libres pour cet atelier */
+  var nowMin  = new Date().getHours() * 60 + new Date().getMinutes();
+  var slots   = [];
+  for (var m = HEURES_DEBUT * 60; m < HEURES_FIN * 60; m += SLOT_MIN) {
+    if (m <= nowMin) continue; // créneaux passés exclus
+    var reserved = calReservations.some(function(r) {
+      var rStart = parseHM(r.heure_debut.slice(0,5));
+      var rEnd   = parseHM(r.heure_fin.slice(0,5));
+      return r.atelier === nom && m >= rStart && m < rEnd;
+    });
+    if (!reserved) slots.push(m);
+  }
+
+  var wrap = document.getElementById('tunnel-slots-wrap');
+  var empty = document.getElementById('tunnel-slots-empty');
+  wrap.innerHTML = '';
+
+  if (slots.length === 0) {
+    empty.style.display = '';
+    wrap.style.display = 'none';
+  } else {
+    empty.style.display = 'none';
+    wrap.style.display = 'flex';
+    slots.forEach(function(m) {
+      var pill = document.createElement('button');
+      pill.className = 'slot-pill';
+      pill.style.cssText = 'padding:.45rem .9rem;border-radius:8px;border:1px solid var(--border2);background:var(--surface);font-size:.78rem;color:var(--text);cursor:pointer';
+      pill.textContent = fmtHM(m);
+      pill.onclick = function() {
+        document.querySelectorAll('#tunnel-slots-wrap .slot-pill').forEach(function(p) {
+          p.style.background = 'var(--surface)'; p.style.borderColor = 'var(--border2)'; p.style.color = 'var(--text)';
+        });
+        pill.style.background = 'rgba(0,180,180,.12)'; pill.style.borderColor = '#00b4b4'; pill.style.color = '#00b4b4';
+        tunnelSelectSlot(fmtHM(m));
+      };
+      wrap.appendChild(pill);
+    });
+  }
+
+  tunnelShowStep(2);
+}
+
+function tunnelSelectSlot(heure) {
+  tunnelState.heure = heure;
+  tunnelState.duree = 15;
+  document.getElementById('tunnel-confirm-header').textContent = tunnelState.atelier;
+  document.getElementById('tunnel-confirm-sub').textContent = 'Créneau : ' + heure + ' · ' + calDateStr(calDate);
+  document.querySelectorAll('#tunnel-duree-btns .duree-btn').forEach(function(b) {
+    b.classList.toggle('active', +b.dataset.d === 15);
+  });
+  document.getElementById('tunnel-error').style.display = 'none';
+  tunnelShowStep(3);
+}
+
+function tunnelSelectDuree(d) {
+  tunnelState.duree = d;
+  document.querySelectorAll('#tunnel-duree-btns .duree-btn').forEach(function(b) {
+    b.classList.toggle('active', +b.dataset.d === d);
+  });
+}
+
+async function tunnelConfirmer() {
+  var errEl = document.getElementById('tunnel-error');
+  errEl.style.display = 'none';
+  const siteSlug = await getSiteSlug();
+
+  if (siteSlug) {
+    try {
+      const r = await fetch('/api/reservations', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          site_slug:   siteSlug,
+          atelier:     tunnelState.atelier,
+          date:        calDateStr(calDate),
+          heure_debut: tunnelState.heure,
+          duree_min:   tunnelState.duree
+        })
+      });
+      if (r.status === 409) {
+        errEl.textContent = "Ce créneau vient d'être réservé. Choisissez un autre.";
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!r.ok) {
+        errEl.textContent = 'Erreur serveur — réservation non enregistrée.';
+        errEl.style.display = 'block';
+        return;
+      }
+    } catch(e) {
+      errEl.textContent = 'Impossible de joindre le serveur.';
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  DB.sessions.push({
+    date:   new Date().toISOString(),
+    label:  tunnelState.atelier,
+    detail: 'Réservé ' + tunnelState.heure + ' · ' + tunnelState.duree + ' min',
+    duree:  tunnelState.duree
+  });
+  saveDB(DB);
+  if (typeof haptic === 'function') haptic('success');
+  showToast('✓ ' + tunnelState.atelier + ' · ' + tunnelState.duree + ' min à ' + tunnelState.heure);
+  renderHistoryRecent();
+  renderTunnel(); // retour étape 1 avec rechargement
+}
+
 
 
 
