@@ -8642,8 +8642,26 @@ function deleteIntervenant(id) {
 }
 
 /* ═══ INTERVENANTS ═══ */
+var _apiContenus = null;
+function _ensureContenus(cb) {
+  if (_apiContenus !== null) { if (cb) cb(); return; }
+  fetch('/api/companion/contenus', { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : { contenus: [] }; })
+    .then(function(d){ _apiContenus = d.contenus || []; if (cb) cb(); })
+    .catch(function(){ _apiContenus = []; if (cb) cb(); });
+}
+function _contenuIcon(type) {
+  return { audio:'🎵', video:'🎬', exercice:'⚡', defi:'🎯', podcast:'🎙️' }[type] || '📌';
+}
 function _getContenus(inv) {
   var items = [];
+  // Contenus publiés via l'API, rattachés par nom d'intervenant
+  (_apiContenus || []).forEach(function(c){
+    var who = c.intervenant_nom || c.intervenant || '';
+    if (who && who === inv.nom) {
+      items.push({ icon: _contenuIcon(c.type), label: c.titre + (c.duree ? ' · ' + c.duree : '') });
+    }
+  });
   if (!inv.contenu_ids) return items;
   if (inv.contenu_ids.all) {
     // Nathalie : créatrice de tout le contenu beOtop
@@ -8689,6 +8707,7 @@ function _avatarHtml(inv, size) {
 function renderIntervenants() {
   var grid = document.getElementById('intervenants-grid');
   if (!grid) return;
+  if (_apiContenus === null) { _ensureContenus(renderIntervenants); }
   var list = (DB.intervenants || []).filter(function(i){ return i.actif !== false; });
   if (!list.length) {
     grid.innerHTML = '<div style="font-size:.78rem;color:var(--text-dim);padding:2rem">Aucun intervenant enregistré.</div>';
