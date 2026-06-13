@@ -2053,91 +2053,79 @@ async function _captureAndExport(containerId, titre, nomFichier, labelFn) {
     container.style.maxWidth = '794px';
     await new Promise(r => setTimeout(r, 200));
 
-    // Capture haute résolution (onclone : recopier les canvas Chart.js)
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      width: 794,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      onclone: (clonedDoc) => {
-        const origCanvases = container.querySelectorAll('canvas');
-        const cloneCanvases = clonedDoc.querySelectorAll('canvas');
-        origCanvases.forEach((orig, i) => {
-          if (cloneCanvases[i]) {
-            const ctx = cloneCanvases[i].getContext('2d');
-            cloneCanvases[i].width = orig.width;
-            cloneCanvases[i].height = orig.height;
-            ctx.drawImage(orig, 0, 0);
-          }
-        });
-      }
-    });
+    // onclone commun à toutes les sections : recopier les bitmaps des canvas Chart.js
+    const _onclone = (clonedDoc) => {
+      const origC = document.querySelectorAll('canvas');
+      const cloneC = clonedDoc.querySelectorAll('canvas');
+      origC.forEach((orig, i) => {
+        if (cloneC[i] && orig.width && orig.height) {
+          cloneC[i].width = orig.width;
+          cloneC[i].height = orig.height;
+          try { cloneC[i].getContext('2d').drawImage(orig, 0, 0); } catch (e) {}
+        }
+      });
+    };
+    const _h2cOpts = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, onclone: _onclone };
 
-    container.style.width = _prevWidth;
-    container.style.maxWidth = _prevMaxWidth;
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 210; // A4 largeur mm
-    const pageHeight = 297; // A4 hauteur mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Sections : .pdf-section si présent, sinon les blocs enfants directs du conteneur
+    let sections = Array.from(container.querySelectorAll('.pdf-section'));
+    if (!sections.length) sections = Array.from(container.children);
+    if (sections.length === 1 && sections[0].children.length > 1) {
+      sections = Array.from(sections[0].children);
+    }
+    sections = sections.filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+    if (!sections.length) sections = [container];
 
     const doc = new jsPDF('p', 'mm', 'a4');
+    const pageW = 210, pageH = 297;
+    const marginX = 12, contentW = pageW - marginX * 2;
+    const topY = 16, bottomY = pageH - 12;
 
-    // En-tête teal sur chaque page
-    const addHeader = (doc, pageNum) => {
-      doc.setFillColor(2, 128, 144);
-      doc.rect(0, 0, 210, 12, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(titre, 10, 8);
-      const today = new Date().toLocaleDateString('fr-FR');
-      doc.text('Page ' + pageNum + ' — ' + today, 200, 8, { align: 'right' });
-    };
-
-    const contentHeight = pageHeight - 20;
-    let pageNum = 1;
-    addHeader(doc, pageNum);
-
-    // Page 1 : bandeau titre + sous-titre (site / période)
+    // Page 1 : titre + sous-titre (site / période)
     doc.setTextColor(2, 128, 144);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text(titre, 10, 20);
+    doc.text(titre, marginX, 18);
     doc.setFontSize(9);
     doc.setTextColor(90, 112, 112);
     doc.setFont('helvetica', 'normal');
-    doc.text(labelFn(), 10, 27);
+    doc.text(labelFn(), marginX, 25);
     doc.setDrawColor(2, 128, 144);
     doc.setLineWidth(0.5);
-    doc.line(10, 30, 200, 30);
+    doc.line(marginX, 28, pageW - marginX, 28);
 
-    // Image du dashboard découpée en pages A4
-    let yOffset = 0;
-    const firstPageContentY = 35;
-    const firstPageContentH = contentHeight - 35 + 12;
+    let cursorY = 34; // début du contenu sur la page 1
 
-    doc.addImage(imgData, 'PNG', 5, firstPageContentY, 200, Math.min(imgHeight, firstPageContentH));
-    yOffset += firstPageContentH;
-
-    while (yOffset < imgHeight) {
-      doc.addPage();
-      pageNum++;
-      addHeader(doc, pageNum);
-      const remainingH = imgHeight - yOffset;
-      const sliceH = Math.min(contentHeight, remainingH);
-      doc.addImage(imgData, 'PNG', 5, 14 - (yOffset * 200 / imgWidth), 200, imgHeight);
-      yOffset += sliceH;
+    // Capture chaque section indépendamment — mêmes paramètres pour toutes
+    // (page 1 traitée comme les autres → plus d'aplatissement) et un bloc
+    // n'est jamais coupé : addPage si la section ne tient pas dans l'espace restant.
+    for (const sec of sections) {
+      const c = await html2canvas(sec, _h2cOpts);
+      if (!c.width || !c.height) continue;
+      const imgData = c.toDataURL('image/png');
+      let w = contentW;
+      let h = contentW * c.height / c.width;
+      const maxH = bottomY - topY; // hauteur exploitable d'une page entière
+      if (h > maxH) { const k = maxH / h; h = maxH; w = contentW * k; } // bloc > page : réduit, jamais coupé
+      if (cursorY + h > bottomY) { doc.addPage(); cursorY = topY; }     // ne tient pas : nouvelle page
+      doc.addImage(imgData, 'PNG', marginX, cursorY, w, h);
+      cursorY += h + 4;
     }
 
-    // Pied de page sur chaque page
-    const totalPages = doc.getNumberOfPages();
+    container.style.width = _prevWidth;
+    container.style.maxWidth = _prevMaxWidth;
+
+    // Footer (date + pagination) sur chaque page
+    const pageWidth  = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const dateStr    = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+    const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(160, 160, 160);
-      doc.text('beOtop EURL — Document confidentiel — ' + new Date().toLocaleDateString('fr-FR'), 105, 293, { align: 'center' });
+      doc.text('beOtop QVCT — Document confidentiel · ' + dateStr, 14, pageHeight - 6);
+      doc.text('Page ' + i + ' / ' + totalPages, pageWidth - 14, pageHeight - 6, { align: 'right' });
     }
 
     doc.save(nomFichier);
