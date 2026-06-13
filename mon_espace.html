@@ -211,6 +211,8 @@ tr:hover td { background: var(--surface2); }
   line-height: 1.6;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -229,7 +231,7 @@ tr:hover td { background: var(--surface2); }
 <div class="main">
 
   <!-- HERO -->
-  <div class="hero">
+  <div class="hero pdf-block">
     <div class="hero-avatar" id="hero-avatar">?</div>
     <div class="hero-info">
       <h1>Bonjour, <em id="hero-nom">—</em></h1>
@@ -270,10 +272,11 @@ tr:hover td { background: var(--surface2); }
       <option value="2">S2 · Juillet – Décembre</option>
     </select>
     <button class="btn-calcul" onclick="loadStats()">Actualiser</button>
+    <button onclick="exportIntervenantPDF()" style="padding:6px 14px;border-radius:8px;border:none;background:#028090;color:white;font-size:.8rem;font-weight:500;cursor:pointer">⬇ Exporter PDF</button>
   </div>
 
   <!-- RÉCAP ANNUEL -->
-  <div id="recap-annuel" style="display:none;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(0,180,180,.03));border:1px solid rgba(0,180,180,.25);border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1.5rem">
+  <div id="recap-annuel" class="pdf-block" style="display:none;background:linear-gradient(135deg,rgba(0,180,180,.08),rgba(0,180,180,.03));border:1px solid rgba(0,180,180,.25);border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1.5rem">
     <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--teal);margin-bottom:.8rem">Récapitulatif semestriel estimé</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
       <div>
@@ -295,7 +298,7 @@ tr:hover td { background: var(--surface2); }
   </div>
 
   <!-- KPIs -->
-  <div class="grid-3" id="kpi-grid">
+  <div class="grid-3 pdf-block" id="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-val" id="kpi-clics">—</div>
       <div class="kpi-lbl">Clics sur la période</div>
@@ -318,31 +321,37 @@ tr:hover td { background: var(--surface2); }
     </div>
   </div>
 
-  <div class="note">
+  <div class="note pdf-block">
     💡 La rétribution en euros est calculée et versée semestriellement par beOtop sur la base du CA réel facturé aux clients.
     Les chiffres affichés ici sont vos données d'usage vérifiables — même source que beOtop.
   </div>
 
   <!-- DÉTAIL PAR CONTENU -->
+  <div class="pdf-block">
   <div class="section-title">Mes contenus · détail des clics</div>
   <div class="table-wrap" id="table-contenus">
     <div class="empty"><span class="empty-icon">🎧</span>Chargement…</div>
   </div>
+  </div>
 
   <!-- DÉTAIL PAR SITE -->
+  <div class="pdf-block">
   <div class="section-title">Répartition par site</div>
   <div class="table-wrap" id="table-sites">
     <div class="empty"><span class="empty-icon">🏢</span>Chargement…</div>
   </div>
+  </div>
 
   <!-- HISTORIQUE -->
+  <div class="pdf-block">
   <div class="section-title">Historique semestriel</div>
   <div class="table-wrap" id="table-historique">
     <div class="empty"><span class="empty-icon">📊</span>Aucun semestre clôturé pour le moment.</div>
   </div>
+  </div>
 
   <!-- CLIENTS APPORTÉS -->
-  <div id="section-apport" style="display:none">
+  <div id="section-apport" class="pdf-block" style="display:none">
     <div class="section-title">Mes clients apportés · Commission 20%</div>
     <div class="note" style="background:rgba(160,104,32,.06);border-color:rgba(160,104,32,.2)">
       💼 En tant qu'apporteur d'affaire, vous percevez 20% du CA semestriel de chaque client que vous avez apporté à beOtop.
@@ -378,6 +387,71 @@ tr:hover td { background: var(--surface2); }
 
 <script>
 var _stats = null;
+
+/* Export PDF — mêmes paramètres que dashboard.html : capture section par
+   section (.pdf-block), scale 2, onclone canvas, footer paginé. */
+async function exportIntervenantPDF() {
+  if (typeof html2canvas !== 'function' || !window.jspdf) { alert('Librairie PDF non disponible'); return; }
+  const { jsPDF } = window.jspdf;
+  const btn = document.querySelector('button[onclick="exportIntervenantPDF()"]');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Génération…'; btn.disabled = true; }
+  const main = document.querySelector('.main');
+  const _pw = main ? main.style.width : '';
+  const _pmw = main ? main.style.maxWidth : '';
+  try {
+    if (main) { main.style.width = '794px'; main.style.maxWidth = '794px'; }
+    await new Promise(r => setTimeout(r, 250));
+
+    const nom = (document.getElementById('topbar-nom').textContent || 'Intervenant').trim();
+    const annee = (document.getElementById('sel-annee') || {}).value || '';
+    const semVal = (document.getElementById('sel-semestre') || {}).value || '';
+    const periode = 'S' + semVal + ' ' + annee;
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const _onclone = (clonedDoc) => {
+      const o = document.querySelectorAll('canvas');
+      const c = clonedDoc.querySelectorAll('canvas');
+      o.forEach((el, i) => { if (c[i] && el.width && el.height) { c[i].width = el.width; c[i].height = el.height; try { c[i].getContext('2d').drawImage(el, 0, 0); } catch (e) {} } });
+    };
+    const _h2cOpts = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, onclone: _onclone };
+
+    let sections = Array.from(document.querySelectorAll('.pdf-block')).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+    if (!sections.length) { alert('Rien à exporter'); return; }
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageW = 210, pageH = 297, marginX = 12, contentW = pageW - marginX * 2, topY = 16, bottomY = pageH - 12;
+    let cursorY = topY;
+
+    for (const sec of sections) {
+      const cv = await html2canvas(sec, _h2cOpts);
+      if (!cv.width || !cv.height) continue;
+      const imgData = cv.toDataURL('image/png');
+      let w = contentW, h = contentW * cv.height / cv.width;
+      const maxH = bottomY - topY;
+      if (h > maxH) { const k = maxH / h; h = maxH; w = contentW * k; }
+      if (cursorY + h > bottomY) { doc.addPage(); cursorY = topY; }
+      doc.addImage(imgData, 'PNG', marginX, cursorY, w, h);
+      cursorY += h + 4;
+    }
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const totalPages = doc.internal.getNumberOfPages();
+    const footerTitle = 'beOtop · Rapport intervenant · ' + nom + ' · ' + periode + ' · ' + dateStr;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text(footerTitle, 14, pageHeight - 6);
+      doc.text('Page ' + i + ' / ' + totalPages, pageWidth - 14, pageHeight - 6, { align: 'right' });
+    }
+    doc.save('beotop_rapport_intervenant_' + new Date().toISOString().slice(0, 10) + '.pdf');
+  } finally {
+    if (main) { main.style.width = _pw; main.style.maxWidth = _pmw; }
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+  }
+}
 
 function showToast(msg) {
   var t = document.getElementById('toast');
