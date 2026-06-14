@@ -2968,7 +2968,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div style="text-align:center; padding: 2rem 1rem 1.5rem;">
         <div style="font-size: 2.5rem; margin-bottom: .8rem;">⚡</div>
         <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600;
-                   color: var(--text); margin-bottom: .4rem;">Bilan Vitalité</h2>
+                   color: var(--text); margin-bottom: .4rem;">Baromètre de Vitalité</h2>
         <div style="font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
           Par Monika Foris · Naturopathe
         </div>
@@ -3142,7 +3142,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <i class="ti ti-notes" style="background:rgba(240,164,0,.12);color:#F0A500"></i>Posts
       </div>
       <div class="more-drawer-item" onclick="bnavSwitchContenus('bilan');closeContenuDrawer()">
-        <i class="ti ti-activity-heartbeat" style="background:rgba(245,133,90,.12);color:#f5855a"></i>Bilan
+        <i class="ti ti-activity-heartbeat" style="background:rgba(245,133,90,.12);color:#f5855a"></i>Baromètre
       </div>
     </div>
   </div>
@@ -3330,7 +3330,7 @@ var DEMO_DB = {
       linkedin_url: '',
       tags: ['Naturopathie', 'Vitalité', 'Alimentation', 'Bilan santé'],
       nb_contributions: 7,
-      contenu_ids: { questionnaire: ['Bilan Vitalité · Énergie','Bilan Vitalité · Sommeil','Bilan Vitalité · Alimentation','Bilan Vitalité · Stress','Bilan Vitalité · Activité physique','Bilan Vitalité · Équilibre','Bilan Vitalité · Mental'] },
+      contenu_ids: { questionnaire: ['Baromètre de Vitalité · Énergie','Baromètre de Vitalité · Sommeil','Baromètre de Vitalité · Alimentation','Baromètre de Vitalité · Stress','Baromètre de Vitalité · Activité physique','Baromètre de Vitalité · Équilibre','Baromètre de Vitalité · Mental'] },
       actif: true
     }
   ],
@@ -3409,7 +3409,7 @@ var BILAN_SECTIONS = [
   {
     id: 1,
     titre: 'Informations générales',
-    label_play: 'Bilan Vitalité · Informations générales',
+    label_play: 'Baromètre de Vitalité · Informations générales',
     questions: [
       { id:'ig1', texte:'Tranche d\'âge', type:'choix_unique', options:['Moins de 25 ans','25-34 ans','35-44 ans','45-54 ans','55 ans et plus'], obligatoire:true },
       { id:'ig2', texte:'Sexe', type:'choix_unique', options:['Femme','Homme','Préfère pas répondre'], obligatoire:true },
@@ -3421,7 +3421,7 @@ var BILAN_SECTIONS = [
   {
     id: 2,
     titre: 'Energie au travail',
-    label_play: 'Bilan Vitalité · Energie au travail',
+    label_play: 'Baromètre de Vitalité · Energie au travail',
     questions: [
       { id:'e1', texte:'Au cours d\'une journée de travail, mon niveau d\'énergie moyen est : (1-très faible, 10-très élevé)', type:'echelle_10', obligatoire:true },
       { id:'e2', texte:'Au cours des 3 derniers mois, mon niveau d\'énergie a été :', type:'choix_unique', options:['Stable','En amélioration','En baisse'], obligatoire:true },
@@ -3434,7 +3434,7 @@ var BILAN_SECTIONS = [
   {
     id: 3,
     titre: 'Sommeil et récupération',
-    label_play: 'Bilan Vitalité · Sommeil et récupération',
+    label_play: 'Baromètre de Vitalité · Sommeil et récupération',
     questions: [
       { id:'s1', texte:'En moyenne, je dors :', type:'choix_unique', options:['Moins de 6h par nuit','6h à 7h par nuit','7h à 8h par nuit','Plus de 8h par nuit'], obligatoire:true },
       { id:'s2', texte:'La qualité de mon sommeil est : (1-très mauvaise, 10-excellente)', type:'echelle_10', obligatoire:true },
@@ -3445,7 +3445,7 @@ var BILAN_SECTIONS = [
   {
     id: 4,
     titre: 'Habitudes soutenant l\'énergie',
-    label_play: 'Bilan Vitalité · Habitudes soutenant l\'énergie',
+    label_play: 'Baromètre de Vitalité · Habitudes soutenant l\'énergie',
     questions: [
       { id:'h1', texte:'Mes repas sont généralement :', type:'choix_multiple', options:['Réguliers et structurés','Irréguliers','Pris rapidement / sur le pouce','Pris devant l\'écran'], obligatoire:false },
       { id:'h2', texte:'En ce qui concerne la qualité de mes repas :', type:'choix_unique', options:['Je consomme souvent des plats préparés ou industriels.','Je consomme parfois des plats préparés, mais beaucoup de féculents, protéines et très peu de légumes.','Mes repas contiennent généralement des légumes, protéines et féculents, mais certains repas sont déséquilibrés.','Mes repas sont variés et équilibrés (à chaque repas, légumes, protéines de bonne qualité, bons gras, féculents).','Autre'], obligatoire:true },
@@ -3458,7 +3458,7 @@ var BILAN_SECTIONS = [
   {
     id: 5,
     titre: 'Gestion du stress',
-    label_play: 'Bilan Vitalité · Gestion du stress',
+    label_play: 'Baromètre de Vitalité · Gestion du stress',
     questions: [
       { id:'st1', texte:'Au cours du dernier mois, mon niveau de stress a été : (1-très faible, 10-très élevé)', type:'echelle_10', obligatoire:true },
       { id:'st2', texte:'Mon niveau de stress impacte mon énergie au travail : (1-pas du tout, 5-fortement)', type:'echelle_5', obligatoire:true },
@@ -3469,7 +3469,7 @@ var BILAN_SECTIONS = [
   {
     id: 6,
     titre: 'Environnement du travail',
-    label_play: 'Bilan Vitalité · Environnement du travail',
+    label_play: 'Baromètre de Vitalité · Environnement du travail',
     questions: [
       { id:'env1', texte:'Mon rythme de travail est soutenable dans la durée. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
       { id:'env2', texte:'Les priorités dans mon travail sont claires. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
@@ -3484,7 +3484,7 @@ var BILAN_SECTIONS = [
   {
     id: 7,
     titre: 'Vitalité et performance globale',
-    label_play: 'Bilan Vitalité · Vitalité et performance globale',
+    label_play: 'Baromètre de Vitalité · Vitalité et performance globale',
     questions: [
       { id:'vp1', texte:'Au cours des 12 derniers mois, j\'ai été absent.e pour des raisons de santé.', type:'choix_unique', options:['Oui','Non'], obligatoire:true },
       { id:'vp2', texte:'Mon niveau d\'énergie influence directement ma performance professionnelle. (1-pas du tout, 5-fortement)', type:'echelle_5', obligatoire:true },
