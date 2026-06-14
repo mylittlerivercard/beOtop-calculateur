@@ -1144,6 +1144,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item" onclick="switchView('posts')">
     <i class="ti ti-notes" aria-hidden="true"></i><span>Posts internes</span>
   </div>
+  <div class="nav-item" onclick="switchView('bilan')">
+    <i class="ti ti-activity-heartbeat" aria-hidden="true"></i><span>Bilan Vitalité</span>
+  </div>
 
   <div class="nav-section-label">Suivi</div>
   <div class="nav-item" onclick="switchView('progres')">
@@ -1722,6 +1725,92 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
   <div id="posts-grid" style="display:flex;flex-direction:column;gap:1rem"></div>
 </div>
+<!-- VIEW BILAN VITALITÉ -->
+<div class="view" id="view-bilan">
+  <div style="padding: 1.2rem 1rem 6rem;">
+
+    <!-- État A : Accueil -->
+    <div id="bilan-accueil">
+      <div style="text-align:center; padding: 2rem 1rem 1.5rem;">
+        <div style="font-size: 2.5rem; margin-bottom: .8rem;">⚡</div>
+        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600;
+                   color: var(--text); margin-bottom: .4rem;">Bilan Vitalité</h2>
+        <div style="font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Par Monika Foris · Naturopathe
+        </div>
+        <p style="font-size: .85rem; color: var(--text-dim); line-height: 1.6; max-width: 340px;
+                  margin: 0 auto 1.8rem;">
+          Évaluez votre vitalité en 7 thèmes. Durée estimée&nbsp;: 5 minutes.
+          Vos réponses restent anonymes et orientent vos recommandations dans le Companion.
+        </p>
+        <div id="bilan-historique" style="display:none; margin-bottom:1.5rem;"></div>
+        <button onclick="startBilan()"
+                style="background: var(--gold); color: #fff; border: none; border-radius: 14px;
+                       padding: .85rem 2rem; font-size: .9rem; font-weight: 600; cursor: pointer;
+                       width: 100%; max-width: 320px;">
+          Démarrer mon bilan
+        </button>
+        <div id="bilan-btn-voir" style="display:none; margin-top:.8rem;">
+          <button onclick="afficherResultatsSauvegardes()"
+                  style="background: transparent; color: var(--gold); border: 1px solid var(--gold);
+                         border-radius: 14px; padding: .7rem 2rem; font-size: .85rem; font-weight: 600;
+                         cursor: pointer; width: 100%; max-width: 320px;">
+            Voir mes derniers résultats
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- État B : Questionnaire -->
+    <div id="bilan-questionnaire" style="display:none;">
+      <!-- Barre de progression -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between;
+                    margin-bottom: .5rem;">
+          <span id="bilan-progress-label"
+                style="font-size:.75rem; font-weight:600; color:var(--text-muted);
+                       text-transform:uppercase; letter-spacing:.05em;">
+            Section 1 / 7
+          </span>
+          <span style="font-size:.7rem; color:var(--text-muted);">
+            <a href="#" onclick="abandonnerBilan(); return false;"
+               style="color:var(--text-muted); text-decoration:none;">Abandonner</a>
+          </span>
+        </div>
+        <div style="height:4px; background:var(--border); border-radius:4px; overflow:hidden;">
+          <div id="bilan-progress-bar"
+               style="height:100%; background:var(--gold); border-radius:4px;
+                      transition: width .35s ease; width:14.28%;">
+          </div>
+        </div>
+        <div id="bilan-section-titre"
+             style="font-size:.95rem; font-weight:600; color:var(--text); margin-top:.7rem;">
+        </div>
+      </div>
+      <!-- Zone de questions -->
+      <div id="bilan-questions-zone"></div>
+      <!-- Navigation -->
+      <div style="display:flex; gap:.8rem; margin-top:1.5rem;">
+        <button id="bilan-btn-precedent" onclick="reculerSection()"
+                style="flex:1; background:transparent; color:var(--gold);
+                       border:1px solid var(--gold); border-radius:12px;
+                       padding:.8rem; font-size:.85rem; font-weight:600; display:none;">
+          ← Précédent
+        </button>
+        <button id="bilan-btn-suivant" onclick="validerEtAvancer()"
+                style="flex:2; background:var(--gold); color:#fff; border:none;
+                       border-radius:12px; padding:.8rem; font-size:.9rem;
+                       font-weight:600; opacity:.45; pointer-events:none;">
+          Section suivante →
+        </button>
+      </div>
+    </div>
+
+    <!-- État C : Résultats -->
+    <div id="bilan-resultats" style="display:none;"></div>
+
+  </div>
+</div>
 <div class="view" id="view-jeux">
   <div class="page-header">
     <h1>Jeux <em>cérébraux</em></h1>
@@ -2229,6 +2318,22 @@ var DEMO_DB = {
       photo_couleur: '#00b4b4',
       tags: [],
       actif: true
+    },
+    {
+      id: 6,
+      nom: 'Monika Foris',
+      titre: 'Naturopathe · Experte vitalité',
+      specialite: 'Vitalité · Alimentation · Médecine naturelle · Bilan santé holistique',
+      bio: "Monika Foris est naturopathe certifiée et ambassadrice beOtop. Elle accompagne les collaborateurs dans l'évaluation et l'optimisation de leur vitalité globale à travers une approche holistique combinant alimentation, gestion du stress et hygiène de vie.",
+      photo_initiales: 'MF',
+      photo_couleur: '#f5855a',
+      photo_url: '',
+      site_url: '',
+      linkedin_url: '',
+      tags: ['Naturopathie', 'Vitalité', 'Alimentation', 'Bilan santé'],
+      nb_contributions: 7,
+      contenu_ids: { questionnaire: ['Bilan Vitalité · Énergie','Bilan Vitalité · Sommeil','Bilan Vitalité · Alimentation','Bilan Vitalité · Stress','Bilan Vitalité · Activité physique','Bilan Vitalité · Équilibre','Bilan Vitalité · Mental'] },
+      actif: true
     }
   ],
   defis: [
@@ -2284,6 +2389,7 @@ function loadDB() {
       if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
     });
     if (!stored.user) stored.user = JSON.parse(JSON.stringify(DEMO_DB.user));
+    if (!stored.bilan_vitalite) stored.bilan_vitalite = null;
     saveDB(stored);
     return stored;
   } catch(e) {
@@ -2297,6 +2403,520 @@ function saveDB(db) {
 }
 
 var DB = loadDB();
+
+/* ════════════════════════════════════════════
+   BILAN VITALITÉ — Monika Foris
+════════════════════════════════════════════ */
+var BILAN_SECTIONS = [
+  {
+    id: 1, titre: 'Niveau d\'énergie global',
+    label_play: 'Bilan Vitalité · Énergie',
+    questions: [
+      { id:'e1', texte:'Comment évaluez-vous votre niveau d\'énergie général en ce moment ?', type:'echelle_10', obligatoire:true },
+      { id:'e2', texte:'Ressentez-vous des baisses d\'énergie au cours de la journée ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
+      { id:'e3', texte:'À quel(s) moment(s) de la journée ressentez-vous une baisse d\'énergie ?', type:'choix_multiple', options:['Matin','Milieu de matinée','Après déjeuner','Milieu d\'après-midi','Fin de journée'], obligatoire:false },
+      { id:'e4', texte:'Votre niveau d\'énergie vous semble-t-il en lien avec votre alimentation ?', type:'choix_unique', options:['Oui, clairement','Parfois','Pas vraiment','Je ne sais pas'], obligatoire:true },
+      { id:'e5', texte:'Consommez-vous des stimulants pour compenser la fatigue ?', type:'choix_multiple', options:['Café','Thé','Sucre / sucreries','Boissons énergisantes','Aucun'], obligatoire:true }
+    ]
+  },
+  {
+    id: 2, titre: 'Qualité du sommeil',
+    label_play: 'Bilan Vitalité · Sommeil',
+    questions: [
+      { id:'s1', texte:'Comment évaluez-vous la qualité de votre sommeil ?', type:'echelle_10', obligatoire:true },
+      { id:'s2', texte:'Combien d\'heures dormez-vous en moyenne par nuit ?', type:'choix_unique', options:['Moins de 5h','5h–6h','6h–7h','7h–8h','Plus de 8h'], obligatoire:true },
+      { id:'s3', texte:'Avez-vous du mal à vous endormir ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
+      { id:'s4', texte:'Vous réveillez-vous la nuit ?', type:'choix_unique', options:['Jamais','1 à 2 fois','3 fois ou plus'], obligatoire:true },
+      { id:'s5', texte:'Vous sentez-vous reposé(e) au réveil ?', type:'choix_unique', options:['Oui, toujours','Parfois','Rarement','Jamais'], obligatoire:true }
+    ]
+  },
+  {
+    id: 3, titre: 'Alimentation & hydratation',
+    label_play: 'Bilan Vitalité · Alimentation',
+    questions: [
+      { id:'a1', texte:'Comment évaluez-vous la qualité de votre alimentation quotidienne ?', type:'echelle_5', obligatoire:true },
+      { id:'a2', texte:'Sautez-vous des repas régulièrement ?', type:'choix_unique', options:['Jamais','Parfois','Souvent'], obligatoire:true },
+      { id:'a3', texte:'Quelle est votre consommation d\'eau par jour ?', type:'choix_unique', options:['Moins d\'1 litre','1 à 1,5 litre','1,5 à 2 litres','Plus de 2 litres'], obligatoire:true },
+      { id:'a4', texte:'Ressentez-vous des symptômes digestifs ?', type:'choix_multiple', options:['Ballonnements','Constipation','Reflux','Fatigue post-repas','Aucun'], obligatoire:true },
+      { id:'a5', texte:'Votre alimentation est-elle variée et équilibrée ?', type:'echelle_5', obligatoire:true }
+    ]
+  },
+  {
+    id: 4, titre: 'Gestion du stress & émotions',
+    label_play: 'Bilan Vitalité · Stress',
+    questions: [
+      { id:'st1', texte:'Quel est votre niveau de stress actuel ?', type:'echelle_10', obligatoire:true },
+      { id:'st2', texte:'Quelles sont vos principales sources de stress ?', type:'choix_multiple', options:['Charge de travail','Relations professionnelles','Vie personnelle','Finances','Santé','Avenir'], obligatoire:true },
+      { id:'st3', texte:'Comment gérez-vous votre stress au quotidien ?', type:'choix_multiple', options:['Sport / activité physique','Méditation / respiration','Lecture','Nature','Aucune stratégie particulière','Autre'], obligatoire:false },
+      { id:'st4', texte:'Ressentez-vous des tensions physiques liées au stress ?', type:'choix_multiple', options:['Tensions cervicales / épaules','Maux de tête','Troubles digestifs','Insomnies','Irritabilité','Aucune'], obligatoire:true },
+      { id:'st5', texte:'Avez-vous l\'impression de récupérer suffisamment entre deux périodes de stress ?', type:'choix_unique', options:['Oui','Parfois','Rarement','Non'], obligatoire:true }
+    ]
+  },
+  {
+    id: 5, titre: 'Activité physique',
+    label_play: 'Bilan Vitalité · Activité physique',
+    questions: [
+      { id:'p1', texte:'Pratiquez-vous une activité physique régulière ?', type:'choix_unique', options:['Jamais','1 fois/semaine','2 à 3 fois/semaine','Tous les jours'], obligatoire:true },
+      { id:'p2', texte:'Quel type d\'activité physique pratiquez-vous ?', type:'choix_multiple', options:['Marche','Course','Yoga / Pilates','Musculation','Sports collectifs','Autre','Aucun'], obligatoire:false },
+      { id:'p3', texte:'Ressentez-vous des douleurs physiques au quotidien ?', type:'choix_multiple', options:['Dos / lombaires','Nuque / épaules','Genoux','Aucune'], obligatoire:true },
+      { id:'p4', texte:'Êtes-vous principalement sédentaire dans votre travail ?', type:'choix_unique', options:['Oui, très sédentaire','Assez sédentaire','Mixte','Peu sédentaire'], obligatoire:true },
+      { id:'p5', texte:'Comment évaluez-vous votre condition physique générale ?', type:'echelle_5', obligatoire:true }
+    ]
+  },
+  {
+    id: 6, titre: 'Environnement & équilibre de vie',
+    label_play: 'Bilan Vitalité · Équilibre',
+    questions: [
+      { id:'eq1', texte:'Comment évaluez-vous votre équilibre vie pro / vie perso ?', type:'echelle_10', obligatoire:true },
+      { id:'eq2', texte:'Prenez-vous du temps pour vous en dehors du travail ?', type:'choix_unique', options:['Régulièrement','Parfois','Rarement','Jamais'], obligatoire:true },
+      { id:'eq3', texte:'Votre environnement de travail est-il propice à votre bien-être ?', type:'echelle_5', obligatoire:true },
+      { id:'eq4', texte:'Avez-vous des activités qui vous ressourcent ?', type:'choix_multiple', options:['Activité artistique','Nature','Lecture','Méditation','Famille / amis','Sport','Aucune'], obligatoire:false },
+      { id:'eq5', texte:'Ressentez-vous un sentiment de sens dans votre travail ?', type:'choix_unique', options:['Oui, clairement','Parfois','Rarement','Non'], obligatoire:true }
+    ]
+  },
+  {
+    id: 7, titre: 'Performance & vitalité mentale',
+    label_play: 'Bilan Vitalité · Mental',
+    questions: [
+      { id:'m1', texte:'Comment évaluez-vous votre capacité de concentration ?', type:'echelle_10', obligatoire:true },
+      { id:'m2', texte:'Ressentez-vous des difficultés de mémoire ou de clarté mentale ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
+      { id:'m3', texte:'Avez-vous suffisamment d\'élan et de motivation au quotidien ?', type:'echelle_5', obligatoire:true },
+      { id:'m4', texte:'Quels sont vos freins à la performance ?', type:'choix_multiple', options:['Fatigue','Stress','Manque de sommeil','Problèmes personnels','Manque d\'intérêt','Surcharge','Aucun'], obligatoire:true },
+      { id:'m5', texte:'En une phrase, qu\'est-ce qui vous ferait vous sentir plus vital(e) ?', type:'texte_libre', obligatoire:false }
+    ]
+  }
+];
+
+var _bilanSectionIndex = 0;
+var _bilanReponses     = {};
+var _bilanSectionsDone = [];
+
+/* ── BILAN VITALITÉ : fonctions ── */
+
+function initBilanAccueil() {
+  var hist  = document.getElementById('bilan-historique');
+  var btnVoir = document.getElementById('bilan-btn-voir');
+  var saved = DB.bilan_vitalite;
+  if (saved && saved.last_date) {
+    var d     = new Date(saved.last_date);
+    var today = new Date();
+    var diffJ = Math.round((today - d) / 86400000);
+    var label = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+    var badge = diffJ >= 90
+      ? '<span style="background:#fff3e0;color:#e8641e;border-radius:8px;padding:.2rem .6rem;font-size:.7rem;font-weight:700;">Bilan à renouveler</span>'
+      : '<span style="background:rgba(0,180,180,.1);color:#00b4b4;border-radius:8px;padding:.2rem .6rem;font-size:.7rem;font-weight:700;">Complété</span>';
+    var barres = ['energie','sommeil','alimentation','stress','activite','equilibre','mental']
+      .map(function(k) {
+        var s = saved.scores[k] || 0;
+        var col = s >= 70 ? '#00b4b4' : s >= 45 ? '#f5855a' : '#e8641e';
+        return '<div style="margin-bottom:.3rem;">'
+          + '<div style="display:flex;justify-content:space-between;font-size:.65rem;color:#3a5858;margin-bottom:.15rem;">'
+          + '<span>' + k.charAt(0).toUpperCase() + k.slice(1) + '</span>'
+          + '<span style="font-weight:700;color:' + col + '">' + Math.round(s) + '</span></div>'
+          + '<div style="height:4px;background:rgba(0,180,180,.12);border-radius:4px;">'
+          + '<div style="height:100%;width:' + s + '%;background:' + col + ';border-radius:4px;"></div>'
+          + '</div></div>';
+      }).join('');
+    hist.innerHTML = '<div style="background:rgba(255,255,255,.7);border:1px solid var(--border);'
+      + 'border-radius:14px;padding:1rem;text-align:left;font-size:.8rem;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;">'
+      + '<span style="color:var(--text-muted);">Dernier bilan : ' + label + '</span>' + badge + '</div>'
+      + barres
+      + '<div style="text-align:center;margin-top:.8rem;font-size:.85rem;font-weight:700;color:var(--gold);">'
+      + 'Score global : ' + Math.round(saved.score_global) + ' / 100</div>'
+      + '</div>';
+    hist.style.display = 'block';
+    if (btnVoir) btnVoir.style.display = 'block';
+  } else {
+    hist.style.display = 'none';
+    if (btnVoir) btnVoir.style.display = 'none';
+  }
+}
+
+function startBilan() {
+  _bilanSectionIndex = 0;
+  _bilanReponses     = {};
+  _bilanSectionsDone = [];
+  document.getElementById('bilan-accueil').style.display      = 'none';
+  document.getElementById('bilan-questionnaire').style.display = 'block';
+  document.getElementById('bilan-resultats').style.display    = 'none';
+  renderBilanSection(0);
+}
+
+function renderBilanSection(idx) {
+  var sec  = BILAN_SECTIONS[idx];
+  var pct  = Math.round(((idx) / 7) * 100);
+
+  document.getElementById('bilan-progress-label').textContent =
+    'Section ' + (idx + 1) + ' / 7 — ' + sec.titre;
+  document.getElementById('bilan-section-titre').textContent = sec.titre;
+  document.getElementById('bilan-progress-bar').style.width  = Math.max(pct, 5) + '%';
+
+  var prec = document.getElementById('bilan-btn-precedent');
+  prec.style.display = idx === 0 ? 'none' : 'block';
+
+  var html = '';
+  sec.questions.forEach(function(q) {
+    var rep = _bilanReponses[q.id];
+    html += '<div class="bilan-q" data-qid="' + q.id + '" data-type="' + q.type
+          + '" data-obligatoire="' + q.obligatoire + '" style="margin-bottom:1.4rem;">';
+    html += '<div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.7rem;">'
+          + q.texte;
+    if (!q.obligatoire)
+      html += ' <span style="font-size:.7rem;font-weight:400;color:var(--text-muted);">(optionnel)</span>';
+    html += '</div>';
+
+    if (q.type === 'echelle_5' || q.type === 'echelle_10') {
+      var max = q.type === 'echelle_5' ? 5 : 10;
+      html += '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">';
+      for (var v = 1; v <= max; v++) {
+        var sel = rep == v;
+        html += '<button onclick="bilanSelectEchelle(this,' + v + ',\'' + q.id + '\')"'
+              + ' data-val="' + v + '"'
+              + ' style="min-width:2.4rem;height:2.4rem;border-radius:8px;font-size:.85rem;'
+              + 'font-weight:600;border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
+              + 'background:' + (sel ? 'var(--gold)' : 'transparent') + ';'
+              + 'color:' + (sel ? '#fff' : 'var(--text-dim)') + ';cursor:pointer;">'
+              + v + '</button>';
+      }
+      html += '</div>';
+      if (max === 10)
+        html += '<div style="display:flex;justify-content:space-between;font-size:.65rem;'
+              + 'color:var(--text-muted);margin-top:.3rem;"><span>Très faible</span><span>Excellent</span></div>';
+      if (max === 5)
+        html += '<div style="display:flex;justify-content:space-between;font-size:.65rem;'
+              + 'color:var(--text-muted);margin-top:.3rem;"><span>Médiocre</span><span>Excellent</span></div>';
+    }
+
+    if (q.type === 'choix_unique') {
+      q.options.forEach(function(opt, oi) {
+        var sel = rep === opt;
+        html += '<button onclick="bilanSelectUnique(this,\'' + opt.replace(/'/g,"\\'") + '\',\'' + q.id + '\')"'
+              + ' style="display:block;width:100%;text-align:left;margin-bottom:.4rem;'
+              + 'padding:.65rem .9rem;border-radius:10px;font-size:.83rem;'
+              + 'border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
+              + 'background:' + (sel ? 'rgba(0,180,180,.08)' : 'transparent') + ';'
+              + 'color:' + (sel ? 'var(--gold)' : 'var(--text-dim)') + ';'
+              + 'font-weight:' + (sel ? '600' : '400') + ';cursor:pointer;">'
+              + opt + '</button>';
+      });
+    }
+
+    if (q.type === 'choix_multiple') {
+      var repArr = rep || [];
+      q.options.forEach(function(opt) {
+        var sel = repArr.indexOf(opt) !== -1;
+        html += '<button onclick="bilanToggleMultiple(this,\'' + opt.replace(/'/g,"\\'") + '\',\'' + q.id + '\')"'
+              + ' style="display:block;width:100%;text-align:left;margin-bottom:.4rem;'
+              + 'padding:.65rem .9rem;border-radius:10px;font-size:.83rem;'
+              + 'border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
+              + 'background:' + (sel ? 'rgba(0,180,180,.08)' : 'transparent') + ';'
+              + 'color:' + (sel ? 'var(--gold)' : 'var(--text-dim)') + ';'
+              + 'font-weight:' + (sel ? '600' : '400') + ';cursor:pointer;">'
+              + '<span style="margin-right:.5rem;">' + (sel ? '☑' : '☐') + '</span>' + opt + '</button>';
+      });
+    }
+
+    if (q.type === 'texte_libre') {
+      var tv = rep || '';
+      html += '<textarea oninput="bilanSaveTexte(this,\'' + q.id + '\')"'
+            + ' rows="3" placeholder="Votre réponse (optionnel)…"'
+            + ' style="width:100%;padding:.7rem;border-radius:10px;border:1.5px solid var(--border);'
+            + 'font-family:inherit;font-size:.83rem;resize:vertical;color:var(--text);">'
+            + tv + '</textarea>';
+    }
+
+    html += '</div>';
+  });
+
+  document.getElementById('bilan-questions-zone').innerHTML = html;
+  bilanCheckObligatoires();
+}
+
+function bilanSelectEchelle(btn, val, qid) {
+  var zone = btn.closest('.bilan-q');
+  zone.querySelectorAll('button').forEach(function(b) {
+    b.style.background = 'transparent';
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--text-dim)';
+  });
+  btn.style.background   = 'var(--gold)';
+  btn.style.borderColor  = 'var(--gold)';
+  btn.style.color        = '#fff';
+  _bilanReponses[qid]    = val;
+  bilanCheckObligatoires();
+}
+
+function bilanSelectUnique(btn, val, qid) {
+  var zone = btn.closest('.bilan-q');
+  zone.querySelectorAll('button').forEach(function(b) {
+    b.style.background   = 'transparent';
+    b.style.borderColor  = 'var(--border)';
+    b.style.color        = 'var(--text-dim)';
+    b.style.fontWeight   = '400';
+  });
+  btn.style.background   = 'rgba(0,180,180,.08)';
+  btn.style.borderColor  = 'var(--gold)';
+  btn.style.color        = 'var(--gold)';
+  btn.style.fontWeight   = '600';
+  _bilanReponses[qid]    = val;
+  bilanCheckObligatoires();
+}
+
+function bilanToggleMultiple(btn, val, qid) {
+  var arr = _bilanReponses[qid] || [];
+  var idx = arr.indexOf(val);
+  if (idx === -1) {
+    arr.push(val);
+    btn.style.background  = 'rgba(0,180,180,.08)';
+    btn.style.borderColor = 'var(--gold)';
+    btn.style.color       = 'var(--gold)';
+    btn.style.fontWeight  = '600';
+    btn.querySelector('span').textContent = '☑';
+  } else {
+    arr.splice(idx, 1);
+    btn.style.background  = 'transparent';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color       = 'var(--text-dim)';
+    btn.style.fontWeight  = '400';
+    btn.querySelector('span').textContent = '☐';
+  }
+  _bilanReponses[qid] = arr;
+  bilanCheckObligatoires();
+}
+
+function bilanSaveTexte(el, qid) {
+  _bilanReponses[qid] = el.value;
+}
+
+function bilanCheckObligatoires() {
+  var sec   = BILAN_SECTIONS[_bilanSectionIndex];
+  var valid = sec.questions.every(function(q) {
+    if (!q.obligatoire) return true;
+    var r = _bilanReponses[q.id];
+    if (q.type === 'choix_multiple') return r && r.length > 0;
+    return r !== undefined && r !== null && r !== '';
+  });
+  var btn = document.getElementById('bilan-btn-suivant');
+  btn.style.opacity       = valid ? '1'   : '.45';
+  btn.style.pointerEvents = valid ? 'auto' : 'none';
+}
+
+function validerEtAvancer() {
+  var idx = _bilanSectionIndex;
+  if (_bilanSectionsDone.indexOf(idx + 1) === -1) {
+    logPlay(
+      'questionnaire',
+      BILAN_SECTIONS[idx].label_play,
+      'Monika Foris',
+      null,
+      cachedSiteSlug || (typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '')
+    );
+    _bilanSectionsDone.push(idx + 1);
+  }
+  if (idx < 6) {
+    _bilanSectionIndex++;
+    renderBilanSection(_bilanSectionIndex);
+    document.getElementById('bilan-questions-zone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    afficherResultatsBilan();
+  }
+}
+
+function reculerSection() {
+  if (_bilanSectionIndex > 0) {
+    _bilanSectionIndex--;
+    renderBilanSection(_bilanSectionIndex);
+  }
+}
+
+function abandonnerBilan() {
+  _bilanSectionIndex = 0;
+  _bilanReponses     = {};
+  _bilanSectionsDone = [];
+  document.getElementById('bilan-questionnaire').style.display = 'none';
+  document.getElementById('bilan-resultats').style.display    = 'none';
+  document.getElementById('bilan-accueil').style.display      = 'block';
+}
+
+function _calcScoreSection(section) {
+  var scores = [];
+  section.questions.forEach(function(q) {
+    var r = _bilanReponses[q.id];
+    if (r === undefined || r === null || r === '') return;
+    if (q.type === 'echelle_10') scores.push((r / 10) * 100);
+    else if (q.type === 'echelle_5') scores.push((r / 5) * 100);
+    else if (q.type === 'choix_unique') {
+      var i = q.options.indexOf(r);
+      if (i !== -1) scores.push(((q.options.length - 1 - i) / (q.options.length - 1)) * 100);
+    }
+    else if (q.type === 'choix_multiple') scores.push(50);
+    // texte_libre ignoré
+  });
+  if (!scores.length) return 50;
+  return scores.reduce(function(a, b) { return a + b; }, 0) / scores.length;
+}
+
+function afficherResultatsBilan() {
+  document.getElementById('bilan-questionnaire').style.display = 'none';
+  document.getElementById('bilan-accueil').style.display      = 'none';
+
+  var keys   = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
+  var scores = {};
+  BILAN_SECTIONS.forEach(function(sec, i) {
+    scores[keys[i]] = _calcScoreSection(sec);
+  });
+  var global = Object.values ? Object.values(scores).reduce(function(a,b){return a+b;},0)/7
+    : keys.reduce(function(a,k){return a+scores[k];},0)/7;
+
+  // Sauvegarde
+  DB.bilan_vitalite = { last_date: new Date().toISOString().slice(0,10), scores: scores, score_global: global };
+  saveDB(DB);
+
+  var mention = global >= 80 ? 'Excellent' : global >= 60 ? 'Bon' : global >= 40 ? 'À travailler' : 'Attention';
+  var col     = global >= 70 ? '#00b4b4' : global >= 45 ? '#f5855a' : '#e8641e';
+  var libelles = ['Énergie','Sommeil','Alimentation','Stress','Activité','Équilibre','Mental'];
+
+  // Recommandations
+  var recs = [];
+  var allContenus = (DB.audios||[]).concat(DB.exercices||[]).concat(DB.defis||[]).concat(DB.videos||[]);
+  function findContenu(filterFn) {
+    return allContenus.find(function(c){ return c.actif !== false && filterFn(c); });
+  }
+  if (scores.energie < 60) {
+    var c = findContenu(function(c){ return (c.intervenant||'').indexOf('Monika') !== -1; });
+    if (!c) c = findContenu(function(c){ return (c.titre||'').toLowerCase().indexOf('énergie') !== -1; });
+    if (c) recs.push(c);
+  }
+  if (scores.sommeil < 60) {
+    var c2 = findContenu(function(c){ return (c.titre||'').toLowerCase().match(/dorm|sommeil/); });
+    if (c2) recs.push(c2);
+  }
+  if (scores.stress < 60) {
+    var c3 = findContenu(function(c){ return (c.titre||'').toLowerCase().match(/respiration|stress/); });
+    if (c3) recs.push(c3);
+  }
+  if (scores.activite < 60) {
+    var c4 = findContenu(function(c){ return c.categorie === 'workout' || c.categorie === 'etirements'; });
+    if (c4) recs.push(c4);
+  }
+  if (scores.mental < 60) {
+    var c5 = findContenu(function(c){ return (DB.defis||[]).indexOf(c) !== -1; });
+    if (c5) recs.push(c5);
+  }
+  // Dédoublonner
+  var seen = []; recs = recs.filter(function(c){ if(!c||seen.indexOf(c.id)!==-1) return false; seen.push(c.id); return true; }).slice(0,3);
+
+  var recsHtml = '';
+  if (recs.length) {
+    recsHtml = '<div style="margin-top:1.5rem;">'
+      + '<div class="sec">Recommandations pour vous</div>';
+    recs.forEach(function(c) {
+      recsHtml += '<div style="background:rgba(255,255,255,.7);border:1px solid var(--border);'
+        + 'border-radius:12px;padding:.9rem 1rem;margin-bottom:.7rem;display:flex;'
+        + 'align-items:center;justify-content:space-between;gap:.8rem;">'
+        + '<div><div style="font-size:.83rem;font-weight:600;color:var(--text);">' + c.titre + '</div>'
+        + '<div style="font-size:.72rem;color:var(--text-muted);margin-top:.15rem;">'
+        + (c.intervenant||'') + (c.duree ? ' · ' + c.duree : '') + '</div></div>'
+        + '<button onclick="switchView(\'' + (c.url_audio ? 'audio' : c.url_video ? 'video' : 'jeux') + '\')"'
+        + ' style="background:var(--gold);color:#fff;border:none;border-radius:8px;'
+        + 'padding:.4rem .8rem;font-size:.72rem;font-weight:600;white-space:nowrap;">Accéder →</button>'
+        + '</div>';
+    });
+    recsHtml += '</div>';
+  }
+
+  var barresRes = keys.map(function(k, i) {
+    var s   = scores[k];
+    var col2 = s >= 70 ? '#00b4b4' : s >= 45 ? '#f5855a' : '#e8641e';
+    return '<div style="margin-bottom:.8rem;">'
+      + '<div style="display:flex;justify-content:space-between;font-size:.78rem;'
+      + 'margin-bottom:.3rem;"><span style="font-weight:600;color:var(--text);">'
+      + libelles[i] + '</span>'
+      + '<span style="font-weight:700;color:' + col2 + '">' + Math.round(s) + ' / 100</span></div>'
+      + '<div style="height:8px;background:rgba(0,180,180,.1);border-radius:6px;">'
+      + '<div style="height:100%;width:' + Math.round(s) + '%;background:' + col2
+      + ';border-radius:6px;transition:width .6s ease;"></div></div></div>';
+  }).join('');
+
+  var html = '<div style="text-align:center;padding:1.5rem 0 1rem;">'
+    + '<div style="display:inline-flex;align-items:center;justify-content:center;'
+    + 'width:100px;height:100px;border-radius:50%;border:4px solid ' + col + ';'
+    + 'flex-direction:column;margin-bottom:.8rem;">'
+    + '<div style="font-size:1.8rem;font-weight:700;color:' + col + '">' + Math.round(global) + '</div>'
+    + '<div style="font-size:.65rem;color:' + col + ';font-weight:600;">/100</div>'
+    + '</div>'
+    + '<div style="font-size:1rem;font-weight:700;color:' + col + ';margin-bottom:.2rem;">' + mention + '</div>'
+    + '<div style="font-size:.75rem;color:var(--text-muted);">Score de vitalité global</div>'
+    + '</div>'
+    + '<div style="margin-top:1.2rem;">' + barresRes + '</div>'
+    + recsHtml
+    + '<div style="display:flex;gap:.8rem;margin-top:1.8rem;">'
+    + '<button onclick="startBilan()" style="flex:1;background:transparent;color:var(--gold);'
+    + 'border:1px solid var(--gold);border-radius:12px;padding:.8rem;font-size:.82rem;font-weight:600;">'
+    + 'Refaire</button>'
+    + '<button onclick="abandonnerBilan()" style="flex:2;background:var(--gold);color:#fff;'
+    + 'border:none;border-radius:12px;padding:.8rem;font-size:.85rem;font-weight:600;">'
+    + 'Fermer</button>'
+    + '</div>';
+
+  document.getElementById('bilan-resultats').innerHTML  = html;
+  document.getElementById('bilan-resultats').style.display = 'block';
+}
+
+function afficherResultatsSauvegardes() {
+  var saved = DB.bilan_vitalite;
+  if (!saved) return;
+  // Recharger les réponses factices depuis les scores sauvegardés pour affichage
+  _bilanReponses = {};
+  BILAN_SECTIONS.forEach(function(sec, i) {
+    var keys = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
+    // On n'a pas les réponses détaillées, on affiche directement les scores
+  });
+  // Affichage direct depuis les scores
+  var keys     = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
+  var libelles = ['Énergie','Sommeil','Alimentation','Stress','Activité','Équilibre','Mental'];
+  var global   = saved.score_global;
+  var mention  = global >= 80 ? 'Excellent' : global >= 60 ? 'Bon' : global >= 40 ? 'À travailler' : 'Attention';
+  var col      = global >= 70 ? '#00b4b4' : global >= 45 ? '#f5855a' : '#e8641e';
+
+  var barresRes = keys.map(function(k, i) {
+    var s    = saved.scores[k] || 0;
+    var col2 = s >= 70 ? '#00b4b4' : s >= 45 ? '#f5855a' : '#e8641e';
+    return '<div style="margin-bottom:.8rem;">'
+      + '<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;">'
+      + '<span style="font-weight:600;color:var(--text);">' + libelles[i] + '</span>'
+      + '<span style="font-weight:700;color:' + col2 + '">' + Math.round(s) + ' / 100</span></div>'
+      + '<div style="height:8px;background:rgba(0,180,180,.1);border-radius:6px;">'
+      + '<div style="height:100%;width:' + Math.round(s) + '%;background:' + col2
+      + ';border-radius:6px;"></div></div></div>';
+  }).join('');
+
+  var html = '<div style="text-align:center;padding:1rem 0 .8rem;">'
+    + '<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem;">Bilan du '
+    + new Date(saved.last_date).toLocaleDateString('fr-FR') + '</div>'
+    + '<div style="display:inline-flex;align-items:center;justify-content:center;'
+    + 'width:90px;height:90px;border-radius:50%;border:4px solid ' + col + ';'
+    + 'flex-direction:column;margin-bottom:.7rem;">'
+    + '<div style="font-size:1.6rem;font-weight:700;color:' + col + '">' + Math.round(global) + '</div>'
+    + '<div style="font-size:.6rem;color:' + col + ';font-weight:600;">/100</div>'
+    + '</div>'
+    + '<div style="font-size:.95rem;font-weight:700;color:' + col + '">' + mention + '</div>'
+    + '</div>'
+    + '<div style="margin-top:1rem;">' + barresRes + '</div>'
+    + '<div style="margin-top:1.5rem;">'
+    + '<button onclick="startBilan()" style="width:100%;background:var(--gold);color:#fff;'
+    + 'border:none;border-radius:12px;padding:.85rem;font-size:.88rem;font-weight:600;">'
+    + 'Refaire mon bilan</button>'
+    + '<button onclick="abandonnerBilan()" style="width:100%;background:transparent;color:var(--text-muted);'
+    + 'border:none;padding:.6rem;font-size:.8rem;margin-top:.4rem;">Retour</button>'
+    + '</div>';
+
+  document.getElementById('bilan-accueil').style.display      = 'none';
+  document.getElementById('bilan-questionnaire').style.display = 'none';
+  document.getElementById('bilan-resultats').innerHTML         = html;
+  document.getElementById('bilan-resultats').style.display     = 'block';
+}
 
 /* ════════════════════════════════════════════
    CONTENUS SERVEUR (ajoutés par les intervenants)
@@ -2632,6 +3252,7 @@ function switchView(id) {
   if (id === 'intervenants') renderIntervenants();
   if (id === 'podcasts') renderPodcasts();
   if (id === 'posts') renderPosts();
+  if (id === 'bilan') initBilanAccueil();
 }
 
 /* ════════════════════════════════════════════
