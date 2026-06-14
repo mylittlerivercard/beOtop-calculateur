@@ -2959,6 +2959,92 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 </div>
 
+<!-- VIEW BILAN VITALITÉ -->
+<div class="view" id="view-bilan">
+  <div style="padding: 1.2rem 1rem 6rem;">
+
+    <!-- État A : Accueil -->
+    <div id="bilan-accueil">
+      <div style="text-align:center; padding: 2rem 1rem 1.5rem;">
+        <div style="font-size: 2.5rem; margin-bottom: .8rem;">⚡</div>
+        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600;
+                   color: var(--text); margin-bottom: .4rem;">Bilan Vitalité</h2>
+        <div style="font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Par Monika Foris · Naturopathe
+        </div>
+        <p style="font-size: .85rem; color: var(--text-dim); line-height: 1.6; max-width: 340px;
+                  margin: 0 auto 1.8rem;">
+          Évaluez votre vitalité en 7 thèmes. Durée estimée&nbsp;: 5 minutes.
+          Vos réponses restent anonymes et orientent vos recommandations dans le Companion.
+        </p>
+        <div id="bilan-historique" style="display:none; margin-bottom:1.5rem;"></div>
+        <button onclick="startBilan()"
+                style="background: var(--gold); color: #fff; border: none; border-radius: 14px;
+                       padding: .85rem 2rem; font-size: .9rem; font-weight: 600; cursor: pointer;
+                       width: 100%; max-width: 320px;">
+          Démarrer mon bilan
+        </button>
+        <div id="bilan-btn-voir" style="display:none; margin-top:.8rem;">
+          <button onclick="afficherResultatsSauvegardes()"
+                  style="background: transparent; color: var(--gold); border: 1px solid var(--gold);
+                         border-radius: 14px; padding: .7rem 2rem; font-size: .85rem; font-weight: 600;
+                         cursor: pointer; width: 100%; max-width: 320px;">
+            Voir mes derniers résultats
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- État B : Questionnaire -->
+    <div id="bilan-questionnaire" style="display:none;">
+      <!-- Barre de progression -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between;
+                    margin-bottom: .5rem;">
+          <span id="bilan-progress-label"
+                style="font-size:.75rem; font-weight:600; color:var(--text-muted);
+                       text-transform:uppercase; letter-spacing:.05em;">
+            Section 1 / 7
+          </span>
+          <span style="font-size:.7rem; color:var(--text-muted);">
+            <a href="#" onclick="abandonnerBilan(); return false;"
+               style="color:var(--text-muted); text-decoration:none;">Abandonner</a>
+          </span>
+        </div>
+        <div style="height:4px; background:var(--border); border-radius:4px; overflow:hidden;">
+          <div id="bilan-progress-bar"
+               style="height:100%; background:var(--gold); border-radius:4px;
+                      transition: width .35s ease; width:14.28%;">
+          </div>
+        </div>
+        <div id="bilan-section-titre"
+             style="font-size:.95rem; font-weight:600; color:var(--text); margin-top:.7rem;">
+        </div>
+      </div>
+      <!-- Zone de questions -->
+      <div id="bilan-questions-zone"></div>
+      <!-- Navigation -->
+      <div style="display:flex; gap:.8rem; margin-top:1.5rem;">
+        <button id="bilan-btn-precedent" onclick="reculerSection()"
+                style="flex:1; background:transparent; color:var(--gold);
+                       border:1px solid var(--gold); border-radius:12px;
+                       padding:.8rem; font-size:.85rem; font-weight:600; display:none;">
+          ← Précédent
+        </button>
+        <button id="bilan-btn-suivant" onclick="validerEtAvancer()"
+                style="flex:2; background:var(--gold); color:#fff; border:none;
+                       border-radius:12px; padding:.8rem; font-size:.9rem;
+                       font-weight:600; opacity:.45; pointer-events:none;">
+          Section suivante →
+        </button>
+      </div>
+    </div>
+
+    <!-- État C : Résultats -->
+    <div id="bilan-resultats" style="display:none;"></div>
+
+  </div>
+</div>
 </div><!-- /main-content -->
 </div><!-- /app-shell -->
 
@@ -3059,93 +3145,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         <i class="ti ti-activity-heartbeat" style="background:rgba(245,133,90,.12);color:#f5855a"></i>Bilan
       </div>
     </div>
-  </div>
-</div>
-
-<!-- VIEW BILAN VITALITÉ -->
-<div class="view" id="view-bilan">
-  <div style="padding: 1.2rem 1rem 6rem;">
-
-    <!-- État A : Accueil -->
-    <div id="bilan-accueil">
-      <div style="text-align:center; padding: 2rem 1rem 1.5rem;">
-        <div style="font-size: 2.5rem; margin-bottom: .8rem;">⚡</div>
-        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600;
-                   color: var(--text); margin-bottom: .4rem;">Bilan Vitalité</h2>
-        <div style="font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
-          Par Monika Foris · Naturopathe
-        </div>
-        <p style="font-size: .85rem; color: var(--text-dim); line-height: 1.6; max-width: 340px;
-                  margin: 0 auto 1.8rem;">
-          Évaluez votre vitalité en 7 thèmes. Durée estimée&nbsp;: 5 minutes.
-          Vos réponses restent anonymes et orientent vos recommandations dans le Companion.
-        </p>
-        <div id="bilan-historique" style="display:none; margin-bottom:1.5rem;"></div>
-        <button onclick="startBilan()"
-                style="background: var(--gold); color: #fff; border: none; border-radius: 14px;
-                       padding: .85rem 2rem; font-size: .9rem; font-weight: 600; cursor: pointer;
-                       width: 100%; max-width: 320px;">
-          Démarrer mon bilan
-        </button>
-        <div id="bilan-btn-voir" style="display:none; margin-top:.8rem;">
-          <button onclick="afficherResultatsSauvegardes()"
-                  style="background: transparent; color: var(--gold); border: 1px solid var(--gold);
-                         border-radius: 14px; padding: .7rem 2rem; font-size: .85rem; font-weight: 600;
-                         cursor: pointer; width: 100%; max-width: 320px;">
-            Voir mes derniers résultats
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- État B : Questionnaire -->
-    <div id="bilan-questionnaire" style="display:none;">
-      <!-- Barre de progression -->
-      <div style="margin-bottom: 1.5rem;">
-        <div style="display:flex; align-items:center; justify-content:space-between;
-                    margin-bottom: .5rem;">
-          <span id="bilan-progress-label"
-                style="font-size:.75rem; font-weight:600; color:var(--text-muted);
-                       text-transform:uppercase; letter-spacing:.05em;">
-            Section 1 / 7
-          </span>
-          <span style="font-size:.7rem; color:var(--text-muted);">
-            <a href="#" onclick="abandonnerBilan(); return false;"
-               style="color:var(--text-muted); text-decoration:none;">Abandonner</a>
-          </span>
-        </div>
-        <div style="height:4px; background:var(--border); border-radius:4px; overflow:hidden;">
-          <div id="bilan-progress-bar"
-               style="height:100%; background:var(--gold); border-radius:4px;
-                      transition: width .35s ease; width:14.28%;">
-          </div>
-        </div>
-        <div id="bilan-section-titre"
-             style="font-size:.95rem; font-weight:600; color:var(--text); margin-top:.7rem;">
-        </div>
-      </div>
-      <!-- Zone de questions -->
-      <div id="bilan-questions-zone"></div>
-      <!-- Navigation -->
-      <div style="display:flex; gap:.8rem; margin-top:1.5rem;">
-        <button id="bilan-btn-precedent" onclick="reculerSection()"
-                style="flex:1; background:transparent; color:var(--gold);
-                       border:1px solid var(--gold); border-radius:12px;
-                       padding:.8rem; font-size:.85rem; font-weight:600; display:none;">
-          ← Précédent
-        </button>
-        <button id="bilan-btn-suivant" onclick="validerEtAvancer()"
-                style="flex:2; background:var(--gold); color:#fff; border:none;
-                       border-radius:12px; padding:.8rem; font-size:.9rem;
-                       font-weight:600; opacity:.45; pointer-events:none;">
-          Section suivante →
-        </button>
-      </div>
-    </div>
-
-    <!-- État C : Résultats -->
-    <div id="bilan-resultats" style="display:none;"></div>
-
   </div>
 </div>
 
