@@ -3515,13 +3515,15 @@ function initBilanAccueil() {
     var badge = diffJ >= 90
       ? '<span style="background:#fff3e0;color:#e8641e;border-radius:8px;padding:.2rem .6rem;font-size:.7rem;font-weight:700;">Bilan à renouveler</span>'
       : '<span style="background:rgba(0,180,180,.1);color:#00b4b4;border-radius:8px;padding:.2rem .6rem;font-size:.7rem;font-weight:700;">Complété</span>';
-    var barres = ['energie','sommeil','alimentation','stress','activite','equilibre','mental']
-      .map(function(k) {
+    var bkeys = ['energie','sommeil','habitudes','stress','environnement','vitalite'];
+    var blabs = ['Énergie au travail','Sommeil & récupération','Habitudes','Gestion du stress','Environnement','Vitalité & performance'];
+    var barres = bkeys
+      .map(function(k, ki) {
         var s = saved.scores[k] || 0;
         var col = s >= 70 ? '#00b4b4' : s >= 45 ? '#f5855a' : '#e8641e';
         return '<div style="margin-bottom:.3rem;">'
           + '<div style="display:flex;justify-content:space-between;font-size:.65rem;color:#3a5858;margin-bottom:.15rem;">'
-          + '<span>' + k.charAt(0).toUpperCase() + k.slice(1) + '</span>'
+          + '<span>' + blabs[ki] + '</span>'
           + '<span style="font-weight:700;color:' + col + '">' + Math.round(s) + '</span></div>'
           + '<div style="height:4px;background:rgba(0,180,180,.12);border-radius:4px;">'
           + '<div style="height:100%;width:' + s + '%;background:' + col + ';border-radius:4px;"></div>'
@@ -3771,13 +3773,14 @@ function afficherResultatsBilan() {
   document.getElementById('bilan-questionnaire').style.display = 'none';
   document.getElementById('bilan-accueil').style.display      = 'none';
 
-  var keys   = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
+  // Section 0 = Informations générales (démographique) → exclue du score
+  var keys     = ['energie','sommeil','habitudes','stress','environnement','vitalite'];
+  var libelles = ['Énergie au travail','Sommeil & récupération','Habitudes','Gestion du stress','Environnement','Vitalité & performance'];
   var scores = {};
-  BILAN_SECTIONS.forEach(function(sec, i) {
-    scores[keys[i]] = _calcScoreSection(sec);
+  keys.forEach(function(k, i) {
+    scores[k] = _calcScoreSection(BILAN_SECTIONS[i + 1]);
   });
-  var global = Object.values ? Object.values(scores).reduce(function(a,b){return a+b;},0)/7
-    : keys.reduce(function(a,k){return a+scores[k];},0)/7;
+  var global = keys.reduce(function(a,k){return a+scores[k];},0) / keys.length;
 
   // Sauvegarde
   DB.bilan_vitalite = { last_date: new Date().toISOString().slice(0,10), scores: scores, score_global: global };
@@ -3785,7 +3788,6 @@ function afficherResultatsBilan() {
 
   var mention = global >= 80 ? 'Excellent' : global >= 60 ? 'Bon' : global >= 40 ? 'À travailler' : 'Attention';
   var col     = global >= 70 ? '#00b4b4' : global >= 45 ? '#f5855a' : '#e8641e';
-  var libelles = ['Énergie','Sommeil','Alimentation','Stress','Activité','Équilibre','Mental'];
 
   // Recommandations
   var recs = [];
@@ -3806,11 +3808,11 @@ function afficherResultatsBilan() {
     var c3 = findContenu(function(c){ return (c.titre||'').toLowerCase().match(/respiration|stress/); });
     if (c3) recs.push(c3);
   }
-  if (scores.activite < 60) {
+  if (scores.habitudes < 60) {
     var c4 = findContenu(function(c){ return c.categorie === 'workout' || c.categorie === 'etirements'; });
     if (c4) recs.push(c4);
   }
-  if (scores.mental < 60) {
+  if (scores.vitalite < 60) {
     var c5 = findContenu(function(c){ return (DB.defis||[]).indexOf(c) !== -1; });
     if (c5) recs.push(c5);
   }
@@ -3879,13 +3881,9 @@ function afficherResultatsSauvegardes() {
   if (!saved) return;
   // Recharger les réponses factices depuis les scores sauvegardés pour affichage
   _bilanReponses = {};
-  BILAN_SECTIONS.forEach(function(sec, i) {
-    var keys = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
-    // On n'a pas les réponses détaillées, on affiche directement les scores
-  });
   // Affichage direct depuis les scores
-  var keys     = ['energie','sommeil','alimentation','stress','activite','equilibre','mental'];
-  var libelles = ['Énergie','Sommeil','Alimentation','Stress','Activité','Équilibre','Mental'];
+  var keys     = ['energie','sommeil','habitudes','stress','environnement','vitalite'];
+  var libelles = ['Énergie au travail','Sommeil & récupération','Habitudes','Gestion du stress','Environnement','Vitalité & performance'];
   var global   = saved.score_global;
   var mention  = global >= 80 ? 'Excellent' : global >= 60 ? 'Bon' : global >= 40 ? 'À travailler' : 'Attention';
   var col      = global >= 70 ? '#00b4b4' : global >= 45 ? '#f5855a' : '#e8641e';
