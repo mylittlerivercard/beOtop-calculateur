@@ -3407,80 +3407,92 @@ var DB = loadDB();
 ════════════════════════════════════════════ */
 var BILAN_SECTIONS = [
   {
-    id: 1, titre: 'Niveau d\'énergie global',
-    label_play: 'Bilan Vitalité · Énergie',
+    id: 1,
+    titre: 'Informations générales',
+    label_play: 'Bilan Vitalité · Informations générales',
     questions: [
-      { id:'e1', texte:'Comment évaluez-vous votre niveau d\'énergie général en ce moment ?', type:'echelle_10', obligatoire:true },
-      { id:'e2', texte:'Ressentez-vous des baisses d\'énergie au cours de la journée ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
-      { id:'e3', texte:'À quel(s) moment(s) de la journée ressentez-vous une baisse d\'énergie ?', type:'choix_multiple', options:['Matin','Milieu de matinée','Après déjeuner','Milieu d\'après-midi','Fin de journée'], obligatoire:false },
-      { id:'e4', texte:'Votre niveau d\'énergie vous semble-t-il en lien avec votre alimentation ?', type:'choix_unique', options:['Oui, clairement','Parfois','Pas vraiment','Je ne sais pas'], obligatoire:true },
-      { id:'e5', texte:'Consommez-vous des stimulants pour compenser la fatigue ?', type:'choix_multiple', options:['Café','Thé','Sucre / sucreries','Boissons énergisantes','Aucun'], obligatoire:true }
+      { id:'ig1', texte:'Tranche d\'âge', type:'choix_unique', options:['Moins de 25 ans','25-34 ans','35-44 ans','45-54 ans','55 ans et plus'], obligatoire:true },
+      { id:'ig2', texte:'Sexe', type:'choix_unique', options:['Femme','Homme','Préfère pas répondre'], obligatoire:true },
+      { id:'ig3', texte:'Mon poste est principalement :', type:'choix_unique', options:['Management / encadrement','Bureautique / administratif','Terrain / opérationnel','Autre'], obligatoire:true },
+      { id:'ig4', texte:'Ancienneté de mon poste actuel :', type:'choix_unique', options:['Moins de 1 an','1 à 5 ans','Plus de 5 ans'], obligatoire:true },
+      { id:'ig5', texte:'Mon rythme de travail actuel est :', type:'choix_unique', options:['Régulier et prévisible','Variable selon les périodes','Intense et souvent imprévisible'], obligatoire:true }
     ]
   },
   {
-    id: 2, titre: 'Qualité du sommeil',
-    label_play: 'Bilan Vitalité · Sommeil',
+    id: 2,
+    titre: 'Energie au travail',
+    label_play: 'Bilan Vitalité · Energie au travail',
     questions: [
-      { id:'s1', texte:'Comment évaluez-vous la qualité de votre sommeil ?', type:'echelle_10', obligatoire:true },
-      { id:'s2', texte:'Combien d\'heures dormez-vous en moyenne par nuit ?', type:'choix_unique', options:['Moins de 5h','5h–6h','6h–7h','7h–8h','Plus de 8h'], obligatoire:true },
-      { id:'s3', texte:'Avez-vous du mal à vous endormir ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
-      { id:'s4', texte:'Vous réveillez-vous la nuit ?', type:'choix_unique', options:['Jamais','1 à 2 fois','3 fois ou plus'], obligatoire:true },
-      { id:'s5', texte:'Vous sentez-vous reposé(e) au réveil ?', type:'choix_unique', options:['Oui, toujours','Parfois','Rarement','Jamais'], obligatoire:true }
+      { id:'e1', texte:'Au cours d\'une journée de travail, mon niveau d\'énergie moyen est : (1-très faible, 10-très élevé)', type:'echelle_10', obligatoire:true },
+      { id:'e2', texte:'Au cours des 3 derniers mois, mon niveau d\'énergie a été :', type:'choix_unique', options:['Stable','En amélioration','En baisse'], obligatoire:true },
+      { id:'e3', texte:'Je ressens des baisses d\'énergie importantes au cours de ma journée de travail. (1-jamais, 5-très souvent)', type:'echelle_5', obligatoire:true },
+      { id:'e4', texte:'Ces baisses d\'énergie impactent mon efficacité professionnelle. (1-pas du tout, 5-fortement)', type:'echelle_5', obligatoire:true },
+      { id:'e5', texte:'Les baisses d\'énergie surviennent principalement :', type:'choix_multiple', options:['Le matin','Après le déjeuner','En fin d\'après-midi','Le soir'], obligatoire:false },
+      { id:'e6', texte:'Les signes de fatigue que je ressens le plus souvent sont (3 maximum) :', type:'choix_multiple', options:['Difficultés de concentration','Irritabilité','Somnolence','Maux de tête','Tensions corporelles (nuque, épaules, dos, mâchoires, jambes...)','Envie de sucre/café'], obligatoire:false }
     ]
   },
   {
-    id: 3, titre: 'Alimentation & hydratation',
-    label_play: 'Bilan Vitalité · Alimentation',
+    id: 3,
+    titre: 'Sommeil et récupération',
+    label_play: 'Bilan Vitalité · Sommeil et récupération',
     questions: [
-      { id:'a1', texte:'Comment évaluez-vous la qualité de votre alimentation quotidienne ?', type:'echelle_5', obligatoire:true },
-      { id:'a2', texte:'Sautez-vous des repas régulièrement ?', type:'choix_unique', options:['Jamais','Parfois','Souvent'], obligatoire:true },
-      { id:'a3', texte:'Quelle est votre consommation d\'eau par jour ?', type:'choix_unique', options:['Moins d\'1 litre','1 à 1,5 litre','1,5 à 2 litres','Plus de 2 litres'], obligatoire:true },
-      { id:'a4', texte:'Ressentez-vous des symptômes digestifs ?', type:'choix_multiple', options:['Ballonnements','Constipation','Reflux','Fatigue post-repas','Aucun'], obligatoire:true },
-      { id:'a5', texte:'Votre alimentation est-elle variée et équilibrée ?', type:'echelle_5', obligatoire:true }
+      { id:'s1', texte:'En moyenne, je dors :', type:'choix_unique', options:['Moins de 6h par nuit','6h à 7h par nuit','7h à 8h par nuit','Plus de 8h par nuit'], obligatoire:true },
+      { id:'s2', texte:'La qualité de mon sommeil est : (1-très mauvaise, 10-excellente)', type:'echelle_10', obligatoire:true },
+      { id:'s3', texte:'Je me sens reposé.e au réveil. (1-rarement, 5-presque toujours)', type:'echelle_5', obligatoire:true },
+      { id:'s4', texte:'Je présente les difficultés de sommeil suivantes :', type:'choix_multiple', options:['Difficultés d\'endormissement','Réveils nocturnes','Réveils trop tôt le matin','Sommeil non-réparateur','Aucune difficulté'], obligatoire:false }
     ]
   },
   {
-    id: 4, titre: 'Gestion du stress & émotions',
-    label_play: 'Bilan Vitalité · Stress',
+    id: 4,
+    titre: 'Habitudes soutenant l\'énergie',
+    label_play: 'Bilan Vitalité · Habitudes soutenant l\'énergie',
     questions: [
-      { id:'st1', texte:'Quel est votre niveau de stress actuel ?', type:'echelle_10', obligatoire:true },
-      { id:'st2', texte:'Quelles sont vos principales sources de stress ?', type:'choix_multiple', options:['Charge de travail','Relations professionnelles','Vie personnelle','Finances','Santé','Avenir'], obligatoire:true },
-      { id:'st3', texte:'Comment gérez-vous votre stress au quotidien ?', type:'choix_multiple', options:['Sport / activité physique','Méditation / respiration','Lecture','Nature','Aucune stratégie particulière','Autre'], obligatoire:false },
-      { id:'st4', texte:'Ressentez-vous des tensions physiques liées au stress ?', type:'choix_multiple', options:['Tensions cervicales / épaules','Maux de tête','Troubles digestifs','Insomnies','Irritabilité','Aucune'], obligatoire:true },
-      { id:'st5', texte:'Avez-vous l\'impression de récupérer suffisamment entre deux périodes de stress ?', type:'choix_unique', options:['Oui','Parfois','Rarement','Non'], obligatoire:true }
+      { id:'h1', texte:'Mes repas sont généralement :', type:'choix_multiple', options:['Réguliers et structurés','Irréguliers','Pris rapidement / sur le pouce','Pris devant l\'écran'], obligatoire:false },
+      { id:'h2', texte:'En ce qui concerne la qualité de mes repas :', type:'choix_unique', options:['Je consomme souvent des plats préparés ou industriels.','Je consomme parfois des plats préparés, mais beaucoup de féculents, protéines et très peu de légumes.','Mes repas contiennent généralement des légumes, protéines et féculents, mais certains repas sont déséquilibrés.','Mes repas sont variés et équilibrés (à chaque repas, légumes, protéines de bonne qualité, bons gras, féculents).','Autre'], obligatoire:true },
+      { id:'h3', texte:'Pour maintenir mon énergie au travail, je consomme quotidiennement :', type:'choix_multiple', options:['Café','Boissons énergisantes','Barres ou encas sucrés','Collations industrielles / snack','Chocolat','Autre'], obligatoire:false },
+      { id:'h4', texte:'En ce qui concerne mon hydratation :', type:'choix_unique', options:['Je bois rarement de l\'eau et je consomme souvent du café, thé, boissons sucrées ou énergisantes.','Je bois de l\'eau de temps en temps, mais peut-être pas suffisamment.','Je bois régulièrement de l\'eau et je veille à rester hydraté.e tout au long de la journée.','Je bois suffisamment d\'eau tout au long de la journée.'], obligatoire:true },
+      { id:'h5', texte:'Je pratique une activité physique au moins 3 fois par semaine :', type:'choix_unique', options:['Oui','Non'], obligatoire:true },
+      { id:'h6', texte:'Je fais des pauses de 5 à 10 minutes plusieurs fois pendant ma journée de travail.', type:'choix_unique', options:['Rarement ou jamais','Parfois, mais pas régulièrement','Souvent, la plupart des jours','Toujours'], obligatoire:true }
     ]
   },
   {
-    id: 5, titre: 'Activité physique',
-    label_play: 'Bilan Vitalité · Activité physique',
+    id: 5,
+    titre: 'Gestion du stress',
+    label_play: 'Bilan Vitalité · Gestion du stress',
     questions: [
-      { id:'p1', texte:'Pratiquez-vous une activité physique régulière ?', type:'choix_unique', options:['Jamais','1 fois/semaine','2 à 3 fois/semaine','Tous les jours'], obligatoire:true },
-      { id:'p2', texte:'Quel type d\'activité physique pratiquez-vous ?', type:'choix_multiple', options:['Marche','Course','Yoga / Pilates','Musculation','Sports collectifs','Autre','Aucun'], obligatoire:false },
-      { id:'p3', texte:'Ressentez-vous des douleurs physiques au quotidien ?', type:'choix_multiple', options:['Dos / lombaires','Nuque / épaules','Genoux','Aucune'], obligatoire:true },
-      { id:'p4', texte:'Êtes-vous principalement sédentaire dans votre travail ?', type:'choix_unique', options:['Oui, très sédentaire','Assez sédentaire','Mixte','Peu sédentaire'], obligatoire:true },
-      { id:'p5', texte:'Comment évaluez-vous votre condition physique générale ?', type:'echelle_5', obligatoire:true }
+      { id:'st1', texte:'Au cours du dernier mois, mon niveau de stress a été : (1-très faible, 10-très élevé)', type:'echelle_10', obligatoire:true },
+      { id:'st2', texte:'Mon niveau de stress impacte mon énergie au travail : (1-pas du tout, 5-fortement)', type:'echelle_5', obligatoire:true },
+      { id:'st3', texte:'Mes principales sources de stress sont :', type:'choix_multiple', options:['Charge de travail','Manque de temps / deadlines trop courts','Relations professionnelles','Pression liée au résultat','Manque de clarté des priorités','Autre'], obligatoire:false },
+      { id:'st4', texte:'Je dispose de stratégies efficaces pour réguler mon stress.', type:'choix_unique', options:['Oui','Non'], obligatoire:true }
     ]
   },
   {
-    id: 6, titre: 'Environnement & équilibre de vie',
-    label_play: 'Bilan Vitalité · Équilibre',
+    id: 6,
+    titre: 'Environnement du travail',
+    label_play: 'Bilan Vitalité · Environnement du travail',
     questions: [
-      { id:'eq1', texte:'Comment évaluez-vous votre équilibre vie pro / vie perso ?', type:'echelle_10', obligatoire:true },
-      { id:'eq2', texte:'Prenez-vous du temps pour vous en dehors du travail ?', type:'choix_unique', options:['Régulièrement','Parfois','Rarement','Jamais'], obligatoire:true },
-      { id:'eq3', texte:'Votre environnement de travail est-il propice à votre bien-être ?', type:'echelle_5', obligatoire:true },
-      { id:'eq4', texte:'Avez-vous des activités qui vous ressourcent ?', type:'choix_multiple', options:['Activité artistique','Nature','Lecture','Méditation','Famille / amis','Sport','Aucune'], obligatoire:false },
-      { id:'eq5', texte:'Ressentez-vous un sentiment de sens dans votre travail ?', type:'choix_unique', options:['Oui, clairement','Parfois','Rarement','Non'], obligatoire:true }
+      { id:'env1', texte:'Mon rythme de travail est soutenable dans la durée. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env2', texte:'Les priorités dans mon travail sont claires. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env3', texte:'Je dispose des ressources suffisantes (temps, outils, soutien) pour travailler sereinement. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env4', texte:'Je me sens soutenu.e par mon manager en cas de difficulté. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env5', texte:'Les relations au sein de mon équipe sont énergisantes. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env6', texte:'Je peux récupérer après une période de travail intense. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env7', texte:'Mon travail a du sens pour moi. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true },
+      { id:'env8', texte:'Je me sens reconnu.e pour la qualité de mon travail. (1-pas du tout d\'accord, 5-tout à fait d\'accord)', type:'echelle_5', obligatoire:true }
     ]
   },
   {
-    id: 7, titre: 'Performance & vitalité mentale',
-    label_play: 'Bilan Vitalité · Mental',
+    id: 7,
+    titre: 'Vitalité et performance globale',
+    label_play: 'Bilan Vitalité · Vitalité et performance globale',
     questions: [
-      { id:'m1', texte:'Comment évaluez-vous votre capacité de concentration ?', type:'echelle_10', obligatoire:true },
-      { id:'m2', texte:'Ressentez-vous des difficultés de mémoire ou de clarté mentale ?', type:'choix_unique', options:['Jamais','Parfois','Souvent','Toujours'], obligatoire:true },
-      { id:'m3', texte:'Avez-vous suffisamment d\'élan et de motivation au quotidien ?', type:'echelle_5', obligatoire:true },
-      { id:'m4', texte:'Quels sont vos freins à la performance ?', type:'choix_multiple', options:['Fatigue','Stress','Manque de sommeil','Problèmes personnels','Manque d\'intérêt','Surcharge','Aucun'], obligatoire:true },
-      { id:'m5', texte:'En une phrase, qu\'est-ce qui vous ferait vous sentir plus vital(e) ?', type:'texte_libre', obligatoire:false }
+      { id:'vp1', texte:'Au cours des 12 derniers mois, j\'ai été absent.e pour des raisons de santé.', type:'choix_unique', options:['Oui','Non'], obligatoire:true },
+      { id:'vp2', texte:'Mon niveau d\'énergie influence directement ma performance professionnelle. (1-pas du tout, 5-fortement)', type:'echelle_5', obligatoire:true },
+      { id:'vp3', texte:'Je me sens pleinement performant.e dans mes missions. (1-pas du tout, 5-tout à fait)', type:'echelle_5', obligatoire:true },
+      { id:'vp4', texte:'Aujourd\'hui, mon bien-être global est : (1-très faible, 10-excellent)', type:'echelle_10', obligatoire:true },
+      { id:'vp5', texte:'Le principal facteur qui me fait perdre de l\'énergie au travail aujourd\'hui est :', type:'texte_libre', obligatoire:false },
+      { id:'vp6', texte:'L\'action qui améliorerait le plus ma vitalité au travail serait :', type:'texte_libre', obligatoire:false },
+      { id:'vp7', texte:'Si vous le souhaitez, vous pouvez partager tout autre élément que vous jugez utile concernant votre énergie, votre vitalité et votre bien-être au travail.', type:'texte_libre', obligatoire:false }
     ]
   }
 ];
