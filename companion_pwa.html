@@ -9626,7 +9626,7 @@ function renderHuiles() {
   }
   grid.innerHTML = '<div class="audio-grid">' + list.map(function(h) {
     return '<div class="audio-card" onclick="openHuile(' + h.id + ')">'
-      + _cardHeader(h, {icon: '\ud83c\udf3f'})
+      + _cardHeader(h, {icon: '\ud83c\udf3f', fallbackImg: getYoutubeThumbnail(h.url_video)})
       + '<div class="audio-title">' + h.titre + '</div>'
       + '<div class="audio-meta"><span>' + (h.categorie||'huile') + '</span></div>'
       + (h.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + h.description + '</div>' : '')
