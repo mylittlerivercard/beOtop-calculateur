@@ -7709,7 +7709,7 @@ function _cardHeader(item, opts) {
   var illus = (item && item.photo) ? ('/static/' + item.photo) : '';
   var invFile = (item && item.intervenant) ? getIntervenantPhoto(item.intervenant) : null;
   var invUrl = invFile ? ('/static/' + invFile) : '';
-  var headerImg = illus || opts.fallbackImg || invUrl;
+  var headerImg = opts.fallbackImg || illus || invUrl;
   var avatar = invUrl
     ? '<img src="' + invUrl + '" alt="' + (item.intervenant || '') + '" title="' + (item.intervenant || '') + '" style="position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,.4);z-index:2" onerror="this.style.display=\'none\'">'
     : '';
