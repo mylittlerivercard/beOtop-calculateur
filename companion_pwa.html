@@ -9673,6 +9673,10 @@ function openAddHuile() {
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5" placeholder="Propri\u00e9t\u00e9s, usages, pr\u00e9cautions..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
     <div class="form-field"><label>URL vid\u00e9o (YouTube embed)</label><input type="text" id="f-hu-video" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible \u00b7 Vimeo aussi accept\u00e9</div></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label>
+      <input type="text" id="f-hu-photo" placeholder="lavande.jpg">
+      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji \ud83c\udf3f</div>
+    </div>
     <div class="form-field"><label>Intervenant</label>
       <select id="f-hu-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
         <option value="">\u2014 Aucun \u2014</option>
@@ -9694,6 +9698,7 @@ function saveHuile() {
     contenu: document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
     url_video: document.getElementById('f-hu-video').value.trim(),
+    photo: document.getElementById('f-hu-photo') ? document.getElementById('f-hu-photo').value.trim() : '',
     intervenant: document.getElementById('f-hu-intervenant').value,
     icon: '\ud83c\udf3f',
     statut: 'active'
@@ -9709,6 +9714,7 @@ function editHuile(id) {
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
     <div class="form-field"><label>URL vid\u00e9o (YouTube embed)</label><input type="text" id="f-hu-video" value="${h.url_video||''}" placeholder="https://www.youtube.com/embed/..."></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-hu-photo" value="${h.photo||''}" placeholder="lavande.jpg"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateHuile(${id})">\u2713 Enregistrer</button>
@@ -9723,7 +9729,8 @@ function updateHuile(id) {
     description: document.getElementById('f-hu-desc').value,
     contenu:     document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
-    url_video:   document.getElementById('f-hu-video').value.trim()
+    url_video:   document.getElementById('f-hu-video').value.trim(),
+    photo:       document.getElementById('f-hu-photo') ? document.getElementById('f-hu-photo').value.trim() : (h.photo||'')
   });
   if (h.db_id) { _contenuUpdate(h.db_id, 'huile', item, renderHuiles); return; }
   Object.assign(h, item);
