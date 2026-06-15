@@ -154,7 +154,7 @@ COMPANION_CONTENT_TABLES = {
     'podcasts':  ['titre', 'categorie', 'description', 'url', 'type_url', 'duree', 'icon', 'intervenant'],
     'posts':     ['titre', 'categorie', 'contenu', 'image', 'lien', 'auteur'],
     'huiles':    ['titre', 'categorie', 'description', 'contenu', 'url_externe', 'icon', 'intervenant'],
-    'recettes':  ['titre', 'categorie', 'duree', 'description', 'contenu', 'url_externe', 'icon', 'intervenant'],
+    'recettes':  ['titre', 'categorie', 'duree', 'description', 'contenu', 'url_externe', 'photo', 'icon', 'intervenant'],
 }
 
 def init_db():

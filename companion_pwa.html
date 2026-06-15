@@ -9790,6 +9790,10 @@ function openAddRecette() {
     <div class="form-field"><label>Description courte</label><input type="text" id="f-re-desc" placeholder="Id\u00e9al pour le coup de barre de 15h..."></div>
     <div class="form-field"><label>Contenu / Ingr\u00e9dients & pr\u00e9paration</label><textarea id="f-re-contenu" rows="6" placeholder="Ingr\u00e9dients :&#10;- ...&#10;&#10;Pr\u00e9paration :&#10;1. ..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-re-url" placeholder="https://..."></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label>
+      <input type="text" id="f-re-photo" placeholder="infusion-romarin.jpg">
+      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">
+      Laisser vide pour afficher l'emoji \ud83e\udd57</div></div>
     <div class="form-field"><label>Intervenant</label>
       <select id="f-re-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
         <option value="">\u2014 Aucun \u2014</option>
@@ -9811,6 +9815,7 @@ function saveRecette() {
     description: document.getElementById('f-re-desc').value,
     contenu: document.getElementById('f-re-contenu').value,
     url_externe: document.getElementById('f-re-url').value.trim(),
+    photo: document.getElementById('f-re-photo') ? document.getElementById('f-re-photo').value.trim() : '',
     intervenant: document.getElementById('f-re-intervenant').value,
     icon: '\ud83e\udd57',
     statut: 'active'
@@ -9826,6 +9831,10 @@ function editRecette(id) {
     <div class="form-field"><label>Description</label><input type="text" id="f-re-desc" value="${r.description||''}"></div>
     <div class="form-field"><label>Contenu / Ingr\u00e9dients & pr\u00e9paration</label><textarea id="f-re-contenu" rows="6">${r.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-re-url" value="${r.url_externe||''}"></div>
+    <div class="form-field"><label>Photo (fichier dans /static/)</label>
+      <input type="text" id="f-re-photo" value="${r.photo||''}" placeholder="infusion-romarin.jpg">
+      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">
+      Laisser vide pour afficher l'emoji \ud83e\udd57</div></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateRecette(${id})">\u2713 Enregistrer</button>
@@ -9840,7 +9849,8 @@ function updateRecette(id) {
     duree:       document.getElementById('f-re-duree').value,
     description: document.getElementById('f-re-desc').value,
     contenu:     document.getElementById('f-re-contenu').value,
-    url_externe: document.getElementById('f-re-url').value.trim()
+    url_externe: document.getElementById('f-re-url').value.trim(),
+    photo:       document.getElementById('f-re-photo') ? document.getElementById('f-re-photo').value.trim() : (r.photo||'')
   });
   if (r.db_id) { _contenuUpdate(r.db_id, 'recette', item, renderRecettes); return; }
   Object.assign(r, item);
