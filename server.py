@@ -4454,6 +4454,21 @@ def demo_access():
     return redirect('/dashboard')
 
 
+@app.route('/demo-pwa')
+def demo_pwa_access():
+    """
+    Accès public sans mot de passe au Companion PWA en lecture seule.
+    Même logique que /demo mais redirige vers /companion_pwa.
+    """
+    session.clear()
+    session['user_id'] = 0
+    session['role'] = 'demo'
+    session['client_id'] = 18
+    session['nom'] = 'Visiteur démo'
+    session['email'] = 'demo@beotop.fr'
+    return redirect('/companion_pwa')
+
+
 # Garde-fou global du mode démo : verrouille toute écriture et le back-office.
 # Centralisé ici (plutôt que route par route) pour garantir qu'aucune route
 # d'écriture POST/PUT/PATCH/DELETE ne puisse jamais être atteinte en démo.
