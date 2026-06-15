@@ -3592,12 +3592,6 @@ function renderBilanSection(idx) {
               + v + '</button>';
       }
       html += '</div>';
-      if (max === 10)
-        html += '<div style="display:flex;justify-content:space-between;font-size:.65rem;'
-              + 'color:var(--text-muted);margin-top:.3rem;"><span>Très faible</span><span>Excellent</span></div>';
-      if (max === 5)
-        html += '<div style="display:flex;justify-content:space-between;font-size:.65rem;'
-              + 'color:var(--text-muted);margin-top:.3rem;"><span>Médiocre</span><span>Excellent</span></div>';
     }
 
     if (q.type === 'choix_unique') {
