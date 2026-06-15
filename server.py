@@ -153,8 +153,8 @@ COMPANION_CONTENT_TABLES = {
     'defis':     ['titre', 'categorie', 'description', 'url_audio', 'duree', 'icon', 'photo', 'intervenant'],
     'podcasts':  ['titre', 'categorie', 'description', 'url', 'type_url', 'duree', 'icon', 'intervenant'],
     'posts':     ['titre', 'categorie', 'contenu', 'image', 'lien', 'auteur'],
-    'huiles':    ['titre', 'categorie', 'description', 'contenu', 'url_externe', 'url_video', 'icon', 'intervenant'],
-    'recettes':  ['titre', 'categorie', 'duree', 'description', 'contenu', 'url_externe', 'photo', 'icon', 'intervenant'],
+    'huiles':    ['titre', 'categorie', 'description', 'contenu', 'url_video', 'url_externe', 'photo', 'icon', 'intervenant'],
+    'recettes':  ['titre', 'categorie', 'description', 'contenu', 'url_externe', 'photo', 'duree', 'icon', 'intervenant'],
 }
 
 def init_db():
@@ -2541,11 +2541,13 @@ def _register_companion_crud(typ, cols):
     table = 'companion_' + typ
 
     def _list():
-        # Bibliothèque de contenus PARTAGÉE : visible par tous les sites/clients,
-        # quel que soit le site_slug d'origine (les sons restent, eux, par site).
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE ORDER BY id")
+                if typ == 'posts':
+                    site_slug = request.args.get('site_slug', '') or ''
+                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE AND COALESCE(site_slug,'')=%s ORDER BY id", [site_slug])
+                else:
+                    cur.execute("SELECT * FROM " + table + " WHERE actif=TRUE ORDER BY id")
                 rows = cur.fetchall()
         return jsonify({typ: [serialize_row(r) for r in rows]})
 
