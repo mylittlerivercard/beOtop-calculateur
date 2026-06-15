@@ -671,12 +671,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 .modal-box {
   background: rgba(248,252,252,.99); border: 1px solid rgba(0,180,180,.3);
   border-radius: 18px; padding: 2rem; width: 480px; max-width: 94vw;
-  max-height: 85vh; overflow-y: auto;
+  max-height: 85vh; overflow: hidden;
+  display: flex; flex-direction: column;
 }
 .modal-header {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.4rem; flex-shrink: 0;
 }
+#modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; }
 .modal-close {
   background: rgba(0,180,180,.05); border: 1px solid var(--border);
