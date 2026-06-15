@@ -8522,11 +8522,17 @@ function openHuile(id) {
   if (!h) return;
   logPlay('huile', h.titre, h.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   awardPoints('huile', h.titre);
-  var body = '<div class="audio-title" style="font-size:1.1rem;margin-bottom:.5rem">' + h.titre + '</div>'
-    + (h.description ? '<p style="font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:1rem">' + h.description + '</p>' : '')
-    + (h.contenu ? '<div style="font-size:.82rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + h.contenu + '</div>' : '')
-    + (h.url_externe ? '<a href="' + h.url_externe + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);border-radius:10px;color:#16a34a;font-size:.75rem;font-weight:600;text-decoration:none">🔗 En savoir plus</a>' : '');
-  openModal(h.titre, body);
+  openModal(h.titre,
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + (h.categorie||'') + '</div>'
+    + (h.url_video
+      ? '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
+        + '<iframe src="' + h.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
+        + '</div>'
+      : '')
+    + (h.description ? '<div style="font-size:.78rem;color:var(--text);margin-bottom:.8rem">' + h.description + '</div>' : '')
+    + (h.contenu ? '<div style="font-size:.78rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + h.contenu + '</div>' : '')
+    + (h.url_externe ? '<a href="' + h.url_externe + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);border-radius:10px;color:#16a34a;font-size:.75rem;font-weight:600;text-decoration:none">🔗 En savoir plus</a>' : '')
+  );
 }
 
 function openAddHuile() {
@@ -8547,6 +8553,7 @@ function openAddHuile() {
     <div class="form-field"><label>Description courte</label><input type="text" id="f-hu-desc" placeholder="Apaisante, idéale en cas de stress..."></div>
     <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5" placeholder="Propriétés, usages, précautions..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
+    <div class="form-field"><label>URL vidéo (YouTube embed)</label><input type="text" id="f-hu-video" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible · Vimeo aussi accepté</div></div>
     <div class="form-field"><label>Intervenant</label>
       <select id="f-hu-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
         <option value="">— Aucun —</option>
@@ -8567,6 +8574,7 @@ function saveHuile() {
     description: document.getElementById('f-hu-desc').value,
     contenu: document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
+    url_video: document.getElementById('f-hu-video').value.trim(),
     intervenant: document.getElementById('f-hu-intervenant').value,
     icon: '🌿',
     statut: 'active'
@@ -8581,6 +8589,7 @@ function editHuile(id) {
     <div class="form-field"><label>Description</label><input type="text" id="f-hu-desc" value="${h.description||''}"></div>
     <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
+    <div class="form-field"><label>URL vidéo (YouTube embed)</label><input type="text" id="f-hu-video" value="${h.url_video||''}" placeholder="https://www.youtube.com/embed/..."></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateHuile(${id})">✓ Enregistrer</button>
@@ -8594,7 +8603,8 @@ function updateHuile(id) {
     titre:       document.getElementById('f-hu-titre').value,
     description: document.getElementById('f-hu-desc').value,
     contenu:     document.getElementById('f-hu-contenu').value,
-    url_externe: document.getElementById('f-hu-url').value.trim()
+    url_externe: document.getElementById('f-hu-url').value.trim(),
+    url_video:   document.getElementById('f-hu-video').value.trim()
   });
   if (h.db_id) { _contenuUpdate(h.db_id, 'huile', item, renderHuiles); return; }
   Object.assign(h, item);
