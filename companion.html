@@ -1147,6 +1147,12 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item" onclick="switchView('bilan')">
     <i class="ti ti-activity-heartbeat" aria-hidden="true"></i><span>Baromètre de Vitalité</span>
   </div>
+  <div class="nav-item" onclick="switchView('huiles')">
+    <i class="ti ti-leaf" aria-hidden="true"></i><span>Huiles essentielles</span>
+  </div>
+  <div class="nav-item" onclick="switchView('recettes')">
+    <i class="ti ti-salad" aria-hidden="true"></i><span>Recettes</span>
+  </div>
 
   <div class="nav-section-label">Suivi</div>
   <div class="nav-item" onclick="switchView('progres')">
@@ -1578,6 +1584,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('exercices',this)">Exercices</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('defis',this)">Défis cognitifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('podcasts',this)">Podcasts</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('huiles',this)">Huiles ess.</button>
+    <button class="cc-protocol-btn" onclick="switchAdminTab('recettes',this)">Recettes</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('sons',this)">Sons immersifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('posts',this)">Posts internes</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
@@ -1809,6 +1817,24 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <!-- État C : Résultats -->
     <div id="bilan-resultats" style="display:none;"></div>
 
+  </div>
+</div>
+
+<!-- HUILES ESSENTIELLES -->
+<div class="view" id="view-huiles">
+  <div style="padding:1rem 1rem 6rem">
+    <h1>Huiles <em>essentielles</em></h1>
+    <div id="huiles-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+    <div id="huiles-grid"></div>
+  </div>
+</div>
+
+<!-- RECETTES -->
+<div class="view" id="view-recettes">
+  <div style="padding:1rem 1rem 6rem">
+    <h1>Nos <em>recettes</em></h1>
+    <div id="recettes-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+    <div id="recettes-grid"></div>
   </div>
 </div>
 <div class="view" id="view-jeux">
@@ -2344,6 +2370,8 @@ var DEMO_DB = {
     { id:5, titre:'Ne pas r\u00e9pondre',        description:'Inhibition de r\u00e9ponse automatique \u00b7 Contr\u00f4le cognitif',      url_audio:'/audio/Defi-5-NePasRepondre_opmix_v2_24_48_.mp3',         intervenant:'Laurent Thiry', duree:'~10 min', actif:true },
   ],
   podcasts: [],
+  huiles: [],
+  recettes: [],
   posts_internes: [],
 };
 
@@ -2358,7 +2386,7 @@ function loadDB() {
     // Merger toutes les clés structurelles depuis DEMO_DB si vides ou absentes
     // On conserve les données utilisateur (checkins, sessions, points) mais on
     // recharge les contenus (videos, audios, exercices, ateliers) depuis DEMO_DB
-    var contentKeys = ['videos','audios','exercices','ateliers','intervenants','defis','podcasts','posts_internes'];
+    var contentKeys = ['videos','audios','exercices','ateliers','intervenants','defis','podcasts','posts_internes','huiles','recettes'];
     contentKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k]) || stored[k].length === 0) {
         stored[k] = JSON.parse(JSON.stringify(DEMO_DB[k] || []));
@@ -2974,6 +3002,8 @@ function syncContenus(cb) {
       { ep: 'defis',     key: 'defis' },
       { ep: 'podcasts',  key: 'podcasts' },
       { ep: 'posts',     key: 'posts_internes' }
+      ,{ ep: 'huiles',   key: 'huiles' }
+      ,{ ep: 'recettes', key: 'recettes' }
     ];
     var pending = map.length;
     function done() { if (--pending === 0) { saveDB(DB); if (cb) cb(); } }
@@ -3257,6 +3287,8 @@ function switchView(id) {
   if (id === 'podcasts') renderPodcasts();
   if (id === 'posts') renderPosts();
   if (id === 'bilan') initBilanAccueil();
+  if (id === 'huiles')   renderHuiles();
+  if (id === 'recettes') renderRecettes();
 }
 
 /* ════════════════════════════════════════════
@@ -7177,6 +7209,28 @@ function renderAdmin(tab) {
             + '<td><button class="btn-ghost" onclick="editPodcast(' + p.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deletePodcast(' + p.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
         }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucun podcast enregistr\u00e9</td></tr>')
       + '</tbody></table>';
+  }   if (tab === 'huiles') {
+    if (!DB.huiles) DB.huiles = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddHuile()">+ Huile essentielle</button></div>'
+      + '<table><thead><tr><th>Titre</th><th>Cat\u00e9gorie</th><th>Intervenant</th><th>Action</th></tr></thead><tbody>'
+      + (_adminList(DB.huiles).length ? _adminList(DB.huiles).map(function(h) {
+          return '<tr><td style="font-weight:600;font-size:.82rem">' + h.titre + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (h.categorie||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (h.intervenant||'\u2014') + '</td>'
+            + '<td><button class="btn-ghost" onclick="editHuile(' + h.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deleteHuile(' + h.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
+        }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucune huile enregistr\u00e9e</td></tr>')
+      + '</tbody></table>';
+  }   if (tab === 'recettes') {
+    if (!DB.recettes) DB.recettes = [];
+    el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddRecette()">+ Recette</button></div>'
+      + '<table><thead><tr><th>Titre</th><th>Cat\u00e9gorie</th><th>Intervenant</th><th>Action</th></tr></thead><tbody>'
+      + (_adminList(DB.recettes).length ? _adminList(DB.recettes).map(function(r) {
+          return '<tr><td style="font-weight:600;font-size:.82rem">' + r.titre + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (r.categorie||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (r.intervenant||'\u2014') + '</td>'
+            + '<td><button class="btn-ghost" onclick="editRecette(' + r.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deleteRecette(' + r.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
+        }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucune recette enregistr\u00e9e</td></tr>')
+      + '</tbody></table>';
   }   if (tab === 'posts') {
     if (!DB.posts_internes) DB.posts_internes = [];
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddPost()">\u002b Post interne</button></div>'
@@ -8178,6 +8232,8 @@ function _ensureContenus(cb) {
     .catch(function(){ _apiContenus = []; if (cb) cb(); });
 }
 function _contenuIcon(type) {
+  if (type === 'huile')   return '🌿';
+  if (type === 'recette') return '🥗';
   return { audio:'🎵', video:'🎬', exercice:'⚡', defi:'🏆', podcast:'🎙️' }[type] || '📌';
 }
 function _getContenus(inv) {
@@ -8204,6 +8260,8 @@ function _getContenus(inv) {
   _addContenus(DB.videos,    'video');
   _addContenus(DB.exercices, 'exercice');
   _addContenus(DB.defis,     'defi');
+  _addContenus(DB.huiles,    'huile');
+  _addContenus(DB.recettes,  'recette');
   _addContenus(_apiContenus, null);
   if (!inv.contenu_ids) return items;
   if (inv.contenu_ids.all) {
@@ -8344,6 +8402,8 @@ function navigateToContenu(type, id, titre) {
   if (type === 'podcast')  { switchView('podcasts');  setTimeout(function(){ openPodcast(id); },  300); }
   if (type === 'exercice') { switchView('exercices'); setTimeout(function(){ openExercice(id); }, 300); }
   if (type === 'defi')     { switchView('jeux');      setTimeout(function(){ playDefi(id); },     300); }
+  if (type === 'huile')    { switchView('huiles');    setTimeout(function(){ openHuile(id); },    300); }
+  if (type === 'recette')  { switchView('recettes');  setTimeout(function(){ openRecette(id); },  300); }
   if (type === 'questionnaire') { switchView('bilan'); }
   // types sans id DB : ne rien faire de plus
 }
@@ -8424,6 +8484,259 @@ function _podcastForm(p) {
     + '<button class="btn-secondary" onclick="closeModal()">Annuler</button>'
     + '<button class="btn-primary" onclick="savePodcast(' + v.id + ')">&#10003; Enregistrer</button>'
     + '</div></div>';
+}
+
+/* ════════════════════════════════════════════
+   HUILES ESSENTIELLES
+════════════════════════════════════════════ */
+var currentHuileCat = 'all';
+function filterHuile(cat) { currentHuileCat = cat; renderHuiles(); }
+
+function renderHuiles() {
+  var grid = document.getElementById('huiles-grid');
+  if (!grid) return;
+  var all = (DB.huiles||[]).filter(function(h){ return h.actif !== false; });
+  var catsEl = document.getElementById('huiles-cats');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentHuileCat, 'filterHuile');
+  var list = currentHuileCat === 'all' ? all : all.filter(function(h){ return h.categorie === currentHuileCat; });
+  if (!list.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucune huile essentielle disponible.<br><span style="font-size:.65rem">Ajoutez du contenu depuis Administration.</span></div>';
+    return;
+  }
+  grid.innerHTML = '<div class="audio-grid">' + list.map(function(h) {
+    return '<div class="audio-card" onclick="openHuile(' + h.id + ')">'
+      + _cardHeader(h, {icon: '🌿'})
+      + '<div class="audio-title">' + h.titre + '</div>'
+      + '<div class="audio-meta"><span>' + (h.categorie||'huile') + '</span></div>'
+      + (h.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + h.description + '</div>' : '')
+      + _invBadge(h.intervenant)
+      + '<button class="audio-play-btn">🌿 Découvrir</button>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+function openHuile(id) {
+  var h = (DB.huiles||[]).find(function(x){ return x.id === id; });
+  if (!h) return;
+  logPlay('huile', h.titre, h.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  awardPoints('huile', h.titre);
+  var body = '<div class="audio-title" style="font-size:1.1rem;margin-bottom:.5rem">' + h.titre + '</div>'
+    + (h.description ? '<p style="font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:1rem">' + h.description + '</p>' : '')
+    + (h.contenu ? '<div style="font-size:.82rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + h.contenu + '</div>' : '')
+    + (h.url_externe ? '<a href="' + h.url_externe + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);border-radius:10px;color:#16a34a;font-size:.75rem;font-weight:600;text-decoration:none">🔗 En savoir plus</a>' : '');
+  openModal(h.titre, body);
+}
+
+function openAddHuile() {
+  openModal('Ajouter une huile essentielle', `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" placeholder="Lavande vraie"></div>
+    <div class="form-field"><label>Catégorie</label>
+      <select id="f-hu-cat" onchange="toggleNewCat('f-hu-cat','f-hu-newcat')">
+        <option value="stress">Anti-stress</option>
+        <option value="energie">Énergie</option>
+        <option value="sommeil">Sommeil</option>
+        <option value="immunite">Immunité</option>
+        <option value="digestion">Digestion</option>
+        <option value="concentration">Concentration</option>
+        <option value="__new__">+ Nouvelle catégorie…</option>
+      </select>
+      <input type="text" id="f-hu-newcat" placeholder="Nom de la catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+    </div>
+    <div class="form-field"><label>Description courte</label><input type="text" id="f-hu-desc" placeholder="Apaisante, idéale en cas de stress..."></div>
+    <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5" placeholder="Propriétés, usages, précautions..."></textarea></div>
+    <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-hu-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveHuile()">✓ Ajouter</button>
+    </div>`);
+  _fillIntervenantSelect('f-hu-intervenant', null);
+}
+
+function saveHuile() {
+  var titre = document.getElementById('f-hu-titre').value.trim();
+  if (!titre) { showToast('⚠ Titre requis'); return; }
+  _contenuCreate('huile', {
+    titre: titre,
+    categorie: getCatValue('f-hu-cat','f-hu-newcat'),
+    description: document.getElementById('f-hu-desc').value,
+    contenu: document.getElementById('f-hu-contenu').value,
+    url_externe: document.getElementById('f-hu-url').value.trim(),
+    intervenant: document.getElementById('f-hu-intervenant').value,
+    icon: '🌿',
+    statut: 'active'
+  }, renderHuiles);
+}
+
+function editHuile(id) {
+  var h = (DB.huiles||[]).find(function(x){ return x.id === id; });
+  if (!h) return;
+  openModal('Modifier ' + h.titre, `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" value="${h.titre}"></div>
+    <div class="form-field"><label>Description</label><input type="text" id="f-hu-desc" value="${h.description||''}"></div>
+    <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
+    <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="updateHuile(${id})">✓ Enregistrer</button>
+    </div>`);
+}
+
+function updateHuile(id) {
+  var h = (DB.huiles||[]).find(function(x){ return x.id === id; });
+  if (!h) return;
+  var item = Object.assign({}, h, {
+    titre:       document.getElementById('f-hu-titre').value,
+    description: document.getElementById('f-hu-desc').value,
+    contenu:     document.getElementById('f-hu-contenu').value,
+    url_externe: document.getElementById('f-hu-url').value.trim()
+  });
+  if (h.db_id) { _contenuUpdate(h.db_id, 'huile', item, renderHuiles); return; }
+  Object.assign(h, item);
+  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderHuiles();
+  showToast('✓ Huile mise à jour');
+}
+
+function deleteHuile(id) {
+  if (!confirm('Supprimer cette huile essentielle ?')) return;
+  var h = (DB.huiles||[]).find(function(x){ return x.id === id; });
+  if (h && h.db_id) { _contenuDelete('huile', h.db_id, renderHuiles); return; }
+  _markDemoDeleted('huiles', id);
+  DB.huiles = (DB.huiles||[]).filter(function(x){ return x.id !== id; });
+  saveDB(DB); renderAdmin(currentAdminTab);
+  showToast('✓ Huile supprimée');
+}
+
+/* ════════════════════════════════════════════
+   RECETTES
+════════════════════════════════════════════ */
+var currentRecetteCat = 'all';
+function filterRecette(cat) { currentRecetteCat = cat; renderRecettes(); }
+
+function renderRecettes() {
+  var grid = document.getElementById('recettes-grid');
+  if (!grid) return;
+  var all = (DB.recettes||[]).filter(function(r){ return r.actif !== false; });
+  var catsEl = document.getElementById('recettes-cats');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentRecetteCat, 'filterRecette');
+  var list = currentRecetteCat === 'all' ? all : all.filter(function(r){ return r.categorie === currentRecetteCat; });
+  if (!list.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucune recette disponible.<br><span style="font-size:.65rem">Ajoutez du contenu depuis Administration.</span></div>';
+    return;
+  }
+  grid.innerHTML = '<div class="audio-grid">' + list.map(function(r) {
+    return '<div class="audio-card" onclick="openRecette(' + r.id + ')">'
+      + _cardHeader(r, {icon: '🥗'})
+      + '<div class="audio-title">' + r.titre + '</div>'
+      + '<div class="audio-meta"><span>' + (r.categorie||'recette') + '</span>'
+      + (r.duree ? '<span class="audio-duration">' + r.duree + '</span>' : '') + '</div>'
+      + (r.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + r.description + '</div>' : '')
+      + _invBadge(r.intervenant)
+      + '<button class="audio-play-btn">🥗 Voir la recette</button>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+function openRecette(id) {
+  var r = (DB.recettes||[]).find(function(x){ return x.id === id; });
+  if (!r) return;
+  logPlay('recette', r.titre, r.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
+  awardPoints('recette', r.titre);
+  var body = '<div class="audio-title" style="font-size:1.1rem;margin-bottom:.5rem">' + r.titre + '</div>'
+    + (r.description ? '<p style="font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:1rem">' + r.description + '</p>' : '')
+    + (r.contenu ? '<div style="font-size:.82rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + r.contenu + '</div>' : '')
+    + (r.url_externe ? '<a href="' + r.url_externe + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:rgba(202,138,4,.1);border:1px solid rgba(202,138,4,.2);border-radius:10px;color:#ca8a04;font-size:.75rem;font-weight:600;text-decoration:none">🔗 Voir la recette complète</a>' : '');
+  openModal(r.titre, body);
+}
+
+function openAddRecette() {
+  openModal('Ajouter une recette', `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" placeholder="Smoothie vert énergie"></div>
+    <div class="form-field"><label>Catégorie</label>
+      <select id="f-re-cat" onchange="toggleNewCat('f-re-cat','f-re-newcat')">
+        <option value="energie">Énergie</option>
+        <option value="immunite">Immunité</option>
+        <option value="digestion">Digestion</option>
+        <option value="sommeil">Sommeil</option>
+        <option value="anti-stress">Anti-stress</option>
+        <option value="snack">Snack sain</option>
+        <option value="__new__">+ Nouvelle catégorie…</option>
+      </select>
+      <input type="text" id="f-re-newcat" placeholder="Nom de la catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+    </div>
+    <div class="form-field"><label>Durée de préparation</label><input type="text" id="f-re-duree" placeholder="5 min"></div>
+    <div class="form-field"><label>Description courte</label><input type="text" id="f-re-desc" placeholder="Idéal pour le coup de barre de 15h..."></div>
+    <div class="form-field"><label>Contenu / Ingrédients & préparation</label><textarea id="f-re-contenu" rows="6" placeholder="Ingrédients :&#10;- ...&#10;&#10;Préparation :&#10;1. ..."></textarea></div>
+    <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-re-url" placeholder="https://..."></div>
+    <div class="form-field"><label>Intervenant</label>
+      <select id="f-re-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">— Aucun —</option>
+      </select></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveRecette()">✓ Ajouter</button>
+    </div>`);
+  _fillIntervenantSelect('f-re-intervenant', null);
+}
+
+function saveRecette() {
+  var titre = document.getElementById('f-re-titre').value.trim();
+  if (!titre) { showToast('⚠ Titre requis'); return; }
+  _contenuCreate('recette', {
+    titre: titre,
+    categorie: getCatValue('f-re-cat','f-re-newcat'),
+    duree: document.getElementById('f-re-duree').value || '',
+    description: document.getElementById('f-re-desc').value,
+    contenu: document.getElementById('f-re-contenu').value,
+    url_externe: document.getElementById('f-re-url').value.trim(),
+    intervenant: document.getElementById('f-re-intervenant').value,
+    icon: '🥗',
+    statut: 'active'
+  }, renderRecettes);
+}
+
+function editRecette(id) {
+  var r = (DB.recettes||[]).find(function(x){ return x.id === id; });
+  if (!r) return;
+  openModal('Modifier ' + r.titre, `
+    <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" value="${r.titre}"></div>
+    <div class="form-field"><label>Durée</label><input type="text" id="f-re-duree" value="${r.duree||''}"></div>
+    <div class="form-field"><label>Description</label><input type="text" id="f-re-desc" value="${r.description||''}"></div>
+    <div class="form-field"><label>Contenu / Ingrédients & préparation</label><textarea id="f-re-contenu" rows="6">${r.contenu||''}</textarea></div>
+    <div class="form-field"><label>URL externe</label><input type="text" id="f-re-url" value="${r.url_externe||''}"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="updateRecette(${id})">✓ Enregistrer</button>
+    </div>`);
+}
+
+function updateRecette(id) {
+  var r = (DB.recettes||[]).find(function(x){ return x.id === id; });
+  if (!r) return;
+  var item = Object.assign({}, r, {
+    titre:       document.getElementById('f-re-titre').value,
+    duree:       document.getElementById('f-re-duree').value,
+    description: document.getElementById('f-re-desc').value,
+    contenu:     document.getElementById('f-re-contenu').value,
+    url_externe: document.getElementById('f-re-url').value.trim()
+  });
+  if (r.db_id) { _contenuUpdate(r.db_id, 'recette', item, renderRecettes); return; }
+  Object.assign(r, item);
+  saveDB(DB); closeModal(); renderAdmin(currentAdminTab); renderRecettes();
+  showToast('✓ Recette mise à jour');
+}
+
+function deleteRecette(id) {
+  if (!confirm('Supprimer cette recette ?')) return;
+  var r = (DB.recettes||[]).find(function(x){ return x.id === id; });
+  if (r && r.db_id) { _contenuDelete('recette', r.db_id, renderRecettes); return; }
+  _markDemoDeleted('recettes', id);
+  DB.recettes = (DB.recettes||[]).filter(function(x){ return x.id !== id; });
+  saveDB(DB); renderAdmin(currentAdminTab);
+  showToast('✓ Recette supprimée');
 }
 
 function openAddPodcast() { openModal('Nouveau podcast', _podcastForm(null)); _fillIntervenantSelect('f-pod-intervenant', null); }
