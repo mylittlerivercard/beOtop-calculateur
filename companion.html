@@ -8645,6 +8645,8 @@ function openRecette(id) {
   if (!r) return;
   logPlay('recette', r.titre, r.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   awardPoints('recette', r.titre);
+  if (r.photo)       { window.open('/static/' + r.photo, '_blank'); return; }
+  if (r.url_externe) { window.open(r.url_externe, '_blank'); return; }
   var body = '<div class="audio-title" style="font-size:1.1rem;margin-bottom:.5rem">' + r.titre + '</div>'
     + (r.description ? '<p style="font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:1rem">' + r.description + '</p>' : '')
     + (r.contenu ? '<div style="font-size:.82rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + r.contenu + '</div>' : '')
