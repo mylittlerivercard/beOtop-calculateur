@@ -1279,6 +1279,10 @@ async function loadRetributionAdmin() {
   } catch(e) {}
 
   var totalClics = stats.total_clics || 0;
+  // Dénominateur de la part = clics attribués à des intervenants (pas tous les clics)
+  var totalClicsInterv = (stats.par_intervenant || []).reduce(function(acc, s){
+    return acc + ((s.intervenant && s.intervenant !== '(sans intervenant)') ? (parseInt(s.nb_clics) || 0) : 0);
+  }, 0);
   var allRows = [];
 
   /* Sites pour calcul CA */
@@ -1295,9 +1299,9 @@ async function loadRetributionAdmin() {
     var inv = invMeta[s.intervenant] || {};
     var taux = (inv.taux_contenu || 30) / 100;
     var estApporteur = inv.apporteur_affaire || false;
-    var pctClics = totalClics ? (s.nb_clics / totalClics * 100).toFixed(1) : '0.0';
+    var pctClics = totalClicsInterv ? (s.nb_clics / totalClicsInterv * 100).toFixed(1) : '0.0';
 
-    /* Calculer le CA depuis les sites avec tarif_annuel */
+    /* CA global beOtop = somme des sites companion actifs (tarif × salariés / 2) */
     var caTotal = 0;
     Object.values(sitesData).forEach(function(site) {
       if (site.has_companion && site.tarif_annuel > 0 && site.nb_salaries > 0) {
@@ -1305,8 +1309,9 @@ async function loadRetributionAdmin() {
       }
     });
 
-    var montantContenu = caTotal > 0
-      ? (caTotal * (s.nb_clics / totalClics) * taux).toFixed(2) + ' €'
+    /* Rétribution = part des clics intervenants × taux × CA global beOtop */
+    var montantContenu = (caTotal > 0 && totalClicsInterv)
+      ? (caTotal * (s.nb_clics / totalClicsInterv) * taux).toFixed(2) + ' €'
       : '— (tarifs non configurés)';
 
     var apportBadge = estApporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
@@ -1401,13 +1406,12 @@ async function loadRetributionAdmin() {
 async function cloturerSemestre() {
   var annee    = document.getElementById('ret-annee').value;
   var semestre = document.getElementById('ret-semestre').value;
-  var tarif    = parseFloat(document.getElementById('ret-tarif').value) || 0;
-  if (!tarif) { toast('Saisissez un tarif avant de clôturer'); return; }
-  if (!confirm('Clôturer S' + semestre + ' ' + annee + ' · tarif configuré par site ?')) return;
+  // Le CA global vient de la config des sites companion : plus de tarif manuel requis.
+  if (!confirm('Clôturer S' + semestre + ' ' + annee + ' · rétribution sur le CA global des sites companion ?')) return;
   var r = await fetch('/api/admin/retribution/calcul-semestre', {
     method: 'POST', credentials: 'include',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ annee: parseInt(annee), semestre: parseInt(semestre), tarif_par_utilisateur: tarif })
+    body: JSON.stringify({ annee: parseInt(annee), semestre: parseInt(semestre) })
   });
   var d = await r.json();
   if (d.ok) toast('✓ S' + semestre + ' ' + annee + ' clôturé · ' + d.lignes + ' lignes persistées');
