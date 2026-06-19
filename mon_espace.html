@@ -637,9 +637,10 @@ function renderAll(d) {
       + '</tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
-  // Table par site
+  // Table par site — répartition des clics uniquement.
+  // La rémunération se calcule globalement (part × 30% × CA global beOtop),
+  // pas site par site : plus de colonne « Rémunération estimée » ici.
   var sites = d.clics_par_site || [];
-  var tauxContenu = parseFloat(d.taux_contenu || 30) / 100;
   if (!sites.length) {
     document.getElementById('table-sites').innerHTML = '<div class="empty"><span class="empty-icon">🏢</span>Aucune donnée par site.</div>';
   } else {
@@ -647,10 +648,6 @@ function renderAll(d) {
       var pctSite    = r.nb_clics_total ? Math.round(r.nb_clics_inv / r.nb_clics_total * 100) : 0;
       var tarifAnnuel = parseFloat(r.tarif_annuel || 0);
       var nbSalaries  = parseInt(r.nb_salaries || 0);
-      var caAnnuel    = tarifAnnuel > 0 && nbSalaries > 0 ? tarifAnnuel * nbSalaries : 0;
-      var caSemestre  = caAnnuel / 2;
-      /* Rémunération estimée = CA semestriel × part clics × taux contenu */
-      var remunEstimee = caSemestre > 0 ? (caSemestre * (pctSite / 100) * tauxContenu).toFixed(2) : null;
       return '<tr>'
         + '<td style="font-weight:500">' + (r.site_slug || '—') + '</td>'
         + '<td><strong>' + r.nb_clics_inv + '</strong> / ' + r.nb_clics_total + '</td>'
@@ -658,14 +655,12 @@ function renderAll(d) {
         + '<div class="bar-wrap"><div class="bar-fill coral" style="width:' + Math.min(pctSite,100) + '%"></div></div></td>'
         + '<td style="text-align:center">' + (tarifAnnuel > 0 ? tarifAnnuel + ' €/an' : '—') + '</td>'
         + '<td style="text-align:center">' + (nbSalaries > 0 ? nbSalaries + ' emp.' : '—') + '</td>'
-        + '<td style="text-align:center;font-weight:600;color:var(--teal)">' + (remunEstimee ? remunEstimee + ' €' : '—') + '</td>'
         + '</tr>';
     }).join('');
     document.getElementById('table-sites').innerHTML = '<table><thead><tr>'
       + '<th>Site</th><th>Mes clics / Total</th><th>Part sur ce site</th>'
       + '<th style="text-align:center">Tarif annuel</th>'
       + '<th style="text-align:center">Employés déclarés</th>'
-      + '<th style="text-align:center">Rémunération estimée S</th>'
       + '</tr></thead><tbody>' + rows2 + '</tbody></table>';
   }
 
