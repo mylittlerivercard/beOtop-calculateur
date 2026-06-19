@@ -2,3 +2,4 @@ Flask
 Flask-CORS
 gunicorn
 psycopg2-binary
+anthropic

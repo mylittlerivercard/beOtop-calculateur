@@ -1565,6 +1565,125 @@ def get_stats():
         '_kanon_k': K_ANONYMAT,
     })
 
+# ========== RAPPORT NARRATIF IA ==========
+
+PERIODE_LABELS = {
+    'today': "Aujourd'hui",
+    'week':  '7 jours',
+    'month': '30 jours',
+    'ytd':   'Depuis janvier',
+    'q1':    '1er trimestre',
+    'q2':    '2e trimestre',
+    'q3':    '3e trimestre',
+    'q4':    '4e trimestre',
+}
+
+@app.route('/api/dashboard/rapport-data', methods=['GET'])
+@login_required
+def dashboard_rapport_data():
+    site_slug = request.args.get('site_slug', '') or None
+    periode   = request.args.get('periode', 'month')
+    if periode not in PERIODE_LABELS:
+        periode = 'month'
+    periode_label = PERIODE_LABELS[periode]
+
+    date_clause = build_date_clause(periode)
+    site_clause, site_params = get_site_filter(site_slug)
+    where = f"WHERE {date_clause} AND {site_clause}"
+
+    total = 0
+    by_dept = []
+    by_mood = []
+    by_hour = []
+    atelier_count = {}
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f'SELECT COUNT(*) AS n FROM sessions {where}', site_params)
+                total = cur.fetchone()['n']
+                cur.execute(f"SELECT departement AS label, COUNT(*) AS n FROM sessions {where} AND departement != '' GROUP BY departement ORDER BY n DESC LIMIT 8", site_params)
+                by_dept = cur.fetchall()
+                cur.execute(f"SELECT mood, COUNT(*) AS n FROM sessions {where} AND mood != '' GROUP BY mood ORDER BY n DESC", site_params)
+                by_mood = cur.fetchall()
+                cur.execute(f"SELECT EXTRACT(HOUR FROM heure)::int AS h, COUNT(*) AS n FROM sessions {where} GROUP BY h ORDER BY n DESC LIMIT 3", site_params)
+                by_hour = cur.fetchall()
+                cur.execute(f"SELECT ateliers FROM sessions {where} AND ateliers != ''", site_params)
+                for row in cur.fetchall():
+                    for a in (row['ateliers'] or '').split(', '):
+                        a = a.strip()
+                        if a:
+                            atelier_count[a] = atelier_count.get(a, 0) + 1
+    except Exception as e:
+        return jsonify({'ok': False, 'error': "Erreur d'agrégation des données : " + str(e)}), 500
+
+    if not total:
+        return jsonify({
+            'ok': True,
+            'periode_label': periode_label,
+            'total_seances': 0,
+            'rapport': f"Aucune séance n'a été enregistrée sur la période analysée ({periode_label}). "
+                       "Dès que des collaborateurs utiliseront l'espace beOtop, leur activité alimentera "
+                       "automatiquement ce rapport.",
+        })
+
+    top_ateliers = sorted(atelier_count.items(), key=lambda x: -x[1])[:6]
+
+    lignes = [
+        f"Site : {site_slug or 'tous les sites'}",
+        f"Période analysée : {periode_label}",
+        f"Nombre total de séances enregistrées : {total}",
+    ]
+    if by_dept:
+        lignes.append("Répartition par département : " + ", ".join(f"{r['label']} ({r['n']})" for r in by_dept))
+    if top_ateliers:
+        lignes.append("Ateliers les plus utilisés : " + ", ".join(f"{a} ({n})" for a, n in top_ateliers))
+    if by_mood:
+        lignes.append("Ressenti déclaré (kiosque) : " + ", ".join(f"{r['mood']} ({r['n']})" for r in by_mood))
+    if by_hour:
+        lignes.append("Heures de plus forte fréquentation : " + ", ".join(f"{r['h']}h ({r['n']} séances)" for r in by_hour))
+    data_str = "\n".join(lignes)
+
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        return jsonify({'ok': False, 'error': "Clé API IA non configurée sur le serveur (variable ANTHROPIC_API_KEY)."}), 500
+    try:
+        import anthropic
+    except ImportError:
+        return jsonify({'ok': False, 'error': "Bibliothèque 'anthropic' non installée sur le serveur (pip install anthropic)."}), 500
+
+    system_prompt = (
+        "Tu es analyste Qualité de Vie et Conditions de Travail (QVCT) pour beOtop, spécialiste "
+        "du bien-être au travail. Tu rédiges en français une synthèse narrative claire et "
+        "professionnelle à destination des responsables RH et de la CSSCT. Base-toi UNIQUEMENT "
+        "sur les données fournies, sans inventer de chiffres ni de tendances non étayées. "
+        "Structure attendue : un paragraphe d'introduction situant la période, deux à trois "
+        "paragraphes d'analyse (fréquentation, ateliers phares, ressenti des collaborateurs), "
+        "puis une conclusion avec des recommandations concrètes. Ton factuel et bienveillant. "
+        "N'utilise pas de titres ni de markdown : uniquement des paragraphes séparés par une ligne vide."
+    )
+    user_prompt = (
+        "Rédige un rapport de synthèse basé sur ces données d'utilisation de l'espace beOtop "
+        "sur la période : " + periode_label + "\n\n" + data_str
+    )
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=2000,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+        rapport = "".join(b.text for b in msg.content if b.type == "text").strip()
+    except Exception as e:
+        return jsonify({'ok': False, 'error': "Erreur lors de l'appel à l'IA : " + str(e)}), 502
+
+    return jsonify({
+        'ok': True,
+        'rapport': rapport,
+        'periode_label': periode_label,
+        'total_seances': total,
+    })
+
 @app.route('/api/sessions', methods=['GET'])
 @login_required
 def get_sessions():

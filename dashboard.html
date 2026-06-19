@@ -524,6 +524,15 @@
       <div style="font-size:.58rem;color:var(--muted);margin-bottom:.9rem">Quel atelier génère quel ressenti · base : sessions kiosque déclaratives</div>
       <div class="am-heatmap-wrap" id="q-atelier-mood-heatmap"></div>
     </div>
+    <div class="card" style="margin-top:1rem;margin-bottom:1rem">
+      <div class="card-title">&#10024; Rapport narratif IA</div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem">
+        <button id="btn-generer-rapport" class="btn-apply" style="margin-top:0" onclick="genererRapport()">&#10024; Générer le rapport IA</button>
+        <div id="rapport-ia-sub" style="font-size:.6rem;color:var(--muted)">Synthèse de l'activité beOtop générée par intelligence artificielle</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--muted);margin-bottom:.9rem">Analyse rédigée à partir des données agrégées de la période sélectionnée · k-anonymat respecté · données beOtop</div>
+      <div id="rapport-ia-zone" style="font-size:.74rem;line-height:1.6;color:var(--text)"><div class="sensor-empty">Cliquez sur « Générer le rapport IA » pour produire une synthèse narrative de l'activité QVCT sur la période sélectionnée.</div></div>
+    </div>
   </div>
 
 <!-- ═══ DISPONIBILITÉ TEMPS RÉEL ═══ -->
@@ -991,6 +1000,32 @@ function buildQvctBar(){
   sel.value=qvctPeriod;sel.onchange=function(){qvctPeriod=this.value;loadQvct();};bar.appendChild(sel);
   var pdfBtn=document.createElement('button');pdfBtn.setAttribute('onclick','exportQVCTPDF()');pdfBtn.style.cssText='padding:6px 14px;border-radius:8px;border:none;background:#028090;color:white;font-size:.8rem;font-weight:500;cursor:pointer;margin-left:auto';pdfBtn.textContent='⬇ PDF';bar.appendChild(pdfBtn);
   loadEffInp();
+}
+function escapeRapport(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function genererRapport(){
+  var btn=document.getElementById('btn-generer-rapport');
+  var zone=document.getElementById('rapport-ia-zone');
+  var sub=document.getElementById('rapport-ia-sub');
+  var slug=qvctSite||'';
+  if(!slug){zone.innerHTML='<div class="sensor-empty">Sélectionnez un site avant de générer le rapport.</div>';return;}
+  var periodeSelect=document.querySelector('#qvct-site-bar .period-sel');
+  var periode=periodeSelect?periodeSelect.value:qvctPeriod;
+  var periodeLabel=periodeSelect?periodeSelect.options[periodeSelect.selectedIndex].text:periode;
+  sub.textContent='Période analysée : '+periodeLabel;
+  var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Génération en cours…';
+  zone.innerHTML='<div class="sensor-empty">Analyse des données et rédaction par l\'IA… (quelques secondes)</div>';
+  try{
+    var resp=await fetch('/api/dashboard/rapport-data?site_slug='+encodeURIComponent(slug)+'&periode='+encodeURIComponent(periode),{credentials:'include'});
+    var d=await resp.json();
+    if(!resp.ok||!d.ok){throw new Error((d&&d.error)||('Erreur serveur ('+resp.status+')'));}
+    var html=(d.rapport||'').split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p style="margin:0 0 .8rem">'+escapeRapport(p.trim()).replace(/\n/g,'<br>')+'</p>';}).join('');
+    zone.innerHTML=html||'<div class="sensor-empty">Aucun contenu généré.</div>';
+    if(d.periode_label)sub.textContent='Période analysée : '+d.periode_label;
+  }catch(e){
+    zone.innerHTML='<div class="sensor-empty">Impossible de générer le rapport : '+escapeRapport(e.message||'erreur inconnue')+'</div>';
+  }finally{
+    btn.disabled=false;btn.textContent=old;
+  }
 }
 
 async function loadQvct(){
