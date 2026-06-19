@@ -729,7 +729,7 @@ function renderAll(d) {
   var totalGlobal    = Math.round((totalContenu + totalApportNum) * 100) / 100;
   var recap = document.getElementById('recap-annuel');
   if (recap) {
-    recap.style.display = totalContenu > 0 || totalApportNum > 0 ? '' : 'none';
+    recap.style.display = '';  // toujours visible pour tous les intervenants, même avec 0 clic / 0 €
     document.getElementById('recap-contenu').textContent       = totalContenu > 0 ? totalContenu.toFixed(2) + ' €' : '—';
     document.getElementById('recap-contenu-detail').textContent = totalContenu > 0 ? parseFloat(d.pct_global||0) + '% × ' + parseFloat(d.taux_contenu||30) + '% du CA sites' : 'Tarifs non configurés';
     document.getElementById('recap-apport').textContent        = totalApportNum > 0 ? totalApportNum.toFixed(2) + ' €' : '—';
