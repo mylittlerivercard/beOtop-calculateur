@@ -1292,6 +1292,14 @@ async function loadRetributionAdmin() {
     (sitesResp || []).forEach(function(s){ sitesData[s.slug] = s; });
   } catch(e) {}
 
+  /* CA global beOtop = somme des sites companion actifs (tarif × salariés / 2) — identique pour tous */
+  var caGlobal = 0;
+  Object.values(sitesData).forEach(function(site) {
+    if (site.has_companion && site.tarif_annuel > 0 && site.nb_salaries > 0) {
+      caGlobal += parseFloat(site.tarif_annuel) * parseInt(site.nb_salaries) / 2;
+    }
+  });
+
   (stats.par_intervenant || []).forEach(function(s) {
     /* Exclure (sans intervenant) */
     if (!s.intervenant || s.intervenant === '(sans intervenant)') return;
@@ -1301,24 +1309,16 @@ async function loadRetributionAdmin() {
     var estApporteur = inv.apporteur_affaire || false;
     var pctClics = totalClicsInterv ? (s.nb_clics / totalClicsInterv * 100).toFixed(1) : '0.0';
 
-    /* CA global beOtop = somme des sites companion actifs (tarif × salariés / 2) */
-    var caTotal = 0;
-    Object.values(sitesData).forEach(function(site) {
-      if (site.has_companion && site.tarif_annuel > 0 && site.nb_salaries > 0) {
-        caTotal += parseFloat(site.tarif_annuel) * parseInt(site.nb_salaries) / 2;
-      }
-    });
-
     /* Rétribution = part des clics intervenants × taux × CA global beOtop */
-    var montantContenu = (caTotal > 0 && totalClicsInterv)
-      ? (caTotal * (s.nb_clics / totalClicsInterv) * taux).toFixed(2) + ' €'
+    var montantContenu = (caGlobal > 0 && totalClicsInterv)
+      ? (caGlobal * (s.nb_clics / totalClicsInterv) * taux).toFixed(2) + ' €'
       : '— (tarifs non configurés)';
 
     var apportBadge = estApporteur ? '<span style="font-size:.58rem;padding:.15rem .5rem;background:rgba(160,104,32,.12);border-radius:6px;color:#a06820;margin-left:.3rem">apporteur</span>' : '';
     allRows.push({
       nom: s.intervenant, apportBadge: apportBadge,
       nb_clics: s.nb_clics, pct: pctClics + '%',
-      site: 'tous sites', ca: caTotal > 0 ? caTotal.toFixed(2) + ' €' : '—',
+      site: 'tous sites', ca: caGlobal > 0 ? caGlobal.toFixed(2) + ' €' : '—',
       contenu: montantContenu,
       apport: estApporteur ? '—' : '—',
       total: '—',
@@ -1331,7 +1331,7 @@ async function loadRetributionAdmin() {
 
   document.getElementById('ret-result-title').textContent = 'S' + semestre + ' ' + annee + ' · ' + totalClics + ' clics totaux';
   document.getElementById('ret-summary').innerHTML =
-    '<div style="font-size:.72rem"><strong>' + allRows.length + '</strong> lignes · <strong>' + totalClics + '</strong> clics · tarif <strong>' + (tarif || '?') + ' €</strong>/an/employé — via sites</div>';
+    '<div style="font-size:.72rem"><strong>' + allRows.length + '</strong> lignes · <strong>' + totalClicsInterv + '</strong> clics intervenants · CA global beOtop <strong>' + caGlobal.toFixed(2) + ' €</strong> — sites companion</div>';
 
   var tbl = document.getElementById('ret-table');
   tbl.innerHTML = '<tr><th>Intervenant</th><th>Clics</th><th>% Global</th><th>Site</th><th>CA site (€)</th><th>Part contenu (€)</th></tr>';
