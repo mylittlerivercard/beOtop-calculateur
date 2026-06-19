@@ -210,6 +210,52 @@ tr:hover td { background: var(--surface2); }
   border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1.5rem;
   line-height: 1.6;
 }
+
+/* ── MES CONTENUS (CRUD intervenant) ── */
+.mc-addbar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.mc-btn {
+  padding: .45rem .9rem; border-radius: 10px; border: 1px solid var(--teal-border);
+  background: var(--teal-dim); color: var(--teal); font-size: .78rem; font-weight: 500;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.mc-btn:hover { background: var(--teal); color: #fff; transform: translateY(-1px); }
+.mc-tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
+.mc-tab {
+  padding: .4rem .85rem; border-radius: 20px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text-muted); font-size: .72rem;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.mc-tab:hover { border-color: var(--teal); }
+.mc-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+.mc-act {
+  background: rgba(0,180,180,.08); border: 1px solid var(--border2);
+  border-radius: 7px; padding: .2rem .55rem; font-size: .82rem;
+  cursor: pointer; color: var(--text-dim); transition: all .2s;
+}
+.mc-act:hover { background: var(--teal-dim); }
+.mc-act.del { color: var(--coral-dark); }
+.mc-act.del:hover { background: rgba(245,133,90,.12); }
+
+/* ── MODALE FORMULAIRE ── */
+.mc-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
+.mc-box {
+  background: #fff; border-radius: 16px; width: min(520px,92vw); max-height: 88vh;
+  overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25); padding: 1.5rem;
+}
+.mc-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.mc-modal-head strong { font-size: 1rem; }
+.mc-modal-head button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; line-height: 1; }
+.form-field { margin-bottom: .8rem; }
+.form-field label { display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: .3rem; }
+.form-field input, .form-field textarea {
+  width: 100%; box-sizing: border-box; padding: .6rem .8rem;
+  border: 1px solid var(--border2); border-radius: 9px; font-size: .85rem;
+  font-family: inherit; color: var(--text); background: var(--surface); outline: none; resize: vertical;
+}
+.form-field input:focus, .form-field textarea:focus { border-color: var(--teal); }
+.mc-modal-actions { display: flex; gap: .6rem; margin-top: 1.2rem; }
+.mc-cancel { flex: 1; padding: .7rem; border: 1px solid var(--border2); border-radius: 9px; background: transparent; color: var(--text-muted); font-size: .85rem; cursor: pointer; font-family: inherit; }
+.mc-save { flex: 2; padding: .7rem; border: none; border-radius: 9px; background: linear-gradient(135deg, var(--teal), #00d4d4); color: #fff; font-size: .85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -262,6 +308,26 @@ tr:hover td { background: var(--surface2); }
     </div>
     <div style="font-size:.8rem;color:var(--teal);font-weight:600">Ouvrir →</div>
   </a>
+
+  <!-- MES CONTENUS · CRUD filtré par auteur -->
+  <div id="mc-section" style="display:none;margin-bottom:2rem">
+    <div class="section-title">Mes contenus · gestion</div>
+    <div class="note">
+      ✏️ Gérez ici vos propres contenus Companion (Audio, Vidéo, Exercice, Défi cognitif, Podcast, Huile essentielle, Recette).
+      Vous ne voyez et ne modifiez que les contenus publiés sous votre nom — <strong id="mc-nom-label"></strong>.
+    </div>
+    <div class="mc-addbar">
+      <button class="mc-btn" onclick="openAddAudio()">+ Audio</button>
+      <button class="mc-btn" onclick="openAddExercice()">+ Exercice</button>
+      <button class="mc-btn" onclick="openAddDefi()">+ Défi cognitif</button>
+      <button class="mc-btn" onclick="openAddPodcast()">+ Podcast</button>
+      <button class="mc-btn" onclick="openAddVideo()">+ Vidéo</button>
+      <button class="mc-btn" onclick="openAddHuile()">+ Huile essentielle</button>
+      <button class="mc-btn" onclick="openAddRecette()">+ Recette</button>
+    </div>
+    <div id="mc-tabs" class="mc-tabs"></div>
+    <div class="table-wrap" id="mc-table"><div class="empty">Chargement…</div></div>
+  </div>
 
   <!-- SÉLECTEUR PÉRIODE -->
   <div class="periode-bar">
@@ -382,6 +448,17 @@ tr:hover td { background: var(--surface2); }
     <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:.7rem;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;margin-top:.5rem">
     <div id="pwd-msg" style="font-size:.78rem;margin-top:.6rem;min-height:1rem"></div>
     <button onclick="submitPwd()" style="width:100%;margin-top:.4rem;padding:.7rem;border:none;border-radius:8px;background:#028090;color:#fff;font-size:.9rem;cursor:pointer">Valider</button>
+  </div>
+</div>
+
+<!-- MODALE FORMULAIRE CONTENU -->
+<div id="mc-modal" class="mc-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="mc-box">
+    <div class="mc-modal-head">
+      <strong id="mc-modal-title"></strong>
+      <button onclick="closeModal()" aria-label="Fermer">&times;</button>
+    </div>
+    <div id="mc-modal-body"></div>
   </div>
 </div>
 
@@ -658,10 +735,241 @@ function renderAll(d) {
     document.getElementById('recap-apport').textContent        = totalApportNum > 0 ? totalApportNum.toFixed(2) + ' €' : '—';
     document.getElementById('recap-total').textContent         = totalGlobal > 0 ? totalGlobal.toFixed(2) + ' €' : '—';
   }
+
+  // Activer la gestion « Mes contenus » dès que l'identité est connue
+  mcOnIdentity(inv.nom || '');
 }
 
 // Chargement initial
 loadStats();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   MES CONTENUS — CRUD complet filtré par auteur (intervenant connecté)
+   S'appuie sur les endpoints REST génériques /api/companion/<type>.
+   Le serveur rattache automatiquement l'intervenant connecté à la
+   création (server.py · _create) ; on filtre l'affichage et on verrouille
+   le champ intervenant côté formulaire pour cohérence.
+══════════════════════════════════════════════════════════════════ */
+
+var MC_NOM     = '';      // nom de l'intervenant connecté
+var MC_CURRENT = 'audios';// onglet actif
+var MC_CACHE   = {};      // ep -> contenus (déjà filtrés sur l'auteur)
+
+var MC_TYPES = [
+  { ep: 'audios',    cap: 'Audio',    label: 'Audios',              emoji: '🎵' },
+  { ep: 'videos',    cap: 'Video',    label: 'Vidéos',              emoji: '🎬' },
+  { ep: 'exercices', cap: 'Exercice', label: 'Exercices',           emoji: '🧘' },
+  { ep: 'defis',     cap: 'Defi',     label: 'Défis cognitifs',     emoji: '🧠' },
+  { ep: 'podcasts',  cap: 'Podcast',  label: 'Podcasts',            emoji: '🎙️' },
+  { ep: 'huiles',    cap: 'Huile',    label: 'Huiles essentielles', emoji: '🌿' },
+  { ep: 'recettes',  cap: 'Recette',  label: 'Recettes',            emoji: '🥗' }
+];
+
+/* Champs de formulaire par type (alignés sur les colonnes serveur). */
+var MC_FIELDS = {
+  audios: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'duree', l: 'Durée', ph: '20 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🎵' },
+    { k: 'photo', l: 'Photo (fichier dans /static/)', ph: 'binaural.jpg' },
+    { k: 'description', l: 'Description' },
+    { k: 'url_audio', l: 'URL audio (YouTube/Vimeo embed)', ph: 'https://www.youtube.com/embed/...' }
+  ],
+  videos: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'duree', l: 'Durée', ph: '10 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🎬' },
+    { k: 'description', l: 'Description' },
+    { k: 'url_video', l: 'URL vidéo (YouTube/Vimeo embed)', ph: 'https://www.youtube.com/embed/...' }
+  ],
+  exercices: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'indication', l: 'Indication', ph: 'Douleurs nuque · Bureau' },
+    { k: 'duree', l: 'Durée', ph: '5 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🧘' },
+    { k: 'description', l: 'Description' }
+  ],
+  defis: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'duree', l: 'Durée' }, { k: 'icon', l: 'Icône (emoji)', ph: '🧠' },
+    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'description', l: 'Description', el: 'textarea' },
+    { k: 'url_audio', l: 'URL audio (optionnel)' }
+  ],
+  podcasts: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'duree', l: 'Durée' }, { k: 'icon', l: 'Icône (emoji)', ph: '🎙️' },
+    { k: 'type_url', l: 'Type d\'URL', ph: 'externe / embed' }, { k: 'url', l: 'URL' },
+    { k: 'description', l: 'Description', el: 'textarea' }
+  ],
+  huiles: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'icon', l: 'Icône (emoji)', ph: '🌿' }, { k: 'description', l: 'Description courte' },
+    { k: 'contenu', l: 'Contenu détaillé', el: 'textarea' },
+    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'url_video', l: 'URL vidéo (YouTube embed)' },
+    { k: 'url_externe', l: 'URL externe (optionnel)' }
+  ],
+  recettes: [
+    { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
+    { k: 'duree', l: 'Durée de préparation', ph: '5 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🥗' },
+    { k: 'description', l: 'Description courte' },
+    { k: 'contenu', l: 'Ingrédients & préparation', el: 'textarea' },
+    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'url_externe', l: 'URL externe (optionnel)' }
+  ]
+};
+
+function mcType(ep) { return MC_TYPES.filter(function(t){ return t.ep === ep; })[0]; }
+function mcAttr(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function mcText(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── Modale générique ── */
+function openModal(title, html) {
+  document.getElementById('mc-modal-title').textContent = title;
+  document.getElementById('mc-modal-body').innerHTML = html;
+  document.getElementById('mc-modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('mc-modal').style.display = 'none'; }
+
+/* ── Formulaire ── */
+function mcFormHtml(ep, item) {
+  item = item || {};
+  var html = MC_FIELDS[ep].map(function(f) {
+    var val = item[f.k] == null ? '' : item[f.k];
+    var ph  = f.ph ? mcAttr(f.ph) : '';
+    if (f.el === 'textarea') {
+      return '<div class="form-field"><label>' + f.l + '</label>'
+        + '<textarea id="mcf-' + f.k + '" rows="5" placeholder="' + ph + '">' + mcText(val) + '</textarea></div>';
+    }
+    return '<div class="form-field"><label>' + f.l + '</label>'
+      + '<input type="text" id="mcf-' + f.k + '" value="' + mcAttr(val) + '" placeholder="' + ph + '"></div>';
+  }).join('');
+  // Champ intervenant pré-rempli et NON modifiable : un intervenant ne peut
+  // pas publier sous le nom d'un autre.
+  html += '<div class="form-field"><label>Intervenant (vous · non modifiable)</label>'
+    + '<input type="text" value="' + mcAttr(MC_NOM) + '" readonly disabled style="background:var(--surface2);cursor:not-allowed"></div>';
+  return html;
+}
+
+function mcOpenAdd(ep) {
+  var t = mcType(ep);
+  openModal('Ajouter — ' + t.label, mcFormHtml(ep, null)
+    + '<div class="mc-modal-actions"><button class="mc-cancel" onclick="closeModal()">Annuler</button>'
+    + '<button class="mc-save" onclick="mcSave(\'' + ep + '\',null)">✓ Ajouter</button></div>');
+}
+
+function mcOpenEdit(ep, id) {
+  var item = (MC_CACHE[ep] || []).filter(function(x){ return x.id === id; })[0];
+  if (!item) return;
+  openModal('Modifier — ' + (item.titre || ''), mcFormHtml(ep, item)
+    + '<div class="mc-modal-actions"><button class="mc-cancel" onclick="closeModal()">Annuler</button>'
+    + '<button class="mc-save" onclick="mcSave(\'' + ep + '\',' + id + ')">✓ Enregistrer</button></div>');
+}
+
+function mcSave(ep, id) {
+  var titreEl = document.getElementById('mcf-titre');
+  if (!titreEl || !titreEl.value.trim()) { showToast('⚠ Titre requis'); return; }
+  var body = { site_slug: '', intervenant: MC_NOM };
+  MC_FIELDS[ep].forEach(function(f) {
+    var el = document.getElementById('mcf-' + f.k);
+    body[f.k] = el ? el.value.trim() : '';
+  });
+  body.intervenant = MC_NOM;  // verrouillé sur l'intervenant connecté
+  var url = '/api/companion/' + ep + (id ? ('/' + id) : '');
+  fetch(url, {
+    method: id ? 'PUT' : 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  })
+  .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+  .then(function(res){
+    if (!res.ok) { showToast('⚠ ' + ((res.b && res.b.error) || 'Erreur d\'enregistrement')); return; }
+    closeModal();
+    showToast(id ? '✓ Contenu mis à jour' : '✓ Contenu ajouté');
+    mcLoad(ep, function(){ mcRenderTable(ep); });
+  })
+  .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
+function mcDelete(ep, id) {
+  if (!confirm('Supprimer ce contenu ?')) return;
+  fetch('/api/companion/' + ep + '/' + id, { method: 'DELETE', credentials: 'include' })
+  .then(function(r){ return r.json().then(function(b){ return { ok: r.ok, b: b }; }); })
+  .then(function(res){
+    if (!res.ok) { showToast('⚠ ' + ((res.b && res.b.error) || 'Erreur')); return; }
+    showToast('✓ Contenu supprimé');
+    mcLoad(ep, function(){ mcRenderTable(ep); });
+  })
+  .catch(function(){ showToast('⚠ Erreur réseau'); });
+}
+
+/* ── Chargement filtré strictement sur l'intervenant connecté ── */
+function mcLoad(ep, cb) {
+  fetch('/api/companion/' + ep, { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(function(d){
+      var rows = (d[ep] || []).filter(function(x){ return (x.intervenant || '') === MC_NOM; });
+      MC_CACHE[ep] = rows;
+      if (cb) cb();
+    })
+    .catch(function(){ MC_CACHE[ep] = MC_CACHE[ep] || []; if (cb) cb(); });
+}
+
+/* ── Rendu ── */
+function mcRenderTabs() {
+  var el = document.getElementById('mc-tabs');
+  if (!el) return;
+  el.innerHTML = MC_TYPES.map(function(t){
+    return '<button class="mc-tab' + (t.ep === MC_CURRENT ? ' active' : '') + '" onclick="mcSwitch(\'' + t.ep + '\')">' + t.label + '</button>';
+  }).join('');
+}
+
+function mcSwitch(ep) {
+  MC_CURRENT = ep;
+  mcRenderTabs();
+  if (MC_CACHE[ep]) mcRenderTable(ep);
+  else { document.getElementById('mc-table').innerHTML = '<div class="empty">Chargement…</div>'; mcLoad(ep, function(){ mcRenderTable(ep); }); }
+}
+
+function mcRenderTable(ep) {
+  if (ep !== MC_CURRENT) return;  // onglet changé pendant le fetch
+  var t = mcType(ep), wrap = document.getElementById('mc-table');
+  var rows = MC_CACHE[ep] || [];
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="empty"><span class="empty-icon">' + t.emoji + '</span>'
+      + 'Aucun contenu de ce type. Cliquez sur « + ' + t.label + ' » pour en ajouter.</div>';
+    return;
+  }
+  var body = rows.map(function(r){
+    return '<tr>'
+      + '<td style="font-weight:500">' + mcText(r.titre || '—') + '</td>'
+      + '<td style="font-size:.7rem;color:var(--text-muted)">' + mcText(r.categorie || '—') + '</td>'
+      + '<td style="font-size:.7rem;color:var(--text-muted)">' + mcText(r.duree || '—') + '</td>'
+      + '<td style="white-space:nowrap">'
+      + '<button class="mc-act" title="Modifier" onclick="edit' + t.cap + '(' + r.id + ')">✎</button> '
+      + '<button class="mc-act del" title="Supprimer" onclick="delete' + t.cap + '(' + r.id + ')">✕</button>'
+      + '</td></tr>';
+  }).join('');
+  wrap.innerHTML = '<table><thead><tr><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Actions</th></tr></thead><tbody>' + body + '</tbody></table>';
+}
+
+/* ── Activation après identification de l'intervenant ── */
+function mcOnIdentity(nom) {
+  if (!nom) return;
+  MC_NOM = nom;
+  var lbl = document.getElementById('mc-nom-label'); if (lbl) lbl.textContent = nom;
+  document.getElementById('mc-section').style.display = '';
+  mcRenderTabs();
+  mcLoad(MC_CURRENT, function(){ mcRenderTable(MC_CURRENT); });
+}
+
+/* ── Fonctions nommées attendues (openAddVideo, saveVideo, editVideo,
+   deleteVideo, openAddHuile…, openAddRecette…, etc.) ── */
+MC_TYPES.forEach(function(t){
+  window['openAdd' + t.cap] = function(){ mcOpenAdd(t.ep); };
+  window['save'    + t.cap] = function(){ mcSave(t.ep, null); };
+  window['edit'    + t.cap] = function(id){ mcOpenEdit(t.ep, id); };
+  window['delete'  + t.cap] = function(id){ mcDelete(t.ep, id); };
+});
 </script>
 </body>
 </html>
