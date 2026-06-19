@@ -1578,6 +1578,29 @@ PERIODE_LABELS = {
     'q4':    '4e trimestre',
 }
 
+def _periode_clause_col(periode, col):
+    if periode == 'today':  return f"{col} >= CURRENT_DATE AND {col} < CURRENT_DATE + INTERVAL '1 day'"
+    if periode == 'week':   return f"{col} >= CURRENT_DATE - INTERVAL '7 days'"
+    if periode == 'month':  return f"{col} >= CURRENT_DATE - INTERVAL '30 days'"
+    if periode == 'ytd':    return f"{col} >= DATE_TRUNC('year', CURRENT_DATE)"
+    if periode == 'q1':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'"
+    if periode == 'q2':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months' AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months'"
+    if periode == 'q3':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months' AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
+    if periode == 'q4':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
+    return "1=1"
+
+def _periode_prev_clause(periode, col):
+    """Fenêtre précédente de même durée, pour comparaison."""
+    if periode == 'today':  return f"{col} = CURRENT_DATE - 1"
+    if periode == 'week':   return f"{col} >= CURRENT_DATE - INTERVAL '14 days' AND {col} < CURRENT_DATE - INTERVAL '7 days'"
+    if periode == 'month':  return f"{col} >= CURRENT_DATE - INTERVAL '60 days' AND {col} < CURRENT_DATE - INTERVAL '30 days'"
+    if periode == 'ytd':    return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL '1 year' AND {col} < CURRENT_DATE - INTERVAL '1 year'"
+    if periode == 'q1':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL '3 months' AND {col} < DATE_TRUNC('year', CURRENT_DATE)"
+    if periode == 'q2':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'"
+    if periode == 'q3':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months' AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months'"
+    if periode == 'q4':     return f"{col} >= DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '6 months' AND {col} < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months'"
+    return "1=0"
+
 @app.route('/api/dashboard/rapport-data', methods=['GET'])
 @login_required
 def dashboard_rapport_data():
@@ -1588,6 +1611,7 @@ def dashboard_rapport_data():
     periode_label = PERIODE_LABELS[periode]
 
     date_clause = build_date_clause(periode)
+    prev_clause = _periode_prev_clause(periode, 'date')
     site_clause, site_params = get_site_filter(site_slug)
     where = f"WHERE {date_clause} AND {site_clause}"
 
@@ -1595,6 +1619,9 @@ def dashboard_rapport_data():
     by_dept = []
     by_mood = []
     by_hour = []
+    by_week = []
+    dept_mood_raw = []
+    prev_total = 0
     atelier_count = {}
     try:
         with get_db() as conn:
@@ -1607,6 +1634,12 @@ def dashboard_rapport_data():
                 by_mood = cur.fetchall()
                 cur.execute(f"SELECT EXTRACT(HOUR FROM heure)::int AS h, COUNT(*) AS n FROM sessions {where} GROUP BY h ORDER BY n DESC LIMIT 3", site_params)
                 by_hour = cur.fetchall()
+                cur.execute(f"SELECT TO_CHAR(DATE_TRUNC('week', date), 'DD/MM') AS semaine, COUNT(*) AS n FROM sessions {where} GROUP BY DATE_TRUNC('week', date) ORDER BY DATE_TRUNC('week', date)", site_params)
+                by_week = cur.fetchall()
+                cur.execute(f"SELECT departement, mood, COUNT(*) AS n FROM sessions {where} AND mood != '' AND departement != '' GROUP BY departement, mood ORDER BY departement, n DESC", site_params)
+                dept_mood_raw = cur.fetchall()
+                cur.execute(f"SELECT COUNT(*) AS n FROM sessions WHERE {prev_clause} AND {site_clause}", site_params)
+                prev_total = cur.fetchone()['n']
                 cur.execute(f"SELECT ateliers FROM sessions {where} AND ateliers != ''", site_params)
                 for row in cur.fetchall():
                     for a in (row['ateliers'] or '').split(', '):
@@ -1616,31 +1649,93 @@ def dashboard_rapport_data():
     except Exception as e:
         return jsonify({'ok': False, 'error': "Erreur d'agrégation des données : " + str(e)}), 500
 
-    if not total:
+    # ── Données Companion (incluses uniquement si présentes) ────────────────
+    comp_created = _periode_clause_col(periode, 'created_at')
+    comp_date    = _periode_clause_col(periode, 'date')
+    comp = {'present': False, 'top_contenus': [], 'actifs': 0, 'checkins': 0,
+            'energie': None, 'stress': None, 'focus': None, 'barometre': 0, 'retour_taux': None}
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"SELECT content_label, COUNT(*) AS n FROM companion_content_plays WHERE {comp_created} AND {site_clause} GROUP BY content_label ORDER BY n DESC LIMIT 5", site_params)
+                comp['top_contenus'] = cur.fetchall()
+                cur.execute(f"SELECT COUNT(*) AS n FROM companion_content_plays WHERE {comp_created} AND {site_clause} AND content_type = 'questionnaire'", site_params)
+                comp['barometre'] = cur.fetchone()['n']
+                cur.execute(f"SELECT COUNT(DISTINCT user_id) AS n FROM companion_points WHERE {comp_date} AND {site_clause} AND user_id IS NOT NULL", site_params)
+                comp['actifs'] = cur.fetchone()['n']
+                cur.execute(f"SELECT COUNT(*) AS n, ROUND(AVG(energie),1) AS e, ROUND(AVG(stress),1) AS s, ROUND(AVG(focus),1) AS f FROM companion_checkins WHERE {comp_date} AND {site_clause}", site_params)
+                ck = cur.fetchone()
+                comp['checkins'] = ck['n']
+                comp['energie'], comp['stress'], comp['focus'] = ck['e'], ck['s'], ck['f']
+                cur.execute(f"""SELECT COUNT(*) FILTER (WHERE jours > 1) AS retours, COUNT(*) AS tot FROM (
+                                    SELECT user_id, COUNT(DISTINCT date) AS jours
+                                    FROM companion_checkins
+                                    WHERE {comp_date} AND {site_clause} AND user_id IS NOT NULL
+                                    GROUP BY user_id) t""", site_params)
+                rr = cur.fetchone()
+                if rr['tot']:
+                    comp['retour_taux'] = round(100.0 * rr['retours'] / rr['tot'])
+        comp['present'] = bool(comp['top_contenus'] or comp['actifs'] or comp['checkins'] or comp['barometre'])
+    except Exception:
+        comp = {'present': False}
+
+    if not total and not comp.get('present'):
         return jsonify({
             'ok': True,
             'periode_label': periode_label,
             'total_seances': 0,
-            'rapport': f"Aucune séance n'a été enregistrée sur la période analysée ({periode_label}). "
-                       "Dès que des collaborateurs utiliseront l'espace beOtop, leur activité alimentera "
-                       "automatiquement ce rapport.",
+            'rapport': f"Aucune donnée d'activité (espace physique ni application Companion) n'a été "
+                       f"enregistrée sur la période analysée ({periode_label}). Dès que des collaborateurs "
+                       "utiliseront l'espace beOtop, leur activité alimentera automatiquement ce rapport.",
         })
 
     top_ateliers = sorted(atelier_count.items(), key=lambda x: -x[1])[:6]
+    dept_mood_k = kanon_filter_cross([serialize_row(r) for r in dept_mood_raw], 'departement', 'mood')
+    dom = {}
+    for r in dept_mood_k:
+        dom.setdefault(r['departement'], []).append(f"{r['mood']} ({r['n']})")
 
     lignes = [
         f"Site : {site_slug or 'tous les sites'}",
         f"Période analysée : {periode_label}",
-        f"Nombre total de séances enregistrées : {total}",
+        "",
+        "=== ESPACE PHYSIQUE (kiosque) ===",
+        f"Séances enregistrées sur la période : {total}",
     ]
+    if prev_total:
+        delta = total - prev_total
+        pct = round(100.0 * delta / prev_total)
+        sens = "hausse" if delta > 0 else ("baisse" if delta < 0 else "stabilité")
+        lignes.append(f"Période précédente (même durée) : {prev_total} séances — évolution : {pct:+d}% ({sens})")
+    else:
+        lignes.append("Période précédente (même durée) : aucune donnée comparable")
+    if by_week:
+        lignes.append("Évolution semaine par semaine : " + ", ".join(f"semaine du {r['semaine']} : {r['n']}" for r in by_week))
     if by_dept:
         lignes.append("Répartition par département : " + ", ".join(f"{r['label']} ({r['n']})" for r in by_dept))
     if top_ateliers:
         lignes.append("Ateliers les plus utilisés : " + ", ".join(f"{a} ({n})" for a, n in top_ateliers))
     if by_mood:
-        lignes.append("Ressenti déclaré (kiosque) : " + ", ".join(f"{r['mood']} ({r['n']})" for r in by_mood))
+        lignes.append("Ressenti global déclaré (kiosque) : " + ", ".join(f"{r['mood']} ({r['n']})" for r in by_mood))
+    if dom:
+        lignes.append("Ressenti par département (agrégé, k-anonymat k>=5) : " + " ; ".join(f"{d} -> {', '.join(v)}" for d, v in dom.items()))
     if by_hour:
-        lignes.append("Heures de plus forte fréquentation : " + ", ".join(f"{r['h']}h ({r['n']} séances)" for r in by_hour))
+        lignes.append("Top 3 créneaux horaires de fréquentation : " + ", ".join(f"{r['h']}h ({r['n']} séances)" for r in by_hour))
+
+    if comp.get('present'):
+        lignes.append("")
+        lignes.append("=== ENGAGEMENT DIGITAL (application Companion) ===")
+        if comp.get('actifs'):
+            lignes.append(f"Utilisateurs actifs (gamification) : {comp['actifs']}")
+        if comp.get('top_contenus'):
+            lignes.append("Top contenus consommés : " + ", ".join(f"{r['content_label']} ({r['n']})" for r in comp['top_contenus']))
+        if comp.get('checkins'):
+            lignes.append(f"Check-ins d'humeur à l'entrée : {comp['checkins']} (moyennes /10 — énergie {comp.get('energie')}, stress {comp.get('stress')}, focus {comp.get('focus')})")
+        if comp.get('barometre'):
+            lignes.append(f"Sections Baromètre Vitalité complétées : {comp['barometre']}")
+        if comp.get('retour_taux') is not None:
+            lignes.append(f"Taux de retour (collaborateurs Companion actifs sur plusieurs jours) : {comp['retour_taux']}%")
+
     data_str = "\n".join(lignes)
 
     api_key = os.environ.get('ANTHROPIC_API_KEY')
@@ -1651,25 +1746,49 @@ def dashboard_rapport_data():
     except ImportError:
         return jsonify({'ok': False, 'error': "Bibliothèque 'anthropic' non installée sur le serveur (pip install anthropic)."}), 500
 
+    section_companion = (
+        "6. Une section intitulée « Engagement digital » : analyse des usages de l'application "
+        "Companion (contenus consommés, check-ins d'humeur, Baromètre Vitalité, taux de retour) "
+        "et de leur complémentarité avec l'espace physique.\n"
+    ) if comp.get('present') else ""
+
     system_prompt = (
-        "Tu es analyste Qualité de Vie et Conditions de Travail (QVCT) pour beOtop, spécialiste "
-        "du bien-être au travail. Tu rédiges en français une synthèse narrative claire et "
-        "professionnelle à destination des responsables RH et de la CSSCT. Base-toi UNIQUEMENT "
-        "sur les données fournies, sans inventer de chiffres ni de tendances non étayées. "
-        "Structure attendue : un paragraphe d'introduction situant la période, deux à trois "
-        "paragraphes d'analyse (fréquentation, ateliers phares, ressenti des collaborateurs), "
-        "puis une conclusion avec des recommandations concrètes. Ton factuel et bienveillant. "
-        "N'utilise pas de titres ni de markdown : uniquement des paragraphes séparés par une ligne vide."
+        "Tu es consultant senior en stratégie QVCT (Qualité de Vie et Conditions de Travail) et "
+        "bien-être au travail, mandaté par beOtop pour conseiller la direction des ressources "
+        "humaines (DRH) et la CSSCT. Tu produis un rapport d'analyse stratégique, PAS un compte "
+        "rendu descriptif.\n\n"
+        "EXIGENCES DE FOND :\n"
+        "- Base-toi EXCLUSIVEMENT sur les données fournies ; n'invente aucun chiffre.\n"
+        "- Adopte un ton de conseil stratégique pour un DRH : chaque donnée doit être INTERPRÉTÉE "
+        "(ce qu'elle signifie, ce qu'elle implique pour l'organisation), jamais seulement citée.\n"
+        "- Mets les résultats en perspective avec les repères et méthodologies de l'ANACT (Agence "
+        "nationale pour l'amélioration des conditions de travail) lorsque c'est pertinent.\n\n"
+        "STRUCTURE OBLIGATOIRE (titres de section en texte simple sur leur propre ligne, SANS aucun "
+        "symbole markdown comme # ou *) :\n"
+        "1. Synthèse d'ouverture situant la période et le niveau d'engagement global.\n"
+        "2. Analyse de la fréquentation et de son évolution (semaine par semaine, comparaison avec "
+        "la période précédente).\n"
+        "3. Analyse des usages (ateliers phares) et du ressenti des collaborateurs, y compris les "
+        "écarts entre départements.\n"
+        "4. Section intitulée « Points de vigilance ».\n"
+        "5. Section intitulée « Recommandations prioritaires » : actions concrètes et hiérarchisées, "
+        "avec pour chacune un responsable suggéré (ex. DRH, manager de proximité, CSSCT, référent QVCT).\n"
+        + section_companion +
+        "Termine par une projection argumentée sur le trimestre suivant.\n\n"
+        "FORME : minimum 500 mots. Paragraphes aérés séparés par une ligne vide. Aucun markdown."
     )
     user_prompt = (
-        "Rédige un rapport de synthèse basé sur ces données d'utilisation de l'espace beOtop "
-        "sur la période : " + periode_label + "\n\n" + data_str
+        "Voici les données agrégées d'utilisation de l'espace beOtop (espace physique"
+        + (" + application Companion" if comp.get('present') else "")
+        + ") sur la période : " + periode_label + ".\n\n" + data_str
+        + "\n\nRédige le rapport stratégique en respectant scrupuleusement la structure et les exigences ci-dessus."
     )
     try:
         client = anthropic.Anthropic(api_key=api_key)
         msg = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=2000,
+            max_tokens=5000,
+            thinking={"type": "adaptive"},
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
@@ -1682,6 +1801,7 @@ def dashboard_rapport_data():
         'rapport': rapport,
         'periode_label': periode_label,
         'total_seances': total,
+        'companion': comp.get('present', False),
     })
 
 @app.route('/api/sessions', methods=['GET'])
