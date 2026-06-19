@@ -247,12 +247,12 @@ tr:hover td { background: var(--surface2); }
 .mc-modal-head button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; line-height: 1; }
 .form-field { margin-bottom: .8rem; }
 .form-field label { display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: .3rem; }
-.form-field input, .form-field textarea {
+.form-field input, .form-field textarea, .form-field select {
   width: 100%; box-sizing: border-box; padding: .6rem .8rem;
   border: 1px solid var(--border2); border-radius: 9px; font-size: .85rem;
   font-family: inherit; color: var(--text); background: var(--surface); outline: none; resize: vertical;
 }
-.form-field input:focus, .form-field textarea:focus { border-color: var(--teal); }
+.form-field input:focus, .form-field textarea:focus, .form-field select:focus { border-color: var(--teal); }
 .mc-modal-actions { display: flex; gap: .6rem; margin-top: 1.2rem; }
 .mc-cancel { flex: 1; padding: .7rem; border: 1px solid var(--border2); border-radius: 9px; background: transparent; color: var(--text-muted); font-size: .85rem; cursor: pointer; font-family: inherit; }
 .mc-save { flex: 2; padding: .7rem; border: none; border-radius: 9px; background: linear-gradient(135deg, var(--teal), #00d4d4); color: #fff; font-size: .85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
@@ -823,6 +823,64 @@ function mcType(ep) { return MC_TYPES.filter(function(t){ return t.ep === ep; })
 function mcAttr(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function mcText(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+/* ── Sous-rubriques (catégories) pré-définies par type ── */
+var MC_CATS = {
+  audios:    [['binaural','Binaural'],['focus','Focus'],['meditation','Méditation'],['relaxation','Relaxation'],['respiration','Respiration'],['sommeil','Sommeil']],
+  videos:    [['business','Business'],['anti-stress','Anti-stress'],['bien-etre','Bien-être'],['energie','Énergie'],['ergonomie','Ergonomie'],['etirements','Étirements'],['meditation','Méditation'],['relaxation','Relaxation']],
+  exercices: [['etirements','Étirements'],['relaxation','Relaxation'],['respiration','Respiration'],['tms','TMS'],['workout','Workout']],
+  defis:     [['attention','Attention'],['memoire','Mémoire'],['logique','Logique'],['reflexes','Réflexes']],
+  podcasts:  [['bien-etre','Bien-être'],['nutrition','Nutrition'],['psychologie','Psychologie'],['stress','Stress']],
+  huiles:    [['aromatherapie','Aromathérapie'],['olfactologie','Olfactologie'],['olfactotherapie','Olfactothérapie'],['digestion','Digestion'],['immunite','Immunité'],['sommeil','Sommeil'],['stress','Stress']],
+  recettes:  [['anti-stress','Anti-stress'],['detox','Détox'],['digestion','Digestion'],['energie','Énergie'],['estivale','Estivale'],['immunite','Immunité'],['snack','Snack sain']]
+};
+
+/* La catégorie courante ne correspond à aucune option pré-définie. */
+function _mcCatIsNew(ep, current) {
+  current = current == null ? '' : String(current);
+  if (!current) return false;
+  return !(MC_CATS[ep] || []).some(function(o){ return o[0] === current; });
+}
+function _mcCatOptions(ep, current) {
+  current = current == null ? '' : String(current);
+  var isNew = _mcCatIsNew(ep, current);
+  var html = '<option value=""' + (current === '' ? ' selected' : '') + '>-- Choisir une catégorie --</option>';
+  (MC_CATS[ep] || []).forEach(function(o){
+    html += '<option value="' + o[0] + '"' + (o[0] === current ? ' selected' : '') + '>' + o[1] + '</option>';
+  });
+  html += '<option value="__new__"' + (isNew ? ' selected' : '') + '>+ Nouvelle catégorie…</option>';
+  return html;
+}
+function _mcCatField(ep, current) {
+  var isNew = _mcCatIsNew(ep, current);
+  return '<div class="form-field"><label>Catégorie</label>'
+    + '<select id="mcf-categorie" onchange="toggleNewCat(\'mcf-categorie\',\'mcf-categorie-new\')">' + _mcCatOptions(ep, current) + '</select>'
+    + '<input type="text" id="mcf-categorie-new" placeholder="Nom de la nouvelle catégorie" value="' + (isNew ? mcAttr(current) : '') + '" style="margin-top:.5rem;' + (isNew ? '' : 'display:none;') + '"></div>';
+}
+
+/* Identiques à companion.html : gèrent l'input « nouvelle catégorie ». */
+function toggleNewCat(selectId, inputId) {
+  var sel = document.getElementById(selectId), inp = document.getElementById(inputId);
+  if (!sel || !inp) return;
+  inp.style.display = sel.value === '__new__' ? 'block' : 'none';
+  if (sel.value === '__new__') inp.focus();
+}
+function getCatValue(selectId, inputId) {
+  var sel = document.getElementById(selectId), inp = document.getElementById(inputId);
+  if (!sel) return '';
+  if (sel.value === '__new__') {
+    var newVal = inp ? inp.value.trim() : '';
+    if (!newVal) return '';
+    var opt = document.createElement('option');
+    opt.value = newVal.toLowerCase().replace(/\s+/g, '-');
+    opt.textContent = newVal;
+    sel.insertBefore(opt, sel.querySelector('option[value="__new__"]'));
+    sel.value = opt.value;
+    inp.style.display = 'none'; inp.value = '';
+    return opt.value;
+  }
+  return sel.value;
+}
+
 /* ── Modale générique ── */
 function openModal(title, html) {
   document.getElementById('mc-modal-title').textContent = title;
@@ -837,6 +895,7 @@ function mcFormHtml(ep, item) {
   var html = MC_FIELDS[ep].map(function(f) {
     var val = item[f.k] == null ? '' : item[f.k];
     var ph  = f.ph ? mcAttr(f.ph) : '';
+    if (f.k === 'categorie') return _mcCatField(ep, val);
     if (f.el === 'textarea') {
       return '<div class="form-field"><label>' + f.l + '</label>'
         + '<textarea id="mcf-' + f.k + '" rows="5" placeholder="' + ph + '">' + mcText(val) + '</textarea></div>';
@@ -871,6 +930,7 @@ function mcSave(ep, id) {
   if (!titreEl || !titreEl.value.trim()) { showToast('⚠ Titre requis'); return; }
   var body = { site_slug: '', intervenant: MC_NOM };
   MC_FIELDS[ep].forEach(function(f) {
+    if (f.k === 'categorie') { body[f.k] = getCatValue('mcf-categorie','mcf-categorie-new'); return; }
     var el = document.getElementById('mcf-' + f.k);
     body[f.k] = el ? el.value.trim() : '';
   });

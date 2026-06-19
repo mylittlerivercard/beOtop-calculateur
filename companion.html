@@ -7328,28 +7328,7 @@ else if (tab === 'audios') {
 function openAddVideo() {
   openModal('Ajouter une vidéo', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" placeholder="Sophrologie guidée 10 min"></div>
-    <div class="form-field"><label>Catégorie</label>
-      <select id="f-vi-cat" onchange="toggleNewCat('f-vi-cat','f-vi-newcat')">
-        <option value="anti-stress">Anti-stress</option>
-        <option value="bien-etre">Bien-être général</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & vitalité</option>
-        <option value="etirements">Étirements bureau</option>
-        <option value="gestion-emotions">Gestion des émotions</option>
-        <option value="meditation">Méditation guidée</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="nutrition">Nutrition & santé</option>
-        <option value="posture">Posture & ergonomie</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="resilience">Résilience</option>
-        <option value="sieste">Sieste & récupération</option>
-        <option value="sophrologie">Sophrologie</option>
-        <option value="tms">TMS & douleurs</option>
-        <option value="yoga">Yoga bureau</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-vi-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
-    </div>
+    ${_catField('f-vi','video','')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" placeholder="Description courte"></div>
@@ -7386,6 +7365,7 @@ function editVideo(id) {
   if (!v) return;
   openModal('Modifier ' + v.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" value="${v.titre}"></div>
+    ${_catField('f-vi','video', v.categorie||'')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" value="${v.duree||''}"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-vi-icon" value="${v.icon||'🎬'}" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" value="${v.description||''}"></div>
@@ -7402,6 +7382,7 @@ function updateVideo(id) {
   if (!v) return;
   var item = Object.assign({}, v, {
     titre: document.getElementById('f-vi-titre').value,
+    categorie: getCatValue('f-vi-cat','f-vi-newcat'),
     duree: document.getElementById('f-vi-duree').value,
     icon:  document.getElementById('f-vi-icon').value,
     description: document.getElementById('f-vi-desc').value,
@@ -7496,25 +7477,7 @@ function deleteAtelier(id) {
 function openAddAudio() {
   openModal('Ajouter un audio', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" placeholder="Relaxation profonde"></div>
-    <div class="form-field"><label>Catégorie</label>
-      <select id="f-au-cat" onchange="toggleNewCat('f-au-cat','f-au-newcat')">
-        <option value="ambiance">Ambiance</option>
-        <option value="anti-stress">Anti-stress</option>
-        <option value="binaural">Binaural</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & activation</option>
-        <option value="focus">Focus & concentration</option>
-        <option value="meditation">Méditation guidée</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="nsdr">NSDR</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="sieste">Sieste</option>
-        <option value="sophrologie">Sophrologie</option>
-        <option value="visualisation">Visualisation</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-au-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
-    </div>
+    ${_catField('f-au','audio','')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
     <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" placeholder="binaural.jpg"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji</div></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
@@ -7552,6 +7515,7 @@ function editAudio(id) {
   if (!a) return;
   openModal('Modifier ' + a.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" value="${a.titre}"></div>
+    ${_catField('f-au','audio', a.categorie||'')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" value="${a.duree}"></div>
     <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" value="${a.photo||''}" placeholder="binaural.jpg"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-au-icon" value="${a.icon}" style="width:80px"></div>
@@ -7568,6 +7532,7 @@ function updateAudio(id) {
   if (!a) return;
   var item = Object.assign({}, a, {
     titre: document.getElementById('f-au-titre').value,
+    categorie: getCatValue('f-au-cat','f-au-newcat'),
     duree: document.getElementById('f-au-duree').value,
     icon:  document.getElementById('f-au-icon').value,
     description: document.getElementById('f-au-desc').value,
@@ -7593,25 +7558,7 @@ function deleteAudio(id) {
 function openAddExercice() {
   openModal('Ajouter un exercice', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" placeholder="Cervicales express"></div>
-    <div class="form-field"><label>Catégorie</label>
-      <select id="f-ex-cat" onchange="toggleNewCat('f-ex-cat','f-ex-newcat')">
-        <option value="anti-stress">Anti-stress</option>
-        <option value="cardio">Cardio léger</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & réveil</option>
-        <option value="etirements">Étirements</option>
-        <option value="gestion-emotions">Gestion des émotions</option>
-        <option value="meditation">Méditation</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="posture">Posture</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="respiration">Respiration</option>
-        <option value="tms">TMS</option>
-        <option value="workout">Workout express</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-ex-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
-    </div>
+    ${_catField('f-ex','exercice','')}
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" placeholder="Douleurs nuque · Bureau"></div>
     <div class="form-field"><label>Tags (séparés par virgule)</label><input type="text" id="f-ex-tags" placeholder="5 min,Sans matériel,Assis"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" placeholder="Description courte"></div>
@@ -7649,6 +7596,7 @@ function editExercice(id) {
   if (!e) return;
   openModal('Modifier ' + e.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" value="${e.titre}"></div>
+    ${_catField('f-ex','exercice', e.categorie||'')}
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" value="${e.indication}"></div>
     <div class="form-field"><label>Tags</label><input type="text" id="f-ex-tags" value="${e.tags.join(', ')}"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" value="${e.description}"></div>
@@ -7670,6 +7618,7 @@ function updateExercice(id) {
   if (!e) return;
   var item = Object.assign({}, e, {
     titre: document.getElementById('f-ex-titre').value,
+    categorie: getCatValue('f-ex-cat','f-ex-newcat'),
     indication: document.getElementById('f-ex-ind').value,
     tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     description: document.getElementById('f-ex-desc').value,
@@ -7872,6 +7821,51 @@ function getCatValue(selectId, inputId) {
   }
   return sel.value;
 }
+
+/* ════════════════════════════════════════════
+   SOUS-RUBRIQUES (catégories) PRÉ-DÉFINIES PAR TYPE
+   + helper de génération du champ « Catégorie » (select + nouvelle catégorie)
+════════════════════════════════════════════ */
+var CONTENU_CATS = {
+  audio:    [['binaural','Binaural'],['focus','Focus'],['meditation','Méditation'],['relaxation','Relaxation'],['respiration','Respiration'],['sommeil','Sommeil']],
+  video:    [['business','Business'],['anti-stress','Anti-stress'],['bien-etre','Bien-être'],['energie','Énergie'],['ergonomie','Ergonomie'],['etirements','Étirements'],['meditation','Méditation'],['relaxation','Relaxation']],
+  exercice: [['etirements','Étirements'],['relaxation','Relaxation'],['respiration','Respiration'],['tms','TMS'],['workout','Workout']],
+  defi:     [['attention','Attention'],['memoire','Mémoire'],['logique','Logique'],['reflexes','Réflexes']],
+  podcast:  [['bien-etre','Bien-être'],['nutrition','Nutrition'],['psychologie','Psychologie'],['stress','Stress']],
+  huile:    [['aromatherapie','Aromathérapie'],['olfactologie','Olfactologie'],['olfactotherapie','Olfactothérapie'],['digestion','Digestion'],['immunite','Immunité'],['sommeil','Sommeil'],['stress','Stress']],
+  recette:  [['anti-stress','Anti-stress'],['detox','Détox'],['digestion','Digestion'],['energie','Énergie'],['estivale','Estivale'],['immunite','Immunité'],['snack','Snack sain']]
+};
+
+/* Indique si la catégorie courante ne correspond à aucune option pré-définie. */
+function _catIsNew(type, current) {
+  current = current == null ? '' : String(current);
+  if (!current) return false;
+  return !(CONTENU_CATS[type] || []).some(function(o){ return o[0] === current; });
+}
+
+/* Options du <select> catégorie : placeholder + sous-rubriques + « Nouvelle… ». */
+function _catOptions(type, current) {
+  current = current == null ? '' : String(current);
+  var isNew = _catIsNew(type, current);
+  var html = '<option value=""' + (current === '' ? ' selected' : '') + '>-- Choisir une catégorie --</option>';
+  (CONTENU_CATS[type] || []).forEach(function(o){
+    html += '<option value="' + o[0] + '"' + (o[0] === current ? ' selected' : '') + '>' + o[1] + '</option>';
+  });
+  html += '<option value="__new__"' + (isNew ? ' selected' : '') + '>+ Nouvelle catégorie…</option>';
+  return html;
+}
+
+/* Champ « Catégorie » complet (div.form-field) : <select> + input « nouvelle ».
+   prefix = préfixe d'id (ex. 'f-au' → #f-au-cat / #f-au-newcat). */
+function _catField(prefix, type, current) {
+  var isNew = _catIsNew(type, current);
+  return '<div class="form-field"><label>Catégorie</label>'
+    + '<select id="' + prefix + '-cat" onchange="toggleNewCat(\'' + prefix + '-cat\',\'' + prefix + '-newcat\')">'
+    + _catOptions(type, current) + '</select>'
+    + '<input type="text" id="' + prefix + '-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (isNew ? current : '') + '" style="' + (isNew ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">'
+    + '</div>';
+}
+
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
@@ -8030,15 +8024,13 @@ function _defiForm(d) {
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Photo d\'illustration (fichier dans /static/)</label>'
     + '<input id="f-df-photo" value="' + (v.photo||'') + '" placeholder="defi.jpg" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Vide = photo de l\'intervenant, sinon icône</div></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"attention\">Attention & focus</option><option value=\"cognition\">Cognition générale</option><option value=\"creativite\">Créativité</option><option value=\"double-tache\">Double tâche</option><option value=\"flexibilite\">Flexibilité mentale</option><option value=\"inhibition\">Inhibition de réponse</option><option value=\"logique\">Logique</option><option value=\"memoire\">Mémoire de travail</option><option value=\"neurosciences\">Neurosciences appliquées</option><option value=\"reflexes\">Réflexes</option><option value=\"resilience\">Résilience</option><option value=\"vitesse\">Vitesse de traitement</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('defi', v.categorie||'') + '</select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('defi', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('defi', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
     + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="">— Aucun —</option></select></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
     + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
-    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"anti-stress\">Anti-stress</option><option value=\"bien-etre\">Bien-être général</option><option value=\"cognition\">Cognition & mémoire</option><option value=\"energie\">Énergie & vitalité</option><option value=\"gestion-emotions\">Gestion des émotions</option><option value=\"meditation\">Méditation</option><option value=\"mindfulness\">Mindfulness</option><option value=\"neurosciences\">Neurosciences</option><option value=\"philosophie\">Philosophie & sens</option><option value=\"psychologie\">Psychologie positive</option><option value=\"relaxation\">Relaxation</option><option value=\"resilience\">Résilience</option><option value=\"sieste\">Sieste</option><option value=\"sophrologie\">Sophrologie</option><option value=\"tms\">TMS & douleurs</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
     + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
@@ -8466,6 +8458,8 @@ function _podcastForm(p) {
     + '<input id="f-pod-titre" value="' + (v.titre||'') + '" placeholder="Titre du podcast" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Description</label>'
     + '<input id="f-pod-desc" value="' + (v.description||'') + '" placeholder="Description courte" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
+    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('podcast', v.categorie||'') + '</select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('podcast', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('podcast', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Type d\'URL</label>'
     + '<select id="f-pod-type" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="externe"' + (v.type_url!=='fichier'?' selected':'') + '>Lien externe (Spotify, YouTube, site...)</option>'
@@ -8538,18 +8532,7 @@ function openHuile(id) {
 function openAddHuile() {
   openModal('Ajouter une huile essentielle', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" placeholder="Lavande vraie"></div>
-    <div class="form-field"><label>Catégorie</label>
-      <select id="f-hu-cat" onchange="toggleNewCat('f-hu-cat','f-hu-newcat')">
-        <option value="stress">Anti-stress</option>
-        <option value="energie">Énergie</option>
-        <option value="sommeil">Sommeil</option>
-        <option value="immunite">Immunité</option>
-        <option value="digestion">Digestion</option>
-        <option value="concentration">Concentration</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-hu-newcat" placeholder="Nom de la catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
-    </div>
+    ${_catField('f-hu','huile','')}
     <div class="form-field"><label>Description courte</label><input type="text" id="f-hu-desc" placeholder="Apaisante, idéale en cas de stress..."></div>
     <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5" placeholder="Propriétés, usages, précautions..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
@@ -8591,6 +8574,7 @@ function editHuile(id) {
   if (!h) return;
   openModal('Modifier ' + h.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" value="${h.titre}"></div>
+    ${_catField('f-hu','huile', h.categorie||'')}
     <div class="form-field"><label>Description</label><input type="text" id="f-hu-desc" value="${h.description||''}"></div>
     <div class="form-field"><label>Contenu détaillé</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
@@ -8607,6 +8591,7 @@ function updateHuile(id) {
   if (!h) return;
   var item = Object.assign({}, h, {
     titre:       document.getElementById('f-hu-titre').value,
+    categorie:   getCatValue('f-hu-cat','f-hu-newcat'),
     description: document.getElementById('f-hu-desc').value,
     contenu:     document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
@@ -8676,18 +8661,7 @@ function openRecette(id) {
 function openAddRecette() {
   openModal('Ajouter une recette', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" placeholder="Smoothie vert énergie"></div>
-    <div class="form-field"><label>Catégorie</label>
-      <select id="f-re-cat" onchange="toggleNewCat('f-re-cat','f-re-newcat')">
-        <option value="energie">Énergie</option>
-        <option value="immunite">Immunité</option>
-        <option value="digestion">Digestion</option>
-        <option value="sommeil">Sommeil</option>
-        <option value="anti-stress">Anti-stress</option>
-        <option value="snack">Snack sain</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-re-newcat" placeholder="Nom de la catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
-    </div>
+    ${_catField('f-re','recette','')}
     <div class="form-field"><label>Durée de préparation</label><input type="text" id="f-re-duree" placeholder="5 min"></div>
     <div class="form-field"><label>Photo (fichier dans /static/)</label>
       <input type="text" id="f-re-photo" placeholder="infusion-romarin.jpg">
@@ -8729,6 +8703,7 @@ function editRecette(id) {
   if (!r) return;
   openModal('Modifier ' + r.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" value="${r.titre}"></div>
+    ${_catField('f-re','recette', r.categorie||'')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-re-duree" value="${r.duree||''}"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-re-desc" value="${r.description||''}"></div>
     <div class="form-field"><label>Contenu / Ingrédients & préparation</label><textarea id="f-re-contenu" rows="6">${r.contenu||''}</textarea></div>
@@ -8748,6 +8723,7 @@ function updateRecette(id) {
   if (!r) return;
   var item = Object.assign({}, r, {
     titre:       document.getElementById('f-re-titre').value,
+    categorie:   getCatValue('f-re-cat','f-re-newcat'),
     duree:       document.getElementById('f-re-duree').value,
     description: document.getElementById('f-re-desc').value,
     contenu:     document.getElementById('f-re-contenu').value,
