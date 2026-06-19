@@ -272,10 +272,38 @@
 .ca-top-badge { font-size:.6rem; padding:.15rem .5rem; border-radius:20px; background:rgba(201,169,110,.1); color:var(--gold); }
 @media(max-width:700px){ .ca-charts{ grid-template-columns:1fr; } }
 @media print {
-  body * { visibility: hidden !important; }
-  #rapport-ia-zone, #rapport-ia-zone * { visibility: visible !important; }
-  #rapport-ia-zone { position: absolute; left: 0; top: 0; width: 100%; display: block !important; font-size: 11pt; line-height: 1.8; color: #000; }
-  #btn-generer-rapport, #btn-export-rapport { display: none !important; }
+  /* Masquer tout sauf le rapport */
+  body * { visibility: hidden; }
+  #rapport-ia-zone, #rapport-ia-zone * { visibility: visible; }
+  #rapport-ia-zone {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 10pt;
+    line-height: 1.7;
+    color: #000;
+    padding: 1.5cm 2cm;
+  }
+  /* Masquer les boutons dans le rapport */
+  #btn-generer-rapport, #btn-export-rapport,
+  #rapport-loading { display: none !important; }
+
+  /* Pied de page avec numéro de page et date */
+  @page {
+    size: A4;
+    margin: 2cm 2cm 3cm 2cm;
+    @bottom-center {
+      content: "Rapport beOtop — " attr(data-site) " — Page " counter(page) " / " counter(pages);
+      font-size: 8pt;
+      color: #666;
+    }
+    @bottom-right {
+      content: "Généré le " attr(data-date);
+      font-size: 8pt;
+      color: #666;
+    }
+  }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1037,9 +1065,21 @@ async function genererRapport(){
 }
 function exportRapportPDF(){
   var titre=document.title;
+  var zone=document.getElementById('rapport-ia-zone');
+  var dateStr=new Date().toLocaleDateString('fr-FR');
+  zone.setAttribute('data-site', window.qvctSite||'');
+  zone.setAttribute('data-date', dateStr);
+  var periodeSelect=document.querySelector('#qvct-site-bar .period-sel');
+  var periodeLabel=periodeSelect?periodeSelect.options[periodeSelect.selectedIndex].text:(window.qvctPeriod||'');
+  var footer=document.createElement('div');
+  footer.id='rapport-print-footer';
+  footer.style.cssText='margin-top:2rem;padding-top:1rem;border-top:1px solid #ccc;font-size:8pt;color:#666;display:flex;justify-content:space-between';
+  footer.innerHTML='<span>Rapport beOtop — '+escapeRapport(window.qvctSite||'')+' — '+escapeRapport(periodeLabel)+'</span><span>Généré le '+escapeRapport(dateStr)+'</span>';
+  zone.appendChild(footer);
   document.title='Rapport beOtop — '+(window.qvctSite||'')+' — '+(window.qvctPeriod||'');
   window.print();
   document.title=titre;
+  if(footer.parentNode)footer.parentNode.removeChild(footer);
 }
 
 async function loadQvct(){
