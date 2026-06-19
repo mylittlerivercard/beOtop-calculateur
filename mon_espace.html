@@ -290,7 +290,7 @@ tr:hover td { background: var(--surface2); }
       </div>
       <div class="hero-stat">
         <div class="val" id="hero-pct">—%</div>
-        <div class="lbl">Part globale</div>
+        <div class="lbl">Part des clics intervenants</div>
       </div>
       <div class="hero-stat">
         <div class="val" id="hero-semestres">—</div>
@@ -372,8 +372,8 @@ tr:hover td { background: var(--surface2); }
     </div>
     <div class="kpi-card">
       <div class="kpi-val" id="kpi-pct">—%</div>
-      <div class="kpi-lbl">Part des clics totaux</div>
-      <div class="kpi-sub">Sur tous les sites · tous contenus</div>
+      <div class="kpi-lbl">Part des clics intervenants</div>
+      <div class="kpi-sub">Sur tous les clics attribués à des intervenants</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-val coral" id="kpi-taux">30%</div>
@@ -605,7 +605,8 @@ function renderAll(d) {
 
   // KPIs
   document.getElementById('kpi-clics').textContent     = d.nb_clics || 0;
-  document.getElementById('kpi-clics-sub').textContent = 'Sur ' + (d.total_clics || 0) + ' clics totaux cette période';
+  // Formule de la part : clics intervenant / total clics intervenants = %
+  document.getElementById('kpi-clics-sub').textContent = (d.nb_clics || 0) + ' clics / ' + (d.total_clics || 0) + ' clics totaux intervenants = ' + (d.pct_global || 0) + '%';
   var pctGlobal  = parseFloat(d.pct_global  || 0);
   var tauxContenu = parseFloat(d.taux_contenu || 30);
   var partReelle  = Math.round(pctGlobal * tauxContenu) / 100;
@@ -714,24 +715,16 @@ function renderAll(d) {
   }
 
   // ── Récap semestriel ──────────────────────────────────────────────
-  var totalContenu = 0;
-  (d.clics_par_site || []).forEach(function(r) {
-    var tarifA  = parseFloat(r.tarif_annuel || 0);
-    var nbSal   = parseInt(r.nb_salaries || 0);
-    var pctSite = r.nb_clics_total ? (r.nb_clics_inv / r.nb_clics_total) : 0;
-    var taux    = parseFloat(d.taux_contenu || 30) / 100;
-    if (tarifA > 0 && nbSal > 0) {
-      totalContenu += tarifA * nbSal / 2 * pctSite * taux;
-    }
-  });
-  totalContenu = Math.round(totalContenu * 100) / 100;
+  // Rétribution contenu = part des clics intervenants × 30% × CA global beOtop
+  // (calculée côté serveur sur le CA global, pas le CA des sites concernés)
+  var totalContenu   = parseFloat(d.remuneration_estimee || 0);
   var totalApportNum = parseFloat(d.total_commission_apport || 0);
   var totalGlobal    = Math.round((totalContenu + totalApportNum) * 100) / 100;
   var recap = document.getElementById('recap-annuel');
   if (recap) {
     recap.style.display = '';  // toujours visible pour tous les intervenants, même avec 0 clic / 0 €
     document.getElementById('recap-contenu').textContent       = totalContenu > 0 ? totalContenu.toFixed(2) + ' €' : '—';
-    document.getElementById('recap-contenu-detail').textContent = totalContenu > 0 ? parseFloat(d.pct_global||0) + '% × ' + parseFloat(d.taux_contenu||30) + '% du CA sites' : 'Tarifs non configurés';
+    document.getElementById('recap-contenu-detail').textContent = totalContenu > 0 ? parseFloat(d.pct_global||0) + '% des clics intervenants × ' + parseFloat(d.taux_contenu||30) + '% du CA global beOtop' : 'CA global non configuré';
     document.getElementById('recap-apport').textContent        = totalApportNum > 0 ? totalApportNum.toFixed(2) + ' €' : '—';
     document.getElementById('recap-total').textContent         = totalGlobal > 0 ? totalGlobal.toFixed(2) + ' €' : '—';
   }

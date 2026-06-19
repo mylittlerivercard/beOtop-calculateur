@@ -3376,14 +3376,32 @@ def intervenant_stats():
             # Total clics intervenant sur la période
             nb_clics_inv = sum(r['nb_clics'] for r in clics_detail)
 
-            # Total clics toutes périodes (tous intervenants confondus) pour % global
+            # Total des clics de TOUS les intervenants sur la période
+            # (dénominateur de la part : on ne compte que les clics attribués à
+            #  un intervenant, pas l'ensemble des clics tous contenus confondus)
             cur.execute(f"""
                 SELECT COUNT(*) as total
                 FROM companion_content_plays
-                WHERE content_type != 'post_interne'
+                WHERE intervenant_nom IS NOT NULL
+                  AND TRIM(intervenant_nom) != ''
+                  AND content_type != 'post_interne'
                   AND {sem_clause}
             """)
             total_clics = (cur.fetchone() or {}).get('total', 0) or 0
+
+            # CA global beOtop du semestre = somme des sites companion
+            # (tarif annuel × nb salariés / 2). Base de la rétribution contenu,
+            # et non le CA des seuls sites où l'intervenant a des clics.
+            try:
+                cur.execute("""
+                    SELECT COALESCE(SUM(tarif_annuel * nb_salaries), 0) / 2 AS ca_global
+                    FROM sites
+                    WHERE has_companion = 1 AND tarif_annuel > 0 AND nb_salaries > 0 AND actif = 1
+                """)
+                ca_global = float((cur.fetchone() or {}).get('ca_global', 0) or 0)
+            except Exception:
+                conn.rollback()
+                ca_global = 0.0
 
             # Clics par site pour calcul rétribution
             # Les colonnes tarif_annuel/has_companion peuvent ne pas exister encore
@@ -3466,9 +3484,10 @@ def intervenant_stats():
 
             total_commission_apport = sum(c['commission_20pct'] for c in clients_apportes)
 
-    # Calcul rétribution estimée (basé sur clics, sans CA réel disponible)
+    # Rétribution estimée = part des clics intervenants × taux contenu × CA global beOtop
     pct_global = round(nb_clics_inv / total_clics * 100, 1) if total_clics else 0
     taux       = float(inv.get('taux_contenu') or 30) / 100
+    remuneration_estimee = round((nb_clics_inv / total_clics) * taux * ca_global, 2) if total_clics else 0.0
 
     return jsonify({
         'intervenant':              inv,
@@ -3478,6 +3497,8 @@ def intervenant_stats():
         'total_clics':              int(total_clics),
         'pct_global':               pct_global,
         'taux_contenu':             float(inv.get('taux_contenu') or 30),
+        'ca_global':                round(ca_global, 2),
+        'remuneration_estimee':     remuneration_estimee,
         'clics_detail':             clics_detail,
         'clics_par_site':           clics_par_site,
         'historique':               historique,
