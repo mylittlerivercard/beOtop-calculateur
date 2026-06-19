@@ -1695,46 +1695,40 @@ def dashboard_rapport_data():
     for r in dept_mood_k:
         dom.setdefault(r['departement'], []).append(f"{r['mood']} ({r['n']})")
 
+    # Chiffres clés uniquement (pas de listes complètes) pour limiter le coût API
+    top_dept    = by_dept[0] if by_dept else None
+    top_atelier = top_ateliers[0] if top_ateliers else None
+    top_mood    = by_mood[0] if by_mood else None
+    top_hour    = by_hour[0] if by_hour else None
+
     lignes = [
         f"Site : {site_slug or 'tous les sites'}",
-        f"Période analysée : {periode_label}",
-        "",
-        "=== ESPACE PHYSIQUE (kiosque) ===",
-        f"Séances enregistrées sur la période : {total}",
+        f"Période : {periode_label}",
+        f"Séances enregistrées : {total}",
     ]
     if prev_total:
-        delta = total - prev_total
-        pct = round(100.0 * delta / prev_total)
-        sens = "hausse" if delta > 0 else ("baisse" if delta < 0 else "stabilité")
-        lignes.append(f"Période précédente (même durée) : {prev_total} séances — évolution : {pct:+d}% ({sens})")
-    else:
-        lignes.append("Période précédente (même durée) : aucune donnée comparable")
-    if by_week:
-        lignes.append("Évolution semaine par semaine : " + ", ".join(f"semaine du {r['semaine']} : {r['n']}" for r in by_week))
-    if by_dept:
-        lignes.append("Répartition par département : " + ", ".join(f"{r['label']} ({r['n']})" for r in by_dept))
-    if top_ateliers:
-        lignes.append("Ateliers les plus utilisés : " + ", ".join(f"{a} ({n})" for a, n in top_ateliers))
-    if by_mood:
-        lignes.append("Ressenti global déclaré (kiosque) : " + ", ".join(f"{r['mood']} ({r['n']})" for r in by_mood))
-    if dom:
-        lignes.append("Ressenti par département (agrégé, k-anonymat k>=5) : " + " ; ".join(f"{d} -> {', '.join(v)}" for d, v in dom.items()))
-    if by_hour:
-        lignes.append("Top 3 créneaux horaires de fréquentation : " + ", ".join(f"{r['h']}h ({r['n']} séances)" for r in by_hour))
-
+        pct = round(100.0 * (total - prev_total) / prev_total)
+        lignes.append(f"Évolution vs période précédente (même durée) : {pct:+d}%")
+    if top_dept:
+        lignes.append(f"Département le plus actif : {top_dept['label']} ({top_dept['n']})")
+    if top_atelier:
+        lignes.append(f"Atelier phare : {top_atelier[0]} ({top_atelier[1]})")
+    if top_mood:
+        lignes.append(f"Ressenti dominant : {top_mood['mood']} ({top_mood['n']})")
+    if top_hour:
+        lignes.append(f"Créneau de pointe : {top_hour['h']}h ({top_hour['n']})")
     if comp.get('present'):
-        lignes.append("")
-        lignes.append("=== ENGAGEMENT DIGITAL (application Companion) ===")
+        cps = []
         if comp.get('actifs'):
-            lignes.append(f"Utilisateurs actifs (gamification) : {comp['actifs']}")
+            cps.append(f"{comp['actifs']} utilisateurs actifs")
         if comp.get('top_contenus'):
-            lignes.append("Top contenus consommés : " + ", ".join(f"{r['content_label']} ({r['n']})" for r in comp['top_contenus']))
-        if comp.get('checkins'):
-            lignes.append(f"Check-ins d'humeur à l'entrée : {comp['checkins']} (moyennes /10 — énergie {comp.get('energie')}, stress {comp.get('stress')}, focus {comp.get('focus')})")
-        if comp.get('barometre'):
-            lignes.append(f"Sections Baromètre Vitalité complétées : {comp['barometre']}")
+            cps.append(f"top contenu {comp['top_contenus'][0]['content_label']} ({comp['top_contenus'][0]['n']})")
         if comp.get('retour_taux') is not None:
-            lignes.append(f"Taux de retour (collaborateurs Companion actifs sur plusieurs jours) : {comp['retour_taux']}%")
+            cps.append(f"taux de retour {comp['retour_taux']}%")
+        if comp.get('barometre'):
+            cps.append(f"{comp['barometre']} baromètres complétés")
+        if cps:
+            lignes.append("Companion : " + " ; ".join(cps))
 
     data_str = "\n".join(lignes)
 
@@ -1746,49 +1740,29 @@ def dashboard_rapport_data():
     except ImportError:
         return jsonify({'ok': False, 'error': "Bibliothèque 'anthropic' non installée sur le serveur (pip install anthropic)."}), 500
 
-    section_companion = (
-        "6. Une section intitulée « Engagement digital » : analyse des usages de l'application "
-        "Companion (contenus consommés, check-ins d'humeur, Baromètre Vitalité, taux de retour) "
-        "et de leur complémentarité avec l'espace physique.\n"
-    ) if comp.get('present') else ""
-
     system_prompt = (
-        "Tu es consultant senior en stratégie QVCT (Qualité de Vie et Conditions de Travail) et "
-        "bien-être au travail, mandaté par beOtop pour conseiller la direction des ressources "
-        "humaines (DRH) et la CSSCT. Tu produis un rapport d'analyse stratégique, PAS un compte "
-        "rendu descriptif.\n\n"
-        "EXIGENCES DE FOND :\n"
-        "- Base-toi EXCLUSIVEMENT sur les données fournies ; n'invente aucun chiffre.\n"
-        "- Adopte un ton de conseil stratégique pour un DRH : chaque donnée doit être INTERPRÉTÉE "
-        "(ce qu'elle signifie, ce qu'elle implique pour l'organisation), jamais seulement citée.\n"
-        "- Mets les résultats en perspective avec les repères et méthodologies de l'ANACT (Agence "
-        "nationale pour l'amélioration des conditions de travail) lorsque c'est pertinent.\n\n"
-        "STRUCTURE OBLIGATOIRE (titres de section en texte simple sur leur propre ligne, SANS aucun "
-        "symbole markdown comme # ou *) :\n"
-        "1. Synthèse d'ouverture situant la période et le niveau d'engagement global.\n"
-        "2. Analyse de la fréquentation et de son évolution (semaine par semaine, comparaison avec "
-        "la période précédente).\n"
-        "3. Analyse des usages (ateliers phares) et du ressenti des collaborateurs, y compris les "
-        "écarts entre départements.\n"
-        "4. Section intitulée « Points de vigilance ».\n"
-        "5. Section intitulée « Recommandations prioritaires » : actions concrètes et hiérarchisées, "
-        "avec pour chacune un responsable suggéré (ex. DRH, manager de proximité, CSSCT, référent QVCT).\n"
-        + section_companion +
-        "Termine par une projection argumentée sur le trimestre suivant.\n\n"
-        "FORME : minimum 500 mots. Paragraphes aérés séparés par une ligne vide. Aucun markdown."
+        "Tu es consultant QVCT senior pour beOtop ; tu conseilles la DRH et la CSSCT. "
+        "À partir des chiffres clés fournis, rédige en français une synthèse stratégique "
+        "CONCISE (300 à 400 mots maximum). Interprète les chiffres (sens et implications "
+        "pour l'organisation) au lieu de seulement les répéter, et n'invente aucune donnée. "
+        "Structure, en texte simple sans markdown : un court paragraphe de synthèse ; "
+        "un paragraphe « Points de vigilance » ; un paragraphe « Recommandations prioritaires » "
+        "(2 à 3 actions concrètes, chacune avec un responsable suggéré : DRH, manager de "
+        "proximité, CSSCT ou référent QVCT) ; une phrase de projection sur le trimestre suivant. "
+        "Si des données Companion sont fournies, intègre brièvement l'engagement digital. "
+        "Réfère-toi aux repères ANACT uniquement si pertinent. Paragraphes séparés par une "
+        "ligne vide ; aucun symbole markdown."
     )
     user_prompt = (
-        "Voici les données agrégées d'utilisation de l'espace beOtop (espace physique"
-        + (" + application Companion" if comp.get('present') else "")
-        + ") sur la période : " + periode_label + ".\n\n" + data_str
-        + "\n\nRédige le rapport stratégique en respectant scrupuleusement la structure et les exigences ci-dessus."
+        "Chiffres clés d'utilisation de l'espace beOtop sur la période « " + periode_label
+        + " » :\n\n" + data_str + "\n\nRédige la synthèse stratégique demandée."
     )
     try:
         client = anthropic.Anthropic(api_key=api_key)
         msg = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=5000,
-            thinking={"type": "adaptive"},
+            max_tokens=800,
+            thinking={"type": "disabled"},
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
