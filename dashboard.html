@@ -456,6 +456,15 @@
       <span class="qvct-saved" id="q-sal-saved">✓ Enregistré</span>
       <span style="font-size:.6rem;color:var(--muted)">Mémorisé par site dans le navigateur · requis pour le taux de pénétration et la fréquence</span>
     </div>
+    <div class="card" style="margin-top:1rem;margin-bottom:1rem">
+      <div class="card-title">&#10024; Rapport narratif IA</div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem">
+        <button id="btn-generer-rapport" class="btn-apply" style="margin-top:0" onclick="genererRapport()">&#10024; Générer le rapport IA</button>
+        <div id="rapport-ia-sub" style="font-size:.6rem;color:var(--muted)">Synthèse de l'activité beOtop générée par intelligence artificielle</div>
+      </div>
+      <div style="font-size:.55rem;color:var(--muted);margin-bottom:.9rem">Analyse rédigée à partir des données agrégées de la période sélectionnée · k-anonymat respecté · données beOtop</div>
+      <div id="rapport-ia-zone" style="font-size:.74rem;line-height:1.6;color:var(--text)"><div class="sensor-empty">Cliquez sur « Générer le rapport IA » pour produire une synthèse narrative de l'activité QVCT sur la période sélectionnée.</div></div>
+    </div>
     <div class="qvct-kpi-row">
       <div class="qvct-score" style="--accent:var(--sage)"><div class="qvct-score-lbl">Indice de récupération</div><div class="qvct-big" id="q-indice">—</div><div class="qvct-sub">% Rechargé + Mieux (kiosque)</div><div id="q-indice-badge"></div></div>
       <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Taux de pénétration RH</div><div class="qvct-big" id="q-penetration" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-penetration-sub">séances / collaborateurs</div></div>
@@ -523,15 +532,6 @@
       <div style="font-size:.55rem;color:var(--sage);margin-bottom:.3rem">🔒 Données agrégées · k-anonymat k≥5 · RGPD Art. 89</div>
       <div style="font-size:.58rem;color:var(--muted);margin-bottom:.9rem">Quel atelier génère quel ressenti · base : sessions kiosque déclaratives</div>
       <div class="am-heatmap-wrap" id="q-atelier-mood-heatmap"></div>
-    </div>
-    <div class="card" style="margin-top:1rem;margin-bottom:1rem">
-      <div class="card-title">&#10024; Rapport narratif IA</div>
-      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem">
-        <button id="btn-generer-rapport" class="btn-apply" style="margin-top:0" onclick="genererRapport()">&#10024; Générer le rapport IA</button>
-        <div id="rapport-ia-sub" style="font-size:.6rem;color:var(--muted)">Synthèse de l'activité beOtop générée par intelligence artificielle</div>
-      </div>
-      <div style="font-size:.55rem;color:var(--muted);margin-bottom:.9rem">Analyse rédigée à partir des données agrégées de la période sélectionnée · k-anonymat respecté · données beOtop</div>
-      <div id="rapport-ia-zone" style="font-size:.74rem;line-height:1.6;color:var(--text)"><div class="sensor-empty">Cliquez sur « Générer le rapport IA » pour produire une synthèse narrative de l'activité QVCT sur la période sélectionnée.</div></div>
     </div>
   </div>
 
