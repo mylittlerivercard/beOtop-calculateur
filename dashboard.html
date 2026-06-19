@@ -271,6 +271,12 @@
 .ca-top-rank { font-size:.65rem; color:var(--text-muted); width:20px; }
 .ca-top-badge { font-size:.6rem; padding:.15rem .5rem; border-radius:20px; background:rgba(201,169,110,.1); color:var(--gold); }
 @media(max-width:700px){ .ca-charts{ grid-template-columns:1fr; } }
+@media print {
+  body * { visibility: hidden !important; }
+  #rapport-ia-zone, #rapport-ia-zone * { visibility: visible !important; }
+  #rapport-ia-zone { position: absolute; left: 0; top: 0; width: 100%; display: block !important; font-size: 11pt; line-height: 1.8; color: #000; }
+  #btn-generer-rapport, #btn-export-rapport { display: none !important; }
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -456,10 +462,11 @@
       <span class="qvct-saved" id="q-sal-saved">✓ Enregistré</span>
       <span style="font-size:.6rem;color:var(--muted)">Mémorisé par site dans le navigateur · requis pour le taux de pénétration et la fréquence</span>
     </div>
-    <div class="card" style="margin-top:1rem;margin-bottom:1rem">
+    <div class="card" style="margin-top:1rem;margin-bottom:2rem">
       <div class="card-title">&#10024; Rapport narratif IA</div>
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem">
         <button id="btn-generer-rapport" class="btn-apply" style="margin-top:0" onclick="genererRapport()">&#10024; Générer le rapport IA</button>
+        <button id="btn-export-rapport" onclick="exportRapportPDF()" style="display:none; background:transparent; color:var(--gold); border:1px solid var(--gold); border-radius:10px; padding:.65rem 1.2rem; font-size:.8rem; font-weight:600; cursor:pointer; margin-left:.6rem;">&#11015; Export PDF</button>
         <div id="rapport-ia-sub" style="font-size:.6rem;color:var(--muted)">Synthèse de l'activité beOtop générée par intelligence artificielle</div>
       </div>
       <div style="font-size:.55rem;color:var(--muted);margin-bottom:.9rem">Analyse rédigée à partir des données agrégées de la période sélectionnée · k-anonymat respecté · données beOtop</div>
@@ -1021,11 +1028,18 @@ async function genererRapport(){
     var html=(d.rapport||'').split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p style="margin:0 0 .8rem">'+escapeRapport(p.trim()).replace(/\n/g,'<br>')+'</p>';}).join('');
     zone.innerHTML=html||'<div class="sensor-empty">Aucun contenu généré.</div>';
     if(d.periode_label)sub.textContent='Période analysée : '+d.periode_label;
+    document.getElementById('btn-export-rapport').style.display='inline-block';
   }catch(e){
     zone.innerHTML='<div class="sensor-empty">Impossible de générer le rapport : '+escapeRapport(e.message||'erreur inconnue')+'</div>';
   }finally{
     btn.disabled=false;btn.textContent=old;
   }
+}
+function exportRapportPDF(){
+  var titre=document.title;
+  document.title='Rapport beOtop — '+(window.qvctSite||'')+' — '+(window.qvctPeriod||'');
+  window.print();
+  document.title=titre;
 }
 
 async function loadQvct(){
