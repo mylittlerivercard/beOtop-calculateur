@@ -3543,10 +3543,12 @@ def admin_retribution_synthese():
                         COUNT(*) AS nb_clics,
                         (SELECT COUNT(*) FROM companion_content_plays cp2
                          WHERE cp2.created_at::date BETWEEN %s AND %s
-                           AND cp2.content_type != 'post_interne') AS total_clics
+                           AND cp2.content_type != 'post_interne'
+                           AND COALESCE(TRIM(cp2.intervenant_nom),'') <> '') AS total_clics
                     FROM companion_content_plays
                     WHERE created_at::date BETWEEN %s AND %s
                       AND content_type != 'post_interne'
+                      AND COALESCE(TRIM(intervenant_nom),'') <> ''
                     GROUP BY TRIM(intervenant_nom)
                 ) cp ON TRIM(cp.intervenant_nom) = TRIM(i.nom)
                 WHERE i.actif = TRUE
@@ -3564,42 +3566,7 @@ def admin_retribution_synthese():
             row = cur.fetchone()
             ca_semestre_total = float(row['ca_semestre_total'] or 0) if row else 0
 
-            # 3. CA semestriel par site pour calcul par intervenant
-            cur.execute("""
-                SELECT slug, tarif_annuel, nb_salaries,
-                       (tarif_annuel * nb_salaries) / 2 AS ca_semestre
-                FROM sites
-                WHERE has_companion = 1 AND tarif_annuel > 0 AND nb_salaries > 0 AND actif = 1
-            """)
-            sites = [serialize_row(r) for r in cur.fetchall()]
-
-            # 4. Clics par intervenant par site
-            cur.execute("""
-                SELECT
-                    TRIM(intervenant_nom) AS intervenant,
-                    site_slug,
-                    COUNT(*) AS nb_clics_site,
-                    (SELECT COUNT(*) FROM companion_content_plays cp2
-                     WHERE cp2.site_slug = cp.site_slug
-                     AND cp2.created_at::date BETWEEN %s AND %s
-                     AND cp2.content_type != 'post_interne') AS total_clics_site
-                FROM companion_content_plays cp
-                WHERE created_at::date BETWEEN %s AND %s
-                  AND content_type != 'post_interne'
-                  AND TRIM(intervenant_nom) IN (
-                      SELECT TRIM(nom) FROM intervenants WHERE actif = TRUE
-                  )
-                GROUP BY TRIM(intervenant_nom), site_slug
-            """, [date_from, date_to, date_from, date_to])
-            clics_par_site = {}
-            for r in cur.fetchall():
-                sr = serialize_row(r)
-                inv = sr['intervenant']
-                if inv not in clics_par_site:
-                    clics_par_site[inv] = []
-                clics_par_site[inv].append(sr)
-
-            # 5. Commission apport par intervenant
+            # 3. Commission apport par intervenant
             cur.execute("""
                 SELECT
                     i.id AS inv_id,
@@ -3619,7 +3586,6 @@ def admin_retribution_synthese():
                        for r in cur.fetchall()}
 
     # Calculer rétribution contenu par intervenant
-    sites_dict = {s['slug']: s for s in sites}
     resultats = []
     total_contenu = 0
     total_apport  = 0
@@ -3628,16 +3594,11 @@ def admin_retribution_synthese():
         nom  = inv['intervenant']
         taux = float(inv['taux'] or 30) / 100
 
-        # Rétribution contenu = somme sur chaque site (CA site × part clics inv × taux)
-        retrib_contenu = 0
-        for cs in clics_par_site.get(nom, []):
-            site = sites_dict.get(cs['site_slug'])
-            if site and cs['total_clics_site']:
-                ca_site = float(site['ca_semestre'] or 0)
-                pct = int(cs['nb_clics_site']) / int(cs['total_clics_site'])
-                retrib_contenu += ca_site * pct * taux
-
-        retrib_contenu = round(retrib_contenu, 2)
+        # Rétribution contenu = part des clics intervenants × taux × CA global beOtop
+        # (CA global = somme des sites companion actifs, pas le CA des sites concernés)
+        total_clics_inv = int(inv['total_clics'] or 0)
+        nb_clics_inv    = int(inv['nb_clics'] or 0)
+        retrib_contenu  = round((nb_clics_inv / total_clics_inv) * taux * ca_semestre_total, 2) if total_clics_inv else 0
 
         # Commission apport
         ca_apport   = apports.get(nom, 0)
@@ -3677,80 +3638,80 @@ def admin_retribution_synthese():
 def admin_calcul_semestre():
     """
     Calcule et persiste la rétribution semestrielle pour tous les intervenants.
-    Corps JSON : { annee: 2026, semestre: 1, tarif_par_utilisateur: 5.0 }
+    Rétribution contenu = part des clics intervenants × taux × CA global beOtop.
+    Une ligne agrégée par intervenant (site_slug = '').
+    Corps JSON : { annee: 2026, semestre: 1 }
     """
     data      = request.get_json() or {}
     annee     = int(data.get('annee',    date.today().year))
     semestre  = int(data.get('semestre', 1 if date.today().month <= 6 else 2))
-    tarif     = float(data.get('tarif_par_utilisateur', 0))
     sem_clause = _get_semestre_clause(annee, semestre)
 
     with get_db() as conn:
         with conn.cursor() as cur:
-            # Total clics période
+            # Total des clics attribués à des intervenants (dénominateur de la part)
             cur.execute(f"""
                 SELECT COUNT(*) as total FROM companion_content_plays
-                WHERE content_type != 'post_interne' AND {sem_clause}
+                WHERE content_type != 'post_interne'
+                  AND COALESCE(TRIM(intervenant_nom),'') <> ''
+                  AND {sem_clause}
             """)
             total_clics = int((cur.fetchone() or {}).get('total', 0) or 0)
 
-            # Utilisateurs actifs par site sur la période
-            cur.execute(f"""
-                SELECT site_slug, COUNT(DISTINCT user_id) as nb_actifs
-                FROM companion_content_plays
-                WHERE {sem_clause} AND user_id IS NOT NULL
-                GROUP BY site_slug
+            # CA global beOtop = somme des sites companion actifs (tarif × salariés / 2)
+            cur.execute("""
+                SELECT COALESCE(SUM(tarif_annuel * nb_salaries), 0) / 2 AS ca_global
+                FROM sites
+                WHERE has_companion = 1 AND tarif_annuel > 0 AND nb_salaries > 0 AND actif = 1
             """)
-            actifs_par_site = {r['site_slug']: int(r['nb_actifs']) for r in cur.fetchall()}
+            ca_global = float((cur.fetchone() or {}).get('ca_global', 0) or 0)
 
-            # Clics par intervenant et par site
+            # Clics agrégés par intervenant (tous sites confondus)
             cur.execute(f"""
-                SELECT intervenant_nom, site_slug, COUNT(*) as nb_clics
+                SELECT TRIM(intervenant_nom) AS nom, COUNT(*) as nb_clics
                 FROM companion_content_plays
                 WHERE content_type != 'post_interne'
-                  AND intervenant_nom IS NOT NULL
-                  AND intervenant_nom != ''
+                  AND COALESCE(TRIM(intervenant_nom),'') <> ''
                   AND {sem_clause}
-                GROUP BY intervenant_nom, site_slug
+                GROUP BY TRIM(intervenant_nom)
             """)
-            clics_rows = cur.fetchall()
+            clics_par_inv = {r['nom']: int(r['nb_clics']) for r in cur.fetchall()}
 
             # Intervenants actifs
             cur.execute("SELECT id, nom, taux_contenu FROM intervenants WHERE actif=TRUE")
-            intervenants = {r['nom']: r for r in cur.fetchall()}
+            intervenants = cur.fetchall()
+
+            # Recalcul : on repart d'une table propre pour ce semestre
+            # (évite les lignes par-site héritées de l'ancien algorithme)
+            cur.execute("DELETE FROM retribution_semestres WHERE annee=%s AND semestre=%s",
+                        [annee, semestre])
 
             inserted = 0
-            for row in clics_rows:
-                nom      = row['intervenant_nom']
-                slug     = row['site_slug']
-                nb_clics = int(row['nb_clics'])
-                inv      = intervenants.get(nom)
-                if not inv:
+            for inv in intervenants:
+                nb_clics = clics_par_inv.get((inv['nom'] or '').strip(), 0)
+                if not nb_clics:
                     continue
-
-                pct      = round(nb_clics / total_clics * 100, 2) if total_clics else 0
-                nb_actifs = actifs_par_site.get(slug, 0)
-                ca_site   = nb_actifs * tarif * 6  # 6 mois
-                taux      = float(inv['taux_contenu'] or 30) / 100
-                montant   = round(ca_site * taux * (nb_clics / total_clics), 2) if total_clics else 0
+                taux    = float(inv['taux_contenu'] or 30) / 100
+                pct     = round(nb_clics / total_clics * 100, 2) if total_clics else 0
+                montant = round((nb_clics / total_clics) * taux * ca_global, 2) if total_clics else 0
 
                 cur.execute("""
                     INSERT INTO retribution_semestres
                         (annee, semestre, intervenant_id, site_slug, nb_clics,
                          pct_clics, ca_site, montant_contenu, statut)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'calcule')
+                    VALUES (%s,%s,%s,'',%s,%s,%s,%s,'calcule')
                     ON CONFLICT (annee, semestre, intervenant_id, site_slug)
-                    DO UPDATE SET nb_clics=%s, pct_clics=%s, ca_site=%s,
-                                  montant_contenu=%s, statut='calcule'
-                """, [annee, semestre, inv['id'], slug, nb_clics,
-                      pct, ca_site, montant,
-                      nb_clics, pct, ca_site, montant])
+                    DO UPDATE SET nb_clics=EXCLUDED.nb_clics, pct_clics=EXCLUDED.pct_clics,
+                                  ca_site=EXCLUDED.ca_site, montant_contenu=EXCLUDED.montant_contenu,
+                                  statut='calcule'
+                """, [annee, semestre, inv['id'], nb_clics, pct, ca_global, montant])
                 inserted += 1
 
             conn.commit()
 
     return jsonify({'ok': True, 'annee': annee, 'semestre': semestre,
-                    'lignes': inserted, 'total_clics': total_clics})
+                    'lignes': inserted, 'total_clics': total_clics,
+                    'ca_global': round(ca_global, 2)})
 
 
 # ========== PAGES HTML — Espace intervenant ==========
