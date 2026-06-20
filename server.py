@@ -622,7 +622,7 @@ def auth_login():
     session['nom']       = user['nom']
     return jsonify({
         'ok': True, 'role': user['role'], 'nom': user['nom'],
-        'redirect': '/admin' if user['role'] == 'admin' else ('/mon-espace' if user['role'] == 'intervenant' else ('/dashboard' if user['role'] in ('manager', 'client') else '/companion_pwa'))
+        'redirect': '/admin' if user['role'] == 'admin' else ('/mon-espace' if user['role'] == 'intervenant' else ('/companion_pwa' if user['role'] == 'user' else ('/dashboard' if user['role'] in ('manager', 'client') else '/companion_pwa')))
     })
 
 @app.route('/api/auth/logout', methods=['POST'])
@@ -873,7 +873,7 @@ def admin_create_user():
 def admin_update_user(user_id):
     data = request.get_json() or {}
     role = (data.get('role') or 'client').strip()
-    if role not in ('admin', 'client', 'intervenant', 'manager'):
+    if role not in ('admin', 'user', 'client', 'intervenant', 'manager'):
         return jsonify({'error': 'Rôle invalide'}), 400
     client_id = data.get('client_id') or None
     with get_db() as conn:
