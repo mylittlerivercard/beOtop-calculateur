@@ -3359,18 +3359,42 @@ def intervenant_stats():
             if not inv:
                 return jsonify({'error': 'Intervenant introuvable'}), 404
 
+            # ── Réconciliation du nom (prénom court ↔ nom complet des clics) ─────
+            # Les clics sont enregistrés sous le nom complet du contenu
+            # (ex. "Nathalie Jalenques"), alors que `intervenants.nom` peut n'être
+            # qu'un prénom (ex. "Nathalie"). On retrouve le nom complet réellement
+            # utilisé dans les clics pour matcher dessus, au lieu d'une égalité stricte.
+            base_nom   = (inv.get('nom') or '').strip()
+            match_noms = [base_nom] if base_nom else []
+            if base_nom and ' ' not in base_nom:
+                cur.execute("""
+                    SELECT DISTINCT TRIM(intervenant_nom) AS nom
+                    FROM companion_content_plays
+                    WHERE COALESCE(TRIM(intervenant_nom),'') <> ''
+                      AND TRIM(intervenant_nom) ILIKE %s
+                """, [base_nom + ' %'])
+                variants = sorted({(_r.get('nom') or '').strip() for _r in cur.fetchall()} - {''})
+                # On ne complète qu'en l'absence d'ambiguïté (un seul nom complet trouvé)
+                if len(variants) == 1:
+                    full_nom = variants[0]
+                    if full_nom not in match_noms:
+                        match_noms.append(full_nom)
+                    inv['nom'] = full_nom  # affichage + filtrage front sur le nom complet
+            if not match_noms:
+                match_noms = [base_nom]
+
             # Clics par contenu sur la période
             cur.execute(f"""
                 SELECT content_type, content_label, site_slug,
                        COUNT(*) as nb_clics,
                        ROUND(COALESCE(SUM(duree_sec),0)/60.0,1) as duree_min
                 FROM companion_content_plays
-                WHERE intervenant_nom = %s
+                WHERE TRIM(intervenant_nom) = ANY(%s)
                   AND content_type != 'post_interne'
                   AND {sem_clause}
                 GROUP BY content_type, content_label, site_slug
                 ORDER BY nb_clics DESC
-            """, [inv['nom']])
+            """, [match_noms])
             clics_detail = [serialize_row(r) for r in cur.fetchall()]
 
             # Total clics intervenant sur la période
@@ -3419,11 +3443,11 @@ def intervenant_stats():
                            COALESCE(s.nb_salaries, 0)   as nb_salaries
                     FROM companion_content_plays cp
                     LEFT JOIN sites s ON s.slug = cp.site_slug
-                    WHERE cp.intervenant_nom = %s
+                    WHERE TRIM(cp.intervenant_nom) = ANY(%s)
                       AND cp.content_type != 'post_interne'
                       AND {cp_sem_clause}
                     GROUP BY cp.site_slug, s.tarif_annuel, s.nb_salaries
-                """, [inv['nom']])
+                """, [match_noms])
                 clics_par_site = [serialize_row(r) for r in cur.fetchall()]
             except Exception:
                 conn.rollback()
@@ -3437,11 +3461,11 @@ def intervenant_stats():
                            0 as tarif_annuel,
                            0 as nb_salaries
                     FROM companion_content_plays cp
-                    WHERE intervenant_nom = %s
+                    WHERE TRIM(intervenant_nom) = ANY(%s)
                       AND content_type != 'post_interne'
                       AND {sem_clause}
                     GROUP BY site_slug
-                """, [inv['nom']])
+                """, [match_noms])
                 clics_par_site = [serialize_row(r) for r in cur.fetchall()]
 
             # Historique semestres précédents
