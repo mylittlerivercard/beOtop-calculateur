@@ -4108,7 +4108,7 @@ function doRegister() {{
     if (res.ok) {{
       msg.className='msg ok';
       msg.textContent='✓ Compte créé ! Redirection…';
-      setTimeout(function(){{ window.location.href='/companion'; }}, 1500);
+      setTimeout(function(){{ window.location.href='/companion_pwa'; }}, 1500);
     }} else {{
       msg.className='msg err';
       msg.textContent = res.d.error || "Erreur lors de l'inscription.";
