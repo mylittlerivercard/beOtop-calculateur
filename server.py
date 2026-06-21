@@ -3380,6 +3380,29 @@ def intervenant_stats():
                     if full_nom not in match_noms:
                         match_noms.append(full_nom)
                     inv['nom'] = full_nom  # affichage + filtrage front sur le nom complet
+
+            # ── Source de vérité du nom complet : la fiche companion_intervenants ─
+            # `intervenants.nom` peut n'être qu'un prénom court (ex. "Nathalie") et
+            # aucun clic ne permet encore de le réconcilier. On lit alors le nom
+            # complet (ex. "Nathalie Jalenques") depuis companion_intervenants, qui
+            # sert de référence pour le champ `intervenant` des contenus créés.
+            cur_nom = (inv.get('nom') or '').strip()
+            if cur_nom and ' ' not in cur_nom:
+                cur.execute("""
+                    SELECT DISTINCT TRIM(nom) AS nom
+                    FROM companion_intervenants
+                    WHERE COALESCE(TRIM(nom),'') <> ''
+                      AND (TRIM(nom) ILIKE %s OR TRIM(nom) = %s)
+                """, [cur_nom + ' %', cur_nom])
+                ci_full = sorted({(_r.get('nom') or '').strip() for _r in cur.fetchall()
+                                  if ' ' in (_r.get('nom') or '').strip()})
+                # On ne complète qu'en l'absence d'ambiguïté (un seul nom complet)
+                if len(ci_full) == 1:
+                    full_nom = ci_full[0]
+                    if full_nom not in match_noms:
+                        match_noms.append(full_nom)
+                    inv['nom'] = full_nom
+
             if not match_noms:
                 match_noms = [base_nom]
 
