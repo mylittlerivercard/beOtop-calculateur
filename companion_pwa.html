@@ -7701,13 +7701,76 @@ function getIntervenantPhoto(nomIntervenant) {
   return null;
 }
 
+/* ════ UPLOAD D'IMAGES — Cloudinary (unsigned) ════
+   Les intervenants uploadent leurs visuels directement, sans passer par /static/. */
+async function uploadCloudinary(file) {
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', 'tg9pkedb');
+  fd.append('folder', 'beotop');
+  var resp = await fetch('https://api.cloudinary.com/v1_1/dpajk1wrl/image/upload', {
+    method: 'POST',
+    body: fd
+  });
+  var data = await resp.json();
+  if (data.secure_url) return data.secure_url;
+  throw new Error('Upload Cloudinary échoué : ' + JSON.stringify(data));
+}
+
+/* Source d'affichage d'une photo : URL complète (Cloudinary, http…) telle quelle,
+   sinon nom de fichier hébergé dans /static/ (compatibilité ascendante). */
+function _photoSrc(photo) {
+  if (!photo) return '';
+  return /^https?:\/\//i.test(photo) ? photo : ('/static/' + photo);
+}
+
+/* Champ photo réutilisable : input file → upload Cloudinary → aperçu + URL cachée.
+   prefix = au | df | hu | re … ; currentUrl = valeur déjà enregistrée (édition). */
+function _photoField(prefix, currentUrl) {
+  currentUrl = currentUrl || '';
+  var src = _photoSrc(currentUrl);
+  return '<div class="form-field"><label>Photo</label>'
+    + '<input type="file" id="f-' + prefix + '-photo-file" accept="image/jpeg,image/png,image/webp" style="font-size:.78rem" onchange="_onPhotoFile(this,\'' + prefix + '\')">'
+    + '<input type="hidden" id="f-' + prefix + '-photo-url" value="' + currentUrl + '">'
+    + '<div id="f-' + prefix + '-photo-preview" style="margin-top:.5rem;' + (currentUrl ? '' : 'display:none') + '">'
+    + '<img id="f-' + prefix + '-photo-img" src="' + src + '" style="width:100%;border-radius:8px;max-height:150px;object-fit:cover"></div>'
+    + '<div id="f-' + prefix + '-photo-status" style="font-size:.65rem;color:var(--text-muted);margin-top:.3rem">' + (currentUrl ? 'Image actuelle — choisissez un fichier pour la remplacer' : 'JPG, PNG ou WebP') + '</div>'
+    + '</div>';
+}
+
+/* Handler onchange : upload du fichier choisi, aperçu, statut, stockage de l'URL. */
+async function _onPhotoFile(input, prefix) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var status = document.getElementById('f-' + prefix + '-photo-status');
+  if (status) { status.textContent = '⏳ Upload en cours…'; status.style.color = 'var(--text-muted)'; }
+  try {
+    var url = await uploadCloudinary(file);
+    var urlEl = document.getElementById('f-' + prefix + '-photo-url');
+    var img   = document.getElementById('f-' + prefix + '-photo-img');
+    var prev  = document.getElementById('f-' + prefix + '-photo-preview');
+    if (urlEl) urlEl.value = url;
+    if (img)   img.src = url;
+    if (prev)  prev.style.display = '';
+    if (status) { status.textContent = '✓ Image uploadée'; status.style.color = '#16a34a'; }
+  } catch (e) {
+    if (status) { status.textContent = '⚠ Échec de l\'upload — réessayez'; status.style.color = '#dc2626'; }
+  }
+}
+
+/* Valeur photo à enregistrer : URL Cloudinary du champ caché, repli sur l'ancienne. */
+function _photoVal(prefix, fallback) {
+  var el = document.getElementById('f-' + prefix + '-photo-url');
+  return el ? (el.value || '') : (fallback || '');
+}
+
 /* Header de card uniforme : photo d'illustration OU photo intervenant OU emoji,
    + avatar rond de l'intervenant en overlay dès qu'un intervenant a une photo.
    opts: { icon, fallbackImg } */
 function _cardHeader(item, opts) {
   opts = opts || {};
   var icon = opts.icon || (item && item.icon) || '🎵';
-  var illus = (item && item.photo) ? ('/static/' + item.photo) : '';
+  var illus = (item && item.photo) ? _photoSrc(item.photo) : '';
   var invFile = (item && item.intervenant) ? getIntervenantPhoto(item.intervenant) : null;
   var invUrl = invFile ? ('/static/' + invFile) : '';
   var headerImg = opts.fallbackImg || illus || invUrl;
@@ -8634,7 +8697,7 @@ function openAddAudio() {
       <input type="text" id="f-au-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" placeholder="binaural.jpg"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji</div></div>
+    ${_photoField('au','')}
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" placeholder="Description courte"></div>
     <div class="form-field"><label>URL audio (YouTube embed)</label><input type="text" id="f-au-url" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible · Vimeo aussi accepté</div></div>
@@ -8656,7 +8719,7 @@ function saveAudio() {
     titre: titre,
     categorie: getCatValue('f-au-cat','f-au-newcat'),
     duree: document.getElementById('f-au-duree').value || '10 min',
-    photo: document.getElementById('f-au-photo') ? document.getElementById('f-au-photo').value.trim() : '',
+    photo: _photoVal('au'),
     icon: document.getElementById('f-au-icon').value || '🎵',
     description: document.getElementById('f-au-desc').value,
     url_audio: document.getElementById('f-au-url').value.trim(),
@@ -8671,7 +8734,7 @@ function editAudio(id) {
   openModal('Modifier ' + a.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" value="${a.titre}"></div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" value="${a.duree}"></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-au-photo" value="${a.photo||''}" placeholder="binaural.jpg"></div>
+    ${_photoField('au', a.photo||'')}
     <div class="form-field"><label>Icône</label><input type="text" id="f-au-icon" value="${a.icon}" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-au-desc" value="${a.description}"></div>
     <div class="form-field"><label>URL audio (YouTube/Vimeo embed)</label><input type="text" id="f-au-url" value="${a.url_audio||''}"></div>
@@ -8690,7 +8753,7 @@ function updateAudio(id) {
     icon:  document.getElementById('f-au-icon').value,
     description: document.getElementById('f-au-desc').value,
     url_audio: document.getElementById('f-au-url').value.trim(),
-    photo: document.getElementById('f-au-photo') ? document.getElementById('f-au-photo').value.trim() : (a.photo||'')
+    photo: _photoVal('au', a.photo||'')
   });
   if (a.db_id) { _contenuUpdate(a.db_id, 'audio', item, renderAudio); return; }
   Object.assign(a, item);
@@ -9147,8 +9210,7 @@ function _defiForm(d) {
     + '<input id="f-df-desc" value="' + (v.description||'') + '" placeholder="Faire deux t\u00e2ches simultan\u00e9ment \u00b7 Double attention" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">URL audio (chemin /audio/...)</label>'
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
-    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Photo d\'illustration (fichier dans /static/)</label>'
-    + '<input id="f-df-photo" value="' + (v.photo||'') + '" placeholder="defi.jpg" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Vide = photo de l\'intervenant, sinon icône</div></div>'
+    + _photoField('df', v.photo||'')
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
     + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"attention\">Attention & focus</option><option value=\"cognition\">Cognition générale</option><option value=\"creativite\">Créativité</option><option value=\"double-tache\">Double tâche</option><option value=\"flexibilite\">Flexibilité mentale</option><option value=\"inhibition\">Inhibition de réponse</option><option value=\"logique\">Logique</option><option value=\"memoire\">Mémoire de travail</option><option value=\"neurosciences\">Neurosciences appliquées</option><option value=\"reflexes\">Réflexes</option><option value=\"resilience\">Résilience</option><option value=\"vitesse\">Vitesse de traitement</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
@@ -9191,7 +9253,7 @@ function saveDefi(existingId) {
     titre:       titre.trim(),
     description: (document.getElementById('f-df-desc')||{}).value||'',
     url_audio:   ((document.getElementById('f-df-url')||{}).value||'').trim(),
-    photo:       ((document.getElementById('f-df-photo')||{}).value||'').trim(),
+    photo:       _photoVal('df'),
     categorie: getCatValue('f-df-cat','f-df-newcat'),
     intervenant: (document.getElementById('f-df-intervenant')||{}).value||'',
     duree:       (document.getElementById('f-df-duree')||{}).value||'',
@@ -9674,10 +9736,7 @@ function openAddHuile() {
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5" placeholder="Propri\u00e9t\u00e9s, usages, pr\u00e9cautions..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
     <div class="form-field"><label>URL vid\u00e9o (YouTube embed)</label><input type="text" id="f-hu-video" placeholder="https://www.youtube.com/embed/..."><div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide si pas encore disponible \u00b7 Vimeo aussi accept\u00e9</div></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label>
-      <input type="text" id="f-hu-photo" placeholder="lavande.jpg">
-      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji \ud83c\udf3f</div>
-    </div>
+    ${_photoField('hu','')}
     <div class="form-field"><label>Intervenant</label>
       <select id="f-hu-intervenant" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">
         <option value="">\u2014 Aucun \u2014</option>
@@ -9699,7 +9758,7 @@ function saveHuile() {
     contenu: document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
     url_video: document.getElementById('f-hu-video').value.trim(),
-    photo: document.getElementById('f-hu-photo') ? document.getElementById('f-hu-photo').value.trim() : '',
+    photo: _photoVal('hu'),
     intervenant: document.getElementById('f-hu-intervenant').value,
     icon: '\ud83c\udf3f',
     statut: 'active'
@@ -9715,7 +9774,7 @@ function editHuile(id) {
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
     <div class="form-field"><label>URL vid\u00e9o (YouTube embed)</label><input type="text" id="f-hu-video" value="${h.url_video||''}" placeholder="https://www.youtube.com/embed/..."></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label><input type="text" id="f-hu-photo" value="${h.photo||''}" placeholder="lavande.jpg"></div>
+    ${_photoField('hu', h.photo||'')}
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateHuile(${id})">\u2713 Enregistrer</button>
@@ -9731,7 +9790,7 @@ function updateHuile(id) {
     contenu:     document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
     url_video:   document.getElementById('f-hu-video').value.trim(),
-    photo:       document.getElementById('f-hu-photo') ? document.getElementById('f-hu-photo').value.trim() : (h.photo||'')
+    photo:       _photoVal('hu', h.photo||'')
   });
   if (h.db_id) { _contenuUpdate(h.db_id, 'huile', item, renderHuiles); return; }
   Object.assign(h, item);
@@ -9785,7 +9844,7 @@ function openRecette(id) {
   logPlay('recette', r.titre, r.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   awardPoints('recette', r.titre);
   var body = '<div class="audio-title" style="font-size:1.1rem;margin-bottom:.5rem">' + r.titre + '</div>'
-    + (r.photo ? '<img src="/static/' + r.photo + '" style="display:block;width:100%;height:auto;border-radius:10px;margin-bottom:1rem;object-fit:contain;" loading="lazy">' : '')
+    + (r.photo ? '<img src="' + _photoSrc(r.photo) + '" style="display:block;width:100%;height:auto;border-radius:10px;margin-bottom:1rem;object-fit:contain;" loading="lazy">' : '')
     + (r.description ? '<p style="font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:1rem">' + r.description + '</p>' : '')
     + (r.contenu ? '<div style="font-size:.82rem;color:var(--text);line-height:1.8;white-space:pre-wrap">' + r.contenu + '</div>' : '')
     + (r.url_externe ? '<a href="' + r.url_externe + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem;background:rgba(202,138,4,.1);border:1px solid rgba(202,138,4,.2);border-radius:10px;color:#ca8a04;font-size:.75rem;font-weight:600;text-decoration:none">\ud83d\udd17 Voir la recette compl\u00e8te</a>' : '');
@@ -9808,10 +9867,7 @@ function openAddRecette() {
       <input type="text" id="f-re-newcat" placeholder="Nom de la cat\u00e9gorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
     </div>
     <div class="form-field"><label>Dur\u00e9e de pr\u00e9paration</label><input type="text" id="f-re-duree" placeholder="5 min"></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label>
-      <input type="text" id="f-re-photo" placeholder="infusion-romarin.jpg">
-      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">Laisser vide pour afficher l'emoji \ud83e\udd57</div>
-    </div>
+    ${_photoField('re','')}
     <div class="form-field"><label>Description courte</label><input type="text" id="f-re-desc" placeholder="Id\u00e9al pour le coup de barre de 15h..."></div>
     <div class="form-field"><label>Contenu / Ingr\u00e9dients & pr\u00e9paration</label><textarea id="f-re-contenu" rows="6" placeholder="Ingr\u00e9dients :&#10;- ...&#10;&#10;Pr\u00e9paration :&#10;1. ..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-re-url" placeholder="https://..."></div>
@@ -9836,7 +9892,7 @@ function saveRecette() {
     description: document.getElementById('f-re-desc').value,
     contenu: document.getElementById('f-re-contenu').value,
     url_externe: document.getElementById('f-re-url').value.trim(),
-    photo: document.getElementById('f-re-photo') ? document.getElementById('f-re-photo').value.trim() : '',
+    photo: _photoVal('re'),
     intervenant: document.getElementById('f-re-intervenant').value,
     icon: '\ud83e\udd57',
     statut: 'active'
@@ -9852,10 +9908,7 @@ function editRecette(id) {
     <div class="form-field"><label>Description</label><input type="text" id="f-re-desc" value="${r.description||''}"></div>
     <div class="form-field"><label>Contenu / Ingr\u00e9dients & pr\u00e9paration</label><textarea id="f-re-contenu" rows="6">${r.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-re-url" value="${r.url_externe||''}"></div>
-    <div class="form-field"><label>Photo (fichier dans /static/)</label>
-      <input type="text" id="f-re-photo" value="${r.photo||''}" placeholder="infusion-romarin.jpg">
-      <div style="font-size:.58rem;color:var(--text-muted);margin-top:.2rem">
-      Laisser vide pour afficher l'emoji \ud83e\udd57</div></div>
+    ${_photoField('re', r.photo||'')}
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Annuler</button>
       <button class="btn-primary" onclick="updateRecette(${id})">\u2713 Enregistrer</button>
@@ -9871,7 +9924,7 @@ function updateRecette(id) {
     description: document.getElementById('f-re-desc').value,
     contenu:     document.getElementById('f-re-contenu').value,
     url_externe: document.getElementById('f-re-url').value.trim(),
-    photo:       document.getElementById('f-re-photo') ? document.getElementById('f-re-photo').value.trim() : (r.photo||'')
+    photo:       _photoVal('re', r.photo||'')
   });
   if (r.db_id) { _contenuUpdate(r.db_id, 'recette', item, renderRecettes); return; }
   Object.assign(r, item);

@@ -760,7 +760,7 @@ var MC_FIELDS = {
   audios: [
     { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
     { k: 'duree', l: 'Durée', ph: '20 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🎵' },
-    { k: 'photo', l: 'Photo (fichier dans /static/)', ph: 'binaural.jpg' },
+    { k: 'photo', l: 'Photo', ph: 'binaural.jpg' },
     { k: 'description', l: 'Description' },
     { k: 'url_audio', l: 'URL audio (YouTube/Vimeo embed)', ph: 'https://www.youtube.com/embed/...' }
   ],
@@ -779,7 +779,7 @@ var MC_FIELDS = {
   defis: [
     { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
     { k: 'duree', l: 'Durée' }, { k: 'icon', l: 'Icône (emoji)', ph: '🧠' },
-    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'photo', l: 'Photo' },
     { k: 'description', l: 'Description', el: 'textarea' },
     { k: 'url_audio', l: 'URL audio (optionnel)' }
   ],
@@ -793,7 +793,7 @@ var MC_FIELDS = {
     { k: 'titre', l: 'Titre', req: true }, { k: 'categorie', l: 'Catégorie' },
     { k: 'icon', l: 'Icône (emoji)', ph: '🌿' }, { k: 'description', l: 'Description courte' },
     { k: 'contenu', l: 'Contenu détaillé', el: 'textarea' },
-    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'photo', l: 'Photo' },
     { k: 'url_video', l: 'URL vidéo (YouTube embed)' },
     { k: 'url_externe', l: 'URL externe (optionnel)' }
   ],
@@ -802,7 +802,7 @@ var MC_FIELDS = {
     { k: 'duree', l: 'Durée de préparation', ph: '5 min' }, { k: 'icon', l: 'Icône (emoji)', ph: '🥗' },
     { k: 'description', l: 'Description courte' },
     { k: 'contenu', l: 'Ingrédients & préparation', el: 'textarea' },
-    { k: 'photo', l: 'Photo (fichier dans /static/)' },
+    { k: 'photo', l: 'Photo' },
     { k: 'url_externe', l: 'URL externe (optionnel)' }
   ]
 };
@@ -877,6 +877,53 @@ function openModal(title, html) {
 }
 function closeModal() { document.getElementById('mc-modal').style.display = 'none'; }
 
+/* ── Upload d'images via Cloudinary (unsigned) ──
+   Les intervenants uploadent leurs visuels directement, sans passer par /static/. */
+async function uploadCloudinary(file) {
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', 'tg9pkedb');
+  fd.append('folder', 'beotop');
+  var resp = await fetch('https://api.cloudinary.com/v1_1/dpajk1wrl/image/upload', {
+    method: 'POST',
+    body: fd
+  });
+  var data = await resp.json();
+  if (data.secure_url) return data.secure_url;
+  throw new Error('Upload Cloudinary échoué : ' + JSON.stringify(data));
+}
+
+/* Champ photo : input file → upload Cloudinary → aperçu + URL cachée.
+   currentUrl = valeur déjà enregistrée (URL Cloudinary ou ancien nom /static/). */
+function _mcPhotoField(currentUrl) {
+  currentUrl = currentUrl == null ? '' : String(currentUrl);
+  var isUrl = /^https?:\/\//i.test(currentUrl);
+  var src = isUrl ? currentUrl : (currentUrl ? '/static/' + currentUrl : '');
+  return '<div class="form-field"><label>Photo</label>'
+    + '<input type="file" id="mcf-photo-file" accept="image/jpeg,image/png,image/webp" style="font-size:.78rem" onchange="_mcOnPhotoFile(this)">'
+    + '<input type="hidden" id="mcf-photo-url" value="' + mcAttr(currentUrl) + '">'
+    + '<div id="mcf-photo-preview" style="margin-top:.5rem;' + (currentUrl ? '' : 'display:none') + '">'
+    + '<img id="mcf-photo-img" src="' + mcAttr(src) + '" style="width:100%;border-radius:8px;max-height:150px;object-fit:cover"></div>'
+    + '<div id="mcf-photo-status" style="font-size:.65rem;color:var(--text-muted);margin-top:.3rem">' + (currentUrl ? 'Image actuelle — choisissez un fichier pour la remplacer' : 'JPG, PNG ou WebP') + '</div></div>';
+}
+
+/* Handler onchange : upload du fichier choisi, aperçu, statut, stockage de l'URL. */
+async function _mcOnPhotoFile(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var status = document.getElementById('mcf-photo-status');
+  if (status) { status.textContent = '⏳ Upload en cours…'; status.style.color = 'var(--text-muted)'; }
+  try {
+    var url = await uploadCloudinary(file);
+    document.getElementById('mcf-photo-url').value = url;
+    document.getElementById('mcf-photo-img').src = url;
+    document.getElementById('mcf-photo-preview').style.display = '';
+    if (status) { status.textContent = '✓ Image uploadée'; status.style.color = '#16a34a'; }
+  } catch (e) {
+    if (status) { status.textContent = '⚠ Échec de l\'upload — réessayez'; status.style.color = '#dc2626'; }
+  }
+}
+
 /* ── Formulaire ── */
 function mcFormHtml(ep, item) {
   item = item || {};
@@ -884,6 +931,7 @@ function mcFormHtml(ep, item) {
     var val = item[f.k] == null ? '' : item[f.k];
     var ph  = f.ph ? mcAttr(f.ph) : '';
     if (f.k === 'categorie') return _mcCatField(ep, val);
+    if (f.k === 'photo') return _mcPhotoField(val);
     if (f.el === 'textarea') {
       return '<div class="form-field"><label>' + f.l + '</label>'
         + '<textarea id="mcf-' + f.k + '" rows="5" placeholder="' + ph + '">' + mcText(val) + '</textarea></div>';
@@ -919,6 +967,7 @@ function mcSave(ep, id) {
   var body = { site_slug: '', intervenant: MC_NOM };
   MC_FIELDS[ep].forEach(function(f) {
     if (f.k === 'categorie') { body[f.k] = getCatValue('mcf-categorie','mcf-categorie-new'); return; }
+    if (f.k === 'photo') { var pu = document.getElementById('mcf-photo-url'); body[f.k] = pu ? pu.value : ''; return; }
     var el = document.getElementById('mcf-' + f.k);
     body[f.k] = el ? el.value.trim() : '';
   });
