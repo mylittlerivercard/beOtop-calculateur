@@ -64,6 +64,8 @@
   .td-main{color:#1a1a2e !important;font-weight:400}
   .pill{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.58rem}
   .pill.admin{background:rgba(160,104,32,.1);color:#a06820}
+  .pill.manager{background:rgba(99,102,241,.12);color:#4338ca}
+  .pill.intervenant{background:rgba(20,184,166,.12);color:#0f766e}
   .pill.client{background:rgba(126,184,201,.12);color:#1a5a7a}
   .pill.ok{background:rgba(16,185,129,.1);color:#1a7a42}
   .pill.off{background:rgba(239,68,68,.1);color:#c0392b}
@@ -997,7 +999,7 @@ function renderUsersTable(users){
     rows += '<tr>' +
       '<td class="td-main">' + u.email + '</td>' +
       '<td>' + (u.nom || '—') + '</td>' +
-      '<td><span class="pill ' + (u.role === 'admin' ? 'admin' : 'client') + '">' + u.role + '</span></td>' +
+      '<td><span class="pill ' + (['admin','manager','intervenant'].indexOf(u.role) !== -1 ? u.role : 'client') + '">' + u.role + '</span></td>' +
       '<td>' + (u.client_nom || '—') + '</td>' +
       '<td>' + (u.site_nom || '—') + '</td>' +
       '<td>' + (u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
