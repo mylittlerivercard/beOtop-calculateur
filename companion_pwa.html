@@ -6895,7 +6895,7 @@ function renderVideo() {
   var catsEl = document.getElementById('video-cats');
   var grid   = document.getElementById('video-grid');
   if (!catsEl || !grid) return;
-  catsEl.innerHTML = _buildCatPills(DB.videos, currentVideoCat, 'filterVideo');
+  catsEl.innerHTML = _buildCatPills(DB.videos, currentVideoCat, 'filterVideo', 'video');
   var filtered = currentVideoCat === 'all' ? DB.videos : DB.videos.filter(function(v){ return v.categorie === currentVideoCat; });
   if (!filtered.length) {
     grid.innerHTML = "<div style=\"grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)\">Aucune video — Ajoutez depuis Administration</div>";
@@ -6908,7 +6908,7 @@ function renderVideo() {
       + thumbHtml
       + '<div style="padding:.8rem 1rem">'
       + '<div class="audio-title">' + v.titre + '</div>'
-      + '<div class="audio-meta"><span>' + v.categorie + '</span><span class="audio-duration">' + (v.duree||'') + '</span></div>'
+      + '<div class="audio-meta"><span>' + _catLabel('video', v.categorie) + '</span><span class="audio-duration">' + (v.duree||'') + '</span></div>'
       + _invBadge(v.intervenant)
       + '<button class="audio-play-btn" style="margin-top:.6rem">▶ Regarder</button>'
       + '</div></div>';
@@ -7621,8 +7621,12 @@ function renderCCStats() {
 ════════════════════════════════════════════ */
 var currentAudio = null, playerTimer = null, playerSec = 0, playerTotalSec = 0, playerRunning = false;
 /* Construit dynamiquement les filtres de thème (catégories réellement présentes). */
-function _catLabel(c){ return (typeof c === 'string' && c.length) ? c.charAt(0).toUpperCase() + c.slice(1) : (c || ''); }
-function _buildCatPills(arr, current, filterFn) {
+function _catLabel(type, valeur){
+  var cats = DB_CATEGORIES[type] || [];
+  var found = cats.find(function(c){ return c.valeur === valeur; });
+  return found ? found.label : valeur;
+}
+function _buildCatPills(arr, current, filterFn, type) {
   var cats = [];
   (arr || []).forEach(function(it){
     var c = it && it.categorie;
@@ -7631,7 +7635,7 @@ function _buildCatPills(arr, current, filterFn) {
   cats.sort();
   var html = '<div class="cat-pill' + (current === 'all' ? ' active' : '') + '" onclick="' + filterFn + '(\'all\')">Tout</div>';
   cats.forEach(function(c){
-    html += '<div class="cat-pill' + (current === c ? ' active' : '') + '" onclick="' + filterFn + '(\'' + c + '\')">' + _catLabel(c) + '</div>';
+    html += '<div class="cat-pill' + (current === c ? ' active' : '') + '" onclick="' + filterFn + '(\'' + c + '\')">' + _catLabel(type, c) + '</div>';
   });
   return html;
 }
@@ -7790,7 +7794,7 @@ function _cardHeader(item, opts) {
 
 function renderAudio() {
   const catsEl = document.getElementById('audio-cats');
-  catsEl.innerHTML = _buildCatPills(DB.audios, currentAudioCat, 'filterAudio');
+  catsEl.innerHTML = _buildCatPills(DB.audios, currentAudioCat, 'filterAudio', 'audio');
 
   const filtered = currentAudioCat === 'all' ? DB.audios : DB.audios.filter(a => a.categorie === currentAudioCat);
   const grid = document.getElementById('audio-grid');
@@ -7801,7 +7805,7 @@ function renderAudio() {
       ${_cardHeader(a, {icon: a.icon || '🎵'})}
       <div class="audio-title">${a.titre}</div>
       <div class="audio-meta">
-        <span>${a.categorie}</span>
+        <span>${_catLabel('audio', a.categorie)}</span>
         <span class="audio-duration">${a.duree}</span>
       </div>
       ${_invBadge(a.intervenant)}
@@ -7937,14 +7941,14 @@ var currentExCat = 'all';
 
 function renderExercices() {
   const catsEl = document.getElementById('ex-cats');
-  catsEl.innerHTML = _buildCatPills(DB.exercices, currentExCat, 'filterEx');
+  catsEl.innerHTML = _buildCatPills(DB.exercices, currentExCat, 'filterEx', 'exercice');
 
   const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
   document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
     <div class="audio-card" onclick="openExercice(${e.id})">
       ${_cardHeader(e, {icon: e.icon || '⚡'})}
       <div class="audio-title">${e.titre}</div>
-      <div class="audio-meta"><span>${e.categorie||''}</span><span class="audio-duration">${e.tags && e.tags[0] ? e.tags[0] : ''}</span></div>
+      <div class="audio-meta"><span>${_catLabel('exercice', e.categorie||'')}</span><span class="audio-duration">${e.tags && e.tags[0] ? e.tags[0] : ''}</span></div>
       ${e.indication ? `<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">${e.indication}</div>` : ''}
       <div class="ex-tags" style="margin-top:.4rem">${(e.tags||[]).map(t => `<span class="ex-tag">${t}</span>`).join('')}</div>
       ${_invBadge(e.intervenant)}
@@ -9139,7 +9143,7 @@ function renderDefis() {
   if (!container) return;
   var all = (DB.defis || []).filter(function(d){ return d.actif !== false; });
   var catsEl = document.getElementById('defis-cats');
-  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentDefiCat, 'filterDefi');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentDefiCat, 'filterDefi', 'defi');
   var list = currentDefiCat === 'all' ? all : all.filter(function(d){ return d.categorie === currentDefiCat; });
   if (!list.length) { container.innerHTML = '<div style="padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">Aucun défi dans ce thème.</div>'; return; }
 
@@ -9148,7 +9152,7 @@ function renderDefis() {
     return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
       + _cardHeader(d, {icon: d.icon || '🧩'})
       + '<div class="audio-title">' + d.titre + '</div>'
-      + '<div class="audio-meta"><span>' + (d.categorie || 'défi') + '</span><span class="audio-duration">' + (d.duree || '') + '</span></div>'
+      + '<div class="audio-meta"><span>' + _catLabel('defi', d.categorie || 'défi') + '</span><span class="audio-duration">' + (d.duree || '') + '</span></div>'
       + _invBadge(d.intervenant)
       + '<button class="audio-play-btn">▶ Écouter</button>'
       + '</div>';
@@ -9622,7 +9626,7 @@ function renderPodcasts() {
   if (!grid) return;
   var all = (DB.podcasts||[]).filter(function(p){ return p.actif !== false; });
   var catsEl = document.getElementById('podcasts-cats');
-  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentPodcastCat, 'filterPodcast');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentPodcastCat, 'filterPodcast', 'podcast');
   var list = currentPodcastCat === 'all' ? all : all.filter(function(p){ return p.categorie === currentPodcastCat; });
   if (!list.length) {
     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucun podcast disponible.<br><span style="font-size:.65rem">Ajoutez des podcasts depuis Administration.</span></div>';
@@ -9632,7 +9636,7 @@ function renderPodcasts() {
     return '<div class="audio-card" onclick="openPodcast(' + p.id + ')">'
       + _cardHeader(p, {icon: '\ud83c\udf99\ufe0f'})
       + '<div class="audio-title">' + p.titre + '</div>'
-      + '<div class="audio-meta"><span>' + (p.categorie||'podcast') + '</span><span class="audio-duration">' + (p.duree||'') + '</span></div>'
+      + '<div class="audio-meta"><span>' + _catLabel('podcast', p.categorie||'podcast') + '</span><span class="audio-duration">' + (p.duree||'') + '</span></div>'
       + (p.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + p.description + '</div>' : '')
       + _invBadge(p.intervenant)
       + '<button class="audio-play-btn">\u25b6 \u00c9couter</button>'
@@ -9700,7 +9704,7 @@ function renderHuiles() {
   if (!grid) return;
   var all = (DB.huiles||[]).filter(function(h){ return h.actif !== false; });
   var catsEl = document.getElementById('huiles-cats');
-  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentHuileCat, 'filterHuile');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentHuileCat, 'filterHuile', 'huile');
   var list = currentHuileCat === 'all' ? all : all.filter(function(h){ return h.categorie === currentHuileCat; });
   if (!list.length) {
     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucune huile essentielle disponible.<br><span style="font-size:.65rem">Ajoutez du contenu depuis Administration.</span></div>';
@@ -9710,7 +9714,7 @@ function renderHuiles() {
     return '<div class="audio-card" onclick="openHuile(' + h.id + ')">'
       + _cardHeader(h, {icon: '\ud83c\udf3f', fallbackImg: getYoutubeThumbnail(h.url_video)})
       + '<div class="audio-title">' + h.titre + '</div>'
-      + '<div class="audio-meta"><span>' + (h.categorie||'huile') + '</span></div>'
+      + '<div class="audio-meta"><span>' + _catLabel('huile', h.categorie||'huile') + '</span></div>'
       + (h.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + h.description + '</div>' : '')
       + _invBadge(h.intervenant)
       + '<button class="audio-play-btn">\ud83c\udf3f D\u00e9couvrir</button>'
@@ -9829,7 +9833,7 @@ function renderRecettes() {
   if (!grid) return;
   var all = (DB.recettes||[]).filter(function(r){ return r.actif !== false; });
   var catsEl = document.getElementById('recettes-cats');
-  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentRecetteCat, 'filterRecette');
+  if (catsEl) catsEl.innerHTML = _buildCatPills(all, currentRecetteCat, 'filterRecette', 'recette');
   var list = currentRecetteCat === 'all' ? all : all.filter(function(r){ return r.categorie === currentRecetteCat; });
   if (!list.length) {
     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.78rem">Aucune recette disponible.<br><span style="font-size:.65rem">Ajoutez du contenu depuis Administration.</span></div>';
@@ -9839,7 +9843,7 @@ function renderRecettes() {
     return '<div class="audio-card" onclick="openRecette(' + r.id + ')">'
       + _cardHeader(r, {icon: '\ud83e\udd57'})
       + '<div class="audio-title">' + r.titre + '</div>'
-      + '<div class="audio-meta"><span>' + (r.categorie||'recette') + '</span>'
+      + '<div class="audio-meta"><span>' + _catLabel('recette', r.categorie||'recette') + '</span>'
       + (r.duree ? '<span class="audio-duration">' + r.duree + '</span>' : '') + '</div>'
       + (r.description ? '<div style="font-size:.6rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + r.description + '</div>' : '')
       + _invBadge(r.intervenant)
