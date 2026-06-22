@@ -956,24 +956,61 @@ async function loadUsers(){
   clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
 
   _usersCache = {};
+  users.forEach(function(u){ _usersCache[u.id] = u; });
+  _usersData = users;
+  _usersSortCol = 'created_at';
+  _usersSortAsc = false;
   var tbl = document.getElementById('users-table');
-  tbl.innerHTML = '<tr><th>Email</th><th>Nom</th><th>Rôle</th><th>Client</th><th>Statut</th><th>Actions</th></tr>';
+  tbl.innerHTML = '<tr>' +
+    '<th onclick="sortUsers(\'email\')" style="cursor:pointer">Email ↕</th>' +
+    '<th onclick="sortUsers(\'nom\')" style="cursor:pointer">Nom ↕</th>' +
+    '<th onclick="sortUsers(\'role\')" style="cursor:pointer">Rôle ↕</th>' +
+    '<th onclick="sortUsers(\'client_nom\')" style="cursor:pointer">Client ↕</th>' +
+    '<th onclick="sortUsers(\'site_nom\')" style="cursor:pointer">Site ↕</th>' +
+    '<th onclick="sortUsers(\'created_at\')" style="cursor:pointer">Inscrit le ↕</th>' +
+    '<th>Statut</th><th>Actions</th></tr>';
+  renderUsersTable(_usersData);
+}
+
+var _usersCache = {};
+var _usersData = [];
+var _usersSortCol = 'created_at';
+var _usersSortAsc = false;
+
+function sortUsers(col){
+  if (_usersSortCol === col) { _usersSortAsc = !_usersSortAsc; }
+  else { _usersSortCol = col; _usersSortAsc = true; }
+  _usersData.sort(function(a, b){
+    var va = (a[col] || '').toString().toLowerCase();
+    var vb = (b[col] || '').toString().toLowerCase();
+    if (va < vb) return _usersSortAsc ? -1 : 1;
+    if (va > vb) return _usersSortAsc ? 1 : -1;
+    return 0;
+  });
+  renderUsersTable(_usersData);
+}
+
+function renderUsersTable(users){
+  var tbl = document.getElementById('users-table');
+  var rows = '';
   users.forEach(function(u){
-    _usersCache[u.id] = u;
-    tbl.innerHTML += '<tr>' +
+    rows += '<tr>' +
       '<td class="td-main">' + u.email + '</td>' +
       '<td>' + (u.nom || '—') + '</td>' +
       '<td><span class="pill ' + (u.role === 'admin' ? 'admin' : 'client') + '">' + u.role + '</span></td>' +
       '<td>' + (u.client_nom || '—') + '</td>' +
+      '<td>' + (u.site_nom || '—') + '</td>' +
+      '<td>' + (u.created_at ? new Date(u.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
       '<td><span class="pill ' + (u.actif ? 'ok' : 'off') + '">' + (u.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td><button class="btn-sm" onclick="openUserEdit(' + u.id + ')">Modifier</button> ' +
       '<button class="btn-sm" onclick="resetPw(' + u.id + ')">Réinitialiser MDP</button> ' +
       '<button class="btn-sm" style="color:#c0392b;border-color:rgba(192,57,43,.3)" onclick="deleteUser(' + u.id + ',\'' + (u.email || '').replace(/'/g, "\\'") + '\')">Supprimer</button></td>' +
       '</tr>';
   });
+  // remplacer le contenu après le header (tbl.rows[0])
+  var header = tbl.rows[0].outerHTML;
+  tbl.innerHTML = header + rows;
 }
-
-var _usersCache = {};
 
 function openUserEdit(id){
   var u = _usersCache[id];
