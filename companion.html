@@ -5809,7 +5809,7 @@ function openVideo(id) {
   logPlay('video', v.titre, v.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   awardPoints('video', v.titre);
   openModal(v.titre,
-    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + v.categorie + (v.duree ? ' · ' + v.duree : '') + '</div>'
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + _catLabel('video', v.categorie) + (v.duree ? ' · ' + v.duree : '') + '</div>'
     + '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
     + '<iframe src="' + v.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
     + '</div>'
@@ -6544,11 +6544,11 @@ function showIntervenantContenus(nom) {
   var nomEl = document.getElementById('ivc-nom');
   if (nomEl) nomEl.textContent = nom;
   var groups = [
-    { arr: DB.audios,    type: 'Audios',          fn: 'playAudio' },
-    { arr: DB.videos,    type: 'Vidéos',          fn: 'openVideo' },
-    { arr: DB.exercices, type: 'Exercices',       fn: 'openExercice' },
-    { arr: DB.defis,     type: 'Défis cognitifs', fn: 'playDefi' },
-    { arr: DB.podcasts,  type: 'Podcasts',        fn: 'openPodcast' }
+    { arr: DB.audios,    type: 'Audios',          fn: 'playAudio',    ct: 'audio' },
+    { arr: DB.videos,    type: 'Vidéos',          fn: 'openVideo',    ct: 'video' },
+    { arr: DB.exercices, type: 'Exercices',       fn: 'openExercice', ct: 'exercice' },
+    { arr: DB.defis,     type: 'Défis cognitifs', fn: 'playDefi',     ct: 'defi' },
+    { arr: DB.podcasts,  type: 'Podcasts',        fn: 'openPodcast',  ct: 'podcast' }
   ];
   var html = ''; var total = 0;
   groups.forEach(function(g){
@@ -6560,7 +6560,7 @@ function showIntervenantContenus(nom) {
       return '<div class="audio-card" onclick="' + g.fn + '(' + it.id + ')">'
         + _cardHeader(it, {icon: it.icon || '🎵'})
         + '<div class="audio-title">' + it.titre + '</div>'
-        + '<div class="audio-meta"><span>' + (it.categorie || '') + '</span><span class="audio-duration">' + (it.duree || '') + '</span></div>'
+        + '<div class="audio-meta"><span>' + _catLabel(g.ct, it.categorie || '') + '</span><span class="audio-duration">' + (it.duree || '') + '</span></div>'
         + '<button class="audio-play-btn">▶ Ouvrir</button>'
         + '</div>';
     }).join('') + '</div>';
@@ -6729,7 +6729,7 @@ function _playAudioFile(audio, url) {
   _audioFileEl.play().catch(function(){ showToast('⚠ Lecture impossible : ' + url); });
 
   openModal(audio.titre,
-    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + _catLabel('audio', audio.categorie) + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
     + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '')
     + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
     + '<div id="af-timer" style="font-size:1.8rem;font-weight:300;color:var(--gold)">0:00</div>'
@@ -6763,7 +6763,7 @@ function _playAudioIframe(audio, url) {
   if (typeof stopAllSons === 'function') stopAllSons();
   if (typeof stopNativeAudio === 'function') stopNativeAudio();
   openModal(audio.titre,
-    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + audio.categorie + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + _catLabel('audio', audio.categorie) + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
     + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '')
     + '<iframe src="' + url + '" width="100%" height="166" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border:0;border-radius:10px"></iframe>'
   );
@@ -6773,7 +6773,7 @@ function playAudio(id) {
   var audio = DB.audios.find(function(a){ return a.id === id; });
   if (!audio) return;
   logPlay('audio', audio.titre, audio.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
-  DB.sessions.push({ date: new Date().toISOString(), label: audio.titre, detail: audio.categorie + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60 });
+  DB.sessions.push({ date: new Date().toISOString(), label: audio.titre, detail: _catLabel('audio', audio.categorie) + ' · ' + audio.duree, duree: parseDuration(audio.duree) / 60 });
   saveDB(DB);
   awardPoints('audio', audio.titre);
 
@@ -7010,7 +7010,7 @@ function openExercice(id) {
   logPlay('exercice', ex.titre, ex.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   DB.sessions.push({
     date: new Date().toISOString(), label: ex.titre,
-    detail: ex.categorie + ' · ' + ex.tags[0], duree: parseInt(ex.tags[0]) || 10
+    detail: _catLabel('exercice', ex.categorie) + ' · ' + ex.tags[0], duree: parseInt(ex.tags[0]) || 10
   });
   saveDB(DB);
   awardPoints('exercice', ex.titre);
@@ -8627,7 +8627,7 @@ function openHuile(id) {
   logPlay('huile', h.titre, h.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   awardPoints('huile', h.titre);
   openModal(h.titre,
-    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + (h.categorie||'') + '</div>'
+    '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + _catLabel('huile', h.categorie||'') + '</div>'
     + (h.url_video
       ? '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin-bottom:1rem">'
         + '<iframe src="' + h.url_video + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>'
