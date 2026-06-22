@@ -910,10 +910,12 @@ def admin_get_users():
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT u.id, u.email, u.nom, u.role, u.actif, u.created_at,
-                       c.nom as client_nom
-                FROM users u LEFT JOIN clients c ON u.client_id=c.id
-                ORDER BY u.role, u.created_at DESC
+                SELECT u.id, u.email, u.nom, u.role, u.client_id, u.actif, u.created_at,
+                       s.nom as site_nom, c.nom as client_nom
+                FROM users u
+                LEFT JOIN sites s ON s.id = u.site_id
+                LEFT JOIN clients c ON c.id = u.client_id
+                ORDER BY u.created_at DESC
             ''')
             users = cur.fetchall()
     return jsonify([serialize_row(u) for u in users])
