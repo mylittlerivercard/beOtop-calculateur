@@ -2995,6 +2995,7 @@ function _markDemoDeleted(dbKey, id) {
 /* Charge les contenus depuis les tables PostgreSQL (une par type).
    La BDD est la source : la DEMO_DB n'est affichée que si la table est vide. */
 function syncContenus(cb) {
+  syncCategories();
   getSiteSlug().then(function(slug){
     var q = '?site_slug=' + encodeURIComponent(slug || '');
     var map = [
@@ -7880,6 +7881,18 @@ function getCatValue(selectId, inputId) {
     sel.value = opt.value;
     inp.style.display = 'none';
     inp.value = '';
+    /* Persister la nouvelle catégorie en base + l'ajouter aux catalogues locaux */
+    var contentType = sel.dataset.contentType || '';
+    if (contentType) {
+      fetch('/api/companion/categories', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content_type: contentType, valeur: opt.value, label: newVal })
+      }).catch(function(){});
+      _mergeCats(contentType, [{ valeur: opt.value, label: newVal }]);
+      if (!DB_CATEGORIES[contentType]) DB_CATEGORIES[contentType] = [];
+      DB_CATEGORIES[contentType].push({ valeur: opt.value, label: newVal });
+    }
     return opt.value;
   }
   return sel.value;
@@ -7898,6 +7911,37 @@ var CONTENU_CATS = {
   huile:    [['aromatherapie','Aromathérapie'],['olfactologie','Olfactologie'],['olfactotherapie','Olfactothérapie'],['digestion','Digestion'],['immunite','Immunité'],['sommeil','Sommeil'],['stress','Stress']],
   recette:  [['anti-stress','Anti-stress'],['detox','Détox'],['digestion','Digestion'],['energie','Énergie'],['estivale','Estivale'],['immunite','Immunité'],['snack','Snack sain']]
 };
+
+/* ──────────────────────────────────────────────
+   CATÉGORIES PERSISTÉES EN BASE (companion_categories)
+   CONTENU_CATS sert de socle ; la base vient l'enrichir au démarrage.
+────────────────────────────────────────────── */
+var CAT_TYPES = ['audio','video','exercice','defi','podcast','huile','recette'];
+var DB_CATEGORIES = {};   // { audio:[{valeur,label}], ... }
+
+/* Fusionne une liste {valeur,label} dans CONTENU_CATS[type] (dédup par valeur). */
+function _mergeCats(type, list) {
+  if (!CONTENU_CATS[type]) CONTENU_CATS[type] = [];
+  var have = {};
+  CONTENU_CATS[type].forEach(function(o){ have[o[0]] = true; });
+  (list || []).forEach(function(c){
+    if (!c || !c.valeur || have[c.valeur]) return;
+    CONTENU_CATS[type].push([c.valeur, c.label || c.valeur]);
+    have[c.valeur] = true;
+  });
+}
+
+/* Charge les catégories de tous les types depuis la base. */
+function syncCategories(cb) {
+  var pending = CAT_TYPES.length;
+  function done(){ if (--pending === 0 && cb) cb(); }
+  CAT_TYPES.forEach(function(t){
+    fetch('/api/companion/categories?type=' + encodeURIComponent(t), { credentials: 'include' })
+      .then(function(r){ return r.ok ? r.json() : { categories: [] }; })
+      .then(function(d){ DB_CATEGORIES[t] = d.categories || []; _mergeCats(t, DB_CATEGORIES[t]); done(); })
+      .catch(done);
+  });
+}
 
 /* Indique si la catégorie courante ne correspond à aucune option pré-définie. */
 function _catIsNew(type, current) {
@@ -7923,7 +7967,7 @@ function _catOptions(type, current) {
 function _catField(prefix, type, current) {
   var isNew = _catIsNew(type, current);
   return '<div class="form-field"><label>Catégorie</label>'
-    + '<select id="' + prefix + '-cat" onchange="toggleNewCat(\'' + prefix + '-cat\',\'' + prefix + '-newcat\')">'
+    + '<select id="' + prefix + '-cat" data-content-type="' + type + '" onchange="toggleNewCat(\'' + prefix + '-cat\',\'' + prefix + '-newcat\')">'
     + _catOptions(type, current) + '</select>'
     + '<input type="text" id="' + prefix + '-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (isNew ? current : '') + '" style="' + (isNew ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">'
     + '</div>';
@@ -8086,7 +8130,7 @@ function _defiForm(d) {
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + _photoField('df', v.photo||'')
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('defi', v.categorie||'') + '</select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('defi', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('defi', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + '<select id="f-df-cat" data-content-type="defi" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('defi', v.categorie||'') + '</select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('defi', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('defi', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
     + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="">— Aucun —</option></select></div>'
@@ -8521,7 +8565,7 @@ function _podcastForm(p) {
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Description</label>'
     + '<input id="f-pod-desc" value="' + (v.description||'') + '" placeholder="Description courte" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('podcast', v.categorie||'') + '</select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('podcast', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('podcast', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + '<select id="f-pod-cat" data-content-type="podcast" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('podcast', v.categorie||'') + '</select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('podcast', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('podcast', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Type d\'URL</label>'
     + '<select id="f-pod-type" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="externe"' + (v.type_url!=='fichier'?' selected':'') + '>Lien externe (Spotify, YouTube, site...)</option>'

@@ -158,6 +158,57 @@ COMPANION_CONTENT_TABLES = {
     'recettes':  ['titre', 'categorie', 'description', 'contenu', 'url_externe', 'photo', 'duree', 'icon', 'intervenant'],
 }
 
+# Catégories pré-définies par type de contenu (clés au singulier, comme côté front).
+# Sert à amorcer la table companion_categories ; les intervenants peuvent en ajouter.
+COMPANION_CATEGORIES_SEED = {
+    'audio': [
+        ('ambiance', 'Ambiance'), ('anti-stress', 'Anti-stress'), ('binaural', 'Binaural'),
+        ('coherence', 'Cohérence cardiaque'), ('energie', 'Énergie & activation'),
+        ('focus', 'Focus & concentration'), ('meditation', 'Méditation guidée'),
+        ('mindfulness', 'Mindfulness'), ('nsdr', 'NSDR'), ('relaxation', 'Relaxation'),
+        ('respiration', 'Respiration'), ('sieste', 'Sieste'), ('sommeil', 'Sommeil'),
+        ('sophrologie', 'Sophrologie'), ('visualisation', 'Visualisation'),
+    ],
+    'video': [
+        ('anti-stress', 'Anti-stress'), ('bien-etre', 'Bien-être général'), ('business', 'Business'),
+        ('coherence', 'Cohérence cardiaque'), ('energie', 'Énergie & vitalité'), ('ergonomie', 'Ergonomie'),
+        ('etirements', 'Étirements bureau'), ('gestion-emotions', 'Gestion des émotions'),
+        ('meditation', 'Méditation guidée'), ('mindfulness', 'Mindfulness'), ('nutrition', 'Nutrition & santé'),
+        ('posture', 'Posture & ergonomie'), ('relaxation', 'Relaxation'), ('resilience', 'Résilience'),
+        ('sieste', 'Sieste & récupération'), ('sophrologie', 'Sophrologie'), ('tms', 'TMS & douleurs'),
+        ('yoga', 'Yoga bureau'),
+    ],
+    'exercice': [
+        ('anti-stress', 'Anti-stress'), ('cardio', 'Cardio léger'), ('coherence', 'Cohérence cardiaque'),
+        ('energie', 'Énergie & réveil'), ('etirements', 'Étirements'), ('gestion-emotions', 'Gestion des émotions'),
+        ('meditation', 'Méditation'), ('mindfulness', 'Mindfulness'), ('posture', 'Posture'),
+        ('relaxation', 'Relaxation'), ('respiration', 'Respiration'), ('tms', 'TMS'), ('workout', 'Workout express'),
+    ],
+    'defi': [
+        ('attention', 'Attention & focus'), ('cognition', 'Cognition générale'), ('creativite', 'Créativité'),
+        ('double-tache', 'Double tâche'), ('flexibilite', 'Flexibilité mentale'), ('inhibition', 'Inhibition de réponse'),
+        ('logique', 'Logique'), ('memoire', 'Mémoire de travail'), ('neurosciences', 'Neurosciences appliquées'),
+        ('reflexes', 'Réflexes'), ('resilience', 'Résilience'), ('vitesse', 'Vitesse de traitement'),
+    ],
+    'podcast': [
+        ('anti-stress', 'Anti-stress'), ('bien-etre', 'Bien-être général'), ('cognition', 'Cognition & mémoire'),
+        ('energie', 'Énergie & vitalité'), ('gestion-emotions', 'Gestion des émotions'), ('meditation', 'Méditation'),
+        ('mindfulness', 'Mindfulness'), ('neurosciences', 'Neurosciences'), ('nutrition', 'Nutrition'),
+        ('philosophie', 'Philosophie & sens'), ('psychologie', 'Psychologie positive'), ('relaxation', 'Relaxation'),
+        ('resilience', 'Résilience'), ('sieste', 'Sieste'), ('sophrologie', 'Sophrologie'), ('stress', 'Stress'),
+        ('tms', 'TMS & douleurs'),
+    ],
+    'huile': [
+        ('aromatherapie', 'Aromathérapie'), ('concentration', 'Concentration'), ('digestion', 'Digestion'),
+        ('energie', 'Énergie'), ('immunite', 'Immunité'), ('olfactologie', 'Olfactologie'),
+        ('olfactotherapie', 'Olfactothérapie'), ('sommeil', 'Sommeil'), ('stress', 'Anti-stress'),
+    ],
+    'recette': [
+        ('anti-stress', 'Anti-stress'), ('detox', 'Détox'), ('digestion', 'Digestion'), ('energie', 'Énergie'),
+        ('estivale', 'Estivale'), ('immunite', 'Immunité'), ('snack', 'Snack sain'), ('sommeil', 'Sommeil'),
+    ],
+}
+
 def init_db():
     print(">>> Initialisation de la base de donnees...", file=sys.stderr)
     try:
@@ -511,6 +562,27 @@ def init_db():
             for _c in _cols:
                 cur.execute("ALTER TABLE companion_" + _t + " ADD COLUMN IF NOT EXISTS " + _c + " TEXT")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_c" + _t + "_site ON companion_" + _t + "(site_slug)")
+
+        # ── Table commune des catégories Companion (alimente tous les selects) ────
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS companion_categories (
+                id           SERIAL PRIMARY KEY,
+                content_type TEXT NOT NULL,
+                valeur       TEXT NOT NULL,
+                label        TEXT NOT NULL,
+                created_at   TIMESTAMP DEFAULT NOW(),
+                UNIQUE(content_type, valeur)
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_cat_type ON companion_categories(content_type)")
+        # Amorçage des catégories existantes (idempotent)
+        for _ctype, _cats in COMPANION_CATEGORIES_SEED.items():
+            for _val, _lbl in _cats:
+                cur.execute(
+                    "INSERT INTO companion_categories (content_type, valeur, label) "
+                    "VALUES (%s, %s, %s) ON CONFLICT (content_type, valeur) DO NOTHING",
+                    [_ctype, _val, _lbl]
+                )
 
         # ── Migration unique : ancienne table JSONB companion_contenus → tables par type ──
         cur.execute("SELECT to_regclass('public.companion_contenus') AS t")
@@ -2645,6 +2717,53 @@ def companion_contenus_delete(cid):
             cur.execute("DELETE FROM companion_contenus WHERE id=%s", [cid])
             conn.commit()
     return jsonify({'ok': True})
+
+
+# ========== CATÉGORIES COMMUNES (companion_categories) ==========
+
+@app.route('/api/companion/categories', methods=['GET'])
+@login_required
+def companion_categories_list():
+    """Catégories d'un type de contenu, alimentant les selects du front."""
+    ctype = (request.args.get('type') or '').strip()
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            if ctype:
+                cur.execute(
+                    "SELECT valeur, label FROM companion_categories "
+                    "WHERE content_type=%s ORDER BY label",
+                    [ctype]
+                )
+            else:
+                cur.execute("SELECT valeur, label FROM companion_categories ORDER BY label")
+            rows = cur.fetchall()
+    return jsonify({'categories': [{'valeur': r['valeur'], 'label': r['label']} for r in rows]})
+
+
+@app.route('/api/companion/categories', methods=['POST'])
+@login_required
+def companion_categories_create():
+    """Crée (ou récupère) une catégorie. Réservé aux rôles admin / manager / intervenant."""
+    if session.get('role') not in ('admin', 'manager', 'intervenant'):
+        return jsonify({'error': 'Accès refusé'}), 403
+    body = request.get_json() or {}
+    ctype  = (body.get('content_type') or '').strip()
+    valeur = (body.get('valeur') or '').strip()
+    label  = (body.get('label') or '').strip() or valeur
+    if not ctype or not valeur:
+        return jsonify({'error': 'content_type et valeur requis'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO companion_categories (content_type, valeur, label) "
+                "VALUES (%s, %s, %s) "
+                "ON CONFLICT (content_type, valeur) DO UPDATE SET label=EXCLUDED.label "
+                "RETURNING valeur, label",
+                [ctype, valeur, label]
+            )
+            row = cur.fetchone()
+            conn.commit()
+    return jsonify({'ok': True, 'valeur': row['valeur'], 'label': row['label']})
 
 
 def _cint_to_dict(row):

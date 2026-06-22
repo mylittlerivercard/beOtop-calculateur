@@ -4097,6 +4097,7 @@ function _markDemoDeleted(dbKey, id) {
 /* Charge les contenus depuis les tables PostgreSQL (une par type).
    La BDD est la source : la DEMO_DB n'est affichée que si la table est vide. */
 function syncContenus(cb) {
+  syncCategories();
   getSiteSlug().then(function(slug){
     var q = '?site_slug=' + encodeURIComponent(slug || '');
     var map = [
@@ -8510,26 +8511,7 @@ function openAddVideo() {
   openModal('Ajouter une vidéo', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" placeholder="Sophrologie guidée 10 min"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-vi-cat" onchange="toggleNewCat('f-vi-cat','f-vi-newcat')">
-        <option value="anti-stress">Anti-stress</option>
-        <option value="bien-etre">Bien-être général</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & vitalité</option>
-        <option value="etirements">Étirements bureau</option>
-        <option value="gestion-emotions">Gestion des émotions</option>
-        <option value="meditation">Méditation guidée</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="nutrition">Nutrition & santé</option>
-        <option value="posture">Posture & ergonomie</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="resilience">Résilience</option>
-        <option value="sieste">Sieste & récupération</option>
-        <option value="sophrologie">Sophrologie</option>
-        <option value="tms">TMS & douleurs</option>
-        <option value="yoga">Yoga bureau</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-vi-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+      ${_buildCatSelect('video','f-vi-cat','f-vi-newcat','')}
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
@@ -8678,23 +8660,7 @@ function openAddAudio() {
   openModal('Ajouter un audio', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" placeholder="Relaxation profonde"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-au-cat" onchange="toggleNewCat('f-au-cat','f-au-newcat')">
-        <option value="ambiance">Ambiance</option>
-        <option value="anti-stress">Anti-stress</option>
-        <option value="binaural">Binaural</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & activation</option>
-        <option value="focus">Focus & concentration</option>
-        <option value="meditation">Méditation guidée</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="nsdr">NSDR</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="sieste">Sieste</option>
-        <option value="sophrologie">Sophrologie</option>
-        <option value="visualisation">Visualisation</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-au-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+      ${_buildCatSelect('audio','f-au-cat','f-au-newcat','')}
     </div>
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
     ${_photoField('au','')}
@@ -8775,23 +8741,7 @@ function openAddExercice() {
   openModal('Ajouter un exercice', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" placeholder="Cervicales express"></div>
     <div class="form-field"><label>Catégorie</label>
-      <select id="f-ex-cat" onchange="toggleNewCat('f-ex-cat','f-ex-newcat')">
-        <option value="anti-stress">Anti-stress</option>
-        <option value="cardio">Cardio léger</option>
-        <option value="coherence">Cohérence cardiaque</option>
-        <option value="energie">Énergie & réveil</option>
-        <option value="etirements">Étirements</option>
-        <option value="gestion-emotions">Gestion des émotions</option>
-        <option value="meditation">Méditation</option>
-        <option value="mindfulness">Mindfulness</option>
-        <option value="posture">Posture</option>
-        <option value="relaxation">Relaxation</option>
-        <option value="respiration">Respiration</option>
-        <option value="tms">TMS</option>
-        <option value="workout">Workout express</option>
-        <option value="__new__">+ Nouvelle catégorie…</option>
-      </select>
-      <input type="text" id="f-ex-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+      ${_buildCatSelect('exercice','f-ex-cat','f-ex-newcat','')}
     </div>
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" placeholder="Douleurs nuque · Bureau"></div>
     <div class="form-field"><label>Tags (séparés par virgule)</label><input type="text" id="f-ex-tags" placeholder="5 min,Sans matériel,Assis"></div>
@@ -9049,10 +8999,79 @@ function getCatValue(selectId, inputId) {
     sel.value = opt.value;
     inp.style.display = 'none';
     inp.value = '';
+    /* Persister la nouvelle catégorie en base + l'ajouter aux catalogues locaux */
+    var contentType = sel.dataset.contentType || '';
+    if (contentType) {
+      fetch('/api/companion/categories', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content_type: contentType, valeur: opt.value, label: newVal })
+      }).catch(function(){});
+      _mergeCats(contentType, [{ valeur: opt.value, label: newVal }]);
+      if (!DB_CATEGORIES[contentType]) DB_CATEGORIES[contentType] = [];
+      DB_CATEGORIES[contentType].push({ valeur: opt.value, label: newVal });
+    }
     return opt.value;
   }
   return sel.value;
 }
+
+/* ════════════════════════════════════════════
+   CATÉGORIES PERSISTÉES EN BASE (companion_categories)
+   CONTENU_CATS = socle local ; la base vient l'enrichir au démarrage.
+════════════════════════════════════════════ */
+var CAT_TYPES = ['audio','video','exercice','defi','podcast','huile','recette'];
+var CONTENU_CATS = {
+  audio: [['ambiance','Ambiance'],['anti-stress','Anti-stress'],['binaural','Binaural'],['coherence','Cohérence cardiaque'],['energie','Énergie & activation'],['focus','Focus & concentration'],['meditation','Méditation guidée'],['mindfulness','Mindfulness'],['nsdr','NSDR'],['relaxation','Relaxation'],['sieste','Sieste'],['sophrologie','Sophrologie'],['visualisation','Visualisation']],
+  video: [['anti-stress','Anti-stress'],['bien-etre','Bien-être général'],['coherence','Cohérence cardiaque'],['energie','Énergie & vitalité'],['etirements','Étirements bureau'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation guidée'],['mindfulness','Mindfulness'],['nutrition','Nutrition & santé'],['posture','Posture & ergonomie'],['relaxation','Relaxation'],['resilience','Résilience'],['sieste','Sieste & récupération'],['sophrologie','Sophrologie'],['tms','TMS & douleurs'],['yoga','Yoga bureau']],
+  exercice: [['anti-stress','Anti-stress'],['cardio','Cardio léger'],['coherence','Cohérence cardiaque'],['energie','Énergie & réveil'],['etirements','Étirements'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation'],['mindfulness','Mindfulness'],['posture','Posture'],['relaxation','Relaxation'],['respiration','Respiration'],['tms','TMS'],['workout','Workout express']],
+  defi: [['attention','Attention & focus'],['cognition','Cognition générale'],['creativite','Créativité'],['double-tache','Double tâche'],['flexibilite','Flexibilité mentale'],['inhibition','Inhibition de réponse'],['logique','Logique'],['memoire','Mémoire de travail'],['neurosciences','Neurosciences appliquées'],['reflexes','Réflexes'],['resilience','Résilience'],['vitesse','Vitesse de traitement']],
+  podcast: [['anti-stress','Anti-stress'],['bien-etre','Bien-être général'],['cognition','Cognition & mémoire'],['energie','Énergie & vitalité'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation'],['mindfulness','Mindfulness'],['neurosciences','Neurosciences'],['philosophie','Philosophie & sens'],['psychologie','Psychologie positive'],['relaxation','Relaxation'],['resilience','Résilience'],['sieste','Sieste'],['sophrologie','Sophrologie'],['tms','TMS & douleurs']],
+  huile: [['stress','Anti-stress'],['energie','Énergie'],['sommeil','Sommeil'],['immunite','Immunité'],['digestion','Digestion'],['concentration','Concentration']],
+  recette: [['energie','Énergie'],['immunite','Immunité'],['digestion','Digestion'],['sommeil','Sommeil'],['anti-stress','Anti-stress'],['snack','Snack sain']]
+};
+var DB_CATEGORIES = {};   // { audio:[{valeur,label}], ... }
+
+/* Fusionne une liste {valeur,label} dans CONTENU_CATS[type] (dédup par valeur). */
+function _mergeCats(type, list) {
+  if (!CONTENU_CATS[type]) CONTENU_CATS[type] = [];
+  var have = {};
+  CONTENU_CATS[type].forEach(function(o){ have[o[0]] = true; });
+  (list || []).forEach(function(c){
+    if (!c || !c.valeur || have[c.valeur]) return;
+    CONTENU_CATS[type].push([c.valeur, c.label || c.valeur]);
+    have[c.valeur] = true;
+  });
+}
+
+/* Génère le <select> catégorie + champ « nouvelle » depuis CONTENU_CATS[type]. */
+function _buildCatSelect(type, selectId, newcatId, currentVal) {
+  currentVal = currentVal || '';
+  var cats = CONTENU_CATS[type] || [];
+  var opts = cats.map(function(c){
+    var sel = (c[0] === currentVal) ? ' selected' : '';
+    return '<option value="' + c[0] + '"' + sel + '>' + c[1] + '</option>';
+  }).join('');
+  opts += '<option value="__new__">+ Nouvelle catégorie…</option>';
+  return '<select id="' + selectId + '" data-content-type="' + type + '" onchange="toggleNewCat(\'' + selectId + '\',\'' + newcatId + '\')"'
+    + ' style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
+    + opts + '</select>'
+    + '<input type="text" id="' + newcatId + '" placeholder="Nom de la nouvelle catégorie"'
+    + ' style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">';
+}
+
+/* Charge les catégories de tous les types depuis la base. */
+function syncCategories(cb) {
+  var pending = CAT_TYPES.length;
+  function done(){ if (--pending === 0 && cb) cb(); }
+  CAT_TYPES.forEach(function(t){
+    fetch('/api/companion/categories?type=' + encodeURIComponent(t), { credentials: 'include' })
+      .then(function(r){ return r.ok ? r.json() : { categories: [] }; })
+      .then(function(d){ DB_CATEGORIES[t] = d.categories || []; _mergeCats(t, DB_CATEGORIES[t]); done(); })
+      .catch(done);
+  });
+}
+
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
@@ -9212,7 +9231,7 @@ function _defiForm(d) {
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + _photoField('df', v.photo||'')
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-df-cat" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"attention\">Attention & focus</option><option value=\"cognition\">Cognition générale</option><option value=\"creativite\">Créativité</option><option value=\"double-tache\">Double tâche</option><option value=\"flexibilite\">Flexibilité mentale</option><option value=\"inhibition\">Inhibition de réponse</option><option value=\"logique\">Logique</option><option value=\"memoire\">Mémoire de travail</option><option value=\"neurosciences\">Neurosciences appliquées</option><option value=\"reflexes\">Réflexes</option><option value=\"resilience\">Résilience</option><option value=\"vitesse\">Vitesse de traitement</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + _buildCatSelect('defi','f-df-cat','f-df-newcat','') + '</div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
     + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="">— Aucun —</option></select></div>'
@@ -9220,7 +9239,7 @@ function _defiForm(d) {
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
     + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + '<select id="f-pod-cat" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"><option value=\"anti-stress\">Anti-stress</option><option value=\"bien-etre\">Bien-être général</option><option value=\"cognition\">Cognition & mémoire</option><option value=\"energie\">Énergie & vitalité</option><option value=\"gestion-emotions\">Gestion des émotions</option><option value=\"meditation\">Méditation</option><option value=\"mindfulness\">Mindfulness</option><option value=\"neurosciences\">Neurosciences</option><option value=\"philosophie\">Philosophie & sens</option><option value=\"psychologie\">Psychologie positive</option><option value=\"relaxation\">Relaxation</option><option value=\"resilience\">Résilience</option><option value=\"sieste\">Sieste</option><option value=\"sophrologie\">Sophrologie</option><option value=\"tms\">TMS & douleurs</option><option value=\"__new__\">+ Nouvelle catégorie...</option></select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
+    + _buildCatSelect('podcast','f-pod-cat','f-pod-newcat','') + '</div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
     + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
@@ -9721,16 +9740,7 @@ function openAddHuile() {
   openModal('Ajouter une huile essentielle', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" placeholder="Lavande vraie"></div>
     <div class="form-field"><label>Cat\u00e9gorie</label>
-      <select id="f-hu-cat" onchange="toggleNewCat('f-hu-cat','f-hu-newcat')">
-        <option value="stress">Anti-stress</option>
-        <option value="energie">\u00c9nergie</option>
-        <option value="sommeil">Sommeil</option>
-        <option value="immunite">Immunit\u00e9</option>
-        <option value="digestion">Digestion</option>
-        <option value="concentration">Concentration</option>
-        <option value="__new__">+ Nouvelle cat\u00e9gorie\u2026</option>
-      </select>
-      <input type="text" id="f-hu-newcat" placeholder="Nom de la cat\u00e9gorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+      ${_buildCatSelect('huile','f-hu-cat','f-hu-newcat','')}
     </div>
     <div class="form-field"><label>Description courte</label><input type="text" id="f-hu-desc" placeholder="Apaisante, id\u00e9ale en cas de stress..."></div>
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5" placeholder="Propri\u00e9t\u00e9s, usages, pr\u00e9cautions..."></textarea></div>
@@ -9855,16 +9865,7 @@ function openAddRecette() {
   openModal('Ajouter une recette', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" placeholder="Smoothie vert \u00e9nergie"></div>
     <div class="form-field"><label>Cat\u00e9gorie</label>
-      <select id="f-re-cat" onchange="toggleNewCat('f-re-cat','f-re-newcat')">
-        <option value="energie">\u00c9nergie</option>
-        <option value="immunite">Immunit\u00e9</option>
-        <option value="digestion">Digestion</option>
-        <option value="sommeil">Sommeil</option>
-        <option value="anti-stress">Anti-stress</option>
-        <option value="snack">Snack sain</option>
-        <option value="__new__">+ Nouvelle cat\u00e9gorie\u2026</option>
-      </select>
-      <input type="text" id="f-re-newcat" placeholder="Nom de la cat\u00e9gorie" style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">
+      ${_buildCatSelect('recette','f-re-cat','f-re-newcat','')}
     </div>
     <div class="form-field"><label>Dur\u00e9e de pr\u00e9paration</label><input type="text" id="f-re-duree" placeholder="5 min"></div>
     ${_photoField('re','')}
