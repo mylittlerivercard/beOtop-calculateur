@@ -918,7 +918,17 @@ def admin_get_users():
                 ORDER BY u.created_at DESC
             ''')
             users = cur.fetchall()
-    return jsonify([serialize_row(u) for u in users])
+    return jsonify([{
+        'id': row['id'],
+        'email': row['email'],
+        'nom': row['nom'],
+        'role': row['role'],
+        'client_id': row['client_id'],
+        'actif': row['actif'],
+        'created_at': str(row['created_at']) if row['created_at'] else None,
+        'site_nom': row['site_nom'],
+        'client_nom': row['client_nom'],
+    } for row in users])
 
 @app.route('/api/admin/users', methods=['POST'])
 @login_required
