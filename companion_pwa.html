@@ -7632,7 +7632,7 @@ function _buildCatPills(arr, current, filterFn, type) {
     var c = it && it.categorie;
     if (c && cats.indexOf(c) === -1) cats.push(c);
   });
-  cats.sort();
+  cats.sort(function(a, b) { return _catLabel(type, a).localeCompare(_catLabel(type, b), 'fr'); });
   var html = '<div class="cat-pill' + (current === 'all' ? ' active' : '') + '" onclick="' + filterFn + '(\'all\')">Tout</div>';
   cats.forEach(function(c){
     html += '<div class="cat-pill' + (current === c ? ' active' : '') + '" onclick="' + filterFn + '(\'' + c + '\')">' + _catLabel(type, c) + '</div>';
@@ -8403,7 +8403,7 @@ function renderAdmin(tab) {
       + '<table><thead><tr><th>Titre</th><th>Cat\u00e9gorie</th><th>Intervenant</th><th>Action</th></tr></thead><tbody>'
       + (_adminList(DB.huiles).length ? _adminList(DB.huiles).map(function(h) {
           return '<tr><td style="font-weight:600;font-size:.82rem">' + h.titre + '</td>'
-            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (h.categorie||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + _catLabel('huile', h.categorie||'\u2014') + '</td>'
             + '<td style="font-size:.7rem;color:var(--text-dim)">' + (h.intervenant||'\u2014') + '</td>'
             + '<td><button class="btn-ghost" onclick="editHuile(' + h.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deleteHuile(' + h.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
         }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucune huile enregistr\u00e9e</td></tr>')
@@ -8414,7 +8414,7 @@ function renderAdmin(tab) {
       + '<table><thead><tr><th>Titre</th><th>Cat\u00e9gorie</th><th>Intervenant</th><th>Action</th></tr></thead><tbody>'
       + (_adminList(DB.recettes).length ? _adminList(DB.recettes).map(function(r) {
           return '<tr><td style="font-weight:600;font-size:.82rem">' + r.titre + '</td>'
-            + '<td style="font-size:.7rem;color:var(--text-dim)">' + (r.categorie||'\u2014') + '</td>'
+            + '<td style="font-size:.7rem;color:var(--text-dim)">' + _catLabel('recette', r.categorie||'\u2014') + '</td>'
             + '<td style="font-size:.7rem;color:var(--text-dim)">' + (r.intervenant||'\u2014') + '</td>'
             + '<td><button class="btn-ghost" onclick="editRecette(' + r.id + ')">&#x270e;</button> <button class="btn-ghost" onclick="deleteRecette(' + r.id + ')" style="color:var(--red)">\u00d7</button></td></tr>';
         }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);font-size:.75rem">Aucune recette enregistr\u00e9e</td></tr>')
@@ -8458,7 +8458,7 @@ else if (tab === 'audios') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>Action</th>
     </tr></thead><tbody>${_adminList(DB.audios).map(a => `<tr>
-      <td>${a.id}</td><td>${a.icon} ${a.titre}</td><td>${a.categorie}</td><td>${a.duree}</td>
+      <td>${a.id}</td><td>${a.icon} ${a.titre}</td><td>${_catLabel('audio', a.categorie)}</td><td>${a.duree}</td>
       <td style="font-size:.7rem;color:var(--text-dim)">${a.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editAudio(${a.id})">✎</button>
           <button class="btn-ghost" onclick="deleteAudio(${a.id})" style="color:var(--red)">✕</button></td>
@@ -8468,7 +8468,7 @@ else if (tab === 'audios') {
     el.innerHTML = '<div style="margin-bottom:.8rem;display:flex;justify-content:flex-end"><button class="btn-primary" style="font-size:.7rem" onclick="openAddVideo()">+ Vidéo</button></div>'
       + '<table><thead><tr><th>ID</th><th>Titre</th><th>Catégorie</th><th>Durée</th><th>Intervenant</th><th>URL</th><th>Action</th></tr></thead><tbody>'
       + _adminList(DB.videos).map(function(v) {
-        return '<tr><td>' + v.id + '</td><td>' + (v.icon||'🎬') + ' ' + v.titre + '</td><td>' + v.categorie + '</td><td>' + (v.duree||'—') + '</td>'
+        return '<tr><td>' + v.id + '</td><td>' + (v.icon||'🎬') + ' ' + v.titre + '</td><td>' + _catLabel('video', v.categorie) + '</td><td>' + (v.duree||'—') + '</td>'
           + '<td style="font-size:.7rem;color:var(--text-dim)">' + (v.intervenant||'—') + '</td>'
           + '<td style="font-size:.58rem;color:var(--text-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis">' + (v.url_video ? '✓' : '⚠ Vide') + '</td>'
           + '<td><button class="btn-ghost" onclick="editVideo(' + v.id + ')">✎</button>'
@@ -8479,7 +8479,7 @@ else if (tab === 'audios') {
     el.innerHTML = `<table><thead><tr>
       <th>ID</th><th>Titre</th><th>Catégorie</th><th>Tags</th><th>Intervenant</th><th>Action</th>
     </tr></thead><tbody>${_adminList(DB.exercices).map(e => `<tr>
-      <td>${e.id}</td><td>${e.icon} ${e.titre}</td><td>${e.categorie}</td><td>${e.tags.join(', ')}</td>
+      <td>${e.id}</td><td>${e.icon} ${e.titre}</td><td>${_catLabel('exercice', e.categorie)}</td><td>${e.tags.join(', ')}</td>
       <td style="font-size:.7rem;color:var(--text-dim)">${e.intervenant||'—'}</td>
       <td><button class="btn-ghost" onclick="editExercice(${e.id})">✎</button>
           <button class="btn-ghost" onclick="deleteExercice(${e.id})" style="color:var(--red)">✕</button></td>
@@ -9051,7 +9051,8 @@ function _mergeCats(type, list) {
 /* Génère le <select> catégorie + champ « nouvelle » depuis CONTENU_CATS[type]. */
 function _buildCatSelect(type, selectId, newcatId, currentVal) {
   currentVal = currentVal || '';
-  var cats = CONTENU_CATS[type] || [];
+  var cats = (CONTENU_CATS[type] || []).slice();
+  cats.sort(function(a, b) { return (a[1]||'').localeCompare(b[1]||'', 'fr'); });
   var opts = cats.map(function(c){
     var sel = (c[0] === currentVal) ? ' selected' : '';
     return '<option value="' + c[0] + '"' + sel + '>' + c[1] + '</option>';
