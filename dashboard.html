@@ -488,7 +488,7 @@
         <span class="unit">salariés</span>
       </div>
       <span class="qvct-saved" id="q-sal-saved">✓ Enregistré</span>
-      <span style="font-size:.6rem;color:var(--muted)">Mémorisé par site dans le navigateur · requis pour le taux de pénétration et la fréquence</span>
+      <span style="font-size:.6rem;color:var(--muted)">Mémorisé par site dans le navigateur · requis pour l'intensité d'usage et la fréquence</span>
     </div>
     <div class="card" style="margin-top:1rem;margin-bottom:2rem">
       <div class="card-title">&#10024; Rapport narratif IA</div>
@@ -502,7 +502,7 @@
     </div>
     <div class="qvct-kpi-row">
       <div class="qvct-score" style="--accent:var(--sage)"><div class="qvct-score-lbl">Indice de récupération</div><div class="qvct-big" id="q-indice">—</div><div class="qvct-sub">% Rechargé + Mieux (kiosque)</div><div id="q-indice-badge"></div></div>
-      <div class="qvct-score" style="--accent:var(--mist)"><div class="qvct-score-lbl">Taux de pénétration RH</div><div class="qvct-big" id="q-penetration" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-penetration-sub">séances / collaborateurs</div></div>
+      <div class="qvct-score" style="--accent:var(--mist)" title="Nombre total de séances capteurs rapporté à l'effectif déclaré du site. Indicateur d'intensité d'usage — non représentatif du nombre de collaborateurs distincts ayant utilisé l'espace."><div class="qvct-score-lbl">Intensité d'usage</div><div class="qvct-big" id="q-penetration" style="color:var(--mist)">—</div><div class="qvct-sub" id="q-penetration-sub">séances / collaborateurs</div></div>
       <div class="qvct-score" style="--accent:var(--gold)"><div class="qvct-score-lbl">Durée totale de récupération</div><div class="qvct-big" id="q-duree-totale" style="color:var(--gold)">—</div><div class="qvct-sub">heures investies en bien-être</div></div>
     </div>
     <div class="qvct-kpi-row">
@@ -1159,7 +1159,7 @@ function renderQvct(){
     else{indEl.className='qvct-big low';document.getElementById('q-indice-badge').innerHTML='<span class="duerp-badge red">⚠ Attention requise</span>';}
   } else {indEl.textContent='—';indEl.className='qvct-big';document.getElementById('q-indice-badge').innerHTML='';}
 
-  if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=fnum(total)+' séances '+(totalCapteurs>0?'(PIR)':'(kiosque)')+' / '+nbSal+' salariés';}
+  if(nbSal>0&&total>0){document.getElementById('q-penetration').textContent=Math.round(total/nbSal*100)+'%';document.getElementById('q-penetration-sub').textContent=fnum(total)+' séances '+(totalCapteurs>0?'PIR':'kiosque')+' · '+nbSal+' salariés déclarés';}
   else{document.getElementById('q-penetration').textContent=total>0?fnum(total)+' sé.':'—';document.getElementById('q-penetration-sub').textContent=nbSal===0?'↑ Renseignez l\'effectif ci-dessus':'Aucune donnée';}
 
   var dTotSec=sess.reduce(function(s,a){return s+(a.duree_moy_sec||0)*(a.nb_sessions||0);},0);
@@ -1273,7 +1273,7 @@ function renderQvct(){
     '<div class="trend-row"><div class="trend-label">Effectif site</div><div class="trend-val">'+(nbSal>0?nbSal+' <span style="font-size:.6rem;color:var(--muted)">salariés</span>':'<span style="color:var(--muted)">Non renseigné</span>')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Séances sur la période</div><div class="trend-val">'+fnum(total)+'<span style="font-size:.6rem;color:var(--muted);margin-left:.4rem">'+sourceLabel+'</span></div></div>'+
     '<div class="trend-row"><div class="trend-label">Indice de récupération</div><div class="trend-val" style="color:var(--sage)">'+(indice!==null?(indice+'%'):'—')+'</div></div>'+
-    '<div class="trend-row"><div class="trend-label">Taux de pénétration RH</div><div class="trend-val">'+(nbSal>0&&total>0?Math.round(total/nbSal*100)+'%':'Effectif requis')+'</div></div>'+
+    '<div class="trend-row"><div class="trend-label">Intensité d\'usage</div><div class="trend-val">'+(nbSal>0&&total>0?Math.round(total/nbSal*100)+'%':'Effectif requis')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Durée totale récupération</div><div class="trend-val">'+(dTotH>0?dTotH+'h':'—')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Projection annuelle</div><div class="trend-val">'+(proj>0?fnum(proj)+' séances':'—')+'</div></div>'+
     '<div class="trend-row"><div class="trend-label">Atelier phare</div><div class="trend-val">'+(byAt.length?byAt[0].atelier:'—')+'</div></div>'+
