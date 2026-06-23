@@ -2911,6 +2911,26 @@ def companion_intervenants_update(iid):
 @app.route('/api/companion/intervenants/<int:iid>', methods=['DELETE'])
 @login_required
 def companion_intervenants_delete(iid):
+    # Restriction : un intervenant ne peut supprimer que SA propre fiche.
+    # Lien par le nom (companion_intervenants n'a pas de user_id), comme le PUT.
+    # L'admin n'est pas restreint.
+    if session.get('role') != 'admin':
+        def _norm_nom(s):
+            s = (s or '').strip().lower()
+            return ''.join(c for c in unicodedata.normalize('NFKD', s)
+                           if not unicodedata.combining(c))
+        _, inv_nom = _resolve_intervenant()
+        if not inv_nom:
+            inv_nom = (get_current_user() or {}).get('nom') or ''
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT nom FROM companion_intervenants WHERE id=%s", [iid])
+                target = cur.fetchone()
+        if not target:
+            return jsonify({'error': 'Intervenant introuvable'}), 404
+        if not inv_nom or _norm_nom(target['nom']) != _norm_nom(inv_nom):
+            return jsonify({'error': 'Accès refusé'}), 403
+
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM companion_intervenants WHERE id=%s", [iid])
