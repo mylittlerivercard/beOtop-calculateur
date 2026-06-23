@@ -1979,7 +1979,7 @@ function loadCompanion() {
       /* Top global podium */
       var globalEl = document.getElementById('ca-top-global');
       if (globalEl && d.top_global) {
-        var actionIcons = { audio:'🎧', video:'🎬', exercice:'⚡', sons:'🌿', jeu:'🧠', reservation:'📅', checkin:'💓', cc:'🫁' };
+        var actionIcons = { audio:'🎧', video:'🎬', exercice:'⚡', sons:'🌿', jeu:'🧠', reservation:'📅', checkin:'💓', cc:'🫁', podcast:'🎙', recette:'🥗', bilan:'🌿' };
         globalEl.innerHTML = d.top_global.map(function(it, i) {
           var medals = ['🥇','🥈','🥉'];
           return '<li class="ca-top-item">'
@@ -2017,9 +2017,11 @@ var _CA_CATS = [
   { key:'top_jeux',      label:'Jeux cognitifs' },
   { key:'top_cc',        label:'Respiration & Cohérence' },
   { key:'top_podcast',   label:'Podcasts' },
-  { key:'top_posts',     label:'Posts internes' }
+  { key:'top_posts',     label:'Posts internes' },
+  { key:'top_recettes',  label:'Recettes bien-être' },
+  { key:'top_bilans',    label:'Bilans naturopathiques' }
 ];
-var _CA_ACTION_LABELS = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo', podcast:'Podcast', posts:'Posts internes' };
+var _CA_ACTION_LABELS = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Réservation', sons:'Sons', video:'Vidéo', podcast:'Podcast', posts:'Posts internes', recette:'Recette', bilan:'Bilan naturopathique' };
 
 function _caToday() { return new Date().toISOString().slice(0, 10); }
 function _caSlug()  { return (window._caSite || 'site') || 'site'; }
@@ -2415,7 +2417,7 @@ function drawDonut(data) {
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var colors = ['#00b4b4','#f5855a','#7c5cbf','#e8641e','#c9a96e','#009090','#e84e4e','#50a0c8'];
-  var labels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Résa', sons:'Sons', video:'Vidéo' };
+  var labels = { checkin:'Check-in', cc:'Cohérence', audio:'Audio', exercice:'Exercice', jeu:'Jeu cognitif', reservation:'Résa', sons:'Sons', video:'Vidéo', podcast:'Podcast', recette:'Recette', bilan:'Bilan' };
   var total = data.reduce(function(s,d){ return s + d.nb; }, 0);
   var startAngle = -Math.PI / 2;
   ctx.clearRect(0, 0, 120, 120);

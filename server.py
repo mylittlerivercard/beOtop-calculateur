@@ -4563,6 +4563,28 @@ def companion_analytics():
             """, [site_slug, days])
             top_posts = [serialize_row(r) for r in cur.fetchall()]
 
+            # Recettes bien-être
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'recette'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'recette'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_recettes = [serialize_row(r) for r in cur.fetchall()]
+
+            # Bilans naturopathiques
+            cur.execute("""
+                SELECT label, COUNT(*) as nb
+                FROM companion_points
+                WHERE site_slug = %s AND action = 'bilan'
+                AND created_at >= CURRENT_DATE - (%s * INTERVAL '1 day')
+                AND label IS NOT NULL AND label != 'bilan'
+                GROUP BY label ORDER BY nb DESC LIMIT 5
+            """, [site_slug, days])
+            top_bilans = [serialize_row(r) for r in cur.fetchall()]
+
             # Top global toutes catégories confondues
             cur.execute("""
                 SELECT action, label, COUNT(*) as nb
@@ -4598,6 +4620,8 @@ def companion_analytics():
         'top_cc':              top_cc,
         'top_podcast':         top_podcast,
         'top_posts':           top_posts,
+        'top_recettes':        top_recettes,
+        'top_bilans':          top_bilans,
         'top_global':          top_global,
     })
 
