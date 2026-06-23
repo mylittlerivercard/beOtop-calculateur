@@ -8,7 +8,6 @@ Version PostgreSQL
 from flask import Flask, request, jsonify, session, redirect, Response, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from markupsafe import escape
 import os
 import csv
 import io
@@ -4048,8 +4047,8 @@ def realtime_page(site_slug):
     try:
         with open(path, encoding='utf-8') as f:
             html = f.read()
-        # Injecter le site_slug dans la page (échappé pour éviter toute injection)
-        html = html.replace("const SITE = 'dmmf-agde'", f"const SITE = '{escape(site_slug)}'")
+        # Injecter le site_slug dans la page (json.dumps = littérale JS sûre, anti-injection)
+        html = html.replace("const SITE = 'dmmf-agde'", f"const SITE = {json.dumps(site_slug)}")
         return Response(html, mimetype='text/html; charset=utf-8')
     except FileNotFoundError:
         return Response('<h1>Page realtime.html introuvable</h1>', status=404, mimetype='text/html')
@@ -4117,7 +4116,7 @@ def kiosk_page(site_slug):
             f'<h1>Kiosk introuvable</h1><p>Fichiers cherchés : {candidates}</p><p>BASE_DIR : {BASE_DIR}</p>',
             status=404, mimetype='text/html'
         )
-    html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = '{escape(site_slug)}'")
+    html = html.replace("var SITE_SLUG = ''", f"var SITE_SLUG = {json.dumps(site_slug)}")
     return Response(html, mimetype='text/html; charset=utf-8')
 
 
