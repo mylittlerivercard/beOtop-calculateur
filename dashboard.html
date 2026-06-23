@@ -1958,6 +1958,8 @@ function loadCompanion() {
           { key:'top_cc',      label:'🫀 Respiration & Cohérence', color:'#00b4b4' },
           { key:'top_podcast', label:'🎙️ Podcasts',                color:'#8b5cf6' },
           { key:'top_posts',   label:'📋 Posts internes',          color:'#64748b' },
+          { key:'top_recettes', label:'🥗 Recettes bien-être',     color:'#16a34a' },
+          { key:'top_bilans',  label:'🌿 Bilans naturopathiques',  color:'#0d9488' },
         ];
         contenusEl.innerHTML = sections.filter(function(s){ return d[s.key] && d[s.key].length; }).map(function(s) {
           var items = d[s.key];
