@@ -867,6 +867,29 @@ function _mcCatField(ep, current) {
     + '<input type="text" id="mcf-categorie-new" placeholder="Nom de la nouvelle catégorie" value="' + (isNew ? mcAttr(current) : '') + '" style="margin-top:.5rem;' + (isNew ? '' : 'display:none;') + '"></div>';
 }
 
+/* Remplace les options du select #mcf-categorie par les catégories réelles
+   agrégées par GET /api/companion/categories?type=<ep>, en conservant
+   « -- Choisir une catégorie -- » en premier et « + Nouvelle catégorie… » en
+   dernier. En cas d'échec réseau, on garde les options pré-définies (fallback). */
+function _mcLoadCategories(ep, current) {
+  current = current == null ? '' : String(current);
+  var sel = document.getElementById('mcf-categorie');
+  if (!sel) return;
+  fetch('/api/companion/categories?type=' + encodeURIComponent(ep), { credentials: 'include' })
+    .then(function(r){ return r.ok ? r.json() : { categories: [] }; })
+    .then(function(d){
+      var cats = (d && d.categories) || [];
+      var isNew = current !== '' && !cats.some(function(c){ return c.valeur === current; });
+      var html = '<option value=""' + (current === '' ? ' selected' : '') + '>-- Choisir une catégorie --</option>';
+      cats.forEach(function(c){
+        html += '<option value="' + mcAttr(c.valeur) + '"' + (c.valeur === current ? ' selected' : '') + '>' + mcText(c.label || c.valeur) + '</option>';
+      });
+      html += '<option value="__new__"' + (isNew ? ' selected' : '') + '>+ Nouvelle catégorie…</option>';
+      sel.innerHTML = html;
+    })
+    .catch(function(){ /* silencieux : les options pré-définies restent en place */ });
+}
+
 /* Identiques à companion.html : gèrent l'input « nouvelle catégorie ». */
 function toggleNewCat(selectId, inputId) {
   var sel = document.getElementById(selectId), inp = document.getElementById(inputId);
@@ -973,6 +996,7 @@ function mcOpenAdd(ep) {
   openModal('Ajouter — ' + t.label, mcFormHtml(ep, null)
     + '<div class="mc-modal-actions"><button class="mc-cancel" onclick="closeModal()">Annuler</button>'
     + '<button class="mc-save" onclick="mcSave(\'' + ep + '\',null)">✓ Ajouter</button></div>');
+  _mcLoadCategories(ep, '');
 }
 
 function mcOpenEdit(ep, id) {
