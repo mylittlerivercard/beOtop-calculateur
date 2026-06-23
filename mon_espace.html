@@ -1126,7 +1126,15 @@ function loadFiche() {
         .then(function(r){ return r.json(); })
         .then(function(d){
           var list = (d && d.intervenants) || [];
-          var fiche = list.filter(function(i){ return _ficheNorm(i.nom) === _ficheNorm(nom); })[0];
+          /* Recherche robuste : exacte → toLowerCase → trim().toLowerCase(). */
+          var fiche =
+            list.filter(function(i){ return i.nom === nom; })[0] ||
+            list.filter(function(i){ return (i.nom || '').toLowerCase() === (nom || '').toLowerCase(); })[0] ||
+            list.filter(function(i){ return (i.nom || '').trim().toLowerCase() === (nom || '').trim().toLowerCase(); })[0];
+          /* LOG TEMPORAIRE — à retirer une fois le fix confirmé. */
+          console.log('[loadFiche] nom /api/auth/me :', JSON.stringify(nom));
+          console.log('[loadFiche] noms companion_intervenants :', list.map(function(i){ return i.nom; }));
+          console.log('[loadFiche] match :', fiche ? fiche.nom : '(aucun)');
           if (!fiche) return;   // pas de fiche : création réservée à l'admin
           FICHE_ID = fiche.id;
           document.getElementById('fiche-nom-label').textContent = fiche.nom || nom;
