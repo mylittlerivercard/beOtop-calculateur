@@ -309,6 +309,28 @@ tr:hover td { background: var(--surface2); }
     <div style="font-size:.8rem;color:var(--teal);font-weight:600">Ouvrir →</div>
   </a>
 
+  <!-- MA FICHE · édition par l'intervenant connecté -->
+  <div id="fiche-section" style="display:none;margin-bottom:2rem">
+    <div class="section-title">Ma fiche</div>
+    <div class="note">
+      ✏️ Modifiez ici les informations de votre fiche intervenant — <strong id="fiche-nom-label"></strong>.
+      Vous ne voyez et ne modifiez que votre propre fiche ; votre nom est géré par l'administrateur.
+    </div>
+    <div class="table-wrap" style="padding:1.2rem 1.4rem">
+      <div class="form-field"><label>Titre / Fonction</label><input type="text" id="fiche-titre" placeholder="Naturopathe · Experte vitalité"></div>
+      <div class="form-field"><label>Spécialité</label><input type="text" id="fiche-specialite" placeholder="Sophrologie, gestion du stress…"></div>
+      <div class="form-field"><label>Bio</label><textarea id="fiche-bio" rows="4" placeholder="Présentez votre parcours, votre approche…"></textarea></div>
+      <div class="form-field"><label>Photo — nom du fichier dans /static/</label><input type="text" id="fiche-photo" placeholder="ex. monika.jpg"></div>
+      <div class="form-field"><label>Site web</label><input type="text" id="fiche-site_url" placeholder="https://…"></div>
+      <div class="form-field"><label>LinkedIn</label><input type="text" id="fiche-linkedin_url" placeholder="https://www.linkedin.com/in/…"></div>
+      <div class="form-field"><label>Tags (séparés par des virgules)</label><input type="text" id="fiche-tags" placeholder="stress, sommeil, énergie"></div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-top:1rem;flex-wrap:wrap">
+        <button class="mc-save" style="flex:0 0 auto;padding:.7rem 1.4rem" onclick="saveFiche()">Enregistrer ma fiche</button>
+        <span id="fiche-msg" style="font-size:.78rem"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- MES CONTENUS · CRUD filtré par auteur -->
   <div id="mc-section" style="display:none;margin-bottom:2rem">
     <div class="section-title">Mes contenus · gestion</div>
@@ -1076,6 +1098,84 @@ MC_TYPES.forEach(function(t){
   window['edit'    + t.cap] = function(id){ mcOpenEdit(t.ep, id); };
   window['delete'  + t.cap] = function(id){ mcDelete(t.ep, id); };
 });
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   MA FICHE — l'intervenant connecté édite sa propre fiche.
+   Chargement : GET /api/auth/me → nom de l'intervenant, puis
+   GET /api/companion/intervenants → recherche de SA fiche par nom.
+   Sauvegarde : PUT /api/companion/intervenants/:id (le nom n'est pas
+   modifiable ici, il reste géré par l'admin).
+══════════════════════════════════════════════════════════════════ */
+var FICHE_ID = null;
+
+/* Normalisation pour comparer les noms (accents + casse ignorés). */
+function _ficheNorm(s) {
+  return (s || '').toString().trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function loadFiche() {
+  fetch('/api/auth/me', { credentials: 'include' })
+    .then(function(r){ return r.json(); })
+    .then(function(me){
+      var nom = (me && (me.intervenant_nom || me.nom)) || '';
+      if (!nom) return;
+      return fetch('/api/companion/intervenants', { credentials: 'include' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var list = (d && d.intervenants) || [];
+          var fiche = list.filter(function(i){ return _ficheNorm(i.nom) === _ficheNorm(nom); })[0];
+          if (!fiche) return;   // pas de fiche : création réservée à l'admin
+          FICHE_ID = fiche.id;
+          document.getElementById('fiche-nom-label').textContent = fiche.nom || nom;
+          document.getElementById('fiche-titre').value        = fiche.titre || '';
+          document.getElementById('fiche-specialite').value   = fiche.specialite || '';
+          document.getElementById('fiche-bio').value          = fiche.bio || '';
+          document.getElementById('fiche-photo').value        = fiche.photo || '';
+          document.getElementById('fiche-site_url').value     = fiche.site_url || '';
+          document.getElementById('fiche-linkedin_url').value = fiche.linkedin_url || '';
+          document.getElementById('fiche-tags').value         = (fiche.tags || []).join(', ');
+          document.getElementById('fiche-section').style.display = '';
+        });
+    })
+    .catch(function(){ /* silencieux : la section reste masquée */ });
+}
+
+function saveFiche() {
+  if (!FICHE_ID) { showToast('Fiche introuvable'); return; }
+  var tags = document.getElementById('fiche-tags').value
+    .split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  var body = {
+    titre:        document.getElementById('fiche-titre').value.trim(),
+    specialite:   document.getElementById('fiche-specialite').value.trim(),
+    bio:          document.getElementById('fiche-bio').value.trim(),
+    photo:        document.getElementById('fiche-photo').value.trim(),
+    site_url:     document.getElementById('fiche-site_url').value.trim(),
+    linkedin_url: document.getElementById('fiche-linkedin_url').value.trim(),
+    tags:         tags
+  };
+  var msg = document.getElementById('fiche-msg');
+  msg.textContent = 'Enregistrement…'; msg.style.color = 'var(--text-muted)';
+  fetch('/api/companion/intervenants/' + FICHE_ID, {
+    method: 'PUT', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+    .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+    .then(function(res){
+      if (!res.ok || (res.d && res.d.error)) {
+        msg.textContent = '✗ ' + ((res.d && res.d.error) || 'Erreur'); msg.style.color = 'var(--coral-dark)';
+        return;
+      }
+      msg.textContent = '✓ Fiche enregistrée'; msg.style.color = 'var(--teal)';
+      showToast('✓ Votre fiche a été mise à jour');
+    })
+    .catch(function(){ msg.textContent = '✗ Erreur réseau'; msg.style.color = 'var(--coral-dark)'; });
+}
+
+loadFiche();
 </script>
 </body>
 </html>
