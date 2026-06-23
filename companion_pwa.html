@@ -7697,10 +7697,23 @@ var CATS_AUDIO = [
 ];
 var currentAudioCat = 'all';
 
+/* Comparaison robuste de deux noms : casse + espaces de bord ignorés. */
+function _sameNom(a, b) {
+  return (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
+}
+
+/* Recherche robuste d'un intervenant par nom : exacte → casse → trim+casse. */
+function _findByNom(list, nom) {
+  list = list || [];
+  return list.find(function(i){ return i.nom === nom; })
+      || list.find(function(i){ return (i.nom || '').toLowerCase() === (nom || '').toLowerCase(); })
+      || list.find(function(i){ return _sameNom(i.nom, nom); });
+}
+
 /* Retourne le nom de fichier photo d'un intervenant (ou null). */
 function getIntervenantPhoto(nomIntervenant) {
   if (!nomIntervenant) return null;
-  var inv = (DB.intervenants || []).find(function(i){ return i.nom === nomIntervenant; });
+  var inv = _findByNom(DB.intervenants, nomIntervenant);
   if (!inv) return null;
   if (inv.photo) return inv.photo;
   if (inv.photo_url) return inv.photo_url.split('/').pop();   // dérive le fichier d'un chemin existant
@@ -9136,7 +9149,7 @@ function filterDefi(cat) { currentDefiCat = cat; renderDefis(); }
 
 /* URL de la photo d'un intervenant (pour illustrer une vignette par défaut). */
 function _intervenantPhotoUrl(nom) {
-  var inv = (DB.intervenants || []).find(function(i){ return i.nom === nom; });
+  var inv = _findByNom(DB.intervenants, nom);
   return inv && inv.photo_url ? inv.photo_url : '';
 }
 
@@ -9162,7 +9175,7 @@ function renderDefis() {
 }
 
 function _getIntervenantPhoto(nom) {
-  var inv = (DB.intervenants||[]).find(function(i){ return i.nom === nom; });
+  var inv = _findByNom(DB.intervenants, nom);
   if (inv && inv.photo_url) {
     return '<img src="' + inv.photo_url + '" alt="' + nom + '" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(0,180,180,.2);" onerror="this.style.display=\'none\'">';
   }
@@ -10137,7 +10150,7 @@ function _fillIntervenantSelect(selectId, selectedNom) {
     var o = document.createElement('option');
     o.value = inv.nom;
     o.textContent = inv.nom;
-    if (selectedNom && inv.nom === selectedNom) o.selected = true;
+    if (selectedNom && _sameNom(inv.nom, selectedNom)) o.selected = true;
     sel.appendChild(o);
   });
 }
