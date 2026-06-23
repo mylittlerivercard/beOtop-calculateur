@@ -748,6 +748,32 @@ def change_password():
             conn.commit()
     return jsonify({'ok': True})
 
+# ========== ETAT GLOBAL (HEALTH) ==========
+
+@app.route('/api/health', methods=['GET'])
+@login_required
+def health():
+    """État global pour la vue d'ensemble admin (admin.html / loadOverview).
+    Renvoie les compteurs clients / sites / sessions + le statut de la base."""
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) AS n FROM clients")
+                nb_clients = cur.fetchone()['n']
+                cur.execute("SELECT COUNT(*) AS n FROM sites")
+                nb_sites = cur.fetchone()['n']
+                cur.execute("SELECT COUNT(*) AS n FROM sessions")
+                nb_sessions = cur.fetchone()['n']
+        return jsonify({
+            'clients': nb_clients,
+            'sites': nb_sites,
+            'sessions': nb_sessions,
+            'database': 'ok'
+        })
+    except Exception as e:
+        print("Erreur /api/health :", e, file=sys.stderr)
+        return jsonify({'clients': 0, 'sites': 0, 'sessions': 0, 'database': 'error'}), 500
+
 # ========== ADMIN - CLIENTS ==========
 
 @app.route('/api/admin/clients', methods=['GET'])
