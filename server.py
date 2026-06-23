@@ -2849,6 +2849,27 @@ def companion_intervenants_create():
 @app.route('/api/companion/intervenants/<int:iid>', methods=['PUT'])
 @login_required
 def companion_intervenants_update(iid):
+    # Restriction : un intervenant ne peut modifier que SA propre fiche.
+    # companion_intervenants n'a pas de user_id (et un espace d'id distinct de la
+    # table intervenants) : le lien se fait par le nom, comme dans l'espace intervenant.
+    # L'admin n'est pas restreint.
+    if session.get('role') != 'admin':
+        def _norm_nom(s):
+            s = (s or '').strip().lower()
+            return ''.join(c for c in unicodedata.normalize('NFKD', s)
+                           if not unicodedata.combining(c))
+        _, inv_nom = _resolve_intervenant()
+        if not inv_nom:
+            inv_nom = (get_current_user() or {}).get('nom') or ''
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT nom FROM companion_intervenants WHERE id=%s", [iid])
+                target = cur.fetchone()
+        if not target:
+            return jsonify({'error': 'Intervenant introuvable'}), 404
+        if not inv_nom or _norm_nom(target['nom']) != _norm_nom(inv_nom):
+            return jsonify({'error': 'Accès refusé'}), 403
+
     data = request.get_json() or {}
     cols = []; vals = []
     for key in ('site_slug', 'nom', 'specialite', 'bio', 'photo', 'photo_url', 'titre', 'site_url', 'linkedin_url'):
