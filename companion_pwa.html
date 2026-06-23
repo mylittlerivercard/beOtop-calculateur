@@ -8528,9 +8528,7 @@ else if (tab === 'audios') {
 function openAddVideo() {
   openModal('Ajouter une vidéo', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" placeholder="Sophrologie guidée 10 min"></div>
-    <div class="form-field"><label>Catégorie</label>
-      ${_buildCatSelect('video','f-vi-cat','f-vi-newcat','')}
-    </div>
+    ${_catField('f-vi','video','')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" placeholder="10 min"></div>
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-vi-icon" placeholder="🌅" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" placeholder="Description courte"></div>
@@ -8567,6 +8565,7 @@ function editVideo(id) {
   if (!v) return;
   openModal('Modifier ' + v.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-vi-titre" value="${v.titre}"></div>
+    ${_catField('f-vi','video', v.categorie||'')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-vi-duree" value="${v.duree||''}"></div>
     <div class="form-field"><label>Icône</label><input type="text" id="f-vi-icon" value="${v.icon||'🎬'}" style="width:80px"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-vi-desc" value="${v.description||''}"></div>
@@ -8583,6 +8582,7 @@ function updateVideo(id) {
   if (!v) return;
   var item = Object.assign({}, v, {
     titre: document.getElementById('f-vi-titre').value,
+    categorie: getCatValue('f-vi-cat','f-vi-newcat'),
     duree: document.getElementById('f-vi-duree').value,
     icon:  document.getElementById('f-vi-icon').value,
     description: document.getElementById('f-vi-desc').value,
@@ -8677,9 +8677,7 @@ function deleteAtelier(id) {
 function openAddAudio() {
   openModal('Ajouter un audio', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" placeholder="Relaxation profonde"></div>
-    <div class="form-field"><label>Catégorie</label>
-      ${_buildCatSelect('audio','f-au-cat','f-au-newcat','')}
-    </div>
+    ${_catField('f-au','audio','')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" placeholder="20 min"></div>
     ${_photoField('au','')}
     <div class="form-field"><label>Icône (emoji)</label><input type="text" id="f-au-icon" placeholder="🌊" style="width:80px"></div>
@@ -8717,6 +8715,7 @@ function editAudio(id) {
   if (!a) return;
   openModal('Modifier ' + a.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-au-titre" value="${a.titre}"></div>
+    ${_catField('f-au','audio', a.categorie||'')}
     <div class="form-field"><label>Durée</label><input type="text" id="f-au-duree" value="${a.duree}"></div>
     ${_photoField('au', a.photo||'')}
     <div class="form-field"><label>Icône</label><input type="text" id="f-au-icon" value="${a.icon}" style="width:80px"></div>
@@ -8733,6 +8732,7 @@ function updateAudio(id) {
   if (!a) return;
   var item = Object.assign({}, a, {
     titre: document.getElementById('f-au-titre').value,
+    categorie: getCatValue('f-au-cat','f-au-newcat'),
     duree: document.getElementById('f-au-duree').value,
     icon:  document.getElementById('f-au-icon').value,
     description: document.getElementById('f-au-desc').value,
@@ -8758,9 +8758,7 @@ function deleteAudio(id) {
 function openAddExercice() {
   openModal('Ajouter un exercice', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" placeholder="Cervicales express"></div>
-    <div class="form-field"><label>Catégorie</label>
-      ${_buildCatSelect('exercice','f-ex-cat','f-ex-newcat','')}
-    </div>
+    ${_catField('f-ex','exercice','')}
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" placeholder="Douleurs nuque · Bureau"></div>
     <div class="form-field"><label>Tags (séparés par virgule)</label><input type="text" id="f-ex-tags" placeholder="5 min,Sans matériel,Assis"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" placeholder="Description courte"></div>
@@ -8798,6 +8796,7 @@ function editExercice(id) {
   if (!e) return;
   openModal('Modifier ' + e.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-ex-titre" value="${e.titre}"></div>
+    ${_catField('f-ex','exercice', e.categorie||'')}
     <div class="form-field"><label>Indication</label><input type="text" id="f-ex-ind" value="${e.indication}"></div>
     <div class="form-field"><label>Tags</label><input type="text" id="f-ex-tags" value="${e.tags.join(', ')}"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-ex-desc" value="${e.description}"></div>
@@ -8819,6 +8818,7 @@ function updateExercice(id) {
   if (!e) return;
   var item = Object.assign({}, e, {
     titre: document.getElementById('f-ex-titre').value,
+    categorie: getCatValue('f-ex-cat','f-ex-newcat'),
     indication: document.getElementById('f-ex-ind').value,
     tags: document.getElementById('f-ex-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     description: document.getElementById('f-ex-desc').value,
@@ -9040,13 +9040,13 @@ function getCatValue(selectId, inputId) {
 ════════════════════════════════════════════ */
 var CAT_TYPES = ['audio','video','exercice','defi','podcast','huile','recette'];
 var CONTENU_CATS = {
-  audio: [['ambiance','Ambiance'],['anti-stress','Anti-stress'],['binaural','Binaural'],['coherence','Cohérence cardiaque'],['energie','Énergie & activation'],['focus','Focus & concentration'],['meditation','Méditation guidée'],['mindfulness','Mindfulness'],['nsdr','NSDR'],['relaxation','Relaxation'],['sieste','Sieste'],['sophrologie','Sophrologie'],['visualisation','Visualisation']],
-  video: [['anti-stress','Anti-stress'],['bien-etre','Bien-être général'],['coherence','Cohérence cardiaque'],['energie','Énergie & vitalité'],['etirements','Étirements bureau'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation guidée'],['mindfulness','Mindfulness'],['nutrition','Nutrition & santé'],['posture','Posture & ergonomie'],['relaxation','Relaxation'],['resilience','Résilience'],['sieste','Sieste & récupération'],['sophrologie','Sophrologie'],['tms','TMS & douleurs'],['yoga','Yoga bureau']],
-  exercice: [['anti-stress','Anti-stress'],['cardio','Cardio léger'],['coherence','Cohérence cardiaque'],['energie','Énergie & réveil'],['etirements','Étirements'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation'],['mindfulness','Mindfulness'],['posture','Posture'],['relaxation','Relaxation'],['respiration','Respiration'],['tms','TMS'],['workout','Workout express']],
-  defi: [['attention','Attention & focus'],['cognition','Cognition générale'],['creativite','Créativité'],['double-tache','Double tâche'],['flexibilite','Flexibilité mentale'],['inhibition','Inhibition de réponse'],['logique','Logique'],['memoire','Mémoire de travail'],['neurosciences','Neurosciences appliquées'],['reflexes','Réflexes'],['resilience','Résilience'],['vitesse','Vitesse de traitement']],
-  podcast: [['anti-stress','Anti-stress'],['bien-etre','Bien-être général'],['cognition','Cognition & mémoire'],['energie','Énergie & vitalité'],['gestion-emotions','Gestion des émotions'],['meditation','Méditation'],['mindfulness','Mindfulness'],['neurosciences','Neurosciences'],['philosophie','Philosophie & sens'],['psychologie','Psychologie positive'],['relaxation','Relaxation'],['resilience','Résilience'],['sieste','Sieste'],['sophrologie','Sophrologie'],['tms','TMS & douleurs']],
-  huile: [['stress','Anti-stress'],['energie','Énergie'],['sommeil','Sommeil'],['immunite','Immunité'],['digestion','Digestion'],['concentration','Concentration']],
-  recette: [['energie','Énergie'],['immunite','Immunité'],['digestion','Digestion'],['sommeil','Sommeil'],['anti-stress','Anti-stress'],['snack','Snack sain']]
+  audio:    [['binaural','Binaural'],['focus','Focus'],['meditation','Méditation'],['relaxation','Relaxation'],['respiration','Respiration'],['sommeil','Sommeil']],
+  video:    [['business','Business'],['anti-stress','Anti-stress'],['bien-etre','Bien-être'],['energie','Énergie'],['ergonomie','Ergonomie'],['etirements','Étirements'],['meditation','Méditation'],['relaxation','Relaxation']],
+  exercice: [['etirements','Étirements'],['relaxation','Relaxation'],['respiration','Respiration'],['tms','TMS'],['workout','Workout']],
+  defi:     [['attention','Attention'],['memoire','Mémoire'],['logique','Logique'],['reflexes','Réflexes']],
+  podcast:  [['bien-etre','Bien-être'],['nutrition','Nutrition'],['psychologie','Psychologie'],['stress','Stress']],
+  huile:    [['aromatherapie','Aromathérapie'],['olfactologie','Olfactologie'],['olfactotherapie','Olfactothérapie'],['digestion','Digestion'],['immunite','Immunité'],['sommeil','Sommeil'],['stress','Stress']],
+  recette:  [['anti-stress','Anti-stress'],['detox','Détox'],['digestion','Digestion'],['energie','Énergie'],['estivale','Estivale'],['immunite','Immunité'],['snack','Snack sain']]
 };
 var DB_CATEGORIES = {};   // { audio:[{valeur,label}], ... }
 
@@ -9062,21 +9062,36 @@ function _mergeCats(type, list) {
   });
 }
 
-/* Génère le <select> catégorie + champ « nouvelle » depuis CONTENU_CATS[type]. */
-function _buildCatSelect(type, selectId, newcatId, currentVal) {
-  currentVal = currentVal || '';
-  var cats = (CONTENU_CATS[type] || []).slice();
-  cats.sort(function(a, b) { return (a[1]||'').localeCompare(b[1]||'', 'fr'); });
-  var opts = cats.map(function(c){
-    var sel = (c[0] === currentVal) ? ' selected' : '';
-    return '<option value="' + c[0] + '"' + sel + '>' + c[1] + '</option>';
-  }).join('');
-  opts += '<option value="__new__">+ Nouvelle catégorie…</option>';
-  return '<select id="' + selectId + '" data-content-type="' + type + '" onchange="toggleNewCat(\'' + selectId + '\',\'' + newcatId + '\')"'
-    + ' style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
-    + opts + '</select>'
-    + '<input type="text" id="' + newcatId + '" placeholder="Nom de la nouvelle catégorie"'
-    + ' style="display:none;margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">';
+/* Indique si la catégorie courante ne correspond à aucune option pré-définie. */
+function _catIsNew(type, current) {
+  current = current == null ? '' : String(current);
+  if (!current) return false;
+  return !(CONTENU_CATS[type] || []).some(function(o){ return o[0] === current; });
+}
+
+/* Options du <select> catégorie : placeholder + sous-rubriques + « Nouvelle… ». */
+function _catOptions(type, current) {
+  current = current == null ? '' : String(current);
+  var isNew = _catIsNew(type, current);
+  var html = '<option value=""' + (current === '' ? ' selected' : '') + '>-- Choisir une catégorie --</option>';
+  var _cats = (CONTENU_CATS[type] || []).slice();
+  _cats.sort(function(a, b) { return (a[1]||'').localeCompare(b[1]||'', 'fr'); });
+  _cats.forEach(function(o){
+    html += '<option value="' + o[0] + '"' + (o[0] === current ? ' selected' : '') + '>' + o[1] + '</option>';
+  });
+  html += '<option value="__new__"' + (isNew ? ' selected' : '') + '>+ Nouvelle catégorie…</option>';
+  return html;
+}
+
+/* Champ « Catégorie » complet (div.form-field) : <select> + input « nouvelle ».
+   prefix = préfixe d'id (ex. 'f-au' → #f-au-cat / #f-au-newcat). */
+function _catField(prefix, type, current) {
+  var isNew = _catIsNew(type, current);
+  return '<div class="form-field"><label>Catégorie</label>'
+    + '<select id="' + prefix + '-cat" data-content-type="' + type + '" onchange="toggleNewCat(\'' + prefix + '-cat\',\'' + prefix + '-newcat\')">'
+    + _catOptions(type, current) + '</select>'
+    + '<input type="text" id="' + prefix + '-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (isNew ? current : '') + '" style="' + (isNew ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none">'
+    + '</div>';
 }
 
 /* Charge les catégories de tous les types depuis la base. */
@@ -9250,15 +9265,13 @@ function _defiForm(d) {
     + '<input id="f-df-url" value="' + (v.url_audio||'') + '" placeholder="/audio/Defi-1-Deux-choses.mp3" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + _photoField('df', v.photo||'')
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + _buildCatSelect('defi','f-df-cat','f-df-newcat','') + '</div>'
+    + '<select id="f-df-cat" data-content-type="defi" onchange="toggleNewCat(\'f-df-cat\',\'f-df-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('defi', v.categorie||'') + '</select><input type="text" id="f-df-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('defi', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('defi', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Intervenant</label>'
     + '<select id="f-df-intervenant" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="">— Aucun —</option></select></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Dur\u00e9e (indicative)</label>'
     + '<input id="f-df-duree" value="' + (v.duree||'') + '" placeholder="~10 min" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
-    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
-    + _buildCatSelect('podcast','f-pod-cat','f-pod-newcat','') + '</div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Statut</label>'
     + '<select id="f-df-actif" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="1"' + (v.actif!==false?' selected':'') + '>Actif</option>'
@@ -9686,6 +9699,8 @@ function _podcastForm(p) {
     + '<input id="f-pod-titre" value="' + (v.titre||'') + '" placeholder="Titre du podcast" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Description</label>'
     + '<input id="f-pod-desc" value="' + (v.description||'') + '" placeholder="Description courte" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem"></div>'
+    + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Catégorie</label>'
+    + '<select id="f-pod-cat" data-content-type="podcast" onchange="toggleNewCat(\'f-pod-cat\',\'f-pod-newcat\')" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">' + _catOptions('podcast', v.categorie||'') + '</select><input type="text" id="f-pod-newcat" placeholder="Nom de la nouvelle catégorie" value="' + (_catIsNew('podcast', v.categorie||'') ? (v.categorie||'') : '') + '" style="' + (_catIsNew('podcast', v.categorie||'') ? '' : 'display:none;') + 'margin-top:.5rem;width:100%;padding:.55rem .8rem;border:1px solid rgba(0,180,180,.3);border-radius:8px;font-size:.78rem;font-family:inherit;background:rgba(0,180,180,.06);outline:none"></div>'
     + '<div><label style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Type d\'URL</label>'
     + '<select id="f-pod-type" style="width:100%;margin-top:.3rem;padding:.6rem .8rem;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:.85rem">'
     + '<option value="externe"' + (v.type_url!=='fichier'?' selected':'') + '>Lien externe (Spotify, YouTube, site...)</option>'
@@ -9758,9 +9773,7 @@ function openHuile(id) {
 function openAddHuile() {
   openModal('Ajouter une huile essentielle', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" placeholder="Lavande vraie"></div>
-    <div class="form-field"><label>Cat\u00e9gorie</label>
-      ${_buildCatSelect('huile','f-hu-cat','f-hu-newcat','')}
-    </div>
+    ${_catField('f-hu','huile','')}
     <div class="form-field"><label>Description courte</label><input type="text" id="f-hu-desc" placeholder="Apaisante, id\u00e9ale en cas de stress..."></div>
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5" placeholder="Propri\u00e9t\u00e9s, usages, pr\u00e9cautions..."></textarea></div>
     <div class="form-field"><label>URL externe (optionnel)</label><input type="text" id="f-hu-url" placeholder="https://..."></div>
@@ -9799,6 +9812,7 @@ function editHuile(id) {
   if (!h) return;
   openModal('Modifier ' + h.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-hu-titre" value="${h.titre}"></div>
+    ${_catField('f-hu','huile', h.categorie||'')}
     <div class="form-field"><label>Description</label><input type="text" id="f-hu-desc" value="${h.description||''}"></div>
     <div class="form-field"><label>Contenu d\u00e9taill\u00e9</label><textarea id="f-hu-contenu" rows="5">${h.contenu||''}</textarea></div>
     <div class="form-field"><label>URL externe</label><input type="text" id="f-hu-url" value="${h.url_externe||''}"></div>
@@ -9815,6 +9829,7 @@ function updateHuile(id) {
   if (!h) return;
   var item = Object.assign({}, h, {
     titre:       document.getElementById('f-hu-titre').value,
+    categorie:   getCatValue('f-hu-cat','f-hu-newcat'),
     description: document.getElementById('f-hu-desc').value,
     contenu:     document.getElementById('f-hu-contenu').value,
     url_externe: document.getElementById('f-hu-url').value.trim(),
@@ -9883,9 +9898,7 @@ function openRecette(id) {
 function openAddRecette() {
   openModal('Ajouter une recette', `
     <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" placeholder="Smoothie vert \u00e9nergie"></div>
-    <div class="form-field"><label>Cat\u00e9gorie</label>
-      ${_buildCatSelect('recette','f-re-cat','f-re-newcat','')}
-    </div>
+    ${_catField('f-re','recette','')}
     <div class="form-field"><label>Dur\u00e9e de pr\u00e9paration</label><input type="text" id="f-re-duree" placeholder="5 min"></div>
     ${_photoField('re','')}
     <div class="form-field"><label>Description courte</label><input type="text" id="f-re-desc" placeholder="Id\u00e9al pour le coup de barre de 15h..."></div>
@@ -9924,6 +9937,7 @@ function editRecette(id) {
   if (!r) return;
   openModal('Modifier ' + r.titre, `
     <div class="form-field"><label>Titre</label><input type="text" id="f-re-titre" value="${r.titre}"></div>
+    ${_catField('f-re','recette', r.categorie||'')}
     <div class="form-field"><label>Dur\u00e9e</label><input type="text" id="f-re-duree" value="${r.duree||''}"></div>
     <div class="form-field"><label>Description</label><input type="text" id="f-re-desc" value="${r.description||''}"></div>
     <div class="form-field"><label>Contenu / Ingr\u00e9dients & pr\u00e9paration</label><textarea id="f-re-contenu" rows="6">${r.contenu||''}</textarea></div>
@@ -9940,6 +9954,7 @@ function updateRecette(id) {
   if (!r) return;
   var item = Object.assign({}, r, {
     titre:       document.getElementById('f-re-titre').value,
+    categorie:   getCatValue('f-re-cat','f-re-newcat'),
     duree:       document.getElementById('f-re-duree').value,
     description: document.getElementById('f-re-desc').value,
     contenu:     document.getElementById('f-re-contenu').value,
