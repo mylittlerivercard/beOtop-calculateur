@@ -3,7 +3,9 @@
 **Date :** 2026-06-24
 **Périmètre :** `server.py`, `dashboard.html`, `companion.html`, `companion_pwa.html`, `admin.html`, `mon_espace.html`, `login.html`
 **Méthode :** analyse statique multi-agents en parallèle (inventaire routes, inventaire appels API frontend, désync companion, code mort) **+ vérification manuelle** des affirmations critiques (sécurité, routes manquantes).
-**Niveaux :** 🔴 Critique · 🟡 Avertissement · 🟢 Proposition
+**Niveaux :** 🔴 Critique · 🟡 Avertissement · 🟢 Proposition · ✅ Corrigé
+
+> **Mise à jour 2026-06-24 :** les 3 constats critiques (🔴 #1 XSS, #2 contrôle d'accès DELETE, #3 route `/api/health`) ont été **corrigés** (commits `f39a43a`, `c43053d`, `de0103d`). Voir les marqueurs ✅ ci-dessous.
 
 > **Limites méthodologiques.** Environnement sans navigateur, sans moteur JS (node absent) et sans base PostgreSQL : aucune exécution end-to-end n'a été possible. Les constats reposent sur la lecture du code. Les affirmations de sécurité et de routes manquantes ont été **revérifiées manuellement** (grep/lecture ciblée). Un faux positif d'agent (prétendu appel `/api/stats/export`) a été écarté après vérification (le frontend appelle bien `/api/export`).
 
@@ -13,9 +15,9 @@
 
 | # | Constat | Niveau | Emplacement |
 |---|---------|--------|-------------|
-| 1 | XSS réfléchie : `site_slug` injecté non échappé dans du HTML/JS servi | 🔴 | server.py 4051, 4119 |
-| 2 | Contrôle d'accès cassé : suppression de profil intervenant accessible à **tout compte connecté** | 🔴 | server.py 2911 |
-| 3 | Appel frontend vers route inexistante `/api/health` → vue « Vue d'ensemble » admin cassée | 🔴 | admin.html 660 / server.py (absente) |
+| 1 | ~~XSS réfléchie : `site_slug` injecté non échappé dans du HTML/JS servi~~ → **corrigé** (`json.dumps`) | ✅ | server.py 4051, 4119 |
+| 2 | ~~Contrôle d'accès cassé : suppression de profil intervenant accessible à tout compte connecté~~ → **corrigé** (contrôle par nom) | ✅ | server.py 2911 |
+| 3 | ~~Appel frontend vers route inexistante `/api/health`~~ → **corrigé** (route créée) | ✅ | admin.html 660 / server.py 753 |
 | 4 | CRUD `sons` et création `intervenants` : `@login_required` sans contrôle de rôle (incohérent avec les contenus) | 🟡 | server.py 2843, 3038, 3058, 3083 |
 | 5 | Routes d'écriture sans authentification (kiosk/sensors/contact/register) — données falsifiables | 🟡 | server.py 1004, 1063, 1085, 1162, 3969, 4341 |
 | 6 | Route orpheline : `POST /api/companion/intervenants` jamais appelée par le frontend | 🟡 | server.py 2843 |
@@ -28,25 +30,13 @@
 
 ## server.py
 
-### 🔴 Critique
+### ✅ Corrigé (anciennement 🔴)
 
-- **XSS réfléchie via `site_slug` (lignes 4051 et 4119).**
-  `serve` de `realtime.html` (route `/realtime/<site_slug>`, ligne 4040, **sans auth**) et de `kiosk` (route `/kiosk/<site_slug>`, ligne 4101, **sans auth**) injectent le segment d'URL directement dans le HTML/JS via f-string :
-  ```python
-  html = html.replace("const SITE = 'dmmf-agde'", f"const SITE = '{site_slug}'")   # 4051
-  html = html.replace("var SITE_SLUG = ''",        f"var SITE_SLUG = '{site_slug}'") # 4119
-  ```
-  `site_slug` n'étant pas échappé, un payload du type `/realtime/x');<script>…</script>//` injecte du code exécuté côté client. **Correctif recommandé :** échapper avec `json.dumps(site_slug)` (produit une littérale JS sûre) au lieu d'insérer la valeur brute entre quotes.
+- **XSS réfléchie via `site_slug` (lignes 4051 et 4119).** *Contexte initial :* `realtime.html` (`/realtime/<site_slug>`, sans auth) et `kiosk` (`/kiosk/<site_slug>`, sans auth) injectaient le segment d'URL brut dans une littérale JS (`const SITE = '{site_slug}'`), permettant l'injection de code côté client.
+  **CORRIGÉ (commit `f39a43a`)** : injection via `json.dumps(site_slug)` (littérale JS échappée). Non exploitable par `</script>` car le convertisseur de route `<site_slug>` interdit le caractère `/`.
 
-- **Contrôle d'accès cassé — `DELETE /api/companion/intervenants/<iid>` (ligne 2911).**
-  Décorée `@login_required` uniquement, **aucune vérification de rôle** ni de propriété :
-  ```python
-  @app.route('/api/companion/intervenants/<int:iid>', methods=['DELETE'])
-  @login_required
-  def companion_intervenants_delete(iid):
-      ... DELETE FROM companion_intervenants WHERE id=%s ...
-  ```
-  N'importe quel utilisateur authentifié (y compris rôle `demo`/collaborateur) peut supprimer le profil de n'importe quel intervenant. À comparer au `PUT` (2865) qui, lui, contrôle le rôle dans le corps. **Correctif :** ajouter `@admin_required` (ou contrôle de rôle équivalent).
+- **Contrôle d'accès cassé — `DELETE /api/companion/intervenants/<iid>` (ligne 2911).** *Contexte initial :* décorée `@login_required` seul, sans contrôle de rôle/propriété → tout utilisateur authentifié pouvait supprimer le profil de n'importe quel intervenant.
+  **CORRIGÉ (commit `c43053d`)** : ajout du même contrôle d'appartenance que le `PUT` (comparaison de nom normalisée `_norm_nom`, 403 si non-propriétaire, admin exempté).
 
 ### 🟡 Avertissement
 
@@ -119,9 +109,9 @@
 
 ## admin.html
 
-### 🔴 Critique
-- **Appel vers une route inexistante `/api/health` (ligne 660).**
-  `loadOverview()` fait un `Promise.all([... fetch('/api/health') ...])` puis lit `health.clients`, `health.sites`, `health.sessions` (lignes 666-668). **`/api/health` n'est défini nulle part dans server.py** (vérifié). Le `r.json()` sur la réponse 404 (HTML) lève une exception → `Promise.all` rejette → la vue « Vue d'ensemble » ne se remplit pas (compteurs clients/sites/sessions). **Correctif :** soit créer la route `/api/health` (renvoyant `{clients, sites, sessions}`), soit remplacer l'appel par les agrégats déjà disponibles (`/api/admin/clients`, `/api/admin/sites`, `/api/stats`).
+### ✅ Corrigé (anciennement 🔴)
+- **Appel vers une route inexistante `/api/health` (ligne 660).** *Contexte initial :* `loadOverview()` lisait `health.clients/sites/sessions` depuis `/api/health`, route **absente** de server.py → la vue « Vue d'ensemble » ne se remplissait pas.
+  **CORRIGÉ (commit `de0103d`)** : création de `GET /api/health` (`@login_required`, server.py ligne 753) renvoyant `{clients, sites, sessions, database}` via `COUNT(*)` sur `clients`/`sites`/`sessions`.
 
 ### 🟢 Proposition
 - Aucune fonction JS morte (~25), aucune variable globale morte.
@@ -149,7 +139,7 @@
 
 | Type | Détail | Réf. |
 |------|--------|------|
-| Route appelée mais inexistante | `/api/health` | admin.html 660 |
+| Route appelée mais inexistante | `/api/health` — ✅ **corrigée** (créée, commit `de0103d`) | admin.html 660 / server.py 753 |
 | Route définie mais non appelée (frontend) | `POST /api/companion/intervenants` | server.py 2843 |
 | Faux positif écarté | `/api/stats/export` n'est PAS appelé ; `/api/export` OK | dashboard.html 937, 1641 |
 | Champs réponse non vérifiables statiquement | structures de `/api/intervenant/stats`, `/api/admin/retribution/*`, `/api/companion/checkin/history`, `/api/companion/livreor` — à confirmer à l'exécution | — |
