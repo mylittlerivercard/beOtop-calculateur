@@ -2325,7 +2325,6 @@ POINTS_BAREME = {
     'podcast':      15,
     'recette':      15,
     'bilan':        15,
-    'posts':        10,
 }
 
 # Niveaux
