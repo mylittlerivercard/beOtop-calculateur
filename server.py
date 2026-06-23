@@ -2738,20 +2738,36 @@ def companion_contenus_delete(cid):
 @app.route('/api/companion/categories', methods=['GET'])
 @login_required
 def companion_categories_list():
-    """Catégories d'un type de contenu, alimentant les selects du front."""
+    """Catégories alimentant les selects du front.
+
+    Agrège les catégories réellement présentes dans les tables de contenu
+    (companion_videos, companion_audios, companion_exercices, companion_podcasts…),
+    sans aucun filtre sur l'intervenant ni sur le site. Tri alphabétique et
+    déduplication en ignorant la casse et les tirets vs espaces.
+    """
     ctype = (request.args.get('type') or '').strip()
+    # Type demandé si connu, sinon toutes les tables de contenu.
+    tables = [ctype] if ctype in COMPANION_CONTENT_TABLES else list(COMPANION_CONTENT_TABLES.keys())
+    union_sql = " UNION ALL ".join(
+        "SELECT categorie FROM companion_" + t +
+        " WHERE categorie IS NOT NULL AND categorie <> ''"
+        for t in tables
+    )
     with get_db() as conn:
         with conn.cursor() as cur:
-            if ctype:
-                cur.execute(
-                    "SELECT valeur, label FROM companion_categories "
-                    "WHERE content_type=%s ORDER BY label",
-                    [ctype]
-                )
-            else:
-                cur.execute("SELECT valeur, label FROM companion_categories ORDER BY label")
+            cur.execute(union_sql)
             rows = cur.fetchall()
-    return jsonify({'categories': [{'valeur': r['valeur'], 'label': r['label']} for r in rows]})
+    # Déduplication : casse ignorée, tirets assimilés à des espaces.
+    seen = {}
+    for r in rows:
+        val = (r['categorie'] or '').strip()
+        if not val:
+            continue
+        key = val.lower().replace('-', ' ')
+        if key not in seen:
+            seen[key] = val
+    cats = sorted(seen.values(), key=lambda v: v.lower())
+    return jsonify({'categories': [{'valeur': v, 'label': v} for v in cats]})
 
 
 @app.route('/api/companion/categories', methods=['POST'])
