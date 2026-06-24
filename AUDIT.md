@@ -18,11 +18,11 @@
 | 1 | ~~XSS réfléchie : `site_slug` injecté non échappé dans du HTML/JS servi~~ → **corrigé** (`json.dumps`) | ✅ | server.py 4051, 4119 |
 | 2 | ~~Contrôle d'accès cassé : suppression de profil intervenant accessible à tout compte connecté~~ → **corrigé** (contrôle par nom) | ✅ | server.py 2911 |
 | 3 | ~~Appel frontend vers route inexistante `/api/health`~~ → **corrigé** (route créée) | ✅ | admin.html 660 / server.py 753 |
-| 4 | CRUD `sons` et création `intervenants` : `@login_required` sans contrôle de rôle (incohérent avec les contenus) | 🟡 | server.py 2843, 3038, 3058, 3083 |
-| 5 | Routes d'écriture sans authentification (kiosk/sensors/contact/register) — données falsifiables | 🟡 | server.py 1004, 1063, 1085, 1162, 3969, 4341 |
-| 6 | Route orpheline : `POST /api/companion/intervenants` jamais appelée par le frontend | 🟡 | server.py 2843 |
-| 7 | Désynchronisations companion.html ↔ companion_pwa.html (logout, haptic, persistance de vue) | 🟡 | voir sections |
-| 8 | Code mort : 1 variable inutilisée (dashboard) + 5 tableaux inutilisés (companion ×2) | 🟡 | voir sections |
+| 4 | ~~CRUD `sons` et création `intervenants` sans contrôle de rôle~~ → **corrigé** (`@intervenant_required`) | ✅ | server.py |
+| 5 | ~~Routes d'écriture sans auth~~ → **traité** : rate-limit `/api/contact` ; `register` valide déjà le token ; capteurs/kiosk laissés (RPi) | ✅ | server.py |
+| 6 | ~~Route orpheline `POST /api/companion/intervenants`~~ → **supprimée** | ✅ | server.py |
+| 7 | ~~Désync logout~~ → **corrigé** (`confirm()` ajouté à `logoutCompanion`) ; haptic/persistance vue = specifics PWA conservés | ✅ | companion.html |
+| 8 | ~~Code mort~~ → **supprimé** (1 var dashboard + 5 tableaux ×2 companion) | ✅ | dashboard/companion ×2 |
 
 **Points positifs :** requêtes SQL paramétrées (`%s`) partout ; noms de tables dynamiques validés par whitelist (`COMPANION_CONTENT_TABLES`) → **pas d'injection SQL** ; aucune route dupliquée ; aucune fonction JS morte détectée sur les 6 fichiers HTML.
 
@@ -38,20 +38,16 @@
 - **Contrôle d'accès cassé — `DELETE /api/companion/intervenants/<iid>` (ligne 2911).** *Contexte initial :* décorée `@login_required` seul, sans contrôle de rôle/propriété → tout utilisateur authentifié pouvait supprimer le profil de n'importe quel intervenant.
   **CORRIGÉ (commit `c43053d`)** : ajout du même contrôle d'appartenance que le `PUT` (comparaison de nom normalisée `_norm_nom`, 403 si non-propriétaire, admin exempté).
 
-### 🟡 Avertissement
+### ✅ Corrigé (anciennement 🟡)
 
-- **CRUD `sons` et création `intervenants` sans contrôle de rôle.**
-  `POST /api/companion/intervenants` (2843), `POST/PUT/DELETE /api/companion/sons` (3038, 3058, 3083) sont protégés par `@login_required` seul. Incohérent avec les contenus (`/api/companion/contenus` et CRUD par type) qui utilisent `@intervenant_required`. Un simple compte connecté peut créer des intervenants et gérer les « sons immersifs ».
+- **CRUD `sons` et création `intervenants` sans contrôle de rôle.** **CORRIGÉ (Point 1)** : `@intervenant_required` (role ∈ admin/intervenant) ajouté sur `POST /api/companion/sons`, `PUT`/`DELETE /api/companion/sons/:id` (et momentanément sur `POST /api/companion/intervenants` avant sa suppression au Point 3). Aligné sur le CRUD des contenus.
 
-- **Routes d'écriture sans authentification.**
-  - `POST /api/kiosk/<site_slug>/session` (1004) — INSERT sessions
-  - `POST /api/sensors/passage` (1063), `POST /api/sensors/occupation` (1085), `POST /api/sensors/session` (1162) — INSERT données capteurs
-  - `POST /api/contact` (3969) — INSERT lead + envoi e-mail (pas de captcha / rate-limit visible → risque de spam)
-  - `POST /api/auth/register` (4341) — création de compte
-  Les routes capteurs/kiosk sont sans-auth **par conception** (matériel terrain), mais elles sont **falsifiables** par un tiers : toute personne peut injecter de fausses séances/passages, ce qui fausse les KPI (cf. dashboard « Intensité d'usage »). Recommandation : clé partagée / token par site sur les endpoints capteurs ; rate-limit + captcha sur `/api/contact` ; vérifier que `auth_register` (4342) valide bien un token d'invitation avant création (la page `/join` l'appelle, ligne 4312).
+- **Routes d'écriture sans authentification.** **TRAITÉ (Point 2)** :
+  - `POST /api/contact` → **rate-limit en mémoire 5 req/h/IP** (HTTP 429 au-delà), via `_contact_rate_ok` + en-tête `X-Forwarded-For`.
+  - `POST /api/auth/register` → **déjà sécurisé** : la route exige un token d'invitation et renvoie 403 (`site_invite_tokens … actif=1`) avant toute création — aucune création possible sans token valide. Inchangé.
+  - Routes capteurs/kiosk (`/api/kiosk/.../session`, `/api/sensors/*`) → **laissées sans auth par conception** (boîtiers RPi terrain), comme demandé.
 
-- **Route orpheline `POST /api/companion/intervenants` (2843).**
-  Aucun des 7 frontends n'émet de POST vers cette route (la création de profils passe par `/api/admin/intervenants`). Route morte côté usage — à supprimer ou à documenter.
+- **Route orpheline `POST /api/companion/intervenants`.** **SUPPRIMÉE (Point 3)** après vérification (aucun POST émis par les frontends ; la création passe par `/api/admin/intervenants`). Les routes GET/PUT/DELETE `/api/companion/intervenants` sont conservées.
 
 ### 🟢 Proposition
 
@@ -64,8 +60,8 @@
 
 ## dashboard.html
 
-### 🟡 Avertissement
-- **Variable morte `cpRefreshTimer` (ligne 1838)** : déclarée `var cpRefreshTimer = null`, jamais lue ni réassignée.
+### ✅ Corrigé (anciennement 🟡)
+- **Variable morte `cpRefreshTimer`.** **SUPPRIMÉE (Point 5)**.
 
 ### 🟢 Proposition
 - Toutes les fonctions JS (~87) sont appelées.
@@ -76,14 +72,9 @@
 
 ## companion.html
 
-### 🟡 Avertissement
-- **Tableaux globaux inutilisés (jamais itérés ni lus) :**
-  - `SANS_CAPTEUR_PIR` (4126)
-  - `DUREES` (4134)
-  - `CATS_VIDEO` (5754)
-  - `CATS_AUDIO` (6575)
-  - `CATS_EX` (6831)
-- **Désynchronisation logout vs companion_pwa.html :** `logoutCompanion()` (3243) — `async/await` + redirection directe, **sans confirmation** ; côté PWA, `logoutPwa()` (10422) — `confirm('Se déconnecter ?')` + `.then/.catch`. Comportement utilisateur différent pour la même action.
+### ✅ Corrigé (anciennement 🟡)
+- **Tableaux globaux inutilisés** (`SANS_CAPTEUR_PIR`, `DUREES`, `CATS_VIDEO`, `CATS_AUDIO`, `CATS_EX`). **SUPPRIMÉS (Point 5)** (les vars utilisées `currentVideoCat/currentAudioCat/currentExCat` conservées).
+- **Désynchronisation logout.** **CORRIGÉ (Point 4)** : `logoutCompanion()` demande désormais `confirm('Se déconnecter ?')`, aligné sur `logoutPwa()`.
 
 ### 🟢 Proposition
 - Aucune fonction JS morte (≈267 fonctions, toutes appelées).
@@ -92,14 +83,11 @@
 
 ## companion_pwa.html
 
-### 🟡 Avertissement
-- **Mêmes tableaux globaux inutilisés que companion.html :**
-  - `SANS_CAPTEUR_PIR` (5242), `DUREES` (5250), `CATS_VIDEO` (6872), `CATS_AUDIO` (7693), `CATS_EX` (7949).
-- **Désynchronisations companion.html ↔ companion_pwa.html** (rappel : les deux fichiers doivent rester synchronisés) :
-  - `awardPoints()` : la version PWA (6236) ajoute `haptic('medium')` — absent côté companion.html (5113). Feedback différent pour l'attribution de points.
-  - `switchView()` : la PWA (4345) persiste la vue active (`sessionStorage 'beotop_last_view'`, 4349) — pas companion.html (3252). Retour d'onglet différent.
-  - `renderDashboard()` : la PWA (4573) ajoute un skeleton loader ; companion.html (3474) non.
-  - `logoutPwa()` vs `logoutCompanion()` (cf. section companion.html).
+### ✅ Corrigé (anciennement 🟡)
+- **Mêmes tableaux globaux inutilisés que companion.html** (`SANS_CAPTEUR_PIR`, `DUREES`, `CATS_VIDEO`, `CATS_AUDIO`, `CATS_EX`). **SUPPRIMÉS (Point 5)**.
+- **Désynchronisations companion.html ↔ companion_pwa.html** :
+  - `logoutPwa()` vs `logoutCompanion()` → **résolu (Point 4)** : confirmation ajoutée côté companion.html.
+  - `awardPoints()` + `haptic('medium')`, `switchView()` persistance de vue, `renderDashboard()` skeleton loader → **spécificités PWA légitimes, conservées intentionnellement** (non corrigées par conception).
 
 ### 🟢 Proposition
 - Aucune fonction JS morte (≈287 fonctions, toutes appelées).
