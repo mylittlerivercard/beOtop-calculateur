@@ -9557,7 +9557,8 @@ function _getContenus(inv) {
   }
   if (inv.contenu_ids.jeux) {
     inv.contenu_ids.jeux.forEach(function(j){
-      items.push({ icon:'🎧', label: j });
+      var already = items.some(function(x){ return _sameNom(x.titre, j); });
+      if (!already) items.push({ icon:'🎧', label: j });
     });
   }
   if (inv.contenu_ids.audios) {
