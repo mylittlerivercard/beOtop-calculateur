@@ -3063,8 +3063,8 @@ function syncIntervenants(cb) {
           site_url:    s.site_url || ex.site_url || '',
           linkedin_url: s.linkedin_url || ex.linkedin_url || '',
           tags:        (s.tags && s.tags.length) ? s.tags : (ex.tags || []),
-          photo_initiales: ex.photo_initiales || initiales,
-          photo_couleur:   ex.photo_couleur || '#00b4b4',
+          photo_initiales: s.initiales || ex.photo_initiales || initiales,
+          photo_couleur:   s.couleur || ex.photo_couleur || '#00b4b4',
           actif:       true,
           _srv:        true
         });
@@ -8343,7 +8343,9 @@ function saveIntervenant(existingId) {
     photo_url: photoFile ? ('https://mylittlerivercard.github.io/beOtop-calculateur/static/' + photoFile) : '',
     site_url: (document.getElementById('f-inv-site') || {}).value ? document.getElementById('f-inv-site').value.trim() : '',
     linkedin_url: (document.getElementById('f-inv-linkedin') || {}).value ? document.getElementById('f-inv-linkedin').value.trim() : '',
-    tags: tags
+    tags: tags,
+    initiales: (document.getElementById('f-inv-init') || {}).value ? document.getElementById('f-inv-init').value.trim().toUpperCase() : '',
+    couleur: document.getElementById('f-inv-color') ? document.getElementById('f-inv-color').value : '#00b4b4'
   };
   var inv = (DB.intervenants || []).find(function(i){ return i.id === existingId; });
   getSiteSlug().then(function(slug){
