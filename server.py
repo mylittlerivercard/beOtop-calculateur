@@ -12,6 +12,7 @@ import os
 import csv
 import io
 import sys
+import time
 import json
 import secrets
 import unicodedata
@@ -4069,8 +4070,27 @@ def admin_calcul_semestre():
 import smtplib
 from email.message import EmailMessage
 
+# Rate-limit simple en mémoire pour /api/contact : 5 requêtes / heure / IP.
+# (mono-process Render ; réinitialisé au redémarrage — suffisant contre le spam)
+_CONTACT_RATE = {}
+_CONTACT_RATE_MAX = 5
+_CONTACT_RATE_WINDOW = 3600
+
+def _contact_rate_ok(ip):
+    now = time.time()
+    hits = [t for t in _CONTACT_RATE.get(ip, []) if now - t < _CONTACT_RATE_WINDOW]
+    if len(hits) >= _CONTACT_RATE_MAX:
+        _CONTACT_RATE[ip] = hits
+        return False
+    hits.append(now)
+    _CONTACT_RATE[ip] = hits
+    return True
+
 @app.route('/api/contact', methods=['POST'])
 def contact_form():
+    ip = (request.headers.get('X-Forwarded-For', request.remote_addr) or '').split(',')[0].strip()
+    if not _contact_rate_ok(ip):
+        return jsonify({'error': 'Trop de demandes — réessayez dans une heure.'}), 429
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Données JSON requises'}), 400
