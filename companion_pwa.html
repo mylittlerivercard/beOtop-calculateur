@@ -18,12 +18,11 @@
 <style>
 :root {
   /* ── Palette beOtop ── */
-  --gold:        #00b4b4;
-  --gold-light:  #00d4d4;
-  --gold-dim:    rgba(0,180,180,.1);
-  --gold-border: rgba(0,180,180,.3);
-  --sage:        #00b4b4;
-  --sage-dim:    rgba(0,180,180,.1);
+  --teal:        #00b4b4;
+  --teal-light:  #00d4d4;
+  --teal-dim:    rgba(0,180,180,.1);
+  --teal-border: rgba(0,180,180,.3);
+  --cta-primary: #e8641e;
   --mist:        #f5855a;
   --mist-dim:    rgba(245,133,90,.1);
   --violet:      #e8641e;
@@ -105,10 +104,10 @@ input, select, textarea { font-family: inherit; }
 }
 .avatar {
   width: 24px; height: 24px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold-dim), var(--sage-dim));
-  border: 1px solid var(--gold-border);
+  background: linear-gradient(135deg, var(--teal-dim), var(--teal-dim));
+  border: 1px solid var(--teal-border);
   display: flex; align-items: center; justify-content: center;
-  font-size: .6rem; color: var(--gold); font-weight: 500;
+  font-size: .6rem; color: var(--teal); font-weight: 500;
 }
 .notif-btn {
   position: relative; background: rgba(0,180,180,.05); border: 1px solid var(--border);
@@ -118,7 +117,7 @@ input, select, textarea { font-family: inherit; }
 }
 .notif-dot {
   position: absolute; top: 5px; right: 5px;
-  width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+  width: 6px; height: 6px; border-radius: 50%; background: var(--teal);
 }
 
 /* ══ LAYOUT ══ */
@@ -248,7 +247,7 @@ input, select, textarea { font-family: inherit; }
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem; font-weight: 300;
 }
-.welcome-band h2 span { color: var(--gold); font-style: italic; }
+.welcome-band h2 span { color: var(--teal); font-style: italic; }
 .welcome-band p { font-size: .72rem; color: var(--text-dim); margin-top: .2rem; }
 .state-meter {
   display: flex; gap: .6rem; align-items: center;
@@ -268,9 +267,9 @@ input, select, textarea { font-family: inherit; }
 .kpi::after {
   content: ''; position: absolute;
   top: 0; left: 0; right: 0; height: 4px;
-  background: var(--accent, var(--gold)); opacity: 1;
+  background: var(--accent, var(--teal)); opacity: 1;
   border-radius: 14px 14px 0 0;
-  box-shadow: 0 0 8px var(--accent, var(--gold));
+  box-shadow: 0 0 8px var(--accent, var(--teal));
 }
 .kpi-label { font-size: .6rem; color: #1a3535; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
 .kpi-val { font-size: 1.5rem; font-weight: 700; color: #071515; }
@@ -313,15 +312,15 @@ input[type=range]::-webkit-slider-thumb {
   font-size: .6rem; color: #1a3535; font-weight: 600; margin-top: .25rem;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #ff6b35, #e8380e);
+  background: linear-gradient(135deg, #f07040, #e8641e);
   border: none; border-radius: 10px;
   color: #fff; font-size: .78rem; font-weight: 600;
   padding: .7rem 1.5rem; cursor: pointer;
   transition: all .18s;
-  box-shadow: 0 4px 18px rgba(255,107,53,.45);
+  box-shadow: 0 4px 18px rgba(232,100,30,.4);
   letter-spacing: .02em;
 }
-.btn-primary:hover { background: linear-gradient(135deg, #ff8050, #ff5520); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,.55); }
+.btn-primary:hover { background: linear-gradient(135deg, #f5855a, #e8641e); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,100,30,.5); }
 .btn-secondary {
   background: rgba(0,180,180,.05); border: 1px solid var(--border2);
   border-radius: 10px; color: var(--text-dim);
@@ -345,7 +344,7 @@ input[type=range]::-webkit-slider-thumb {
 .atelier-card::before {
   content: ''; position: absolute;
   top: 0; left: 0; bottom: 0; width: 3px;
-  background: var(--accent, var(--gold)); opacity: 0;
+  background: var(--accent, var(--teal)); opacity: 0;
   transition: opacity .2s;
 }
 .atelier-card:hover { border-color: var(--border2); }
@@ -354,7 +353,7 @@ input[type=range]::-webkit-slider-thumb {
 .atelier-card.libre::before { background: var(--green); opacity: .6; }
 .atelier-card.occupe { border-color: rgba(192,80,80,.2); }
 .atelier-card.occupe::before { background: var(--red); opacity: .6; }
-.atelier-card.bientot::before { background: var(--gold); opacity: .6; }
+.atelier-card.bientot::before { background: var(--teal); opacity: .6; }
 .at-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: .6rem; }
 .at-icon { font-size: 1.3rem; }
 .at-status {
@@ -363,7 +362,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 .at-status.libre { background: rgba(80,160,112,.12); color: #70c090; border: 1px solid rgba(80,160,112,.25); }
 .at-status.occupe { background: rgba(192,80,80,.1); color: #d08080; border: 1px solid rgba(192,80,80,.2); }
-.at-status.bientot { background: rgba(200,169,110,.12); color: var(--gold); border: 1px solid var(--gold-border); }
+.at-status.bientot { background: rgba(200,169,110,.12); color: var(--teal); border: 1px solid var(--teal-border); }
 .at-name { font-size: .8rem; font-weight: 400; color: var(--text); margin-bottom: .2rem; }
 .at-indication { font-size: .62rem; color: var(--text-dim); }
 .at-time { font-size: .6rem; color: var(--text-muted); margin-top: .5rem; }
@@ -386,7 +385,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 .breathe-ring {
   width: 180px; height: 180px; border-radius: 50%;
-  border: 2px solid var(--gold-border);
+  border: 2px solid var(--teal-border);
   display: flex; align-items: center; justify-content: center;
   position: relative; margin: 1.5rem 0;
   transition: transform 4s ease-in-out;
@@ -460,7 +459,7 @@ input[type=range]::-webkit-slider-thumb {
   display: flex; align-items: center; justify-content: center; gap: .3rem;
 }
 .audio-card.playing .audio-play-btn {
-  background: var(--gold-dim); border-color: var(--gold-border); color: var(--gold);
+  background: var(--teal-dim); border-color: var(--teal-border); color: var(--teal);
 }
 .player-bar {
   position: sticky; bottom: 0; left: 0; right: 0;
@@ -480,10 +479,10 @@ input[type=range]::-webkit-slider-thumb {
   display: flex; align-items: center; justify-content: center;
   transition: all .15s;
 }
-.player-btn:hover { background: var(--surface2); color: var(--gold); }
+.player-btn:hover { background: var(--surface2); color: var(--teal); }
 .player-btn.play-main {
-  background: var(--gold-dim); border: 1px solid var(--gold-border);
-  color: var(--gold); font-size: 1.2rem; width: 38px; height: 38px;
+  background: var(--teal-dim); border: 1px solid var(--teal-border);
+  color: var(--teal); font-size: 1.2rem; width: 38px; height: 38px;
 }
 .player-progress { flex: 1; display: flex; align-items: center; gap: .6rem; }
 .player-time { font-size: .6rem; color: var(--text-muted); width: 30px; text-align: center; }
@@ -522,7 +521,7 @@ input[type=range]::-webkit-slider-thumb {
   border: 2px solid rgba(0,180,180,.3);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.5rem; color: var(--gold); font-weight: 300;
+  font-size: 1.5rem; color: var(--teal); font-weight: 300;
 }
 .profile-name { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; }
 .profile-dept { font-size: .7rem; color: var(--text-dim); margin-top: .15rem; }
@@ -659,7 +658,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   font-weight: 500;
 }
 .status-pill.active { background: rgba(80,160,112,.12); color: #70c090; }
-.status-pill.draft { background: var(--gold-dim); color: var(--gold); }
+.status-pill.draft { background: var(--teal-dim); color: var(--teal); }
 .status-pill.archived { background: var(--surface2); color: var(--text-muted); }
 
 /* ══ MODAL ══ */
@@ -695,7 +694,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   border-radius: 9px; color: var(--text); padding: .55rem .75rem;
   font-size: .82rem; outline: none; transition: border-color .15s;
 }
-.form-field input:focus, .form-field select:focus { border-color: var(--gold); }
+.form-field input:focus, .form-field select:focus { border-color: var(--teal); }
 .form-field select { appearance: none; cursor: pointer; }
 .modal-actions { display: flex; gap: .6rem; margin-top: 1.4rem; }
 
@@ -786,16 +785,16 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   cursor: default;
 }
 .cal-cell.inaccessible { opacity: .3; cursor: default; }
-.cal-cell.selected-slot { background: rgba(200,169,110,.15); outline: 1px solid var(--gold); }
+.cal-cell.selected-slot { background: rgba(200,169,110,.15); outline: 1px solid var(--teal); }
 .cal-cell-label {
   font-size: .55rem; padding: 3px 4px; line-height: 1.2;
   color: var(--text-muted); white-space: nowrap; overflow: hidden;
 }
-.cal-cell.reserve .cal-cell-label { color: var(--gold); font-weight: 500; }
+.cal-cell.reserve .cal-cell-label { color: var(--teal); font-weight: 500; }
 .cal-cell.occupe .cal-cell-label { color: rgba(239,68,68,.8); }
 .now-indicator {
   position: absolute; left: 0; right: 0; height: 2px;
-  background: var(--gold); opacity: .6; z-index: 4;
+  background: var(--teal); opacity: .6; z-index: 4;
 }
 .duree-btn {
   flex: 1; padding: .55rem; border-radius: 9px;
@@ -2162,7 +2161,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <button class="duree-btn" data-d="20" onclick="tunnelSelectDuree(20)">20 min</button>
       <button class="duree-btn" data-d="30" onclick="tunnelSelectDuree(30)">30 min</button>
     </div>
-    <button onclick="tunnelConfirmer()" style="width:100%;padding:.9rem;border-radius:10px;background:linear-gradient(135deg,rgba(0,180,180,.15),rgba(0,180,180,.05));border:1px solid var(--gold-border);color:var(--gold);font-size:.85rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
+    <button onclick="tunnelConfirmer()" style="width:100%;padding:.9rem;border-radius:10px;background:var(--cta-primary);color:#fff;border:none;font-size:.85rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
     <div id="tunnel-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
   </div>
 </div>
@@ -2195,7 +2194,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
 <!-- Modal réservation (conservée pour compatibilité avec le planning complet) -->
 <div id="modal-res" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
-  <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
+  <div style="background:var(--bg3);border:1px solid var(--teal-border);border-radius:18px;padding:2rem;width:400px;max-width:94vw">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
       <div>
         <div style="font-size:1.2rem;font-weight:300" id="mres-titre">—</div>
@@ -2209,7 +2208,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <button class="duree-btn active" data-d="15" onclick="selectDuree(15)">15 min</button>
       <button class="duree-btn" data-d="20" onclick="selectDuree(20)">20 min</button>
     </div>
-    <button onclick="confirmerReservation()" style="width:100%;padding:.8rem;border-radius:10px;background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.08));border:1px solid var(--gold-border);color:var(--gold);font-size:.82rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
+    <button onclick="confirmerReservation()" style="width:100%;padding:.8rem;border-radius:10px;background:var(--cta-primary);color:#fff;border:none;font-size:.82rem;font-weight:500;cursor:pointer">✓ Confirmer la réservation</button>
     <div id="mres-error" style="font-size:.65rem;color:var(--red);margin-top:.6rem;display:none"></div>
   </div>
 </div>
@@ -2655,7 +2654,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem">Réinitialisation chaque dimanche</div>
     </div>
     <div style="text-align:right">
-      <div style="font-size:2rem;font-weight:300;color:var(--gold);line-height:1" id="ch-count">0/5</div>
+      <div style="font-size:2rem;font-weight:300;color:var(--teal);line-height:1" id="ch-count">0/5</div>
       <div style="font-size:.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em">défis relevés</div>
     </div>
   </div>
@@ -2675,16 +2674,16 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
       <div>
         <div style="font-size:2rem" id="pg-niveau-emoji">🌱</div>
-        <div style="font-size:1.6rem;font-size:1.2rem;font-weight:300;color:var(--gold);margin-top:.2rem" id="pg-niveau-label">Débutant</div>
+        <div style="font-size:1.6rem;font-size:1.2rem;font-weight:300;color:var(--teal);margin-top:.2rem" id="pg-niveau-label">Débutant</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:1.6rem;font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1" id="pg-total">—</div>
+        <div style="font-size:1.6rem;font-size:2.5rem;font-weight:300;color:var(--teal);line-height:1" id="pg-total">—</div>
         <div style="font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em">points totaux</div>
       </div>
     </div>
     <div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.5rem" id="pg-next-label">Chargement…</div>
     <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-      <div id="pg-bar" style="height:100%;background:linear-gradient(90deg,var(--gold-border),var(--gold));border-radius:4px;width:0%;transition:width 1s ease"></div>
+      <div id="pg-bar" style="height:100%;background:linear-gradient(90deg,var(--teal-border),var(--teal));border-radius:4px;width:0%;transition:width 1s ease"></div>
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:12px;color:#555">
       <span id="pg-pts-niveau">0 pts dans ce niveau</span>
@@ -2718,15 +2717,15 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <!-- KPIs semaine / mois / streak -->
   <div class="grid-3" style="gap:.7rem;margin-bottom:1rem">
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-semaine">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--teal)" id="pg-semaine">—</div>
       <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Cette semaine</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-mois">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--teal)" id="pg-mois">—</div>
       <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Ce mois</div>
     </div>
     <div class="card" style="text-align:center;padding:1rem">
-      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--gold)" id="pg-streak">—</div>
+      <div style="font-size:1.6rem;font-size:1.8rem;font-weight:300;color:var(--teal)" id="pg-streak">—</div>
       <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem">Jours consécutifs</div>
     </div>
   </div>
@@ -2994,14 +2993,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         </p>
         <div id="bilan-historique" style="display:none; margin-bottom:1.5rem;"></div>
         <button onclick="startBilan()"
-                style="background: var(--gold); color: #fff; border: none; border-radius: 14px;
+                style="background: var(--cta-primary); color: #fff; border: none; border-radius: 14px;
                        padding: .85rem 2rem; font-size: .9rem; font-weight: 600; cursor: pointer;
                        width: 100%; max-width: 320px;">
           Démarrer mon bilan
         </button>
         <div id="bilan-btn-voir" style="display:none; margin-top:.8rem;">
           <button onclick="afficherResultatsSauvegardes()"
-                  style="background: transparent; color: var(--gold); border: 1px solid var(--gold);
+                  style="background: transparent; color: var(--teal); border: 1px solid var(--teal);
                          border-radius: 14px; padding: .7rem 2rem; font-size: .85rem; font-weight: 600;
                          cursor: pointer; width: 100%; max-width: 320px;">
             Voir mes derniers résultats
@@ -3028,7 +3027,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         </div>
         <div style="height:4px; background:var(--border); border-radius:4px; overflow:hidden;">
           <div id="bilan-progress-bar"
-               style="height:100%; background:var(--gold); border-radius:4px;
+               style="height:100%; background:var(--teal); border-radius:4px;
                       transition: width .35s ease; width:14.28%;">
           </div>
         </div>
@@ -3041,13 +3040,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <!-- Navigation -->
       <div style="display:flex; gap:.8rem; margin-top:1.5rem;">
         <button id="bilan-btn-precedent" onclick="reculerSection()"
-                style="flex:1; background:transparent; color:var(--gold);
-                       border:1px solid var(--gold); border-radius:12px;
+                style="flex:1; background:transparent; color:var(--teal);
+                       border:1px solid var(--teal); border-radius:12px;
                        padding:.8rem; font-size:.85rem; font-weight:600; display:none;">
           ← Précédent
         </button>
         <button id="bilan-btn-suivant" onclick="validerEtAvancer()"
-                style="flex:2; background:var(--gold); color:#fff; border:none;
+                style="flex:2; background:var(--teal); color:#fff; border:none;
                        border-radius:12px; padding:.8rem; font-size:.9rem;
                        font-weight:600; opacity:.45; pointer-events:none;">
           Section suivante →
@@ -3234,7 +3233,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 
 <!-- SUGGESTION CHECK-IN APRÈS SESSION -->
 <div id="checkin-suggestion-banner" style="display:none;position:fixed;bottom:1rem;
-  left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1209;
+  left:50%;transform:translateX(-50%);background:var(--teal);color:#1a1209;
   padding:.6rem 1.2rem;border-radius:12px;font-size:.7rem;gap:.8rem;
   align-items:center;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3)">
   <span>Vous sortez d'une session — comment vous sentez-vous ?</span>
@@ -3569,7 +3568,7 @@ function initBilanAccueil() {
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;">'
       + '<span style="color:var(--text-muted);">Dernier bilan : ' + label + '</span>' + badge + '</div>'
       + barres
-      + '<div style="text-align:center;margin-top:.8rem;font-size:.85rem;font-weight:700;color:var(--gold);">'
+      + '<div style="text-align:center;margin-top:.8rem;font-size:.85rem;font-weight:700;color:var(--teal);">'
       + 'Score global : ' + Math.round(saved.score_global) + ' / 100</div>'
       + '</div>';
     hist.style.display = 'block';
@@ -3621,8 +3620,8 @@ function renderBilanSection(idx) {
         html += '<button onclick="bilanSelectEchelle(this,' + v + ',\'' + q.id + '\')"'
               + ' data-val="' + v + '"'
               + ' style="min-width:2.4rem;height:2.4rem;border-radius:8px;font-size:.85rem;'
-              + 'font-weight:600;border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
-              + 'background:' + (sel ? 'var(--gold)' : 'transparent') + ';'
+              + 'font-weight:600;border:1.5px solid ' + (sel ? 'var(--teal)' : 'var(--border)') + ';'
+              + 'background:' + (sel ? 'var(--teal)' : 'transparent') + ';'
               + 'color:' + (sel ? '#fff' : 'var(--text-dim)') + ';cursor:pointer;">'
               + v + '</button>';
       }
@@ -3635,9 +3634,9 @@ function renderBilanSection(idx) {
         html += '<button onclick="bilanSelectUnique(this,\'' + opt.replace(/'/g,"\\'") + '\',\'' + q.id + '\')"'
               + ' style="display:block;width:100%;text-align:left;margin-bottom:.4rem;'
               + 'padding:.65rem .9rem;border-radius:10px;font-size:.83rem;'
-              + 'border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
+              + 'border:1.5px solid ' + (sel ? 'var(--teal)' : 'var(--border)') + ';'
               + 'background:' + (sel ? 'rgba(0,180,180,.08)' : 'transparent') + ';'
-              + 'color:' + (sel ? 'var(--gold)' : 'var(--text-dim)') + ';'
+              + 'color:' + (sel ? 'var(--teal)' : 'var(--text-dim)') + ';'
               + 'font-weight:' + (sel ? '600' : '400') + ';cursor:pointer;">'
               + opt + '</button>';
       });
@@ -3650,9 +3649,9 @@ function renderBilanSection(idx) {
         html += '<button onclick="bilanToggleMultiple(this,\'' + opt.replace(/'/g,"\\'") + '\',\'' + q.id + '\')"'
               + ' style="display:block;width:100%;text-align:left;margin-bottom:.4rem;'
               + 'padding:.65rem .9rem;border-radius:10px;font-size:.83rem;'
-              + 'border:1.5px solid ' + (sel ? 'var(--gold)' : 'var(--border)') + ';'
+              + 'border:1.5px solid ' + (sel ? 'var(--teal)' : 'var(--border)') + ';'
               + 'background:' + (sel ? 'rgba(0,180,180,.08)' : 'transparent') + ';'
-              + 'color:' + (sel ? 'var(--gold)' : 'var(--text-dim)') + ';'
+              + 'color:' + (sel ? 'var(--teal)' : 'var(--text-dim)') + ';'
               + 'font-weight:' + (sel ? '600' : '400') + ';cursor:pointer;">'
               + '<span style="margin-right:.5rem;">' + (sel ? '☑' : '☐') + '</span>' + opt + '</button>';
       });
@@ -3681,8 +3680,8 @@ function bilanSelectEchelle(btn, val, qid) {
     b.style.borderColor = 'var(--border)';
     b.style.color = 'var(--text-dim)';
   });
-  btn.style.background   = 'var(--gold)';
-  btn.style.borderColor  = 'var(--gold)';
+  btn.style.background   = 'var(--teal)';
+  btn.style.borderColor  = 'var(--teal)';
   btn.style.color        = '#fff';
   _bilanReponses[qid]    = val;
   bilanCheckObligatoires();
@@ -3697,8 +3696,8 @@ function bilanSelectUnique(btn, val, qid) {
     b.style.fontWeight   = '400';
   });
   btn.style.background   = 'rgba(0,180,180,.08)';
-  btn.style.borderColor  = 'var(--gold)';
-  btn.style.color        = 'var(--gold)';
+  btn.style.borderColor  = 'var(--teal)';
+  btn.style.color        = 'var(--teal)';
   btn.style.fontWeight   = '600';
   _bilanReponses[qid]    = val;
   bilanCheckObligatoires();
@@ -3710,8 +3709,8 @@ function bilanToggleMultiple(btn, val, qid) {
   if (idx === -1) {
     arr.push(val);
     btn.style.background  = 'rgba(0,180,180,.08)';
-    btn.style.borderColor = 'var(--gold)';
-    btn.style.color       = 'var(--gold)';
+    btn.style.borderColor = 'var(--teal)';
+    btn.style.color       = 'var(--teal)';
     btn.style.fontWeight  = '600';
     btn.querySelector('span').textContent = '☑';
   } else {
@@ -3861,7 +3860,7 @@ function afficherResultatsBilan() {
         + '<div style="font-size:.72rem;color:var(--text-muted);margin-top:.15rem;">'
         + (c.intervenant||'') + (c.duree ? ' · ' + c.duree : '') + '</div></div>'
         + '<button onclick="bnavSwitchContenus(\'' + (c.url_audio ? 'audio' : c.url_video ? 'video' : 'jeux') + '\')"'
-        + ' style="background:var(--gold);color:#fff;border:none;border-radius:8px;'
+        + ' style="background:var(--teal);color:#fff;border:none;border-radius:8px;'
         + 'padding:.4rem .8rem;font-size:.72rem;font-weight:600;white-space:nowrap;">Accéder →</button>'
         + '</div>';
     });
@@ -3894,10 +3893,10 @@ function afficherResultatsBilan() {
     + '<div style="margin-top:1.2rem;">' + barresRes + '</div>'
     + recsHtml
     + '<div style="display:flex;gap:.8rem;margin-top:1.8rem;">'
-    + '<button onclick="startBilan()" style="flex:1;background:transparent;color:var(--gold);'
-    + 'border:1px solid var(--gold);border-radius:12px;padding:.8rem;font-size:.82rem;font-weight:600;">'
+    + '<button onclick="startBilan()" style="flex:1;background:transparent;color:var(--teal);'
+    + 'border:1px solid var(--teal);border-radius:12px;padding:.8rem;font-size:.82rem;font-weight:600;">'
     + 'Refaire</button>'
-    + '<button onclick="abandonnerBilan()" style="flex:2;background:var(--gold);color:#fff;'
+    + '<button onclick="abandonnerBilan()" style="flex:2;background:var(--teal);color:#fff;'
     + 'border:none;border-radius:12px;padding:.8rem;font-size:.85rem;font-weight:600;">'
     + 'Fermer</button>'
     + '</div>';
@@ -3943,7 +3942,7 @@ function afficherResultatsSauvegardes() {
     + '</div>'
     + '<div style="margin-top:1rem;">' + barresRes + '</div>'
     + '<div style="margin-top:1.5rem;">'
-    + '<button onclick="startBilan()" style="width:100%;background:var(--gold);color:#fff;'
+    + '<button onclick="startBilan()" style="width:100%;background:var(--teal);color:#fff;'
     + 'border:none;border-radius:12px;padding:.85rem;font-size:.88rem;font-weight:600;">'
     + 'Refaire mon bilan</button>'
     + '<button onclick="abandonnerBilan()" style="width:100%;background:transparent;color:var(--text-muted);'
@@ -4322,7 +4321,7 @@ function renderChallenges() {
     var pct = ch.cible > 0 ? Math.min(Math.round(ch.cur / ch.cible * 100), 100) : 0;
     var ok  = ch.cur >= ch.cible;
     if (ok) done++;
-    var barColor = ok ? '#1D9E75' : 'var(--gold)';
+    var barColor = ok ? '#1D9E75' : 'var(--teal)';
     var pill = ok
       ? '<span style="font-size:.6rem;font-weight:600;color:#0F6E56;background:rgba(29,158,117,.14);border:1px solid rgba(29,158,117,.3);border-radius:20px;padding:.15rem .6rem;white-space:nowrap">✓ Relevé</span>'
       : '<span style="font-size:.62rem;color:var(--text-muted);white-space:nowrap">' + cur + '/' + ch.cible + ' ' + ch.unite + '</span>';
@@ -5347,7 +5346,7 @@ async function renderCalendrier() {
       }));
   } else {
     srcEl.innerHTML = '🟡 Hors-ligne';
-    srcEl.style.color = 'var(--gold)';
+    srcEl.style.color = 'var(--teal)';
     calAteliers = DB.ateliers.filter(a => !ACCESSOIRES.includes(a.nom));
   }
 
@@ -6043,7 +6042,7 @@ function runNativePlayer(steps, durSec, colorVar, onEnd) {
 }
 
 function buildNativeModal(firstTxt, durLabel, colorVar, hasSnd) {
-  var sndBadge = hasSnd ? '<div style="font-size:.6rem;color:var(--sage);margin-bottom:.8rem">&#128266; Son genere · Portez un casque pour le meilleur effet</div>' : '';
+  var sndBadge = hasSnd ? '<div style="font-size:.6rem;color:var(--teal);margin-bottom:.8rem">&#128266; Son genere · Portez un casque pour le meilleur effet</div>' : '';
   return sndBadge
     + '<div id="native-step" style="min-height:70px;background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7;transition:opacity .5s">' + firstTxt + '</div>'
     + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
@@ -6342,10 +6341,10 @@ function renderProgresData(d) {
         return '<div style="margin-bottom:.7rem">'
           + '<div style="display:flex;justify-content:space-between;margin-bottom:.3rem">'
           + '<span style="font-size:.7rem;color:var(--text)">' + (ACTION_ICONS[r.action]||'•') + ' ' + (ACTION_LABELS[r.action]||r.action) + ' <span style="color:var(--text-muted)">×' + r.nb + '</span></span>'
-          + '<span style="font-size:.7rem;color:var(--gold);font-weight:500">+' + r.pts + ' pts</span>'
+          + '<span style="font-size:.7rem;color:var(--teal);font-weight:500">+' + r.pts + ' pts</span>'
           + '</div>'
           + '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">'
-          + '<div style="height:100%;background:var(--gold-border);border-radius:3px;width:' + pct + '%;transition:width .8s ease"></div>'
+          + '<div style="height:100%;background:var(--teal-border);border-radius:3px;width:' + pct + '%;transition:width .8s ease"></div>'
           + '</div></div>';
       }).join('');
     }
@@ -6363,7 +6362,7 @@ function renderProgresData(d) {
           + '<div><div style="font-size:.72rem;color:var(--text)">' + (h.label||h.action) + '</div>'
           + '<div style="font-size:.58rem;color:var(--text-muted)">' + (h.date||'') + '</div></div>'
           + '</div>'
-          + '<span style="font-size:.75rem;color:var(--gold);font-weight:500">+' + h.points + '</span>'
+          + '<span style="font-size:.75rem;color:var(--teal);font-weight:500">+' + h.points + '</span>'
           + '</div>';
       }).join('');
     }
@@ -6814,8 +6813,8 @@ function _updateSonStatus(activeNom) {
     var card = document.getElementById('son-' + s.nom);
     var status = document.getElementById('status-' + s.nom);
     var on = s.nom === activeNom;
-    if (card) card.style.borderColor = on ? 'var(--gold-border)' : '';
-    if (status) { status.textContent = on ? '■ En lecture' : '▶ Démarrer'; status.style.color = on ? 'var(--gold)' : 'var(--text-muted)'; }
+    if (card) card.style.borderColor = on ? 'var(--teal-border)' : '';
+    if (status) { status.textContent = on ? '■ En lecture' : '▶ Démarrer'; status.style.color = on ? 'var(--teal)' : 'var(--text-muted)'; }
   });
 }
 
@@ -6982,7 +6981,7 @@ function jeuHeader(titre, score) {
   return '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">'
     + '<button class="btn-secondary" style="font-size:.7rem;padding:.35rem .8rem" onclick="jeuBack()">← Retour</button>'
     + '<div style="font-size:.75rem;font-weight:500;color:var(--text)">' + titre + '</div>'
-    + '<div id="jeu-score" style="font-size:.75rem;color:var(--gold)">' + score + '</div>'
+    + '<div id="jeu-score" style="font-size:.75rem;color:var(--teal)">' + score + '</div>'
     + '</div>';
 }
 
@@ -7005,8 +7004,8 @@ function startMemory(zone) {
       if (matched.indexOf(i) > -1 || flipped.indexOf(i) > -1 || flipped.length === 2) return;
       flipped.push(i);
       card.textContent = em;
-      card.style.background = 'var(--gold-dim)';
-      card.style.borderColor = 'var(--gold-border)';
+      card.style.background = 'var(--teal-dim)';
+      card.style.borderColor = 'var(--teal-border)';
       if (flipped.length === 2) {
         moves++;
         var i1 = flipped[0], i2 = flipped[1];
@@ -7051,9 +7050,9 @@ function startCalcul(zone) {
     }).join('');
   }
   zone.innerHTML = jeuHeader('Calcul mental', '0 / 0')
-    + '<div style="text-align:center;font-size:2rem;font-weight:300;color:var(--gold);margin:1.5rem 0" id="calc-question"></div>'
+    + '<div style="text-align:center;font-size:2rem;font-weight:300;color:var(--teal);margin:1.5rem 0" id="calc-question"></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem" id="calc-choices"></div>'
-    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="calc-timer-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="calc-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+    + '<div style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="calc-timer-bar" style="height:100%;background:var(--teal);border-radius:2px;width:100%;transition:width 1s linear"></div></div><div id="calc-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
   window._calcScore = 0; window._calcTotal = 0;
   newQuestion();
   _jeuTimer = setInterval(function(){
@@ -7184,7 +7183,7 @@ function startStroop(zone) {
     + '<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">Cliquez la couleur de l encre (pas le mot)</div>'
     + '<div id="stroop-word" style="font-size:3rem;font-weight:700;margin-bottom:1.2rem">—</div>'
     + '<div id="stroop-choices" style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap"></div></div>'
-    + '<div style="display:flex;align-items:center;gap:.8rem;margin-top:1rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="stroop-bar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear"></div></div><div id="stroop-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+    + '<div style="display:flex;align-items:center;gap:.8rem;margin-top:1rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="stroop-bar" style="height:100%;background:var(--teal);width:100%;transition:width 1s linear"></div></div><div id="stroop-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
   newQ();
   window._stroopCols = COLS;
   window.stroopClick2=function(el){ window.stroopClick(window._stroopCols[+el.getAttribute('data-sc')]); };
@@ -7226,7 +7225,7 @@ function startSuite(zone) {
   }
   zone.innerHTML=jeuHeader('Suite logique','0 / 0')
     +'<div style="text-align:center;margin:1.5rem 0">'
-    +'<div id="suite-seq" style="font-size:1.4rem;font-weight:300;color:var(--gold);margin-bottom:1.5rem">—</div>'
+    +'<div id="suite-seq" style="font-size:1.4rem;font-weight:300;color:var(--teal);margin-bottom:1.5rem">—</div>'
     +'<div id="suite-choices" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div></div>';
   newQ();
   window.suiteClick=function(val,ans){
@@ -7302,7 +7301,7 @@ function startComptage(zone) {
     document.getElementById('jeu-score').textContent=score+' / '+(round-1);
   }
   zone.innerHTML=jeuHeader('Comptage sélectif','0 / 0')
-    +'<div id="cpt-instr" style="text-align:center;font-size:1.1rem;color:var(--gold);margin-bottom:.8rem;font-weight:500">—</div>'
+    +'<div id="cpt-instr" style="text-align:center;font-size:1.1rem;color:var(--teal);margin-bottom:.8rem;font-weight:500">—</div>'
     +'<div id="cpt-grid" style="display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;background:var(--surface);border-radius:12px;padding:1rem;margin-bottom:1rem;max-height:140px;overflow:hidden"></div>'
     +'<div id="cpt-answer" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap"></div>';
   newRound();
@@ -7371,10 +7370,10 @@ function startInattention(zone) {
     var accuracy=Math.max(0,100-diff*10);
     zone.innerHTML=jeuHeader(sc.title,'Révélation !')
       +'<div style="font-size:3rem;text-align:center;margin:1rem 0">'+sc.hidden+'</div>'
-      +'<div style="background:rgba(200,169,110,.08);border:1px solid var(--gold-border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;font-size:.78rem;color:var(--text);line-height:1.7">'+sc.reveal+'</div>'
+      +'<div style="background:rgba(200,169,110,.08);border:1px solid var(--teal-border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;font-size:.78rem;color:var(--text);line-height:1.7">'+sc.reveal+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">'
-      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--gold)">'+userCount+'</div><div style="font-size:.6rem;color:var(--text-muted)">Votre décompte</div></div>'
-      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--gold)">'+sc.correctPasses+'</div><div style="font-size:.6rem;color:var(--text-muted)">Décompte réel</div></div>'
+      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--teal)">'+userCount+'</div><div style="font-size:.6rem;color:var(--text-muted)">Votre décompte</div></div>'
+      +'<div style="background:var(--surface);border-radius:10px;padding:.8rem;text-align:center"><div style="font-size:1.4rem;color:var(--teal)">'+sc.correctPasses+'</div><div style="font-size:.6rem;color:var(--text-muted)">Décompte réel</div></div>'
       +'</div>'
       +'<button class="btn-primary" style="width:100%" id="inat-done-btn">Compris ! Retour aux jeux</button>';
     setTimeout(function(){ var b=document.getElementById('inat-done-btn'); if(b) b.onclick=function(){jeuBack();awardPoints('jeu','Inattention gorille');}; },50);
@@ -7416,7 +7415,7 @@ function startDouble(zone) {
     +'<div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.4rem">Choisissez : parité du nombre ET couleur de l encre</div>'
     +'<div id="dbl-num" style="font-size:5rem;font-weight:700;line-height:1;margin-bottom:1rem">—</div>'
     +'<div id="dbl-choices" style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem"></div></div>'
-    +'<div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="dbl-bar" style="height:100%;background:var(--gold);width:100%;transition:width 1s linear"></div></div><div id="dbl-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
+    +'<div style="display:flex;align-items:center;gap:.8rem;margin-top:.8rem"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div id="dbl-bar" style="height:100%;background:var(--teal);width:100%;transition:width 1s linear"></div></div><div id="dbl-time" style="font-size:.7rem;color:var(--text-muted)">1:30</div></div>';
   newQ();
   window.dblClick2=function(el){dblClick(el.getAttribute('data-p'),el.getAttribute('data-c'));};
   window.dblClick=function(p,c){
@@ -7858,8 +7857,8 @@ function _playAudioFile(audio, url) {
     '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.8rem">' + _catLabel('audio', audio.categorie) + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
     + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '')
     + '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">'
-    + '<div id="af-timer" style="font-size:1.8rem;font-weight:300;color:var(--gold)">0:00</div>'
-    + '<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div id="af-progress" style="height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .3s linear"></div></div>'
+    + '<div id="af-timer" style="font-size:1.8rem;font-weight:300;color:var(--teal)">0:00</div>'
+    + '<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div id="af-progress" style="height:100%;background:var(--teal);border-radius:2px;width:0%;transition:width .3s linear"></div></div>'
     + '<div style="font-size:.68rem;color:var(--text-muted)">' + (audio.duree || '') + '</div>'
     + '</div>'
     + '<button class="btn-primary" id="af-stop-btn" style="width:100%">⏹ Arrêter</button>'
@@ -7914,7 +7913,7 @@ function _playAudioFiche(audio, url) {
     + '<audio id="afp-audio" src="' + url + '" preload="auto" style="display:none"></audio>'
     + '<div style="background:var(--surface);border-radius:12px;padding:1rem">'
     +   '<div style="display:flex;align-items:center;gap:.8rem">'
-    +     '<button id="afp-toggle" onclick="_afpToggle()" style="flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;background:var(--gold);color:#fff;font-size:1.1rem;cursor:pointer">▶</button>'
+    +     '<button id="afp-toggle" onclick="_afpToggle()" style="flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;background:var(--teal);color:#fff;font-size:1.1rem;cursor:pointer">▶</button>'
     +     '<span id="afp-cur" style="font-size:.7rem;color:var(--text-muted);min-width:36px">0:00</span>'
     +     '<input id="afp-seek" type="range" min="0" max="100" value="0" step="0.1" oninput="_afpSeek(this)" style="flex:1;cursor:pointer">'
     +     '<span id="afp-dur" style="font-size:.7rem;color:var(--text-muted);min-width:36px">' + (audio.duree || '0:00') + '</span>'
@@ -8199,7 +8198,7 @@ function openExercice(id) {
   var tagsHtml = ex.tags.map(function(t){ return '<span class="ex-tag">' + t + '</span>'; }).join('');
   var bodyHtml = '<div style="font-size:.7rem;color:var(--text-dim);margin-bottom:.8rem">' + ex.indication + '</div>';
   if (steps.length) {
-    bodyHtml += buildExerciceModal(steps[0].txt, ex.tags[0], '--sage', ex.categorie);
+    bodyHtml += buildExerciceModal(steps[0].txt, ex.tags[0], '--teal', ex.categorie);
   } else {
     bodyHtml += '<div style="background:var(--surface);border-radius:10px;padding:1.5rem;margin-bottom:1rem;text-align:center;font-size:2rem">' + (ex.icon||'') + '</div>'
       + '<div style="font-size:.8rem;color:var(--text);margin-bottom:1rem">' + ex.description + '</div>'
@@ -8208,7 +8207,7 @@ function openExercice(id) {
   }
   openModal(ex.titre, bodyHtml);
   if (steps.length) {
-    runExercicePlayer(steps, durSec, '--sage', ex.categorie, function(){ showToast('Exercice terminé ! Bravo !'); });
+    runExercicePlayer(steps, durSec, '--teal', ex.categorie, function(){ showToast('Exercice terminé ! Bravo !'); });
     setTimeout(function(){
       var btn = document.getElementById('native-stop-btn');
       if (btn) btn.onclick = function(){
@@ -8271,7 +8270,7 @@ function startGorille(zone) {
       + '<div style="font-size:2.5rem;margin-bottom:.6rem">🦍</div>'
       + '<div style="font-size:.85rem;font-weight:500;margin-bottom:.5rem">'+(ok?'Exact ! '+ans+' passes.':'Il y avait '+ans+' passes.')+'</div>'
       + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.8rem">Et le gorille ?</div>'
-      + '<div style="font-size:.72rem;color:var(--gold);margin-bottom:1rem">Un gorille a traversé l ecran en se frappant la poitrine. Environ 50% des gens le ratent en se concentrant sur les passes.<br><br>C est la <strong>cecite attentionnelle</strong> — démontrée par Simons et Chabris (1999).</div>'
+      + '<div style="font-size:.72rem;color:var(--teal);margin-bottom:1rem">Un gorille a traversé l ecran en se frappant la poitrine. Environ 50% des gens le ratent en se concentrant sur les passes.<br><br>C est la <strong>cecite attentionnelle</strong> — démontrée par Simons et Chabris (1999).</div>'
       + '<button class="btn-primary" style="width:100%" id="gorille-done-btn">Fascinant !</button>'
       + '</div>';
     openModal('Avez-vous vu le gorille ?', revealHtml);
@@ -8335,7 +8334,7 @@ function startDifferences(zone) {
     + '<div style="font-size:.65rem;color:var(--text-dim);text-align:center;margin-bottom:.8rem">Cliquez sur les elements qui ont change dans l image de droite</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">'
     + '<div><div style="font-size:.6rem;color:var(--text-muted);margin-bottom:.3rem;text-align:center">ORIGINAL</div><div id="diff-orig" style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:10px;padding:.5rem"></div></div>'
-    + '<div><div style="font-size:.6rem;color:var(--gold);margin-bottom:.3rem;text-align:center">MODIFIE — cliquez les changements</div><div id="diff-mod" style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:10px;padding:.5rem"></div></div>'
+    + '<div><div style="font-size:.6rem;color:var(--teal);margin-bottom:.3rem;text-align:center">MODIFIE — cliquez les changements</div><div id="diff-mod" style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:10px;padding:.5rem"></div></div>'
     + '</div>';
   window._diffFound = found; window._diffChangeMap = changeMap; window._diffTotal = totalChanges;
   renderGrids();
