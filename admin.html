@@ -687,7 +687,7 @@ async function loadClients(){
   var data = await fetch('/api/admin/clients', {credentials:'include'}).then(r => r.json());
   clientsList = data;
   var tbl = document.getElementById('clients-table');
-  tbl.innerHTML = '<tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Apporteur</th><th>Statut</th><th>Actions</th></tr>';
+  tbl.innerHTML = '<tr><th>Entreprise</th><th>Contact</th><th>Sites</th><th>Séances</th><th>Apporteur</th><th>Créé le</th><th>Statut</th><th>Actions</th></tr>';
   data.forEach(function(c){
     tbl.innerHTML += '<tr>' +
       '<td class="td-main">' + c.nom + '</td>' +
@@ -696,6 +696,7 @@ async function loadClients(){
       '<td>' + (c.nb_sessions || 0) + '</td>' +
       
       '<td>' + (c.apporteur_nom ? '<span style="font-size:.65rem;padding:.15rem .5rem;background:rgba(160,104,32,.1);border-radius:6px;color:#a06820">' + c.apporteur_nom + '</span>' : '—') + '</td>' +
+      '<td>' + (c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
       '<td><span class="pill ' + (c.actif ? 'ok' : 'off') + '">' + (c.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td style="display:flex;gap:.3rem">' +
         '<button class="btn-sm" onclick="openEditClient(' + c.id + ')">Modifier</button>' +
@@ -831,7 +832,7 @@ async function loadSites(){
   clients.forEach(function(c){ sel.innerHTML += '<option value="' + c.id + '">' + c.nom + '</option>'; });
 
   var tbl = document.getElementById('sites-table');
-  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Ville</th><th>Employés</th><th>Companion</th><th>Tarif/an</th><th>Séances</th><th>Kiosque URL</th><th>Actions</th></tr>';
+  tbl.innerHTML = '<tr><th>Site</th><th>Client</th><th>Ville</th><th>Employés</th><th>Companion</th><th>Tarif/an</th><th>Séances</th><th>Kiosque URL</th><th>Créé le</th><th>Actions</th></tr>';
   sites.forEach(function(s){
     var compBadge = s.has_companion
       ? '<span style="background:rgba(0,180,180,.12);color:#00b4b4;border-radius:6px;padding:.1rem .5rem;font-size:.65rem;font-weight:600">✓ Oui</span>'
@@ -845,6 +846,7 @@ async function loadSites(){
       + '<td>' + (s.tarif_annuel ? s.tarif_annuel + ' €' : '—') + '</td>'
       + '<td>' + (s.nb_sessions || 0) + '</td>'
       + '<td><span class="kiosk-url" title="Cliquer pour copier">/kiosk/' + s.slug + '</span></td>'
+      + '<td>' + (s.created_at ? new Date(s.created_at).toLocaleDateString('fr-FR') : '—') + '</td>'
       + '<td><button class="btn-sm">✏️ Modifier</button></td>';
     tr.querySelector('.kiosk-url').onclick = (function(slug){ return function(){ copyKiosk(slug); }; })(s.slug);
     tr.querySelector('.btn-sm').onclick    = (function(site){ return function(){ openEditSite(site); }; })(s);
@@ -1158,9 +1160,9 @@ async function loadIntervenants() {
   var data = await fetch('/api/admin/intervenants', {credentials:'include'}).then(r => r.json());
   window._intervList = data;
   var tbl = document.getElementById('intervenants-table');
-  tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Statut</th><th>Actions</th></tr>';
+  tbl.innerHTML = '<tr><th>Nom</th><th>Spécialité</th><th>Email</th><th>Taux</th><th>Clics totaux</th><th>Créé le</th><th>Statut</th><th>Actions</th></tr>';
   if (!data.length) {
-    tbl.innerHTML += '<tr><td colspan="7" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel apporteur / intervenant</td></tr>';
+    tbl.innerHTML += '<tr><td colspan="8" style="text-align:center;color:#6b6070;padding:1.5rem">Aucun intervenant — cliquez sur + Nouvel apporteur / intervenant</td></tr>';
     return;
   }
   data.forEach(function(inv) {
@@ -1170,15 +1172,25 @@ async function loadIntervenants() {
       '<td>' + (inv.email || inv.user_email || '—') + '</td>' +
       '<td><strong>' + (inv.taux_contenu || 30) + '%</strong></td>' +
       '<td>' + (inv.total_clics || 0) + ' clics · ' + (inv.total_duree_min || 0) + ' min</td>' +
+      '<td>' + (inv.created_at ? new Date(inv.created_at).toLocaleDateString('fr-FR') : '—') + '</td>' +
       '<td><span class="pill ' + (inv.actif ? 'ok' : 'off') + '">' + (inv.actif ? 'Actif' : 'Inactif') + '</span></td>' +
       '<td style="display:flex;gap:.3rem">' +
         '<button class="btn-sm" onclick="openEditIntervenant(' + inv.id + ')">Modifier</button>' +
         '<button class="btn-sm" onclick="viewIntervenantStats(' + inv.id + ')">📊 Stats</button>' +
         '<button class="btn-sm" onclick="toggleContenu(' + inv.id + ',' + (inv.est_intervenant !== false) + ')">' + (inv.est_intervenant !== false ? '👤 Companion ✓' : '👤 Companion ✗') + '</button>' +
         '<button class="btn-sm" onclick="toggleIntervenant(' + inv.id + ',' + inv.actif + ')">' + (inv.actif ? 'Désactiver' : 'Activer') + '</button>' +
+        '<button class="btn-sm" style="color:#c0392b;border-color:rgba(192,57,43,.3)" onclick="deleteIntervenant(' + inv.id + ',\'' + (inv.nom || '').replace(/'/g, "\\'") + '\')">Supprimer</button>' +
       '</td>' +
       '</tr>';
   });
+}
+
+async function deleteIntervenant(id, nom){
+  if(!confirm('Supprimer l\'intervenant ' + nom + ' ?\nCette action le retire de la liste.')) return;
+  var r = await fetch('/api/admin/intervenants/' + id, {method:'DELETE', credentials:'include'});
+  var d = await r.json();
+  if(d.ok){ toast('Intervenant supprimé ✓'); loadIntervenants(); }
+  else { toast(d.error || 'Erreur'); }
 }
 
 async function createIntervenant() {
