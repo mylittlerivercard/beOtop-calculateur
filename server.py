@@ -2894,6 +2894,7 @@ def companion_intervenants_list():
 
 @app.route('/api/companion/intervenants', methods=['POST'])
 @login_required
+@intervenant_required
 def companion_intervenants_create():
     data = request.get_json() or {}
     nom = (data.get('nom') or '').strip()
@@ -3109,6 +3110,7 @@ def companion_sons_list():
 
 @app.route('/api/companion/sons', methods=['POST'])
 @login_required
+@intervenant_required
 def companion_sons_create():
     data = request.get_json() or {}
     nom = (data.get('nom') or '').strip()
@@ -3129,6 +3131,7 @@ def companion_sons_create():
 
 @app.route('/api/companion/sons/<int:son_id>', methods=['PUT'])
 @login_required
+@intervenant_required
 def companion_sons_update(son_id):
     data = request.get_json() or {}
     cols = []; vals = []
@@ -3154,6 +3157,7 @@ def companion_sons_update(son_id):
 
 @app.route('/api/companion/sons/<int:son_id>', methods=['DELETE'])
 @login_required
+@intervenant_required
 def companion_sons_delete(son_id):
     with get_db() as conn:
         with conn.cursor() as cur:
