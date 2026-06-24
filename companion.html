@@ -6569,7 +6569,8 @@ var currentAudioCat = 'all';
 
 /* Comparaison robuste de deux noms : casse + espaces de bord ignorés. */
 function _sameNom(a, b) {
-  return (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
+  function norm(s){ return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+  return norm(a) === norm(b);
 }
 
 /* Recherche robuste d'un intervenant par nom : exacte → casse → trim+casse. */
