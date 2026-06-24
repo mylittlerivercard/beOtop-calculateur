@@ -5248,7 +5248,6 @@ var ATELIERS_META_COMPANION = {
   'Photobiomodulation':      { icon:'✨', indication:'TMS · Régénération' },
   'Lunettes Psio':           { icon:'👓', indication:'Déconnexion visuelle' },
 };
-var SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bain de Lumière Rouge'];
 
 /* ════════════════════════════════════════════
    CALENDRIER DE RÉSERVATION
@@ -5256,7 +5255,6 @@ var SANS_CAPTEUR_PIR = ['Lunettes Psio','Sensosphère','Photobiomodulation','Bai
 
 var HEURES_DEBUT = 8, HEURES_FIN = 19;       // 08h → 19h
 var SLOT_MIN = 10;                             // granularité grille (10 min)
-var DUREES = [10, 15, 20];
 
 var calDate      = new Date();                   // date affichée
 var calAteliers  = [];                           // liste ateliers avec statut PIR
@@ -6878,13 +6876,6 @@ function setSonVolume(val) {
 /* ════════════════════════════════════════════
    BIBLIOTHÈQUE VIDÉO
 ════════════════════════════════════════════ */
-var CATS_VIDEO = [
-  { id:'all', label:'Tout' },
-  { id:'sophrologie', label:'Sophrologie' },
-  { id:'yoga', label:'Yoga bureau' },
-  { id:'tms', label:'TMS' },
-  { id:'mindfulness', label:'Mindfulness' },
-];
 var currentVideoCat = 'all';
 
 // Vidéos démo dans DEMO_DB déjà initialisées — on lit DB.videos
@@ -7699,11 +7690,6 @@ function showIntervenantContenus(nom) {
   switchView('intervenant-contenus');
 }
 
-var CATS_AUDIO = [
-  { id:'all', label:'Tout' }, { id:'sophrologie', label:'Sophrologie' },
-  { id:'binaural', label:'Binaural' }, { id:'nsdr', label:'NSDR' },
-  { id:'ciblé', label:'Ciblé' }, { id:'ambiance', label:'Ambiance' }
-];
 var currentAudioCat = 'all';
 
 /* Comparaison robuste de deux noms : casse + espaces de bord ignorés. */
@@ -7955,11 +7941,6 @@ function togglePlay() {
 /* ════════════════════════════════════════════
    EXERCICES
 ════════════════════════════════════════════ */
-var CATS_EX = [
-  { id:'all', label:'Tous' }, { id:'tms', label:'TMS' },
-  { id:'etirements', label:'Étirements' }, { id:'workout', label:'Workout' },
-  { id:'respiration', label:'Respiration' }, { id:'relaxation', label:'Relaxation' }
-];
 var currentExCat = 'all';
 
 function renderExercices() {
