@@ -549,6 +549,8 @@ def init_db():
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cint_site ON companion_intervenants(site_slug)')
         cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS site_url TEXT")
         cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS linkedin_url TEXT")
+        cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS initiales TEXT")
+        cur.execute("ALTER TABLE companion_intervenants ADD COLUMN IF NOT EXISTS couleur TEXT")
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS site_id INTEGER REFERENCES sites(id) ON DELETE SET NULL")
 
         # ── Tables de contenus Companion (une par type) ───────────────────────
@@ -2891,6 +2893,33 @@ def companion_intervenants_list():
                 cur.execute("SELECT * FROM companion_intervenants WHERE actif = TRUE ORDER BY id")
             rows = cur.fetchall()
     return jsonify({'intervenants': [_cint_to_dict(r) for r in rows]})
+
+
+@app.route('/api/companion/intervenants', methods=['POST'])
+@login_required
+@admin_required
+def companion_intervenants_create():
+    """Création d'un intervenant Companion depuis le formulaire admin. Réservé aux admins."""
+    data = request.get_json() or {}
+    nom = (data.get('nom') or '').strip()
+    if not nom:
+        return jsonify({'error': 'Nom requis'}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO companion_intervenants
+                    (site_slug, nom, titre, specialite, bio, photo, photo_url,
+                     initiales, couleur, site_url, linkedin_url, tags, actif)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,TRUE) RETURNING *
+            """, [data.get('site_slug', '') or '', nom, data.get('titre', '') or '',
+                  data.get('specialite', '') or '', data.get('bio', '') or '',
+                  data.get('photo', '') or '', data.get('photo_url', '') or '',
+                  data.get('initiales', '') or '', data.get('couleur', '') or '',
+                  data.get('site_url', '') or '', data.get('linkedin_url', '') or '',
+                  _cint_tags_str(data.get('tags'))])
+            row = cur.fetchone()
+            conn.commit()
+    return jsonify(_cint_to_dict(row)), 201
 
 
 @app.route('/api/companion/intervenants/<int:iid>', methods=['PUT'])
