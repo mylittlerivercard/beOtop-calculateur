@@ -929,13 +929,15 @@ async function uploadCloudinary(file) {
   fd.append('file', file);
   fd.append('upload_preset', 'tg9pkedb');
   fd.append('folder', 'beotop');
+  console.log('[Cloudinary] POST /image/upload — preset=tg9pkedb — fichier:', file && file.name, file && file.type);
   var resp = await fetch('https://api.cloudinary.com/v1_1/dpajk1wrl/image/upload', {
     method: 'POST',
     body: fd
   });
   var data = await resp.json();
   if (data.secure_url) return data.secure_url;
-  throw new Error('Upload Cloudinary échoué : ' + JSON.stringify(data));
+  console.error('[Cloudinary] Upload refusé — HTTP', resp.status, '— réponse exacte :', data);
+  throw new Error('Upload Cloudinary échoué : ' + ((data.error && data.error.message) || JSON.stringify(data)));
 }
 
 /* Champ photo : input file → upload Cloudinary → aperçu + URL cachée.
@@ -946,10 +948,23 @@ function _mcPhotoField(currentUrl) {
   var src = isUrl ? currentUrl : (currentUrl ? '/static/' + currentUrl : '');
   return '<div class="form-field"><label>Photo</label>'
     + '<input type="file" id="mcf-photo-file" accept="image/jpeg,image/png,image/webp" style="font-size:.78rem" onchange="_mcOnPhotoFile(this)">'
+    + '<input type="text" id="mcf-photo-urltext" value="" placeholder="… ou coller une URL photo (Cloudinary ou /static/)" oninput="_mcOnPhotoUrl(this)" style="margin-top:.5rem">'
     + '<input type="hidden" id="mcf-photo-url" value="' + mcAttr(currentUrl) + '">'
     + '<div id="mcf-photo-preview" style="margin-top:.5rem;' + (currentUrl ? '' : 'display:none') + '">'
     + '<img id="mcf-photo-img" src="' + mcAttr(src) + '" style="width:100%;border-radius:8px;max-height:150px;object-fit:cover"></div>'
-    + '<div id="mcf-photo-status" style="font-size:.65rem;color:var(--text-muted);margin-top:.3rem">' + (currentUrl ? 'Image actuelle — choisissez un fichier pour la remplacer' : 'JPG, PNG ou WebP') + '</div></div>';
+    + '<div id="mcf-photo-status" style="font-size:.65rem;color:var(--text-muted);margin-top:.3rem">' + (currentUrl ? 'Image actuelle — uploadez un fichier ou collez une URL pour la remplacer' : 'JPG, PNG ou WebP — ou collez une URL') + '</div></div>';
+}
+
+/* Saisie directe d'une URL photo (Cloudinary ou /static/) : aperçu immédiat.
+   Une URL collée est prioritaire sur l'upload fichier (résolu dans mcSave). */
+function _mcOnPhotoUrl(input) {
+  var v = (input.value || '').trim();
+  if (!v) return;
+  var src = /^https?:\/\//i.test(v) ? v : '/static/' + v;
+  var img = document.getElementById('mcf-photo-img');
+  var prev = document.getElementById('mcf-photo-preview');
+  if (img) img.src = src;
+  if (prev) prev.style.display = '';
 }
 
 /* Handler onchange : upload du fichier choisi, aperçu, statut, stockage de l'URL. */
@@ -965,7 +980,8 @@ async function _mcOnPhotoFile(input) {
     document.getElementById('mcf-photo-preview').style.display = '';
     if (status) { status.textContent = '✓ Image uploadée'; status.style.color = '#16a34a'; }
   } catch (e) {
-    if (status) { status.textContent = '⚠ Échec de l\'upload — réessayez'; status.style.color = '#dc2626'; }
+    console.error('[upload photo] échec :', e);
+    if (status) { status.textContent = '⚠ Échec de l\'upload — ' + (e && e.message ? e.message : 'réessayez'); status.style.color = '#dc2626'; }
   }
 }
 
@@ -1057,7 +1073,13 @@ function mcSave(ep, id) {
   var body = { site_slug: '', intervenant: MC_NOM };
   MC_FIELDS[ep].forEach(function(f) {
     if (f.k === 'categorie') { body[f.k] = getCatValue('mcf-categorie','mcf-categorie-new'); return; }
-    if (f.k === 'photo') { var pu = document.getElementById('mcf-photo-url'); body[f.k] = pu ? pu.value : ''; return; }
+    if (f.k === 'photo') {
+      var ut = document.getElementById('mcf-photo-urltext');
+      var pu = document.getElementById('mcf-photo-url');
+      var urlText = ut && ut.value ? ut.value.trim() : '';
+      body[f.k] = urlText || (pu ? pu.value : '');   // URL collée prioritaire sur l'upload fichier
+      return;
+    }
     var el = document.getElementById('mcf-' + f.k);
     body[f.k] = el ? el.value.trim() : '';
   });
