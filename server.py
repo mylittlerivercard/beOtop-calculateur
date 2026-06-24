@@ -2866,6 +2866,8 @@ def _cint_to_dict(row):
         'bio': row.get('bio'), 'photo': row.get('photo'),
         'photo_url': row.get('photo_url'), 'titre': row.get('titre'),
         'site_url': row.get('site_url'), 'linkedin_url': row.get('linkedin_url'),
+        'initiales': row.get('initiales', '') or '',
+        'couleur':   row.get('couleur', '') or '',
         'tags': tags, 'actif': row.get('actif', True)
     }
 
