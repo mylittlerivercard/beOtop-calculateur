@@ -7668,7 +7668,7 @@ function showIntervenantContenus(nom) {
   ];
   var html = ''; var total = 0;
   groups.forEach(function(g){
-    var items = (g.arr || []).filter(function(x){ return (x.intervenant || '') === nom && x.actif !== false; });
+    var items = (g.arr || []).filter(function(x){ return (x.intervenant || '') === nom && x.actif !== false && x._srv === true; });
     if (!items.length) return;
     total += items.length;
     html += '<div style="font-size:.58rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:1.1rem 0 .5rem">' + g.type + ' · ' + items.length + '</div>';
