@@ -6772,25 +6772,25 @@ function _playAudioIframe(audio, url) {
 }
 
 /* Lecture d'un fichier audio (mp3/wav/Cloudinary) dans une modale fiche enrichie :
-   <audio> caché (autoplay via _audioFileEl) + lecteur minimaliste
-   (play/pause, barre de progression seekable, volume). La fermeture de la modale
-   coupe la lecture (closeModal → _stopAudioFile). */
+   élément <audio> RÉEL caché dans le DOM (src explicite) + lecteur minimaliste
+   (play/pause, barre de progression seekable, volume). Le bouton play appelle
+   audio.play()/pause() directement (contexte clic utilisateur). La fermeture de
+   la modale coupe la lecture (closeModal → _stopAudioFile). */
 function _playAudioFiche(audio, url) {
+  console.log('[_playAudioFiche] appelée — url =', url);   // LOG TEMPORAIRE
   if (typeof stopAllSons === 'function') stopAllSons();
   if (typeof stopNativeAudio === 'function') stopNativeAudio();
   if (typeof _nativeSessionTimer !== 'undefined') clearInterval(_nativeSessionTimer);
   _stopAudioFile();
 
-  _audioFileEl = new Audio(url);
-  _audioFileEl.play().catch(function(){ showToast('⚠ Lecture impossible : ' + url); });
-
   openModal(audio.titre,
     '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.5rem">' + _catLabel('audio', audio.categorie) + (audio.duree ? ' · ' + audio.duree : '') + '</div>'
     + _invBadge(audio.intervenant)
     + (audio.description ? '<div style="background:var(--surface);border-radius:10px;padding:1rem;margin:.8rem 0;font-size:.82rem;color:var(--text);line-height:1.7">' + audio.description + '</div>' : '<div style="height:.8rem"></div>')
+    + '<audio id="afp-audio" src="' + url + '" preload="auto" style="display:none"></audio>'
     + '<div style="background:var(--surface);border-radius:12px;padding:1rem">'
     +   '<div style="display:flex;align-items:center;gap:.8rem">'
-    +     '<button id="afp-toggle" onclick="_afpToggle()" style="flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;background:var(--gold);color:#fff;font-size:1.1rem;cursor:pointer">⏸</button>'
+    +     '<button id="afp-toggle" onclick="_afpToggle()" style="flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;background:var(--gold);color:#fff;font-size:1.1rem;cursor:pointer">▶</button>'
     +     '<span id="afp-cur" style="font-size:.7rem;color:var(--text-muted);min-width:36px">0:00</span>'
     +     '<input id="afp-seek" type="range" min="0" max="100" value="0" step="0.1" oninput="_afpSeek(this)" style="flex:1;cursor:pointer">'
     +     '<span id="afp-dur" style="font-size:.7rem;color:var(--text-muted);min-width:36px">' + (audio.duree || '0:00') + '</span>'
@@ -6802,21 +6802,31 @@ function _playAudioFiche(audio, url) {
     + '</div>'
   );
 
+  _audioFileEl = document.getElementById('afp-audio');
+  if (!_audioFileEl) { console.log('[_playAudioFiche] élément <audio> introuvable'); return; }
+  console.log('[_playAudioFiche] <audio> créé — src =', _audioFileEl.src);
+
+  _audioFileEl.onplay  = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '⏸'; };
+  _audioFileEl.onpause = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '▶'; };
+  _audioFileEl.onended = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '▶'; var s = document.getElementById('afp-seek'); if (s) s.value = 100; };
   _audioFileEl.ontimeupdate = function() {
-    if (!_audioFileEl) return;
-    var cur = _audioFileEl.currentTime || 0, dur = _audioFileEl.duration || 0;
+    var a = document.getElementById('afp-audio'); if (!a) return;
+    var cur = a.currentTime || 0, dur = a.duration || 0;
     var c = document.getElementById('afp-cur'); if (c) c.textContent = _afpFmt(cur);
     var d = document.getElementById('afp-dur'); if (d && dur) d.textContent = _afpFmt(dur);
     var s = document.getElementById('afp-seek'); if (s && dur) s.value = (cur / dur * 100);
   };
-  _audioFileEl.onplay  = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '⏸'; };
-  _audioFileEl.onpause = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '▶'; };
-  _audioFileEl.onended = function(){ var b = document.getElementById('afp-toggle'); if (b) b.textContent = '▶'; var s = document.getElementById('afp-seek'); if (s) s.value = 100; };
+
+  // Tentative d'autoplay (le clic « ▶ Écouter » fournit le contexte utilisateur) ;
+  // si bloquée par le navigateur, le bouton play prend le relais.
+  var p = _audioFileEl.play();
+  if (p && p.catch) p.catch(function(e){ console.log('[_playAudioFiche] autoplay bloqué :', e && e.name); });
 }
+function _afpEl(){ return _audioFileEl || document.getElementById('afp-audio'); }
 function _afpFmt(sec){ var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + String(s).padStart(2, '0'); }
-function _afpToggle(){ if (!_audioFileEl) return; if (_audioFileEl.paused) _audioFileEl.play(); else _audioFileEl.pause(); }
-function _afpSeek(el){ if (_audioFileEl && _audioFileEl.duration) _audioFileEl.currentTime = el.value / 100 * _audioFileEl.duration; }
-function _afpVol(el){ if (_audioFileEl) _audioFileEl.volume = parseFloat(el.value); }
+function _afpToggle(){ var a = _afpEl(); if (!a) return; if (a.paused) a.play(); else a.pause(); }
+function _afpSeek(el){ var a = _afpEl(); if (a && a.duration) a.currentTime = el.value / 100 * a.duration; }
+function _afpVol(el){ var a = _afpEl(); if (a) a.volume = parseFloat(el.value); }
 
 function playAudio(id) {
   var audio = DB.audios.find(function(a){ return a.id === id; });
