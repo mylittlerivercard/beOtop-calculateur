@@ -861,6 +861,19 @@ def admin_update_client(client_id):
             conn.commit()
     return jsonify({'ok': True})
 
+@app.route('/api/admin/clients/<int:client_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_client(client_id):
+    # Soft-delete (actif=0) : préserve sites/sessions liés (clés étrangères).
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE clients SET actif=0 WHERE id=%s", [client_id])
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Client introuvable'}), 404
+            conn.commit()
+    return jsonify({'ok': True})
+
 # ========== ADMIN - SITES ==========
 
 @app.route('/api/admin/sites', methods=['GET'])
@@ -924,6 +937,19 @@ def admin_update_site(site_id):
                  float(data.get('tarif_annuel', 0) or 0),
                  site_id]
             )
+            conn.commit()
+    return jsonify({'ok': True})
+
+@app.route('/api/admin/sites/<int:site_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def admin_delete_site(site_id):
+    # Soft-delete (actif=0) : préserve les sessions liées (clés étrangères).
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE sites SET actif=0 WHERE id=%s", [site_id])
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Site introuvable'}), 404
             conn.commit()
     return jsonify({'ok': True})
 

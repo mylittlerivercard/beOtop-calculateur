@@ -701,9 +701,18 @@ async function loadClients(){
       '<td style="display:flex;gap:.3rem">' +
         '<button class="btn-sm" onclick="openEditClient(' + c.id + ')">Modifier</button>' +
         '<button class="btn-sm" onclick="openApporteurModal(' + c.id + ',\'' + (c.nom||'').replace(/'/g,"\\'") + '\',' + (c.apporteur_id||'null') + ')">💰 Apporteur</button>' +
+        '<button class="btn-sm" style="color:#c0392b;border-color:rgba(192,57,43,.3)" onclick="deleteClient(' + c.id + ',\'' + (c.nom||'').replace(/'/g,"\\'") + '\')">Supprimer</button>' +
       '</td>' +
       '</tr>';
   });
+}
+
+async function deleteClient(id, nom){
+  if(!confirm('Supprimer le client ' + nom + ' ?\nCette action le désactive.')) return;
+  var r = await fetch('/api/admin/clients/' + id, {method:'DELETE', credentials:'include'});
+  var d = await r.json();
+  if(d.ok){ toast('Client supprimé ✓'); loadClients(); }
+  else { toast(d.error || 'Erreur'); }
 }
 
 function openEditClient(id){
@@ -847,13 +856,22 @@ async function loadSites(){
       + '<td>' + (s.nb_sessions || 0) + '</td>'
       + '<td><span class="kiosk-url" title="Cliquer pour copier">/kiosk/' + s.slug + '</span></td>'
       + '<td>' + (s.created_at ? new Date(s.created_at).toLocaleDateString('fr-FR') : '—') + '</td>'
-      + '<td><button class="btn-sm">✏️ Modifier</button></td>';
+      + '<td style="display:flex;gap:.3rem"><button class="btn-sm">✏️ Modifier</button>'
+      + '<button class="btn-sm" style="color:#c0392b;border-color:rgba(192,57,43,.3)" onclick="deleteSite(' + s.id + ',\'' + (s.nom||'').replace(/'/g,"\\'") + '\')">Supprimer</button></td>';
     tr.querySelector('.kiosk-url').onclick = (function(slug){ return function(){ copyKiosk(slug); }; })(s.slug);
     tr.querySelector('.btn-sm').onclick    = (function(site){ return function(){ openEditSite(site); }; })(s);
     tbl.appendChild(tr);
   });
 }
 
+
+async function deleteSite(id, nom){
+  if(!confirm('Supprimer le site ' + nom + ' ?\nCette action le désactive.')) return;
+  var r = await fetch('/api/admin/sites/' + id, {method:'DELETE', credentials:'include'});
+  var d = await r.json();
+  if(d.ok){ toast('Site supprimé ✓'); loadSites(); }
+  else { toast(d.error || 'Erreur'); }
+}
 
 /* ── Édition site ── */
 function toggleEditCompanionTarif(checked) {
