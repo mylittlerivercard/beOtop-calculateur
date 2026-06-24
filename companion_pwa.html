@@ -4446,6 +4446,67 @@ function closeModal() {
   suggestCheckinAfterSession();
 }
 
+/* ── Utilitaires de formatage (ajouts T3 — non encore branchés) ── */
+
+/* Normalise une durée en "mm:ss". Accepte : secondes (int), "mm:ss"/"m:ss",
+   "X min", "X,XX min", "X'XX". Vide/null/undefined → "". */
+function formatDuration(input) {
+  if (input === null || input === undefined || input === '') return '';
+  var totalSec = null;
+  if (typeof input === 'number') {
+    totalSec = input;
+  } else {
+    var s = String(input).trim();
+    if (s === '') return '';
+    if (/^\d+:\d{1,2}$/.test(s)) {                       // "mm:ss" / "m:ss"
+      var p = s.split(':');
+      totalSec = parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+    } else if (/^\d+\s*'\s*\d{1,2}$/.test(s)) {           // "X'XX"
+      var q = s.replace(/\s/g, '').split("'");
+      totalSec = parseInt(q[0], 10) * 60 + parseInt(q[1], 10);
+    } else {
+      var m = s.match(/^(\d+(?:[.,]\d+)?)\s*min/i);       // "X min" / "X,XX min"
+      if (m) {
+        totalSec = Math.round(parseFloat(m[1].replace(',', '.')) * 60);
+      } else if (/^\d+$/.test(s)) {                       // entier nu → secondes
+        totalSec = parseInt(s, 10);
+      } else {
+        var n = parseFloat(s.replace(',', '.'));          // sinon → minutes décimales
+        if (isNaN(n)) return '';
+        totalSec = Math.round(n * 60);
+      }
+    }
+  }
+  if (totalSec === null || isNaN(totalSec) || totalSec < 0) return '';
+  totalSec = Math.round(totalSec);
+  var mm = Math.floor(totalSec / 60), ss = totalSec % 60;
+  return (mm < 10 ? '0' + mm : '' + mm) + ':' + (ss < 10 ? '0' + ss : '' + ss);
+}
+
+/* Date courte FR sans année : "24 juin". Vide/invalide → "". */
+function formatDateCourte(input) {
+  if (input === null || input === undefined || input === '') return '';
+  var d = new Date(input);
+  if (isNaN(d.getTime())) return '';
+  var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return d.getDate() + ' ' + MOIS[d.getMonth()];
+}
+
+/* Date relative FR : "aujourd'hui", "hier", "il y a N j" (2→6), sinon "24 juin". */
+function formatDateRelative(input) {
+  if (input === null || input === undefined || input === '') return '';
+  var d = new Date(input);
+  if (isNaN(d.getTime())) return '';
+  var now = new Date();
+  var d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var jours = Math.round((t0 - d0) / 86400000);
+  if (jours === 0) return "aujourd'hui";
+  if (jours === 1) return 'hier';
+  if (jours >= 2 && jours <= 6) return 'il y a ' + jours + ' j';
+  return formatDateCourte(input);
+}
+
 function formatDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
