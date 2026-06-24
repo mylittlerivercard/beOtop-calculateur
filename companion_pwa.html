@@ -55,6 +55,9 @@
   --green:       #00b4b4;  --bg:           #ecf5f5;
   --shadow-sm:    0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
   --shadow-md:    0 12px 28px rgba(0,180,180,0.12), 0 2px 4px rgba(0,0,0,0.02);
+  --shadow-card:  0 1px 3px rgba(14,58,51,.04), 0 8px 20px -8px rgba(14,58,51,.10);
+  --shadow-hover: 0 4px 6px rgba(14,58,51,.06), 0 16px 32px -12px rgba(14,58,51,.18);
+  --shadow-deep:  0 6px 8px rgba(14,58,51,.07), 0 24px 40px -14px rgba(14,58,51,.22);
   --transition-v3: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 
 }
@@ -455,8 +458,9 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 12px; padding: 1rem; cursor: pointer;
   transition: all .2s; position: relative; overflow: hidden;
   display: flex; flex-direction: column;
+  box-shadow: var(--shadow-card);
 }
-.audio-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.audio-card:hover { border-color: var(--border2); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
 .audio-card.playing { border-color: rgba(0,180,180,.4); background: rgba(0,180,180,.06); }
 .audio-thumb {
   height: 60px; border-radius: 8px; margin-bottom: .7rem;
@@ -566,6 +570,7 @@ input[type=range]::-webkit-slider-thumb {
   padding: 1.2rem 1.4rem;
   margin-bottom: 1.4rem;
   font-family: 'DM Sans', sans-serif;
+  box-shadow: var(--shadow-deep);
 }
 .streak-card.streak-danger    { border: 1px solid #EF9F27; }
 .streak-card.streak-milestone { border: 1px solid #BA7517; }
@@ -1162,13 +1167,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   border-radius: 1.25rem; padding: 1.1rem 1rem;
   transition: var(--transition-v3); position: relative; cursor: pointer;
   flex: 0 0 195px;
+  box-shadow: var(--shadow-card);
 }
 .sug-card:nth-child(1){animation-delay:.00s} .sug-card:nth-child(2){animation-delay:.05s}
 .sug-card:nth-child(3){animation-delay:.10s} .sug-card:nth-child(4){animation-delay:.15s}
 .sug-card:nth-child(5){animation-delay:.20s} .sug-card:nth-child(6){animation-delay:.25s}
 .sug-card:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: var(--shadow-md); border-color: rgba(0,180,180,.4);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--shadow-hover); border-color: rgba(0,180,180,.4);
 }
 .sug-card::before {
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
