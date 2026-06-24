@@ -929,8 +929,8 @@ async function uploadCloudinary(file) {
   fd.append('file', file);
   fd.append('upload_preset', 'tg9pkedb');
   fd.append('folder', 'beotop');
-  console.log('[Cloudinary] POST /image/upload — preset=tg9pkedb — fichier:', file && file.name, file && file.type);
-  var resp = await fetch('https://api.cloudinary.com/v1_1/dpajk1wrl/image/upload', {
+  console.log('[Cloudinary] POST /auto/upload — preset=tg9pkedb — fichier:', file && file.name, file && file.type);
+  var resp = await fetch('https://api.cloudinary.com/v1_1/dpajk1wrl/auto/upload', {
     method: 'POST',
     body: fd
   });
