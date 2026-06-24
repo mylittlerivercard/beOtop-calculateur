@@ -2893,29 +2893,6 @@ def companion_intervenants_list():
     return jsonify({'intervenants': [_cint_to_dict(r) for r in rows]})
 
 
-@app.route('/api/companion/intervenants', methods=['POST'])
-@login_required
-@intervenant_required
-def companion_intervenants_create():
-    data = request.get_json() or {}
-    nom = (data.get('nom') or '').strip()
-    if not nom:
-        return jsonify({'error': 'Nom requis'}), 400
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO companion_intervenants
-                    (site_slug, nom, specialite, bio, photo, photo_url, titre, site_url, linkedin_url, tags, actif)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,TRUE) RETURNING *
-            """, [data.get('site_slug', '') or '', nom, data.get('specialite', '') or '',
-                  data.get('bio', '') or '', data.get('photo', '') or '', data.get('photo_url', '') or '',
-                  data.get('titre', '') or '', data.get('site_url', '') or '', data.get('linkedin_url', '') or '',
-                  _cint_tags_str(data.get('tags'))])
-            row = cur.fetchone()
-            conn.commit()
-    return jsonify(_cint_to_dict(row)), 201
-
-
 @app.route('/api/companion/intervenants/<int:iid>', methods=['PUT'])
 @login_required
 def companion_intervenants_update(iid):
