@@ -4030,29 +4030,6 @@ def admin_calcul_semestre():
                     'ca_global': round(ca_global, 2)})
 
 
-@app.route('/api/admin/migrate/rename-qvct-categorie', methods=['POST'])
-@login_required
-@admin_required
-def admin_migrate_rename_qvct_categorie():
-    """Migration ponctuelle : renomme la catégorie
-    'qualité-de-vie-et-conditions-de-travail' (tirets) en
-    'Qualité de vie et conditions de travail' (espaces + majuscule) sur les
-    tables de contenu concernées. Idempotente. À déclencher une fois (admin)."""
-    old_val = 'qualité-de-vie-et-conditions-de-travail'
-    new_val = 'Qualité de vie et conditions de travail'
-    tables = ['companion_videos', 'companion_audios', 'companion_exercices',
-              'companion_podcasts', 'companion_huiles', 'companion_recettes']
-    updated = {}
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            for t in tables:
-                cur.execute("UPDATE " + t + " SET categorie=%s WHERE categorie=%s",
-                            [new_val, old_val])
-                updated[t] = cur.rowcount
-            conn.commit()
-    return jsonify({'ok': True, 'updated': updated, 'total': sum(updated.values())})
-
-
 # ========== PAGES HTML — Espace intervenant ==========
     with get_db() as conn:
         with conn.cursor() as cur:
