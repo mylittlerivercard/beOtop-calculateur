@@ -6585,8 +6585,9 @@ function getIntervenantPhoto(nomIntervenant) {
   if (!nomIntervenant) return null;
   var inv = _findByNom(DB.intervenants, nomIntervenant);
   if (!inv) return null;
+  if (inv.photo_url && inv.photo_url.indexOf('http') === 0) return inv.photo_url;
+  if (inv.photo && inv.photo.indexOf('http') === 0) return inv.photo;
   if (inv.photo) return inv.photo;
-  if (inv.photo_url) return inv.photo_url.split('/').pop();   // dérive le fichier d'un chemin existant
   return null;
 }
 
@@ -6661,7 +6662,7 @@ function _cardHeader(item, opts) {
   var icon = opts.icon || (item && item.icon) || '🎵';
   var illus = (item && item.photo) ? _photoSrc(item.photo) : '';
   var invFile = (item && item.intervenant) ? getIntervenantPhoto(item.intervenant) : null;
-  var invUrl = invFile ? ('/static/' + invFile) : '';
+  var invUrl = invFile ? (invFile.indexOf('http') === 0 ? invFile : '/static/' + invFile) : '';
   var headerImg = opts.fallbackImg || illus || invUrl;
   var avatar = invUrl
     ? '<img src="' + invUrl + '" alt="' + (item.intervenant || '') + '" title="' + (item.intervenant || '') + '" style="position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,.4);z-index:2" onerror="this.style.display=\'none\'">'
