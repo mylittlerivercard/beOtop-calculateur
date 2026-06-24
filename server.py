@@ -3808,31 +3808,58 @@ def admin_retribution_synthese():
     with get_db() as conn:
         with conn.cursor() as cur:
 
-            # 1. TOUS les intervenants déclarés actifs + leurs clics (LEFT JOIN)
-            cur.execute("""
-                SELECT
-                    i.id                AS inv_id,
-                    i.nom               AS intervenant,
-                    i.taux_contenu      AS taux,
-                    i.apporteur_affaire AS est_apporteur,
-                    COALESCE(cp.nb_clics, 0)    AS nb_clics,
-                    COALESCE(cp.total_clics, 0) AS total_clics
-                FROM intervenants i
-                LEFT JOIN (
-                    SELECT
-                        TRIM(intervenant_nom) AS intervenant_nom,
-                        COUNT(*) AS nb_clics,
-                        (SELECT COUNT(*) FROM companion_content_plays cp2
-                         WHERE cp2.created_at::date BETWEEN %s AND %s
-                           AND cp2.content_type != 'post_interne'
-                           AND COALESCE(TRIM(cp2.intervenant_nom),'') <> '') AS total_clics
-                    FROM companion_content_plays
-                    WHERE created_at::date BETWEEN %s AND %s
-                      AND content_type != 'post_interne'
-                      AND COALESCE(TRIM(intervenant_nom),'') <> ''
-                    GROUP BY TRIM(intervenant_nom)
-                ) cp ON TRIM(cp.intervenant_nom) = TRIM(i.nom)
-                WHERE i.actif = TRUE
+            # Normalisation accent-insensible des noms, sans dépendre de
+            # l'extension `unaccent` (qui peut être absente → erreur SQL) :
+            # passage en minuscules + remplacement des accents français courants.
+            def _norm(col):
+                expr = f"LOWER(TRIM({col}))"
+                for a, b in (('à', 'a'), ('á', 'a'), ('â', 'a'), ('ä', 'a'), ('ã', 'a'),
+                             ('é', 'e'), ('è', 'e'), ('ê', 'e'), ('ë', 'e'),
+                             ('í', 'i'), ('ì', 'i'), ('î', 'i'), ('ï', 'i'),
+                             ('ó', 'o'), ('ò', 'o'), ('ô', 'o'), ('ö', 'o'), ('õ', 'o'),
+                             ('ú', 'u'), ('ù', 'u'), ('û', 'u'), ('ü', 'u'),
+                             ('ç', 'c'), ('ñ', 'n')):
+                    expr = f"REPLACE({expr}, '{a}', '{b}')"
+                return expr
+
+            norm_play = _norm('intervenant_nom')   # companion_content_plays.intervenant_nom
+            norm_inv  = _norm('i.nom')             # intervenants.nom
+
+            # 1. TOUS les intervenants déclarés actifs + leurs clics (LEFT JOIN
+            #    normalisé, insensible aux accents/casse : « Béhar » == « Behar »).
+            #    DISTINCT ON dédoublonne les intervenants présents en double (deux
+            #    orthographes avec/sans accent) en gardant la ligne qui a le plus de
+            #    clics (ORDER BY ... nb_clics DESC).
+            #    NB : seuls les noms présents dans `intervenants` (actif=TRUE)
+            #    apparaissent. Un nom présent uniquement dans companion_content_plays
+            #    (fiche intervenant absente de la table `intervenants`) reste invisible.
+            cur.execute(f"""
+                SELECT * FROM (
+                    SELECT DISTINCT ON ({norm_inv})
+                        i.id                AS inv_id,
+                        i.nom               AS intervenant,
+                        i.taux_contenu      AS taux,
+                        i.apporteur_affaire AS est_apporteur,
+                        COALESCE(cp.nb_clics, 0)    AS nb_clics,
+                        COALESCE(cp.total_clics, 0) AS total_clics
+                    FROM intervenants i
+                    LEFT JOIN (
+                        SELECT
+                            {norm_play} AS nom_norm,
+                            COUNT(*) AS nb_clics,
+                            (SELECT COUNT(*) FROM companion_content_plays cp2
+                             WHERE cp2.created_at::date BETWEEN %s AND %s
+                               AND cp2.content_type != 'post_interne'
+                               AND COALESCE(TRIM(cp2.intervenant_nom),'') <> '') AS total_clics
+                        FROM companion_content_plays
+                        WHERE created_at::date BETWEEN %s AND %s
+                          AND content_type != 'post_interne'
+                          AND COALESCE(TRIM(intervenant_nom),'') <> ''
+                        GROUP BY {norm_play}
+                    ) cp ON cp.nom_norm = {norm_inv}
+                    WHERE i.actif = TRUE
+                    ORDER BY {norm_inv}, COALESCE(cp.nb_clics, 0) DESC
+                ) t
                 ORDER BY nb_clics DESC
             """, [date_from, date_to, date_from, date_to])
             intervenants = [serialize_row(r) for r in cur.fetchall()]
