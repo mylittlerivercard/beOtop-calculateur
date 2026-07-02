@@ -1158,9 +1158,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item nav-item-lg" onclick="switchView('coherence')">
     <span>Respiration & Cohérence</span>
   </div>
-  <div class="nav-item nav-item-lg" onclick="switchView('sons')">
-    <span>Sons immersifs</span>
-  </div>
 
   <div class="nav-section-label">Suivi</div>
   <div class="nav-item nav-item-lg" onclick="switchView('bilan')">
@@ -1685,7 +1682,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <button class="cc-protocol-btn" onclick="switchAdminTab('podcasts',this)">Podcasts</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('huiles',this)">Huiles &amp; Aromathérapie</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('recettes',this)">Recettes</button>
-    <button class="cc-protocol-btn" onclick="switchAdminTab('sons',this)">Sons immersifs</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('posts',this)">Posts internes</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('intervenants',this)">Intervenants</button>
     <button class="cc-protocol-btn" onclick="switchAdminTab('users',this)">Utilisateurs</button>
@@ -1730,76 +1726,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   </div>
 </div>
 
-<!-- ═══ SONS IMMERSIFS ═══ -->
-<div class="view" id="view-sons">
-  <div class="page-header">
-    <h1>Sons <em>immersifs</em></h1>
-    <p>Paysages sonores natifs · Travail en fond · Récupération</p>
-  </div>
-  <div id="sons-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem">
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('foret')" id="son-foret">
-      <img src="/static/foret.jpg" alt="foret" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌲</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Forêt</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Feuillage · Vent</div>
-      <div class="son-status" id="status-foret" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('pluie')" id="son-pluie">
-      <img src="/static/pluie.jpg" alt="pluie" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌧️</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pluie</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Douce · Cocooning</div>
-      <div class="son-status" id="status-pluie" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('ocean')" id="son-ocean">
-      <img src="/static/ocean.jpg" alt="ocean" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🌊</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Océan</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Vagues · Détente</div>
-      <div class="son-status" id="status-ocean" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('cafe')" id="son-cafe">
-      <img src="/static/cafe.jpg" alt="cafe" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">☕</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Café</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Ambiance · Focus</div>
-      <div class="son-status" id="status-cafe" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('orage')" id="son-orage">
-      <img src="/static/orage.jpg" alt="orage" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⛈️</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Orage</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Tonnerre · Intensité</div>
-      <div class="son-status" id="status-orage" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('clavier')" id="son-clavier">
-      <img src="/static/clavier.jpg" alt="clavier" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">⌨️</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Clavier</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Claquement · Flow</div>
-      <div class="son-status" id="status-clavier" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('creche')" id="son-creche">
-      <img src="/static/creche.jpg" alt="creche" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">👶</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Crèche</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Douceur · Sérénité</div>
-      <div class="son-status" id="status-creche" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('noel')" id="son-noel">
-      <img src="/static/noel.jpg" alt="noel" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🎄</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Noël</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Cheminée · Cloches</div>
-      <div class="son-status" id="status-noel" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-    <div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon('paques')" id="son-paques">
-      <img src="/static/paques.jpg" alt="paques" style="width:100%;height:90px;object-fit:cover;border-radius:10px;margin-bottom:.4rem;display:block;" onerror="_sugImgErr(this)"><span style="display:none;font-size:2.2rem">🐣</span>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Pâques</div>
-      <div style="font-size:.58rem;color:var(--text-dim)">Oiseaux · Printemps</div>
-      <div class="son-status" id="status-paques" style="margin-top:.5rem;font-size:.58rem;color:var(--text-muted)">▶ Démarrer</div>
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem">
-    <div style="font-size:.72rem;color:var(--text-dim)">Volume</div>
-    <input type="range" id="son-volume" min="0" max="100" value="40" style="flex:1" oninput="setSonVolume(this.value)">
-    <div id="son-vol-label" style="font-size:.7rem;color:var(--text-muted);width:32px">40%</div>
-    <button class="btn-secondary" style="font-size:.7rem;padding:.4rem .9rem" onclick="stopAllSons()">⏹ Arrêter</button>
-  </div>
-  <div style="margin-top:.6rem;font-size:.6rem;color:var(--text-muted)">Sons générés nativement · Aucune connexion requise · Idéal en fond sonore</div>
-</div>
 
 <!-- ═══ BIBLIOTHÈQUE VIDÉO ═══ -->
 <div class="view" id="view-video">
