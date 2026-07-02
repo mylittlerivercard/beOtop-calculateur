@@ -1152,9 +1152,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item nav-item-lg" onclick="switchView('fiches-vitalite')">
     <span>Fiches Vitalité</span>
   </div>
-  <div class="nav-item nav-item-lg" onclick="switchView('jeux')">
-    <span>Jeux cérébraux</span>
-  </div>
   <div class="nav-item nav-item-lg" onclick="switchView('podcasts')">
     <span>Podcasts</span>
   </div>
@@ -1499,6 +1496,86 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <button class="player-btn">⏭</button>
     </div>
   </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
+    <!-- ══ DÉFIS COGNITIFS — rendu dynamique depuis DB.defis ══ -->
+    <div id="defis-cats" class="audio-categories" style="grid-column:1/-1"></div>
+    <div id="defis-container" style="grid-column:1/-1"></div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.8rem">🧠 Mémoire</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🃏</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Paires d'emojis</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-5 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('simon')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔵</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Simon</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Séquence de couleurs</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">⚡ Réflexes</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('reflexes')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🟢</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Réflexes</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Temps de réaction</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('double')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🎭</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Double tâche</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Pair/impair + couleur</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🎯 Attention</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('attention')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🎯</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Attention sélective</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez la cible</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('comptage')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">👁️</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Comptage sélectif</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Comptez une seule couleur</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="startJeu('inattention')">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div style="font-size:1.8rem">🦍</div>
+        <div>
+          <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Inattention · Le gorille invisible</div>
+          <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Phénomène de cécité inattentionnelle · Comptez les passes blanches</div>
+          <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Prise de conscience</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🔢 Calcul & Logique</div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('calcul')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔢</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Calcul mental</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Opérations rapides</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('stroop')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔴</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Stroop</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Couleur vs mot · Flexibilité</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('suite')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">📐</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Suite logique</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez le suivant</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('analogie')">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔗</div>
+      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Analogies</div>
+      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">A est à B ce que C est à…</div>
+      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
+    </div>
+  </div>
+  <div id="jeu-zone"></div>
 </div>
 
 <!-- ══════════════ EXERCICES ══════════════ -->
@@ -1856,92 +1933,6 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div id="huiles-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
     <div id="huiles-grid"></div>
   </div>
-</div>
-<div class="view" id="view-jeux">
-  <div class="page-header">
-    <h1>Jeux <em>cérébraux</em></h1>
-    <p>Défis cognitifs · Mémoire · Réflexes · Attention · Logique · Inattention</p>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem" id="jeux-menu">
-    <!-- ══ DÉFIS COGNITIFS — rendu dynamique depuis DB.defis ══ -->
-    <div id="defis-cats" class="audio-categories" style="grid-column:1/-1"></div>
-    <div id="defis-container" style="grid-column:1/-1"></div>
-    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.8rem">🧠 Mémoire</div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('memory')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🃏</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Memory</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Paires d'emojis</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2-5 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('simon')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🔵</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Simon</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Séquence de couleurs</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
-    </div>
-    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">⚡ Réflexes</div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('reflexes')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🟢</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Réflexes</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Temps de réaction</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('double')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🎭</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Double tâche</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Pair/impair + couleur</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
-    </div>
-    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🎯 Attention</div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('attention')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🎯</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Attention sélective</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez la cible</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('comptage')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">👁️</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Comptage sélectif</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Comptez une seule couleur</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem;grid-column:1/-1" onclick="startJeu('inattention')">
-      <div style="display:flex;align-items:center;gap:1rem">
-        <div style="font-size:1.8rem">🦍</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Inattention · Le gorille invisible</div>
-          <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Phénomène de cécité inattentionnelle · Comptez les passes blanches</div>
-          <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span><span class="ex-tag">Prise de conscience</span></div>
-        </div>
-      </div>
-    </div>
-    <div style="font-size:.58rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em;grid-column:1/-1;padding-bottom:.2rem;border-bottom:1px solid var(--border);margin-top:.4rem">🔢 Calcul & Logique</div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('calcul')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🔢</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Calcul mental</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Opérations rapides</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('stroop')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🔴</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Stroop</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Couleur vs mot · Flexibilité</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">2 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('suite')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">📐</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Suite logique</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">Trouvez le suivant</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
-    </div>
-    <div class="card" style="cursor:pointer;padding:1rem" onclick="startJeu('analogie')">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🔗</div>
-      <div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">Analogies</div>
-      <div style="font-size:.6rem;color:var(--text-dim);margin-bottom:.5rem">A est à B ce que C est à…</div>
-      <div style="display:flex;gap:.3rem"><span class="ex-tag">3 min</span></div>
-    </div>
-  </div>
-  <div id="jeu-zone"></div>
 </div>
 
 <!-- ═══ CHALLENGES ═══ -->
@@ -3265,6 +3256,7 @@ async function logoutCompanion() {
 }
 
 function switchView(id) {
+  if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Bibliothèque audio
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
@@ -3278,7 +3270,8 @@ function switchView(id) {
   if (id === 'reservation') { calDate = new Date(); renderTunnel(); }
   if (id === 'sons') renderSons();
   if (id === 'video') renderVideo();
-  if (id === 'jeux') {
+  if (id === 'audio') {
+    renderAudio();
     var menu = document.getElementById('jeux-menu');
     var zone = document.getElementById('jeu-zone');
     if (menu) menu.style.display = 'grid';
@@ -3286,7 +3279,6 @@ function switchView(id) {
     clearInterval(_jeuTimer);
     renderDefis();
   }
-  if (id === 'audio') renderAudio();
   if (id === 'exercices') renderExercices();
   if (id === 'progres') { renderProgres(); setTimeout(loadCheckinChart, 200); }
   if (id === 'challenges') renderChallenges();
