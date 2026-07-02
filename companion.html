@@ -3182,7 +3182,7 @@ async function logoutCompanion() {
 }
 
 function switchView(id) {
-  if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Bibliothèque audio
+  if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Audios régénérants
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
