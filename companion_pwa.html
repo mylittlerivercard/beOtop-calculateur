@@ -1955,17 +1955,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item nav-item-lg" onclick="switchView('exercices')">
     <span>Exercices express</span>
   </div>
-  <div class="nav-item nav-item-lg" onclick="switchView('huiles')">
-    <span>Huiles essentielles</span>
+  <div class="nav-item nav-item-lg" onclick="switchView('fiches-vitalite')">
+    <span>Fiches Vitalité</span>
   </div>
   <div class="nav-item nav-item-lg" onclick="switchView('jeux')">
     <span>Jeux cérébraux</span>
   </div>
   <div class="nav-item nav-item-lg" onclick="switchView('podcasts')">
     <span>Podcasts</span>
-  </div>
-  <div class="nav-item nav-item-lg" onclick="switchView('recettes')">
-    <span>Recettes</span>
   </div>
   <div class="nav-item nav-item-lg" onclick="switchView('coherence')">
     <span>Respiration & Cohérence</span>
@@ -3084,20 +3081,18 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 </div>
 
 <!-- HUILES ESSENTIELLES -->
-<div class="view" id="view-huiles">
+<!-- FICHES VITALITÉ (fusion Recettes + Huiles & Aromathérapie) -->
+<div class="view" id="view-fiches-vitalite">
   <div style="padding:1rem 1rem 6rem">
-    <h1>Huiles <em>essentielles</em></h1>
-    <div id="huiles-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
-    <div id="huiles-grid"></div>
-  </div>
-</div>
+    <h1>Fiches <em>Vitalité</em></h1>
 
-<!-- RECETTES -->
-<div class="view" id="view-recettes">
-  <div style="padding:1rem 1rem 6rem">
-    <h1>Nos <em>recettes</em></h1>
+    <h2 style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.2rem 0 .8rem">Recettes</h2>
     <div id="recettes-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
     <div id="recettes-grid"></div>
+
+    <h2 style="font-size:.95rem;font-weight:700;color:var(--text);margin:1.8rem 0 .8rem">Huiles &amp; Aromathérapie</h2>
+    <div id="huiles-cats" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+    <div id="huiles-grid"></div>
   </div>
 </div>
 </div><!-- /main-content -->
@@ -3196,11 +3191,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       <div class="more-drawer-item" onclick="bnavSwitchContenus('bilan');closeContenuDrawer()">
         <i class="ti ti-activity-heartbeat" style="background:rgba(245,133,90,.12);color:#f5855a"></i>Baromètre
       </div>
-      <div class="more-drawer-item" onclick="bnavSwitchContenus('huiles');closeContenuDrawer()">
-        <i class="ti ti-leaf" style="background:rgba(34,197,94,.12);color:#16a34a"></i>Huiles essentielles
-      </div>
-      <div class="more-drawer-item" onclick="bnavSwitchContenus('recettes');closeContenuDrawer()">
-        <i class="ti ti-salad" style="background:rgba(234,179,8,.12);color:#ca8a04"></i>Recettes
+      <div class="more-drawer-item" onclick="bnavSwitchContenus('fiches-vitalite');closeContenuDrawer()">
+        <i class="ti ti-leaf" style="background:rgba(34,197,94,.12);color:#16a34a"></i>Fiches Vitalité
       </div>
     </div>
   </div>
@@ -4415,8 +4407,7 @@ function switchView(id) {
   if (id === 'podcasts') renderPodcasts();
   if (id === 'posts') renderPosts();
   if (id === 'bilan') initBilanAccueil();
-  if (id === 'huiles')   renderHuiles();
-  if (id === 'recettes') renderRecettes();
+  if (id === 'fiches-vitalite') { renderRecettes(); renderHuiles(); }
 }
 
 /* ════════════════════════════════════════════
@@ -9798,8 +9789,8 @@ function navigateToContenu(type, id, titre) {
   if (type === 'podcast')  { bnavSwitchContenus('podcasts');  setTimeout(function(){ openPodcast(id); },  300); }
   if (type === 'exercice') { bnavSwitchContenus('exercices'); setTimeout(function(){ openExercice(id); }, 300); }
   if (type === 'defi')     { bnavSwitchContenus('jeux');      setTimeout(function(){ playDefi(id); },     300); }
-  if (type === 'huile')    { bnavSwitchContenus('huiles');    setTimeout(function(){ openHuile(id); },    300); }
-  if (type === 'recette')  { bnavSwitchContenus('recettes');  setTimeout(function(){ openRecette(id); },  300); }
+  if (type === 'huile')    { bnavSwitchContenus('fiches-vitalite'); setTimeout(function(){ openHuile(id); },   300); }
+  if (type === 'recette')  { bnavSwitchContenus('fiches-vitalite'); setTimeout(function(){ openRecette(id); }, 300); }
   if (type === 'questionnaire') { bnavSwitchContenus('bilan'); }
   // types sans id DB : ne rien faire de plus
 }
