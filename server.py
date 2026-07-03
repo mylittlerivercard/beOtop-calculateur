@@ -477,6 +477,10 @@ def init_db():
             ALTER TABLE sites
             ADD COLUMN IF NOT EXISTS tarif_annuel   NUMERIC DEFAULT 0
         """)
+        cur.execute("""
+            ALTER TABLE sites
+            ADD COLUMN IF NOT EXISTS kiosk_options  JSONB DEFAULT '{}'::jsonb
+        """)
 
         # ── Semestres de rétribution ──────────────────────────────────────────
         cur.execute("""
