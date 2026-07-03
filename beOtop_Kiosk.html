@@ -144,7 +144,7 @@
 <div class="screen" id="screen-dept">
   <div class="step-header">
     <div class="step-eyebrow">Étape 1 · 3</div>
-    <div class="step-title">Vous êtes dans quel <em>département ?</em></div>
+    <div class="step-title">Vous êtes dans quel <em><span class="step2-label">Département</span> ?</em></div>
     <div class="step-sub">Un seul choix</div>
   </div>
   <div class="progress-dots">
@@ -401,6 +401,27 @@ function initSite(){
     .then(function(d){
       SITE_NAME = d.nom + ' · ' + (d.client_nom||'');
       document.getElementById('site-display').textContent = d.nom + (d.ville ? ' · '+d.ville : '');
+
+      var opts = d.kiosk_options || {};
+
+      // Override libellé étape 2
+      if (opts.step2_label) {
+        var labels = document.querySelectorAll('.step2-label');
+        labels.forEach(function(el){ el.textContent = opts.step2_label; });
+      }
+
+      // Override liste départements/entités
+      if (opts.step2_items && opts.step2_items.length) {
+        DEPARTEMENTS = opts.step2_items;
+        buildDepts();
+      }
+
+      // Filtrage ateliers
+      if (opts.ateliers && opts.ateliers.length) {
+        ATELIERS = ATELIERS.filter(function(a){ return opts.ateliers.indexOf(a.label) !== -1; });
+        buildAteliers();
+      }
+
       setSyncStatus('ok');
       scheduleRetry();
     })
