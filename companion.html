@@ -8038,7 +8038,17 @@ function _catOptions(type, current) {
   current = current == null ? '' : String(current);
   var isNew = _catIsNew(type, current);
   var html = '<option value=""' + (current === '' ? ' selected' : '') + '>-- Choisir une catégorie --</option>';
-  var _cats = (CONTENU_CATS[type] || []).slice();
+  /* Dédoublonnage insensible à la casse et aux espaces : on collecte toutes les
+     catégories (socle DEMO_DB + base), on normalise chaque valeur (trim + toLowerCase)
+     pour comparer, et on conserve la première occurrence (valeur/label d'origine). */
+  var _seen = {};
+  var _cats = [];
+  (CONTENU_CATS[type] || []).forEach(function(o){
+    var key = String(o && o[0] != null ? o[0] : '').trim().toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(_seen, key)) return;
+    _seen[key] = true;
+    _cats.push(o);
+  });
   _cats.sort(function(a, b) { return (a[1]||'').localeCompare(b[1]||'', 'fr'); });
   _cats.forEach(function(o){
     html += '<option value="' + o[0] + '"' + (o[0] === current ? ' selected' : '') + '>' + o[1] + '</option>';
