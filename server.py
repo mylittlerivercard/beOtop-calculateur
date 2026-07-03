@@ -937,11 +937,12 @@ def admin_update_site(site_id):
     with get_db() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "UPDATE sites SET nom=%s, ville=%s, nb_salaries=%s, actif=%s, has_companion=%s, tarif_annuel=%s WHERE id=%s",
+                "UPDATE sites SET nom=%s, ville=%s, nb_salaries=%s, actif=%s, has_companion=%s, tarif_annuel=%s, kiosk_options=%s::jsonb WHERE id=%s",
                 [data.get('nom'), data.get('ville'), int(data.get('nb_salaries') or 0),
                  int(data.get('actif', 1)),
                  1 if data.get('has_companion') else 0,
                  float(data.get('tarif_annuel', 0) or 0),
+                 json.dumps(data.get('kiosk_options') or {}),
                  site_id]
             )
             conn.commit()
