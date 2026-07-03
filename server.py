@@ -1095,7 +1095,9 @@ def kiosk_info(site_slug):
             site = cur.fetchone()
     if not site:
         return jsonify({'error': 'Site introuvable'}), 404
-    return jsonify(serialize_row(site))
+    data = serialize_row(site)
+    data['kiosk_options'] = site.get('kiosk_options') or {}
+    return jsonify(data)
 
 # ========== CAPTEURS — RÉCEPTION DONNÉES RPi ==========
 @app.route('/api/kiosk/<site_slug>/join-link', methods=['GET'])
