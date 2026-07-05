@@ -2031,16 +2031,16 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         var c=CONST[type], K=c.stars.length, A=counts[type]||0;
         var pl=ptsByType[type]||[], ll=labelByType[type]||[], idxPos={};
         for(var i=0;i<K;i++){
-          var x=c.stars[i][0]*W, y=c.stars[i][1]*H;
           var acquired=i<A;
           var pts=acquired?(pl[i]!=null?pl[i]:bareme(type)):0;
           var lab=acquired?(ll[i]||actLabel(type)):"";
-          stars.push({type:type,x:x,y:y,acquired:acquired,potential:!acquired,satellite:false,pts:pts,label:lab,color:c.couleur,nom:c.nom,phase:i*1.7+(hashSeed(type)%10)});
+          /* stocker nx/ny normalisés — les pixels sont calculés dans draw() */
+          stars.push({type:type,nx:c.stars[i][0],ny:c.stars[i][1],x:c.stars[i][0]*W,y:c.stars[i][1]*H,acquired:acquired,potential:!acquired,satellite:false,pts:pts,label:lab,color:c.couleur,nom:c.nom,phase:i*1.7+(hashSeed(type)%10)});
           idxPos[i]=stars.length-1;
         }
         c.edges.forEach(function(e){
           var sa=stars[idxPos[e[0]]], sb=stars[idxPos[e[1]]];
-          if(sa&&sb) edges.push({ax:sa.x,ay:sa.y,bx:sb.x,by:sb.y,color:c.couleur,both:(sa.acquired&&sb.acquired)});
+          if(sa&&sb) edges.push({si:idxPos[e[0]],sj:idxPos[e[1]],color:c.couleur});
         });
       });
       var any=false; for(var k=0;k<stars.length;k++){ if(stars[k].acquired){any=true;break;} }
@@ -2058,6 +2058,11 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
       if(!ctx) return;
       ctx.clearRect(0,0,W,H);
       ctx.fillStyle="#060912"; ctx.fillRect(0,0,W,H);
+
+      /* recalculer positions pixels depuis coordonnées normalisées */
+      for(var si=0;si<stars.length;si++){
+        stars[si].x=stars[si].nx*W; stars[si].y=stars[si].ny*H;
+      }
 
       if(bgStars){
         for(var i=0;i<bgStars.length;i++){
@@ -2080,36 +2085,46 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         ctx.lineTo(pts[pts.length-1][0]*W,pts[pts.length-1][1]*H);
       }
       ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round";
+      /* siège */
       ctx.beginPath(); bez(STHAUT); bez(SBAS.slice().reverse()); ctx.closePath();
-      ctx.fillStyle="rgba(90,140,185,.07)"; ctx.fill();
-      ctx.setLineDash([3,7]); ctx.lineWidth=1.2; ctx.strokeStyle="rgba(120,175,215,.22)";
+      ctx.fillStyle="rgba(90,140,185,.08)"; ctx.fill();
+      ctx.setLineDash([3,7]); ctx.lineWidth=1.4; ctx.strokeStyle="rgba(120,175,215,.28)";
       ctx.beginPath(); bez(STHAUT); ctx.stroke(); ctx.setLineDash([]);
-      ctx.setLineDash([2,6]); ctx.lineWidth=.9; ctx.strokeStyle="rgba(90,135,175,.10)";
+      /* luge */
+      ctx.setLineDash([2,6]); ctx.lineWidth=1.0; ctx.strokeStyle="rgba(90,135,175,.12)";
       ctx.beginPath();
       ctx.moveTo(W*.10,H*.72); ctx.lineTo(W*.05,H*.87); ctx.lineTo(W*.50,H*.88);
       ctx.moveTo(W*.93,H*.70); ctx.lineTo(W*.97,H*.87); ctx.lineTo(W*.50,H*.88);
       ctx.stroke(); ctx.setLineDash([]);
+      /* corps */
       ctx.beginPath(); bez(CDORS); bez(CVENT.slice().reverse()); ctx.closePath();
-      ctx.fillStyle="rgba(190,215,242,.07)"; ctx.fill();
-      ctx.lineWidth=1.0; ctx.strokeStyle="rgba(170,205,235,.20)";
+      ctx.fillStyle="rgba(190,215,242,.08)"; ctx.fill();
+      ctx.lineWidth=1.1; ctx.strokeStyle="rgba(170,205,235,.24)";
       ctx.beginPath(); bez(CDORS); ctx.stroke();
-      ctx.fillStyle="rgba(190,215,242,.09)"; ctx.strokeStyle="rgba(170,205,235,.24)"; ctx.lineWidth=1.0;
-      ctx.beginPath(); ctx.ellipse(W*.075,H*.162,W*.028,H*.075,-.06,0,Math.PI*2); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle="rgba(130,180,215,.18)"; ctx.lineWidth=1.0;
-      ctx.beginPath(); ctx.ellipse(W*.030,H*.182,W*.016,H*.058,-.04,0,Math.PI*2); ctx.stroke();
-      ctx.fillStyle="rgba(190,215,242,.07)"; ctx.strokeStyle="rgba(170,205,235,.14)"; ctx.lineWidth=.9;
-      ctx.beginPath(); ctx.ellipse(W*.955,H*.424,W*.018,H*.042,-.1,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      /* tête — taille réduite */
+      ctx.fillStyle="rgba(190,215,242,.10)"; ctx.strokeStyle="rgba(170,205,235,.28)"; ctx.lineWidth=1.1;
+      ctx.beginPath(); ctx.ellipse(W*.072,H*.155,W*.022,H*.060,-.06,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      /* appui-tête */
+      ctx.strokeStyle="rgba(130,180,215,.20)"; ctx.lineWidth=1.0;
+      ctx.beginPath(); ctx.ellipse(W*.030,H*.178,W*.014,H*.050,-.04,0,Math.PI*2); ctx.stroke();
+      /* pied */
+      ctx.fillStyle="rgba(190,215,242,.07)"; ctx.strokeStyle="rgba(170,205,235,.16)"; ctx.lineWidth=.9;
+      ctx.beginPath(); ctx.ellipse(W*.946,H*.390,W*.015,H*.038,-.1,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      /* texte */
       ctx.font="500 10px 'DM Sans',sans-serif"; ctx.textAlign="center";
       ctx.fillStyle="rgba(255,255,255,.35)";
       ctx.fillText("Vos progrès pour une vitalité au top !",W*.50,H*.95);
       ctx.restore();
 
-      /* arêtes */
-      ctx.setLineDash([2,5]); ctx.lineWidth=0.8;
+      /* arêtes — recalculées depuis stars[].x/y déjà mis à jour */
+      ctx.setLineDash([2,5]);
       for(var e=0;e<edges.length;e++){
-        var ed=edges[e]; ctx.strokeStyle=ed.color+(ed.both?"55":"11");
-        ctx.lineWidth=ed.both?1.1:0.5;
-        ctx.beginPath(); ctx.moveTo(ed.ax,ed.ay); ctx.lineTo(ed.bx,ed.by); ctx.stroke();
+        var ed=edges[e];
+        var sa=stars[ed.si], sb=stars[ed.sj];
+        var both=sa.acquired&&sb.acquired;
+        ctx.strokeStyle=ed.color+(both?"55":"11");
+        ctx.lineWidth=both?1.1:0.5;
+        ctx.beginPath(); ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y); ctx.stroke();
       }
       ctx.setLineDash([]);
 
@@ -3475,7 +3490,7 @@ function renderConstellationHome(historique, repartition) {
   ctx.setLineDash([]);
 
   var completes=legendParts.filter(function(l){return l.got>=l.K;}).length;
-  if(scoreEl) scoreEl.textContent=completes+'/8 complètes · '+totalUnlocked+' étoiles';
+  if(scoreEl) scoreEl.textContent=completes+'/'+legendParts.length+' complètes · '+totalUnlocked+' étoiles';
   if(legendEl){
     legendEl.innerHTML=legendParts.map(function(l){
       return '<span style="display:inline-flex;align-items:center;gap:.3rem;opacity:'+(l.got>0?'1':'0.4')+'">'
