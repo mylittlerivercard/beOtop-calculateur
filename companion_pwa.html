@@ -2694,27 +2694,27 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         stars:[[.100,.100],[.118,.082],[.138,.080],[.152,.092],[.158,.115],[.148,.140],[.128,.150],[.106,.138],[.145,.165],[.122,.168]],
         edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[0,2],[3,5],[4,8],[6,9],[8,9]]},
       cc: {nom:"Épaules · cœur", couleur:"#60c8ff",
-        stars:[[.205,.235],[.232,.248],[.258,.260],[.215,.272],[.242,.285],[.268,.295],[.225,.308],[.252,.320]],
+        stars:[[.205,.235],[.225,.220],[.248,.225],[.215,.258],[.238,.262],[.260,.268],[.222,.285],[.245,.290]],
         edges:[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5],[3,6],[4,7],[6,7]]},
       video: {nom:"Colonne", couleur:"#c8f060",
-        stars:[[.295,.315],[.325,.328],[.355,.340],[.305,.348],[.335,.362],[.362,.372],[.318,.382],[.348,.392]],
+        stars:[[.295,.315],[.318,.328],[.340,.340],[.305,.348],[.328,.362],[.350,.372],[.312,.382],[.335,.395]],
         edges:[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5],[3,6],[4,7],[6,7],[0,4],[1,5]]},
       jeu: {nom:"Assise", couleur:"#00c9a0",
-        stars:[[.385,.348],[.408,.338],[.430,.328],[.392,.375],[.415,.365],[.438,.355],[.400,.400],[.422,.390]],
+        stars:[[.368,.338],[.388,.328],[.408,.318],[.375,.368],[.395,.358],[.415,.348],[.382,.395],[.402,.385]],
         edges:[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5],[3,6],[4,7],[6,7]]},
       audio: {nom:"Bras gauche", couleur:"#7c6fff",
-        stars:[[.218,.348],[.255,.368],[.292,.382],[.328,.395],[.238,.375],[.275,.390],[.312,.405],[.348,.418]],
+        stars:[[.218,.368],[.255,.385],[.290,.400],[.325,.412],[.238,.392],[.275,.408],[.310,.422],[.345,.435]],
         edges:[[0,4],[4,1],[1,5],[5,2],[2,6],[6,3],[3,7],[0,1],[4,5],[5,6]]},
       sons: {nom:"Bras droit", couleur:"#ff6b8a",
-        stars:[[.215,.158],[.252,.142],[.290,.148],[.325,.162],[.235,.125],[.272,.108],[.310,.115],[.345,.130]],
+        stars:[[.218,.158],[.252,.142],[.288,.148],[.322,.162],[.235,.125],[.270,.108],[.306,.115],[.340,.130]],
         edges:[[0,4],[4,1],[1,5],[5,2],[2,6],[6,3],[3,7],[0,1],[4,5],[5,6]]},
       exercice: {nom:"Cuisses · genoux", couleur:"#ff9f50",
-        stars:[[.458,.318],[.492,.285],[.526,.248],[.558,.220],[.588,.228],
-               [.472,.355],[.506,.322],[.540,.285],[.570,.258],[.600,.265]],
+        stars:[[.462,.318],[.494,.285],[.526,.248],[.555,.220],[.582,.228],
+               [.475,.355],[.508,.322],[.540,.285],[.568,.258],[.595,.265]],
         edges:[[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,7],[3,8],[4,9],[5,6],[6,7],[7,8],[8,9]]},
       podcast: {nom:"Mollets · pieds", couleur:"#ff4d4d",
-        stars:[[.615,.248],[.652,.268],[.692,.285],[.732,.300],[.770,.312],
-               [.630,.292],[.668,.308],[.708,.325]],
+        stars:[[.618,.248],[.655,.268],[.695,.285],[.735,.300],[.772,.312],
+               [.632,.292],[.670,.308],[.710,.325]],
         edges:[[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,7],[5,6],[6,7],[3,7]]}
     };
     window.BCST_SHAPES_HOME = CONST;
@@ -2787,47 +2787,56 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
         }
       }
 
-      /* silhouette P127 — proportions fidèles à l'image de référence
-         Tête grande à gauche, genoux très remontés (~y=.22), pieds à x~.80 */
-      var STHAUT=[[.04,.38],[.12,.36],[.22,.38],[.32,.42],[.40,.46],[.46,.48],[.52,.42],[.58,.32],[.62,.22],[.67,.28],[.72,.34],[.78,.38],[.84,.40],[.90,.42]];
-      var SBAS=  [[.04,.50],[.12,.48],[.22,.50],[.32,.54],[.40,.58],[.46,.60],[.52,.54],[.58,.44],[.62,.34],[.67,.40],[.72,.46],[.78,.50],[.84,.52],[.90,.54]];
-      var CDORS= [[.06,.18],[.09,.13],[.12,.11],[.15,.12],[.165,.16],[.175,.22],[.20,.28],[.25,.32],[.32,.35],[.38,.37],[.43,.36],[.48,.32],[.53,.26],[.57,.20],[.61,.22],[.66,.28],[.71,.32],[.77,.35],[.83,.37],[.88,.39]];
-      var CVENT= [[.06,.32],[.10,.34],[.14,.35],[.175,.36],[.20,.40],[.26,.44],[.33,.47],[.39,.50],[.44,.50],[.49,.47],[.54,.42],[.58,.36],[.62,.34],[.67,.40],[.72,.44],[.78,.48],[.84,.50],[.88,.52]];
-
-      function bez(pts){
-        ctx.moveTo(pts[0][0]*W,pts[0][1]*H);
-        for(var bi=1;bi<pts.length-1;bi++){
-          ctx.quadraticCurveTo(pts[bi][0]*W,pts[bi][1]*H,(pts[bi][0]+pts[bi+1][0])/2*W,(pts[bi][1]+pts[bi+1][1])/2*H);
-        }
-        ctx.lineTo(pts[pts.length-1][0]*W,pts[pts.length-1][1]*H);
-      }
-
+      /* silhouette P127 dessinée en Canvas2D */
       ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round";
-      /* siège */
-      ctx.beginPath(); bez(STHAUT); bez(SBAS.slice().reverse()); ctx.closePath();
-      ctx.fillStyle="rgba(90,140,185,.08)"; ctx.fill();
-      ctx.setLineDash([3,7]); ctx.lineWidth=1.4; ctx.strokeStyle="rgba(120,175,215,.25)";
-      ctx.beginPath(); bez(STHAUT); ctx.stroke(); ctx.setLineDash([]);
-      /* luge */
-      ctx.setLineDash([2,6]); ctx.lineWidth=1.0; ctx.strokeStyle="rgba(90,135,175,.12)";
+
+      /* siège — 3 segments droits */
       ctx.beginPath();
-      ctx.moveTo(W*.12,H*.66); ctx.lineTo(W*.06,H*.82); ctx.lineTo(W*.48,H*.84);
-      ctx.moveTo(W*.88,H*.62); ctx.lineTo(W*.93,H*.82); ctx.lineTo(W*.48,H*.84);
-      ctx.stroke(); ctx.setLineDash([]);
-      /* corps */
-      ctx.beginPath(); bez(CDORS); bez(CVENT.slice().reverse()); ctx.closePath();
-      ctx.fillStyle="rgba(190,215,242,.08)"; ctx.fill();
-      ctx.lineWidth=1.2; ctx.strokeStyle="rgba(170,205,235,.25)";
-      ctx.beginPath(); bez(CDORS); ctx.stroke();
-      /* tête — plus grande, bien positionnée */
-      ctx.fillStyle="rgba(190,215,242,.10)"; ctx.strokeStyle="rgba(170,205,235,.28)"; ctx.lineWidth=1.2;
-      ctx.beginPath(); ctx.ellipse(W*.098,H*.220,W*.038,H*.092,-.08,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.moveTo(W*.148,H*.52); ctx.lineTo(W*.360,H*.158); ctx.lineTo(W*.490,H*.47); ctx.lineTo(W*.720,H*.145);
+      ctx.lineTo(W*.720,H*.163); ctx.lineTo(W*.490,H*.65); ctx.lineTo(W*.360,H*.176); ctx.lineTo(W*.148,H*.70);
+      ctx.closePath(); ctx.fillStyle="rgba(90,140,185,.12)"; ctx.fill();
+      ctx.setLineDash([3,7]); ctx.lineWidth=2.5; ctx.strokeStyle="rgba(140,190,230,.62)";
+      ctx.beginPath(); ctx.moveTo(W*.148,H*.52); ctx.lineTo(W*.360,H*.158); ctx.lineTo(W*.490,H*.47); ctx.lineTo(W*.720,H*.145); ctx.stroke();
+      ctx.lineWidth=1.2; ctx.strokeStyle="rgba(140,190,230,.18)";
+      ctx.beginPath(); ctx.moveTo(W*.148,H*.70); ctx.lineTo(W*.360,H*.176); ctx.lineTo(W*.490,H*.65); ctx.lineTo(W*.720,H*.163); ctx.stroke();
+      ctx.setLineDash([]);
+
       /* appui-tête */
-      ctx.strokeStyle="rgba(130,180,215,.20)"; ctx.lineWidth=1.0;
-      ctx.beginPath(); ctx.ellipse(W*.042,H*.245,W*.020,H*.062,-.05,0,Math.PI*2); ctx.stroke();
-      /* pied */
-      ctx.fillStyle="rgba(190,215,242,.07)"; ctx.strokeStyle="rgba(170,205,235,.15)"; ctx.lineWidth=.9;
-      ctx.beginPath(); ctx.ellipse(W*.895,H*.415,W*.016,H*.038,-.1,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(W*.050,H*.85,W*.014,H*.26,0,0,Math.PI*2);
+      ctx.fillStyle="rgba(140,190,230,.09)"; ctx.fill();
+      ctx.strokeStyle="rgba(140,190,230,.36)"; ctx.lineWidth=1.2; ctx.stroke();
+
+      /* luge */
+      ctx.setLineDash([2,7]); ctx.lineWidth=1; ctx.strokeStyle="rgba(120,170,210,.12)";
+      ctx.beginPath(); ctx.moveTo(W*.100,H*.175); ctx.lineTo(W*.072,H*.205); ctx.lineTo(W*.500,H*.208); ctx.lineTo(W*.735,H*.165); ctx.stroke();
+      ctx.setLineDash([]);
+
+      /* corps — polygone avec volume anatomique */
+      ctx.beginPath();
+      ctx.moveTo(W*.158,H*.50);
+      ctx.bezierCurveTo(W*.168,H*.46, W*.178,H*.40, W*.192,H*.36);
+      ctx.bezierCurveTo(W*.210,H*.32, W*.228,H*.34, W*.240,H*.42);
+      ctx.bezierCurveTo(W*.250,H*.48, W*.256,H*.58, W*.255,H*.66);
+      ctx.lineTo(W*.310,H*.90); ctx.lineTo(W*.345,H*.96); ctx.lineTo(W*.382,H*.90);
+      ctx.lineTo(W*.436,H*.32); ctx.lineTo(W*.488,H*.02);
+      ctx.lineTo(W*.540,H*.40); ctx.lineTo(W*.600,H*.72); ctx.lineTo(W*.660,H*.100); ctx.lineTo(W*.718,H*.126);
+      ctx.lineTo(W*.718,H*.137); ctx.lineTo(W*.660,H*.113); ctx.lineTo(W*.600,H*.88);
+      ctx.lineTo(W*.540,H*.62); ctx.lineTo(W*.488,H*.38); ctx.lineTo(W*.436,H*.82);
+      ctx.lineTo(W*.382,H*.130); ctx.lineTo(W*.345,H*.140); ctx.lineTo(W*.310,H*.122);
+      ctx.lineTo(W*.168,H*.54);
+      ctx.closePath();
+      ctx.fillStyle="rgba(175,210,240,.16)"; ctx.fill();
+      ctx.strokeStyle="rgba(155,200,232,.45)"; ctx.lineWidth=1.5; ctx.stroke();
+
+      /* tête */
+      ctx.beginPath(); ctx.ellipse(W*.150,H*.08,W*.036,H*.38,0,0,Math.PI*2);
+      ctx.fillStyle="rgba(175,210,240,.17)"; ctx.fill();
+      ctx.strokeStyle="rgba(155,200,232,.44)"; ctx.lineWidth=1.5; ctx.stroke();
+
+      /* cou */
+      ctx.beginPath(); ctx.rect(W*.145,H*.44,W*.012,H*.10);
+      ctx.fillStyle="rgba(175,210,240,.16)"; ctx.fill();
+
       /* texte */
       ctx.font="500 10px 'DM Sans',sans-serif"; ctx.textAlign="center";
       ctx.fillStyle="rgba(255,255,255,.35)";
@@ -4510,42 +4519,60 @@ function renderConstellationHome(historique, repartition) {
     ctx.fillStyle='rgba(255,255,255,'+(0.05+rnd()*0.30)+')'; ctx.fill();
   }
 
-  var STHAUT=[[.04,.38],[.12,.36],[.22,.38],[.32,.42],[.40,.46],[.46,.48],[.52,.42],[.58,.32],[.62,.22],[.67,.28],[.72,.34],[.78,.38],[.84,.40],[.90,.42]];
-  var SBAS=  [[.04,.50],[.12,.48],[.22,.50],[.32,.54],[.40,.58],[.46,.60],[.52,.54],[.58,.44],[.62,.34],[.67,.40],[.72,.46],[.78,.50],[.84,.52],[.90,.54]];
-  var CDORS= [[.06,.18],[.09,.13],[.12,.11],[.15,.12],[.165,.16],[.175,.22],[.20,.28],[.25,.32],[.32,.35],[.38,.37],[.43,.36],[.48,.32],[.53,.26],[.57,.20],[.61,.22],[.66,.28],[.71,.32],[.77,.35],[.83,.37],[.88,.39]];
-  var CVENT= [[.06,.32],[.10,.34],[.14,.35],[.175,.36],[.20,.40],[.26,.44],[.33,.47],[.39,.50],[.44,.50],[.49,.47],[.54,.42],[.58,.36],[.62,.34],[.67,.40],[.72,.44],[.78,.48],[.84,.50],[.88,.52]];
+  /* silhouette P127 dessinée en Canvas2D */
+  ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round";
 
-  function bez(pts){
-    ctx.moveTo(pts[0][0]*W,pts[0][1]*H);
-    for(var bi=1;bi<pts.length-1;bi++){
-      ctx.quadraticCurveTo(pts[bi][0]*W,pts[bi][1]*H,(pts[bi][0]+pts[bi+1][0])/2*W,(pts[bi][1]+pts[bi+1][1])/2*H);
-    }
-    ctx.lineTo(pts[pts.length-1][0]*W,pts[pts.length-1][1]*H);
-  }
-
-  ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
-  ctx.beginPath(); bez(STHAUT); bez(SBAS.slice().reverse()); ctx.closePath();
-  ctx.fillStyle='rgba(90,140,185,.07)'; ctx.fill();
-  ctx.setLineDash([3,7]); ctx.lineWidth=1.2; ctx.strokeStyle='rgba(120,175,215,.22)';
-  ctx.beginPath(); bez(STHAUT); ctx.stroke(); ctx.setLineDash([]);
-  ctx.setLineDash([2,6]); ctx.lineWidth=.9; ctx.strokeStyle='rgba(90,135,175,.10)';
+  /* siège — 3 segments droits */
   ctx.beginPath();
-  ctx.moveTo(W*.10,H*.72); ctx.lineTo(W*.05,H*.87); ctx.lineTo(W*.50,H*.88);
-  ctx.moveTo(W*.93,H*.70); ctx.lineTo(W*.97,H*.87); ctx.lineTo(W*.50,H*.88);
-  ctx.stroke(); ctx.setLineDash([]);
-  ctx.beginPath(); bez(CDORS); bez(CVENT.slice().reverse()); ctx.closePath();
-  ctx.fillStyle='rgba(190,215,242,.07)'; ctx.fill();
-  ctx.lineWidth=1.0; ctx.strokeStyle='rgba(170,205,235,.20)';
-  ctx.beginPath(); bez(CDORS); ctx.stroke();
-  ctx.fillStyle='rgba(190,215,242,.09)'; ctx.strokeStyle='rgba(170,205,235,.24)'; ctx.lineWidth=1.0;
-  ctx.beginPath(); ctx.ellipse(W*.075,H*.162,W*.028,H*.075,-.06,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle='rgba(130,180,215,.18)'; ctx.lineWidth=1.0;
-  ctx.beginPath(); ctx.ellipse(W*.030,H*.182,W*.016,H*.058,-.04,0,Math.PI*2); ctx.stroke();
-  ctx.fillStyle='rgba(190,215,242,.07)'; ctx.strokeStyle='rgba(170,205,235,.14)'; ctx.lineWidth=.9;
-  ctx.beginPath(); ctx.ellipse(W*.955,H*.424,W*.018,H*.042,-.1,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.font='500 10px sans-serif'; ctx.textAlign='center';
-  ctx.fillStyle='rgba(255,255,255,.35)';
-  ctx.fillText('Vos progrès pour une vitalité au top !',W*.50,H*.95);
+  ctx.moveTo(W*.148,H*.52); ctx.lineTo(W*.360,H*.158); ctx.lineTo(W*.490,H*.47); ctx.lineTo(W*.720,H*.145);
+  ctx.lineTo(W*.720,H*.163); ctx.lineTo(W*.490,H*.65); ctx.lineTo(W*.360,H*.176); ctx.lineTo(W*.148,H*.70);
+  ctx.closePath(); ctx.fillStyle="rgba(90,140,185,.12)"; ctx.fill();
+  ctx.setLineDash([3,7]); ctx.lineWidth=2.5; ctx.strokeStyle="rgba(140,190,230,.62)";
+  ctx.beginPath(); ctx.moveTo(W*.148,H*.52); ctx.lineTo(W*.360,H*.158); ctx.lineTo(W*.490,H*.47); ctx.lineTo(W*.720,H*.145); ctx.stroke();
+  ctx.lineWidth=1.2; ctx.strokeStyle="rgba(140,190,230,.18)";
+  ctx.beginPath(); ctx.moveTo(W*.148,H*.70); ctx.lineTo(W*.360,H*.176); ctx.lineTo(W*.490,H*.65); ctx.lineTo(W*.720,H*.163); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* appui-tête */
+  ctx.beginPath(); ctx.ellipse(W*.050,H*.85,W*.014,H*.26,0,0,Math.PI*2);
+  ctx.fillStyle="rgba(140,190,230,.09)"; ctx.fill();
+  ctx.strokeStyle="rgba(140,190,230,.36)"; ctx.lineWidth=1.2; ctx.stroke();
+
+  /* luge */
+  ctx.setLineDash([2,7]); ctx.lineWidth=1; ctx.strokeStyle="rgba(120,170,210,.12)";
+  ctx.beginPath(); ctx.moveTo(W*.100,H*.175); ctx.lineTo(W*.072,H*.205); ctx.lineTo(W*.500,H*.208); ctx.lineTo(W*.735,H*.165); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* corps — polygone avec volume anatomique */
+  ctx.beginPath();
+  ctx.moveTo(W*.158,H*.50);
+  ctx.bezierCurveTo(W*.168,H*.46, W*.178,H*.40, W*.192,H*.36);
+  ctx.bezierCurveTo(W*.210,H*.32, W*.228,H*.34, W*.240,H*.42);
+  ctx.bezierCurveTo(W*.250,H*.48, W*.256,H*.58, W*.255,H*.66);
+  ctx.lineTo(W*.310,H*.90); ctx.lineTo(W*.345,H*.96); ctx.lineTo(W*.382,H*.90);
+  ctx.lineTo(W*.436,H*.32); ctx.lineTo(W*.488,H*.02);
+  ctx.lineTo(W*.540,H*.40); ctx.lineTo(W*.600,H*.72); ctx.lineTo(W*.660,H*.100); ctx.lineTo(W*.718,H*.126);
+  ctx.lineTo(W*.718,H*.137); ctx.lineTo(W*.660,H*.113); ctx.lineTo(W*.600,H*.88);
+  ctx.lineTo(W*.540,H*.62); ctx.lineTo(W*.488,H*.38); ctx.lineTo(W*.436,H*.82);
+  ctx.lineTo(W*.382,H*.130); ctx.lineTo(W*.345,H*.140); ctx.lineTo(W*.310,H*.122);
+  ctx.lineTo(W*.168,H*.54);
+  ctx.closePath();
+  ctx.fillStyle="rgba(175,210,240,.16)"; ctx.fill();
+  ctx.strokeStyle="rgba(155,200,232,.45)"; ctx.lineWidth=1.5; ctx.stroke();
+
+  /* tête */
+  ctx.beginPath(); ctx.ellipse(W*.150,H*.08,W*.036,H*.38,0,0,Math.PI*2);
+  ctx.fillStyle="rgba(175,210,240,.17)"; ctx.fill();
+  ctx.strokeStyle="rgba(155,200,232,.44)"; ctx.lineWidth=1.5; ctx.stroke();
+
+  /* cou */
+  ctx.beginPath(); ctx.rect(W*.145,H*.44,W*.012,H*.10);
+  ctx.fillStyle="rgba(175,210,240,.16)"; ctx.fill();
+
+  /* texte */
+  ctx.font="500 10px sans-serif"; ctx.textAlign="center";
+  ctx.fillStyle="rgba(255,255,255,.35)";
+  ctx.fillText("Vos progrès pour une vitalité au top !",W*.50,H*.95);
   ctx.restore();
 
   var totalMax=0, totalUnlocked=0, legendParts=[];
