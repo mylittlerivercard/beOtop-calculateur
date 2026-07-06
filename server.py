@@ -4228,9 +4228,7 @@ def dashboard_page():
 
 @app.route('/companion')
 def companion_page():
-    if 'user_id' not in session:
-        return redirect('/login')
-    return serve_html('companion.html')
+    return redirect('/companion_pwa')
 
 @app.route('/roi')
 def roi_page():
