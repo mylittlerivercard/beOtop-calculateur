@@ -4512,7 +4512,7 @@ def auth_register():
             pw_hash = generate_password_hash(password)
             cur.execute("""
                 INSERT INTO users (email, password, nom, role, client_id, actif)
-                VALUES (%s, %s, %s, 'client', %s, 1)
+                VALUES (%s, %s, %s, 'user', %s, 1)
                 RETURNING id
             """, [email, pw_hash, nom, tok['client_id']])
             user_id = cur.fetchone()['id']
@@ -4524,8 +4524,9 @@ def auth_register():
     # Auto-login après inscription - effacer toute session existante
     session.clear()
     session['user_id'] = user_id
-    session['role'] = 'client'
+    session['role'] = 'user'
     session['client_id'] = tok['client_id']
+    session['site_id'] = tok['site_id']
     return jsonify({'ok': True, 'user_id': user_id})
 
 
