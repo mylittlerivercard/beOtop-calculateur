@@ -8086,6 +8086,19 @@ function renderExercicesVideos() {
   var catsEl = document.getElementById('exvid-cats');
   var grid   = document.getElementById('exvid-grid');
   if (!catsEl || !grid) return;
+  if (_apiContenus === null) { _ensureContenus(renderExercicesVideos); return; }
+  var existing = {};
+  DB.videos.forEach(function(v){ existing[(v.titre||'').trim().toLowerCase()] = true; });
+  _apiContenus.forEach(function(x){
+    if (x.type !== 'video' || x.actif === false) return;
+    var key = (x.titre||'').trim().toLowerCase();
+    if (!key || existing[key]) return;
+    existing[key] = true;
+    var item = JSON.parse(JSON.stringify(x));
+    item.id = 300000 + (x.db_id || 0);
+    item._apiSrc = true;
+    DB.videos.push(item);
+  });
   catsEl.innerHTML = _buildCatPills(DB.videos, currentExVideoCat, 'filterExVideo', 'video');
   var filtered = currentExVideoCat === 'all' ? DB.videos : DB.videos.filter(function(v){ return v.categorie === currentExVideoCat; });
   if (!filtered.length) {
