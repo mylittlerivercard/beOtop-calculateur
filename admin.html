@@ -460,10 +460,10 @@
     <div class="field">
       <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
         <input id="inv-apporteur" type="checkbox" style="width:16px;height:16px;cursor:pointer">
-        Apporteur d'affaire — commission 20% sur CA client apporté
+        Apporteur d'affaire — commission 15% sur CA client apporté
       </label>
       <div style="font-size:.62rem;color:#6b6070;margin-top:.3rem;padding:.4rem .6rem;background:rgba(160,104,32,.06);border-radius:6px;border:1px solid rgba(160,104,32,.15)">
-        Si coché : beOtop reverse 20% du CA du client apporté en plus des 30% contenu. La part beOtop passe de 70% à 50%.
+        Si coché : beOtop reverse 15% du CA du client apporté en plus des 35% contenu. La part beOtop passe de 65% à 50%.
       </div>
     </div>
     <div class="field">
@@ -1174,7 +1174,7 @@ async function saveApporteur() {
   if (d.ok) {
     var box = document.getElementById('ap-result');
     box.innerHTML = apporteurId
-      ? 'Apporteur enregistré ✓ · Commission 20% activée sur les sites configurés'
+      ? 'Apporteur enregistré ✓ · Commission 15% activée sur les sites configurés'
       : 'Apporteur supprimé ✓';
     box.classList.add('show');
     loadClients();
