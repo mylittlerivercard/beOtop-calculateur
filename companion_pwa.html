@@ -6114,14 +6114,16 @@ function drawCheckinChart(canvas, data, periode) {
 
 var ACTION_ICONS = {
   checkin: '💓', cc: '🫀', audio: '🎧', exercice: '⚡',
-  jeu: '🧠', reservation: '📅', sons: '🌿', video: '🎬', podcast: '🎙️'
+  jeu: '🧠', reservation: '📅', sons: '🌿', video: '🎬', podcast: '🎙️',
+  huile: '🧴', recette: '🍽️', bilan: '📊'
 };
 var ACTION_LABELS = {
   checkin: 'Check-in', cc: 'Cohérence cardiaque', audio: 'Audio',
   exercice: 'Exercice', jeu: 'Jeu cérébral', reservation: 'Réservation',
-  sons: 'Sons immersifs', video: 'Vidéo', podcast: 'Podcast', bilan: 'Bilan vitalité'
+  sons: 'Sons immersifs', video: 'Vidéo', podcast: 'Podcast', bilan: 'Bilan vitalité',
+  huile: 'Huile essentielle', recette: 'Recette'
 };
-var BAREME = { checkin:10, cc:20, audio:15, exercice:15, jeu:10, reservation:25, sons:10, video:15, podcast:15, bilan:15 };
+var BAREME = { checkin:10, cc:20, audio:15, exercice:15, jeu:10, reservation:25, sons:10, video:15, podcast:15, bilan:15, huile:10, recette:10 };
 
 async function awardPoints(action, label) {
   var pts = BAREME[action] || 0;
