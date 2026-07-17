@@ -3428,6 +3428,18 @@ function createSkyWidget(prefix) {
 window.__skyHome = createSkyWidget('home');
 window.__skyCiel = createSkyWidget('ciel');
 
+function _refreshSkyWidgets() {
+  try {
+    var pts = DB.points || [];
+    var now = new Date();
+    var m = now.getMonth() + 1;
+    var curMonth = now.getFullYear() + '-' + (m < 10 ? '0' + m : m);
+    var count = pts.filter(function(p){ return (p.date || '').slice(0, 7) === curMonth; }).length;
+    if (window.__skyHome) window.__skyHome.update(count);
+    if (window.__skyCiel) window.__skyCiel.update(count);
+  } catch (e) { console.warn('sky-refresh', e); }
+}
+
 /* ════════════════════════════════════════════
    DASHBOARD
 ════════════════════════════════════════════ */
@@ -5001,6 +5013,7 @@ async function awardPoints(action, label) {
   if (!DB.points) DB.points = [];
   DB.points.push({ action, label, points: pts, date: new Date().toISOString() });
   saveDB(DB);
+  _refreshSkyWidgets();
   // API
   try {
     var slug = await getSiteSlug();
