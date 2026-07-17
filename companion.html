@@ -1133,6 +1133,9 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
   <div class="nav-item active nav-item-lg" onclick="switchView('dashboard')">
     <span>Tableau de bord</span>
   </div>
+  <div class="nav-item nav-item-lg" onclick="switchView('mon-companion')">
+    <span>Mon Companion</span>
+  </div>
   <div class="nav-item nav-item-lg" onclick="switchView('reservation')">
     <span>Réservations</span>
     <span class="nav-badge" id="badge-libres">—</span>
@@ -1342,6 +1345,19 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div class="sec">Activité récente</div>
     <div class="card-v3" id="history-recent"></div>
 
+  </div>
+</div>
+
+<!-- ═══ MON COMPANION (FAVORIS) ═══ -->
+<div class="view" id="view-mon-companion">
+  <div class="page-header">
+    <h1>Mon <em>Companion</em></h1>
+    <p>Vos contenus favoris · Retrouvez en un clic ce que vous avez aimé</p>
+  </div>
+  <div id="mon-companion-grid"></div>
+  <div id="mon-companion-empty" style="display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 1.5rem;color:var(--text-muted);font-size:.78rem;gap:.6rem">
+    <div style="font-size:2rem">♡</div>
+    <div>Aucun favori pour l'instant.<br>Touchez le cœur sur un contenu pour l'ajouter ici.</div>
   </div>
 </div>
 
@@ -2217,7 +2233,7 @@ function loadDB() {
         }
       });
     }
-    var dataKeys = ['points','checkins','reservations','cc_sessions','sessions'];
+    var dataKeys = ['points','checkins','reservations','cc_sessions','sessions','favoris'];
     dataKeys.forEach(function(k){
       if (!stored[k] || !Array.isArray(stored[k])) stored[k] = [];
     });
@@ -3067,6 +3083,7 @@ function switchView(id) {
       n.classList.add('active');
   });
   if (id === 'dashboard') renderDashboard();
+  if (id === 'mon-companion') renderMonCompanion();
   if (id === 'reservation') { calDate = new Date(); renderTunnel(); }
   if (id === 'sons') renderSons();
   if (id === 'video') renderVideo();
@@ -5016,6 +5033,28 @@ var ACTION_LABELS = {
 };
 var BAREME = { checkin:10, cc:20, audio:15, exercice:15, jeu:10, reservation:25, sons:10, video:15, podcast:15, bilan:15, huile:10, recette:10 };
 
+function isFavori(type, id) {
+  return !!(DB.favoris || []).find(function(f){ return f.type === type && f.id === id; });
+}
+
+function toggleFavori(type, id, event) {
+  if (event) event.stopPropagation();
+  if (!DB.favoris) DB.favoris = [];
+  var idx = DB.favoris.findIndex(function(f){ return f.type === type && f.id === id; });
+  var willAdd = idx < 0;
+  if (idx >= 0) DB.favoris.splice(idx, 1);
+  else DB.favoris.push({ type: type, id: id, date: new Date().toISOString() });
+  saveDB(DB);
+  var btn = event && event.currentTarget;
+  if (btn) {
+    btn.classList.toggle('active', willAdd);
+    btn.textContent = willAdd ? '♥' : '♡';
+    btn.style.color = willAdd ? '#ff6b8a' : '#fff';
+    btn.title = willAdd ? 'Retirer des favoris' : 'Ajouter à Mon Companion';
+  }
+  showToast(willAdd ? '❤ Ajouté à Mon Companion' : 'Retiré des favoris');
+}
+
 async function awardPoints(action, label) {
   var pts = BAREME[action] || 0;
   // localStorage fallback
@@ -5519,7 +5558,7 @@ function renderSons() {
     var actifs = _sonsCache.filter(function(s){ return s.actif !== false; });
     if (!actifs.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:2rem;text-align:center;font-size:.87rem;color:var(--text-muted)">Aucun son configuré.</div>'; return; }
     grid.innerHTML = actifs.map(function(s){
-      var media = _cardHeader(s, {icon: '🎵'});
+      var media = _cardHeader(s, {icon: '🎵', type: 'sons', favId: s.nom});
       return '<div class="card" style="text-align:center;cursor:pointer;padding:1rem" onclick="playSon(\'' + s.nom + '\')" id="son-' + s.nom + '">'
         + media
         + '<div style="font-size:.82rem;font-weight:400;color:var(--text);margin-bottom:.2rem">' + s.label + '</div>'
@@ -5697,7 +5736,7 @@ function renderVideo() {
   }
   var bg = { sophrologie:'rgba(90,138,106,.15)', yoga:'rgba(90,138,170,.15)', tms:'rgba(200,169,110,.1)', mindfulness:'rgba(138,106,170,.15)' };
   grid.innerHTML = filtered.map(function(v) {
-    var thumbHtml = _cardHeader(v, { fallbackImg: getYoutubeThumbnail(v.url_video), icon: v.icon || '🎬' });
+    var thumbHtml = _cardHeader(v, { fallbackImg: getYoutubeThumbnail(v.url_video), icon: v.icon || '🎬', type: 'video' });
     return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer;padding:0;overflow:hidden">'
       + thumbHtml
       + '<div style="padding:.8rem 1rem">'
@@ -6470,7 +6509,7 @@ function showIntervenantContenus(nom) {
     html += '<div style="font-size:.74rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:1.1rem 0 .5rem">' + g.type + ' · ' + items.length + '</div>';
     html += '<div class="audio-grid">' + items.map(function(it){
       return '<div class="audio-card" onclick="' + g.fn + '(' + it.id + ')">'
-        + _cardHeader(it, {icon: it.icon || '🎵'})
+        + _cardHeader(it, {icon: it.icon || '🎵', type: g.ct})
         + '<div class="audio-title">' + it.titre + '</div>'
         + '<div class="audio-meta"><span>' + _catLabel(g.ct, it.categorie || '') + '</span><span class="audio-duration">' + (it.duree || '') + '</span></div>'
         + '<button class="audio-play-btn">▶ Ouvrir</button>'
@@ -6583,16 +6622,31 @@ function _cardHeader(item, opts) {
   var invFile = (item && item.intervenant) ? getIntervenantPhoto(item.intervenant) : null;
   var invUrl = invFile ? (invFile.indexOf('http') === 0 ? invFile : '/static/' + invFile) : '';
   var headerImg = opts.fallbackImg || illus || invUrl;
+
+  var favId = (opts.favId !== undefined && opts.favId !== null) ? opts.favId : (item && item.id);
+  var favBtn = '';
+  if (opts.type && favId !== undefined && favId !== null) {
+    var fav = isFavori(opts.type, favId);
+    var favIdStr = (typeof favId === 'string') ? "'" + favId.replace(/'/g, "\\'") + "'" : favId;
+    favBtn = '<button class="fav-heart-btn' + (fav ? ' active' : '') + '" '
+      + 'onclick="event.stopPropagation(); toggleFavori(\'' + opts.type + '\', ' + favIdStr + ', event)" '
+      + 'title="' + (fav ? 'Retirer des favoris' : 'Ajouter à Mon Companion') + '" '
+      + 'style="position:absolute;top:6px;right:6px;z-index:3;width:28px;height:28px;border-radius:50%;border:none;'
+      + 'background:rgba(0,0,0,.35);color:' + (fav ? '#ff6b8a' : '#fff') + ';font-size:15px;cursor:pointer;'
+      + 'display:flex;align-items:center;justify-content:center">' + (fav ? '♥' : '♡') + '</button>';
+  }
+
   var avatar = invUrl
     ? '<img src="' + invUrl + '" alt="' + (item.intervenant || '') + '" title="' + (item.intervenant || '') + '" style="position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,.4);z-index:2" onerror="this.style.display=\'none\'">'
     : '';
   if (!headerImg) {
-    return '<div class="audio-thumb" style="background:rgba(0,180,180,.1)">' + icon + '</div>';
+    return '<div class="audio-thumb" style="position:relative;background:rgba(0,180,180,.1)">' + icon + favBtn + '</div>';
   }
   return '<div style="position:relative;height:110px;border-radius:8px 8px 0 0;overflow:hidden;background:rgba(0,180,180,.1);display:flex;align-items:center;justify-content:center;font-size:2rem">'
     + icon
     + '<img src="' + headerImg + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">'
     + avatar
+    + favBtn
     + '</div>';
 }
 
@@ -6606,7 +6660,7 @@ function renderAudio() {
     const isPlaying = currentAudio && currentAudio.id === a.id;
     const bg = { sophrologie:'rgba(90,138,106,.15)', binaural:'rgba(90,138,170,.15)', nsdr:'rgba(138,106,170,.15)', ciblé:'rgba(200,169,110,.1)', ambiance:'rgba(90,138,106,.1)' };
     return `<div class="audio-card${isPlaying?' playing':''}" id="audio-card-${a.id}">
-      ${_cardHeader(a, {icon: a.icon || '🎵'})}
+      ${_cardHeader(a, {icon: a.icon || '🎵', type: 'audio'})}
       <div class="audio-title">${a.titre}</div>
       <div class="audio-meta">
         <span>${_catLabel('audio', a.categorie)}</span>
@@ -6804,7 +6858,7 @@ function renderExercices() {
     const filtered = currentExCat === 'all' ? DB.exercices : DB.exercices.filter(e => e.categorie === currentExCat);
     document.getElementById('exercise-grid').innerHTML = filtered.map(e => `
       <div class="audio-card" onclick="openExercice(${e.id})">
-        ${_cardHeader(e, {icon: e.icon || '⚡'})}
+        ${_cardHeader(e, {icon: e.icon || '⚡', type: 'exercice'})}
         <div class="audio-title">${e.titre}</div>
         <div class="audio-meta"><span>${_catLabel('exercice', e.categorie||'')}</span><span class="audio-duration">${e.tags && e.tags[0] ? e.tags[0] : ''}</span></div>
         ${e.indication ? `<div style="font-size:.76rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">${e.indication}</div>` : ''}
@@ -6849,7 +6903,7 @@ function renderExercicesVideos() {
     return;
   }
   grid.innerHTML = filtered.map(function(v) {
-    var thumbHtml = _cardHeader(v, { fallbackImg: getYoutubeThumbnail(v.url_video), icon: v.icon || '🎬' });
+    var thumbHtml = _cardHeader(v, { fallbackImg: getYoutubeThumbnail(v.url_video), icon: v.icon || '🎬', type: 'video' });
     return '<div class="audio-card" onclick="openVideo(' + v.id + ')" style="cursor:pointer;padding:0;overflow:hidden">'
       + thumbHtml
       + '<div style="padding:.8rem 1rem">'
@@ -8080,7 +8134,7 @@ function renderDefis() {
   // Grille de cartes côte à côte (même présentation que les audios/vidéos)
   container.innerHTML = '<div class="audio-grid">' + list.map(function(d) {
     return '<div class="audio-card" onclick="playDefi(' + d.id + ')">'
-      + _cardHeader(d, {icon: d.icon || '🧩'})
+      + _cardHeader(d, {icon: d.icon || '🧩', type: 'defi'})
       + '<div class="audio-title">' + d.titre + '</div>'
       + '<div class="audio-meta"><span>' + _catLabel('defi', d.categorie || 'défi') + '</span><span class="audio-duration">' + (d.duree || '') + '</span></div>'
       + _invBadge(d.intervenant)
@@ -8552,6 +8606,49 @@ function navigateToContenu(type, id, titre) {
 var currentPodcastCat = 'all';
 function filterPodcast(cat) { currentPodcastCat = cat; renderPodcasts(); }
 
+function renderMonCompanion() {
+  var grid = document.getElementById('mon-companion-grid');
+  var empty = document.getElementById('mon-companion-empty');
+  if (!grid) return;
+  var favs = DB.favoris || [];
+  if (!favs.length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'flex';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  var sources = {
+    video:    { arr: DB.videos,    fn: 'openVideo',    label: 'Vidéo' },
+    audio:    { arr: DB.audios,    fn: 'playAudio',     label: 'Audio' },
+    exercice: { arr: DB.exercices, fn: 'openExercice',  label: 'Exercice' },
+    podcast:  { arr: DB.podcasts,  fn: 'openPodcast',   label: 'Podcast' },
+    defi:     { arr: DB.defis,     fn: 'playDefi',      label: 'Jeu cérébral' },
+    huile:    { arr: DB.huiles,    fn: 'openHuile',     label: 'Huile essentielle' },
+    recette:  { arr: DB.recettes,  fn: 'openRecette',   label: 'Recette' },
+    sons:     { arr: _sonsCache,   fn: 'playSon',       label: 'Son immersif' }
+  };
+
+  var cards = favs.map(function(f) {
+    var src = sources[f.type];
+    if (!src || !src.arr) return '';
+    var item = src.arr.find(function(x){
+      return f.type === 'sons' ? x.nom === f.id : x.id === f.id;
+    });
+    if (!item) return '';
+    var callArg = f.type === 'sons' ? "'" + item.nom.replace(/'/g, "\\'") + "'" : item.id;
+    return '<div class="audio-card" onclick="' + src.fn + '(' + callArg + ')">'
+      + _cardHeader(item, {icon: item.icon || '❤', type: f.type, favId: f.id})
+      + '<div class="audio-title">' + (item.titre || item.nom || item.label) + '</div>'
+      + '<div class="audio-meta"><span>' + src.label + '</span></div>'
+      + '</div>';
+  }).filter(Boolean);
+
+  grid.innerHTML = cards.length
+    ? '<div class="audio-grid">' + cards.join('') + '</div>'
+    : '<div style="grid-column:1/-1;padding:2rem;text-align:center;font-size:.72rem;color:var(--text-muted)">Certains contenus favoris ne sont plus disponibles.</div>';
+}
+
 function renderPodcasts() {
   var grid = document.getElementById('podcasts-grid');
   if (!grid) return;
@@ -8565,7 +8662,7 @@ function renderPodcasts() {
   }
   grid.innerHTML = '<div class="audio-grid">' + list.map(function(p) {
     return '<div class="audio-card" onclick="openPodcast(' + p.id + ')">'
-      + _cardHeader(p, {icon: '\ud83c\udf99\ufe0f'})
+      + _cardHeader(p, {icon: '\ud83c\udf99\ufe0f', type: 'podcast'})
       + '<div class="audio-title">' + p.titre + '</div>'
       + '<div class="audio-meta"><span>' + _catLabel('podcast', p.categorie||'podcast') + '</span><span class="audio-duration">' + (p.duree||'') + '</span></div>'
       + (p.description ? '<div style="font-size:.76rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + p.description + '</div>' : '')
@@ -8645,7 +8742,7 @@ function renderHuiles() {
   }
   grid.innerHTML = '<div class="audio-grid">' + list.map(function(h) {
     return '<div class="audio-card" onclick="openHuile(' + h.id + ')">'
-      + _cardHeader(h, {icon: '🌿', fallbackImg: getYoutubeThumbnail(h.url_video)})
+      + _cardHeader(h, {icon: '🌿', fallbackImg: getYoutubeThumbnail(h.url_video), type: 'huile'})
       + '<div class="audio-title">' + h.titre + '</div>'
       + '<div class="audio-meta"><span>' + _catLabel('huile', h.categorie||'huile') + '</span></div>'
       + (h.description ? '<div style="font-size:.76rem;color:var(--text-dim);margin-top:.3rem;line-height:1.4">' + h.description + '</div>' : '')
@@ -8774,7 +8871,7 @@ function renderRecettes() {
   }
   grid.innerHTML = '<div class="audio-grid">' + list.map(function(r) {
     return '<div class="audio-card" onclick="openRecette(' + r.id + ')">'
-      + _cardHeader(r, {icon: '🥗'})
+      + _cardHeader(r, {icon: '🥗', type: 'recette'})
       + '<div class="audio-title">' + r.titre + '</div>'
       + '<div class="audio-meta"><span>' + _catLabel('recette', r.categorie||'recette') + '</span>'
       + (r.duree ? '<span class="audio-duration">' + r.duree + '</span>' : '') + '</div>'
