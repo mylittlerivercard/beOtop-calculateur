@@ -9713,11 +9713,22 @@ function navigateToContenu(type, id, titre) {
 var currentPodcastCat = 'all';
 function filterPodcast(cat) { currentPodcastCat = cat; renderPodcasts(); }
 
+var _monCompanionSonsTried = false;
 function renderMonCompanion() {
   var grid = document.getElementById('mon-companion-grid');
   var empty = document.getElementById('mon-companion-empty');
   if (!grid) return;
   var favs = DB.favoris || [];
+
+  // Précharge les sons (cache asynchrone) au plus une fois, pour éviter une
+  // boucle infinie si loadSons échoue/renvoie vide (cb() est appelé même en erreur).
+  var needsSons = favs.some(function(f){ return f.type === 'sons'; });
+  if (needsSons && !_sonsCache.length && !_monCompanionSonsTried) {
+    _monCompanionSonsTried = true;
+    loadSons(renderMonCompanion);
+    return;
+  }
+
   if (!favs.length) {
     grid.innerHTML = '';
     if (empty) empty.style.display = 'flex';
