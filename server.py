@@ -445,7 +445,7 @@ def init_db():
                 specialite      TEXT,
                 bio             TEXT,
                 photo_url       TEXT,
-                taux_contenu    NUMERIC DEFAULT 30,
+                taux_contenu    NUMERIC DEFAULT 35,
                 apporteur_affaire BOOLEAN DEFAULT FALSE,
                 actif           BOOLEAN DEFAULT TRUE
             )
@@ -3516,7 +3516,7 @@ def admin_create_intervenant():
             """, [user_id, nom, email,
                   data.get('specialite', ''), data.get('bio', ''),
                   data.get('photo_url', ''),
-                  float(data.get('taux_contenu', 30)),
+                  float(data.get('taux_contenu', 35)),
                   bool(data.get('apporteur_affaire', False)),
                   bool(data.get('est_intervenant', True)),
                   True])
@@ -3813,7 +3813,7 @@ def intervenant_stats():
 
     # Rétribution estimée = part des clics intervenants × taux contenu × CA global beOtop
     pct_global = round(nb_clics_inv / total_clics * 100, 1) if total_clics else 0
-    taux       = float(inv.get('taux_contenu') or 30) / 100
+    taux       = float(inv.get('taux_contenu') or 35) / 100
     remuneration_estimee = round((nb_clics_inv / total_clics) * taux * ca_global, 2) if total_clics else 0.0
 
     return jsonify({
@@ -3823,7 +3823,7 @@ def intervenant_stats():
         'nb_clics':                 nb_clics_inv,
         'total_clics':              int(total_clics),
         'pct_global':               pct_global,
-        'taux_contenu':             float(inv.get('taux_contenu') or 30),
+        'taux_contenu':             float(inv.get('taux_contenu') or 35),
         'ca_global':                round(ca_global, 2),
         'remuneration_estimee':     remuneration_estimee,
         'clics_detail':             clics_detail,
@@ -3946,7 +3946,7 @@ def admin_retribution_synthese():
 
     for inv in intervenants:
         nom  = inv['intervenant']
-        taux = float(inv['taux'] or 30) / 100
+        taux = float(inv['taux'] or 35) / 100
 
         # Rétribution contenu = part des clics intervenants × taux × CA global beOtop
         # (CA global = somme des sites companion actifs, pas le CA des sites concernés)
@@ -3956,7 +3956,7 @@ def admin_retribution_synthese():
 
         # Commission apport
         ca_apport   = apports.get(nom, 0)
-        commission  = round(ca_apport * 0.20, 2) if inv['est_apporteur'] else 0
+        commission  = round(ca_apport * 0.15, 2) if inv['est_apporteur'] else 0
 
         total_inv   = round(retrib_contenu + commission, 2)
         total_contenu += retrib_contenu
@@ -3966,7 +3966,7 @@ def admin_retribution_synthese():
             'intervenant':    nom,
             'nb_clics':       int(inv['nb_clics'] or 0),
             'pct_clics':      round(int(inv['nb_clics'] or 0) / int(inv['total_clics'] or 1) * 100, 1) if inv['total_clics'] else 0,
-            'taux':           float(inv['taux'] or 30),
+            'taux':           float(inv['taux'] or 35),
             'est_apporteur':  bool(inv['est_apporteur']),
             'retrib_contenu': retrib_contenu,
             'ca_apport':      round(ca_apport, 2),
@@ -4045,7 +4045,7 @@ def admin_calcul_semestre():
                 nb_clics = clics_par_inv.get((inv['nom'] or '').strip(), 0)
                 if not nb_clics:
                     continue
-                taux    = float(inv['taux_contenu'] or 30) / 100
+                taux    = float(inv['taux_contenu'] or 35) / 100
                 pct     = round(nb_clics / total_clics * 100, 2) if total_clics else 0
                 montant = round((nb_clics / total_clics) * taux * ca_global, 2) if total_clics else 0
 
