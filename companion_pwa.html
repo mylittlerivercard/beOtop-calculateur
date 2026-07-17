@@ -5099,16 +5099,23 @@ function renderHistoryRecent() {
     ...DB.sessions.map(s => ({...s, type:'atelier'})),
     ...DB.cc_sessions.map(s => ({...s, type:'cc'})),
     ...DB.checkins.map(s => ({...s, type:'checkin'})),
+    ...(DB.points || []).map(p => ({
+      date: p.date,
+      label: p.label || ACTION_LABELS[p.action] || p.action,
+      detail: '+' + p.points + ' pts',
+      type: p.action
+    })),
   ].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
 
   const icons = { atelier:'🪑', cc:'💓', checkin:'📝' };
   const bgs = { atelier:'rgba(90,138,106,.12)', cc:'rgba(200,169,110,.1)', checkin:'rgba(90,138,170,.1)' };
+  const bgFallback = 'rgba(124,111,255,.1)';
 
   const container = document.getElementById('history-recent');
-  if (!all.length) { container.innerHTML = '<div style="font-size:.85rem;color:var(--text-muted);padding:1rem 0">Aucune activité · Commencez votre premier check-in</div>'; return; }
+  if (!all.length) { container.innerHTML = '<div style="font-size:.7rem;color:var(--text-muted);padding:1rem 0">Aucune activité · Commencez votre premier check-in</div>'; return; }
   container.innerHTML = all.map(s => `
     <div class="history-item">
-      <div class="history-icon" style="background:${bgs[s.type]}">${icons[s.type]}</div>
+      <div class="history-icon" style="background:${bgs[s.type] || bgFallback}">${icons[s.type] || ACTION_ICONS[s.type] || '•'}</div>
       <div>
         <div class="history-label">${s.label || s.type}</div>
         <div class="history-sub">${s.detail || '—'}</div>
@@ -6123,6 +6130,7 @@ async function awardPoints(action, label) {
   DB.points.push({ action, label, points: pts, date: new Date().toISOString() });
   saveDB(DB);
   _refreshSkyWidgets();
+  renderHistoryRecent();
   haptic('medium');
   // API
   try {
