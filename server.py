@@ -3801,7 +3801,7 @@ def intervenant_stats():
                     nb_salaries  = int(sr.get('nb_salaries') or 0)
                     # CA semestriel = tarif annuel × nb employés déclarés / 2
                     ca_semestre  = round(tarif_annuel * nb_salaries / 2, 2)
-                    commission   = round(ca_semestre * 0.20, 2)
+                    commission   = round(ca_semestre * 0.15, 2)
                     sr['tarif_annuel']       = tarif_annuel
                     sr['ca_semestre']        = ca_semestre
                     sr['commission_20pct']   = commission

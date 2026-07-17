@@ -375,7 +375,7 @@ tr:hover td { background: var(--surface2); }
       <div>
         <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem">Commission apport d'affaire</div>
         <div style="font-size:1.4rem;font-weight:700;color:var(--coral)" id="recap-apport">—</div>
-        <div style="font-size:.6rem;color:var(--text-muted)">20% du CA clients apportés</div>
+        <div style="font-size:.6rem;color:var(--text-muted)">15% du CA clients apportés</div>
       </div>
       <div style="border-left:2px solid rgba(0,180,180,.2);padding-left:1rem">
         <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem">Total estimé du semestre</div>
@@ -440,9 +440,9 @@ tr:hover td { background: var(--surface2); }
 
   <!-- CLIENTS APPORTÉS -->
   <div id="section-apport" class="pdf-block" style="display:none">
-    <div class="section-title">Mes clients apportés · Commission 20%</div>
+    <div class="section-title">Mes clients apportés · Commission 15%</div>
     <div class="note" style="background:rgba(160,104,32,.06);border-color:rgba(160,104,32,.2)">
-      💼 En tant qu'apporteur d'affaire, vous percevez 20% du CA semestriel de chaque client que vous avez apporté à beOtop.
+      💼 En tant qu'apporteur d'affaire, vous percevez 15% du CA semestriel de chaque client que vous avez apporté à beOtop.
       La part beOtop est réduite à 50% sur ces clients.
     </div>
     <div class="table-wrap" id="table-apport">
@@ -451,7 +451,7 @@ tr:hover td { background: var(--surface2); }
     <div class="kpi-card" id="kpi-apport-total" style="margin-top:1rem;display:none">
       <div class="kpi-val coral" id="apport-total-val">0 €</div>
       <div class="kpi-lbl">Commission apport d'affaire estimée · semestre</div>
-      <div class="kpi-sub">20% du CA semestriel de vos clients apportés · Versement à la clôture beOtop</div>
+      <div class="kpi-sub">15% du CA semestriel de vos clients apportés · Versement à la clôture beOtop</div>
     </div>
   </div>
 
@@ -719,7 +719,7 @@ function renderAll(d) {
         + '</tr>';
     }).join('');
     document.getElementById('table-apport').innerHTML = '<table><thead><tr>'
-      + '<th>Client</th><th>Site</th><th>Employés déclarés</th><th>Tarif annuel/employé</th><th>CA semestriel</th><th>Votre commission 20%</th>'
+      + '<th>Client</th><th>Site</th><th>Employés déclarés</th><th>Tarif annuel/employé</th><th>CA semestriel</th><th>Votre commission 15%</th>'
       + '</tr></thead><tbody>' + rows3 + '</tbody></table>';
     var totalApport = d.total_commission_apport || 0;
     if (totalApport > 0) {
