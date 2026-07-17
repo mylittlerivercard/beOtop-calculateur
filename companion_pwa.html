@@ -6735,6 +6735,7 @@ function _playSonFile(son) {
   } catch (e) { showToast('⚠ Lecture impossible : ' + son.audio); return; }
   _updateSonStatus(son.nom);
   showToast('♫ ' + son.label + ' en lecture');
+  logPlay('sons', son.label || son.nom, son.intervenant || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   setTimeout(function(){ awardPoints('sons', 'Sons immersifs · ' + son.nom); }, 5 * 60 * 1000);
 }
 
@@ -6754,6 +6755,7 @@ function _startSon(type, ctx) {
   _updateSonStatus(type);
   var _son = (_sonsCache || []).find(function(s){ return s.nom === type; });
   showToast('♫ ' + (_son ? _son.label : type) + ' en lecture');
+  logPlay('sons', (_son ? _son.label : type), (_son && _son.intervenant) || '', null, typeof SITE_SLUG !== 'undefined' ? SITE_SLUG : '');
   setTimeout(function(){ awardPoints('sons', 'Sons immersifs · ' + type); }, 5 * 60 * 1000);
 }
 
