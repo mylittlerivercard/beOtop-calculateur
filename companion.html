@@ -6613,7 +6613,26 @@ function ccHandleHide() {
 window.addEventListener('beforeunload', ccHandleHide);
 document.addEventListener('visibilitychange', function(){ if (document.hidden) ccHandleHide(); });
 
+/* Stats CC du mois — source d'autorité = serveur (/api/companion/stats, scopé par user_id).
+   On n'agrège plus le localStorage global (non scopé par site) qui mélangeait les sites. */
 function renderCCStats() {
+  fetch('/api/companion/stats', { credentials: 'include' })
+    .then(function(r){ if (!r.ok) throw new Error('stats ' + r.status); return r.json(); })
+    .then(function(d){
+      var cc = d.cc || {};
+      var nb = cc.nb_sessions || 0;
+      var totalMin = cc.total_minutes || 0;
+      var avg = nb ? Math.round(totalMin / nb) : 0;
+      document.getElementById('cc-total-sessions').textContent = nb;
+      document.getElementById('cc-total-minutes').textContent = totalMin;
+      document.getElementById('cc-best-streak').textContent = d.streak_jours || 0;
+      document.getElementById('cc-avg-duration').textContent = avg + ' min';
+    })
+    .catch(function(){ renderCCStatsLocal(); });   // FALLBACK hors-ligne : localStorage local (non scopé par site)
+}
+
+/* Fallback local — utilisé uniquement si le serveur est injoignable. */
+function renderCCStatsLocal() {
   const all = DB.cc_sessions;
   const m = new Date(); m.setDate(1);
   const month = all.filter(s => new Date(s.date) >= m);

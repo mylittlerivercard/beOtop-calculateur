@@ -3284,6 +3284,21 @@ def admin_intervenants_stats():
 def companion_qvct():
     site_slug = request.args.get('site_slug')
     period    = request.args.get('period', 'mois')
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    # Autorisation : le site demandé doit appartenir au client de la session (admin exempté).
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
     from datetime import date as dt, timedelta
     today = dt.today()
     if period == 'semaine':
@@ -3306,11 +3321,11 @@ def companion_qvct():
                        AVG(focus)           AS focus_moy
                 FROM companion_checkins
                 WHERE date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 GROUP BY site_slug
                 ORDER BY nb_checkins DESC
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             dept_wellbeing = []
             for r in cur.fetchall():
                 dept_wellbeing.append({
@@ -3327,18 +3342,18 @@ def companion_qvct():
                 SELECT COUNT(DISTINCT user_id) AS actifs
                 FROM companion_points
                 WHERE created_at::date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             users_actifs = int((cur.fetchone() or {}).get('actifs', 0) or 0)
 
             cur.execute(
                 """
                 SELECT COUNT(DISTINCT user_id) AS total
                 FROM companion_points
-                WHERE (%s IS NULL OR site_slug = %s)
+                WHERE site_slug = %s
                 """,
-                [site_slug, site_slug])
+                [site_slug])
             users_total = int((cur.fetchone() or {}).get('total', 0) or 0)
 
             # ── Durée totale CC ──
@@ -3347,9 +3362,9 @@ def companion_qvct():
                 SELECT COALESCE(SUM(duree_min), 0) AS duree
                 FROM companion_cc_sessions
                 WHERE created_at::date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             duree_cc = int((cur.fetchone() or {}).get('duree', 0) or 0)
 
             # ── Top activités ──
@@ -3360,12 +3375,12 @@ def companion_qvct():
                        SUM(points)   AS total_points
                 FROM companion_points
                 WHERE created_at::date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 GROUP BY action
                 ORDER BY total_points DESC
                 LIMIT 8
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             top_activites = []
             for r in cur.fetchall():
                 top_activites.append({
@@ -3384,11 +3399,11 @@ def companion_qvct():
                        COUNT(*)                  AS nb_checkins
                 FROM companion_checkins
                 WHERE date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 GROUP BY semaine
                 ORDER BY semaine ASC
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             trend_hebdo = []
             for r in cur.fetchall():
                 trend_hebdo.append({
@@ -3405,10 +3420,10 @@ def companion_qvct():
                 SELECT user_id, COUNT(DISTINCT date) AS jours
                 FROM companion_checkins
                 WHERE date >= %s
-                  AND (%s IS NULL OR site_slug = %s)
+                  AND site_slug = %s
                 GROUP BY user_id
                 """,
-                [date_debut, site_slug, site_slug])
+                [date_debut, site_slug])
             streak_rows = cur.fetchall()
             streak_moyen = round(sum(int(r['jours'] or 0) for r in streak_rows) / len(streak_rows), 1) if streak_rows else 0
 
@@ -3437,7 +3452,7 @@ def companion_qvct():
                 """
                 SELECT COUNT(DISTINCT user_id) AS inactifs
                 FROM companion_checkins
-                WHERE (%s IS NULL OR site_slug = %s)
+                WHERE site_slug = %s
                   AND user_id NOT IN (
                     SELECT DISTINCT user_id FROM companion_points
                     WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
@@ -3445,7 +3460,7 @@ def companion_qvct():
                   )
                   AND user_id IS NOT NULL
                 """,
-                [site_slug, site_slug])
+                [site_slug])
             inactifs = int((cur.fetchone() or {}).get('inactifs', 0) or 0)
             if inactifs > 0:
                 alertes.append({
@@ -4563,6 +4578,21 @@ def companion_analytics():
     """Analytics Companion pour l'onglet dashboard client."""
     site_slug = request.args.get('site_slug')
     days      = int(request.args.get('days', 30))
+    if not site_slug:
+        return jsonify({'error': 'site_slug requis'}), 400
+    # Autorisation : le site demandé doit appartenir au client de la session (admin exempté).
+    if session.get('role') != 'admin':
+        client_id = session.get('client_id')
+        mgr_site_id = session.get('site_id')
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                if mgr_site_id:
+                    cur.execute("SELECT slug FROM sites WHERE id=%s AND client_id=%s", [mgr_site_id, client_id])
+                else:
+                    cur.execute("SELECT slug FROM sites WHERE client_id=%s", [client_id])
+                slugs = [r['slug'] for r in cur.fetchall()]
+        if site_slug not in slugs:
+            return jsonify({'error': 'Accès refusé'}), 403
 
     with get_db() as conn:
         with conn.cursor() as cur:
