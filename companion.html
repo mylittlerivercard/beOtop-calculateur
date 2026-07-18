@@ -1468,11 +1468,23 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <p>Régulation du système nerveux autonome · Protocoles guidés</p>
   </div>
 
-  <div style="display:flex;gap:.4rem;margin-bottom:1.2rem" id="cc-protocols">
-    <button class="cc-protocol-btn active" data-inhale="4" data-exhale="6" data-name="365 (6 cpm)" onclick="setProtocol(this)">365 · 6 cpm</button>
-    <button class="cc-protocol-btn" data-inhale="5" data-exhale="5" data-name="Équilibre (6 cpm)" onclick="setProtocol(this)">Équilibre · 6 cpm</button>
-    <button class="cc-protocol-btn" data-inhale="4" data-exhale="4" data-name="Rapide (7.5 cpm)" onclick="setProtocol(this)">Rapide · 7,5 cpm</button>
-    <button class="cc-protocol-btn" data-inhale="6" data-exhale="6" data-name="Profond (5 cpm)" onclick="setProtocol(this)">Profond · 5 cpm</button>
+  <div id="cc-protocols" style="margin-bottom:1.2rem">
+    <div style="font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Cohérence cardiaque</div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem" id="cc-protocols-coherence">
+      <button class="cc-protocol-btn active" data-proto="365" onclick="setProtocolById(this.dataset.proto)">365 · 6 cpm</button>
+      <button class="cc-protocol-btn" data-proto="equilibre" onclick="setProtocolById(this.dataset.proto)">Équilibre · 6 cpm</button>
+      <button class="cc-protocol-btn" data-proto="rapide" onclick="setProtocolById(this.dataset.proto)">Rapide · 7,5 cpm</button>
+      <button class="cc-protocol-btn" data-proto="profond" onclick="setProtocolById(this.dataset.proto)">Profond · 5 cpm</button>
+    </div>
+    <div style="font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Autres respirations</div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap" id="cc-protocols-autres">
+      <button class="cc-protocol-btn" data-proto="carree4" onclick="setProtocolById(this.dataset.proto)">Carrée 4-4-4-4</button>
+      <button class="cc-protocol-btn" data-proto="carree5" onclick="setProtocolById(this.dataset.proto)">Carrée 5-5-5-5</button>
+      <button class="cc-protocol-btn" data-proto="478" onclick="setProtocolById(this.dataset.proto)">4-7-8</button>
+      <button class="cc-protocol-btn" data-proto="stim62" onclick="setProtocolById(this.dataset.proto)">Stimulante 6-2</button>
+      <button class="cc-protocol-btn" data-proto="turbo64" onclick="setProtocolById(this.dataset.proto)">Turbo 6-4</button>
+      <button class="cc-protocol-btn" data-proto="sommeil46" onclick="setProtocolById(this.dataset.proto)">Sommeil 4-6</button>
+    </div>
   </div>
 
   <div class="cc-container">
@@ -6357,7 +6369,20 @@ function startReflexes(zone) {
    COHÉRENCE CARDIAQUE
 ════════════════════════════════════════════ */
 var ccRunning = false, ccInterval = null, ccTotalSec = 300, ccRemain = 300;
-var ccInhale = 4, ccExhale = 6, ccPhase = 'inhale', ccPhaseSec = 0;
+var CC_PROTOCOLS = [
+  { id:'365',       name:'365',            cpm:'6 cpm',              group:'coherence', phases:[{key:'inhale',label:'Inspirez',sec:4},{key:'exhale',label:'Expirez',sec:6}] },
+  { id:'equilibre', name:'Équilibre',      cpm:'6 cpm',              group:'coherence', phases:[{key:'inhale',label:'Inspirez',sec:5},{key:'exhale',label:'Expirez',sec:5}] },
+  { id:'rapide',    name:'Rapide',         cpm:'7,5 cpm',            group:'coherence', phases:[{key:'inhale',label:'Inspirez',sec:4},{key:'exhale',label:'Expirez',sec:4}] },
+  { id:'profond',   name:'Profond',        cpm:'5 cpm',              group:'coherence', phases:[{key:'inhale',label:'Inspirez',sec:6},{key:'exhale',label:'Expirez',sec:6}] },
+  { id:'carree4',   name:'Carrée 4-4-4-4', cpm:'Concentration',      group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:4},{key:'hold',label:'Retenez',sec:4},{key:'exhale',label:'Expirez',sec:4},{key:'hold',label:'Retenez',sec:4}] },
+  { id:'carree5',   name:'Carrée 5-5-5-5', cpm:'Concentration',      group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:5},{key:'hold',label:'Retenez',sec:5},{key:'exhale',label:'Expirez',sec:5},{key:'hold',label:'Retenez',sec:5}] },
+  { id:'478',       name:'4-7-8',          cpm:'Endormissement',     group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:4},{key:'hold',label:'Retenez',sec:7},{key:'exhale',label:'Expirez',sec:8}] },
+  { id:'stim62',    name:'Stimulante 6-2', cpm:'Énergie',            group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:6},{key:'exhale',label:'Expirez',sec:2}] },
+  { id:'turbo64',   name:'Turbo 6-4',      cpm:"Sursaut d'énergie",  group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:6},{key:'exhale',label:'Expirez',sec:4}] },
+  { id:'sommeil46', name:'Sommeil 4-6',    cpm:'Parasympathique',    group:'autres',    phases:[{key:'inhale',label:'Inspirez',sec:4},{key:'exhale',label:'Expirez',sec:6}] }
+];
+var ccProtocol = CC_PROTOCOLS[0];
+var ccPhaseIdx = 0, ccPhaseSec = 0;
 var ccProtocolName = '365 (6 cpm)';
 
 var ccSettings = { guide: true, guideType: 'gong', ambiance: false, ambianceId: null, vibreur: true };
@@ -6431,19 +6456,21 @@ function ccVibrate() {
   if (ccSettings.vibreur && navigator.vibrate) navigator.vibrate(120);
 }
 
-function setProtocol(btn) {
-  document.querySelectorAll('.cc-protocol-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  ccInhale = +btn.dataset.inhale;
-  ccExhale = +btn.dataset.exhale;
-  ccProtocolName = btn.dataset.name;
-  document.getElementById('cc-protocol-label').textContent =
-    'Protocole : ' + ccProtocolName + ' · Inspiration ' + ccInhale + 's — Expiration ' + ccExhale + 's';
+function setProtocolById(id) {
+  var proto = CC_PROTOCOLS.find(function(p){ return p.id === id; });
+  if (!proto) return;
+  ccProtocol = proto;
+  ccProtocolName = proto.name + ' (' + proto.cpm + ')';
+  document.querySelectorAll('#cc-protocols-coherence .cc-protocol-btn, #cc-protocols-autres .cc-protocol-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.proto === id);
+  });
+  var label = proto.phases.map(function(ph){ return ph.label + ' ' + ph.sec + 's'; }).join(' — ');
+  document.getElementById('cc-protocol-label').textContent = 'Protocole : ' + proto.name + ' · ' + label;
   if (ccRunning) { resetCC(); }
 }
 
 function setDuration(min) {
-  document.querySelectorAll('#view-coherence .cc-protocol-btn').forEach(b => {
+  document.querySelectorAll('#view-coherence .cc-sidebar .cc-protocol-btn').forEach(b => {
     b.classList.toggle('active', b.textContent.startsWith(min + ' '));
   });
   ccTotalSec = min * 60;
@@ -6463,7 +6490,7 @@ function toggleCC() {
 function startCC() {
   ccRunning = true;
   document.getElementById('cc-start-btn').textContent = '⏸ Pause';
-  ccPhase = 'inhale'; ccPhaseSec = 0;
+  ccPhaseIdx = 0; ccPhaseSec = 0;
   ccPlayGuideSound(); ccVibrate(); ccPlayAmbiance();
   ccInterval = setInterval(tickCC, 1000);
 }
@@ -6477,7 +6504,7 @@ function pauseCC() {
 
 function resetCC() {
   clearInterval(ccInterval);
-  ccRunning = false; ccRemain = ccTotalSec; ccPhase = 'inhale'; ccPhaseSec = 0;
+  ccRunning = false; ccRemain = ccTotalSec; ccPhaseIdx = 0; ccPhaseSec = 0;
   document.getElementById('cc-start-btn').textContent = '▶ Démarrer';
   document.getElementById('cc-timer').textContent = fmtTime(ccRemain);
   document.getElementById('breathe-label').textContent = 'Prêt';
@@ -6493,22 +6520,24 @@ function tickCC() {
   document.getElementById('cc-timer').textContent = fmtTime(ccRemain);
 
   ccPhaseSec++;
-  const phaseLen = ccPhase === 'inhale' ? ccInhale : ccExhale;
-  if (ccPhaseSec >= phaseLen) {
-    ccPhase = ccPhase === 'inhale' ? 'exhale' : 'inhale';
+  var phase = ccProtocol.phases[ccPhaseIdx];
+  if (ccPhaseSec >= phase.sec) {
+    ccPhaseIdx = (ccPhaseIdx + 1) % ccProtocol.phases.length;
     ccPhaseSec = 0;
+    phase = ccProtocol.phases[ccPhaseIdx];
     ccPlayGuideSound(); ccVibrate();
   }
   const ring = document.getElementById('breathe-ring');
   const lbl = document.getElementById('breathe-label');
   const ph = document.getElementById('breathe-phase');
-  if (ccPhase === 'inhale') {
+  const remain = phase.sec - ccPhaseSec;
+  if (phase.key === 'inhale') {
     ring.classList.add('inhale'); ring.classList.remove('exhale');
-    lbl.textContent = 'Inspirez'; ph.textContent = 'Inspiration · ' + (ccInhale - ccPhaseSec) + 's';
-  } else {
+  } else if (phase.key === 'exhale') {
     ring.classList.add('exhale'); ring.classList.remove('inhale');
-    lbl.textContent = 'Expirez'; ph.textContent = 'Expiration · ' + (ccExhale - ccPhaseSec) + 's';
-  }
+  } /* 'hold' : anneau maintenu à son état courant */
+  lbl.textContent = phase.label;
+  ph.textContent = phase.label + ' · ' + remain + 's';
 }
 
 async function finishCC() {
