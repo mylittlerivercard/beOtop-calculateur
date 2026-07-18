@@ -414,9 +414,14 @@ function initSite(){
         labels.forEach(function(el){ el.textContent = opts.step2_label; });
       }
 
-      // Override liste départements/entités
-      if (opts.step2_items && opts.step2_items.length) {
-        DEPARTEMENTS = opts.step2_items;
+      // Override liste départements/entités (clé `departements`, rétro-compat `step2_items`)
+      var depSource = (Array.isArray(opts.departements) && opts.departements.length)
+        ? opts.departements
+        : ((Array.isArray(opts.step2_items) && opts.step2_items.length) ? opts.step2_items : null);
+      if (depSource) {
+        DEPARTEMENTS = depSource.map(function(dep){
+          return Object.assign({color:'#c9a96e', glow:'rgba(201,169,110,.12)'}, dep);
+        });
         buildDepts();
       }
 
