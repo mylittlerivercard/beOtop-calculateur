@@ -443,6 +443,14 @@ input[type=range]::-webkit-slider-thumb {
 }
 .cc-stat-val { font-size: 1.1rem; font-weight: 300; color: var(--text); }
 .cc-stat-lbl { font-size: .74rem; color: var(--text-muted); margin-top: .1rem; }
+.cc-setting-row { display: flex; align-items: center; justify-content: space-between; padding: .5rem 0; }
+.cc-setting-row + .cc-setting-row { border-top: 1px solid var(--border); }
+.cc-setting-label { font-size: .72rem; color: var(--text-dim); margin-bottom: .25rem; }
+.cc-setting-select { font-size: .65rem; background: rgba(0,180,180,.05); border: 1px solid var(--border2); border-radius: 6px; color: var(--text-muted); padding: .15rem .4rem; }
+.cc-switch { width: 34px; height: 20px; border-radius: 20px; background: var(--border2); position: relative; cursor: pointer; flex-shrink: 0; transition: background .15s; }
+.cc-switch.on { background: var(--teal); }
+.cc-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+.cc-switch.on::after { left: 16px; }
 
 /* ══ AUDIO LIBRARY ══ */
 .audio-categories { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
@@ -2306,6 +2314,30 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
           <button class="cc-protocol-btn active" onclick="setDuration(5)">5 min</button>
           <button class="cc-protocol-btn" onclick="setDuration(10)">10 min</button>
           <button class="cc-protocol-btn" onclick="setDuration(20)">20 min</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--text-dim)">Réglages de la séance</div>
+        <div class="cc-setting-row">
+          <div>
+            <div class="cc-setting-label">Guide sonore</div>
+            <select class="cc-setting-select" id="cc-guide-select" onchange="ccSaveSettings()">
+              <option value="gong">Gong</option>
+              <option value="cloche">Cloche</option>
+            </select>
+          </div>
+          <div class="cc-switch" id="cc-guide-switch" onclick="ccToggleSetting('guide')"></div>
+        </div>
+        <div class="cc-setting-row">
+          <div>
+            <div class="cc-setting-label">Musique d'ambiance</div>
+            <select class="cc-setting-select" id="cc-ambiance-select" onchange="ccSaveSettings()"></select>
+          </div>
+          <div class="cc-switch" id="cc-ambiance-switch" onclick="ccToggleSetting('ambiance')"></div>
+        </div>
+        <div class="cc-setting-row">
+          <div class="cc-setting-label">Vibreur</div>
+          <div class="cc-switch" id="cc-vibreur-switch" onclick="ccToggleSetting('vibreur')"></div>
         </div>
       </div>
       <div class="card">
@@ -7441,6 +7473,77 @@ var ccRunning = false, ccInterval = null, ccTotalSec = 300, ccRemain = 300;
 var ccInhale = 4, ccExhale = 6, ccPhase = 'inhale', ccPhaseSec = 0;
 var ccProtocolName = '365 (6 cpm)';
 
+var ccSettings = { guide: true, guideType: 'gong', ambiance: false, ambianceId: null, vibreur: true };
+
+function ccLoadSettings() {
+  if (DB.cc_settings) ccSettings = Object.assign(ccSettings, DB.cc_settings);
+  document.getElementById('cc-guide-switch').classList.toggle('on', ccSettings.guide);
+  document.getElementById('cc-guide-select').value = ccSettings.guideType;
+  document.getElementById('cc-ambiance-switch').classList.toggle('on', ccSettings.ambiance);
+  document.getElementById('cc-vibreur-switch').classList.toggle('on', ccSettings.vibreur);
+  ccPopulateAmbianceOptions();
+}
+
+function ccPopulateAmbianceOptions() {
+  var sel = document.getElementById('cc-ambiance-select');
+  if (!sel) return;
+  var tracks = (DB.audios || []).filter(function(a){ return a.url_audio; });
+  sel.innerHTML = tracks.length
+    ? tracks.map(function(a){ return '<option value="' + a.id + '">' + a.titre + '</option>'; }).join('')
+    : '<option value="">Aucun son disponible</option>';
+  if (ccSettings.ambianceId) sel.value = ccSettings.ambianceId;
+}
+
+function ccToggleSetting(key) {
+  ccSettings[key] = !ccSettings[key];
+  document.getElementById('cc-' + key + '-switch').classList.toggle('on', ccSettings[key]);
+  ccSaveSettings();
+  if (key === 'ambiance' && !ccSettings.ambiance) ccStopAmbiance();
+}
+
+function ccSaveSettings() {
+  ccSettings.guideType = document.getElementById('cc-guide-select').value;
+  ccSettings.ambianceId = document.getElementById('cc-ambiance-select').value;
+  DB.cc_settings = ccSettings;
+  saveDB(DB);
+}
+
+function ccPlayGuideSound() {
+  if (!ccSettings.guide) return;
+  try {
+    var ctx = window._ccAudioCtx || (window._ccAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = ccSettings.guideType === 'cloche' ? 880 : 220;
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 1.2);
+  } catch(e) {}
+}
+
+function ccPlayAmbiance() {
+  if (!ccSettings.ambiance) return;
+  if (window._ccAmbianceAudio) { window._ccAmbianceAudio.play().catch(function(){}); return; }
+  var sel = document.getElementById('cc-ambiance-select');
+  var track = (DB.audios || []).find(function(a){ return String(a.id) === String(sel.value); });
+  if (!track || !track.url_audio) return;
+  window._ccAmbianceAudio = new Audio(track.url_audio);
+  window._ccAmbianceAudio.loop = true;
+  window._ccAmbianceAudio.volume = 0.25;
+  window._ccAmbianceAudio.play().catch(function(){});
+}
+
+function ccStopAmbiance() {
+  if (window._ccAmbianceAudio) { window._ccAmbianceAudio.pause(); window._ccAmbianceAudio = null; }
+}
+
+function ccVibrate() {
+  if (ccSettings.vibreur && navigator.vibrate) navigator.vibrate(120);
+}
+
 function setProtocol(btn) {
   document.querySelectorAll('.cc-protocol-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -7474,6 +7577,7 @@ function startCC() {
   ccRunning = true;
   document.getElementById('cc-start-btn').textContent = '⏸ Pause';
   ccPhase = 'inhale'; ccPhaseSec = 0;
+  ccPlayGuideSound(); ccVibrate(); ccPlayAmbiance();
   ccInterval = setInterval(tickCC, 1000);
 }
 
@@ -7481,6 +7585,7 @@ function pauseCC() {
   ccRunning = false;
   clearInterval(ccInterval);
   document.getElementById('cc-start-btn').textContent = '▶ Reprendre';
+  if (window._ccAmbianceAudio) window._ccAmbianceAudio.pause();
 }
 
 function resetCC() {
@@ -7492,6 +7597,7 @@ function resetCC() {
   document.getElementById('breathe-phase').textContent = 'Appuyez sur démarrer';
   const ring = document.getElementById('breathe-ring');
   ring.classList.remove('inhale','exhale');
+  ccStopAmbiance();
 }
 
 function tickCC() {
@@ -7504,6 +7610,7 @@ function tickCC() {
   if (ccPhaseSec >= phaseLen) {
     ccPhase = ccPhase === 'inhale' ? 'exhale' : 'inhale';
     ccPhaseSec = 0;
+    ccPlayGuideSound(); ccVibrate();
   }
   const ring = document.getElementById('breathe-ring');
   const lbl = document.getElementById('breathe-label');
@@ -7519,6 +7626,7 @@ function tickCC() {
 
 async function finishCC() {
   clearInterval(ccInterval); ccRunning = false;
+  ccStopAmbiance();
   document.getElementById('cc-start-btn').textContent = '▶ Recommencer';
   document.getElementById('breathe-label').textContent = 'Terminé';
   document.getElementById('breathe-phase').textContent = 'Bravo !';
@@ -9206,11 +9314,11 @@ function syncCategories(cb) {
           }
           renderDashboard();
           renderCCStats();
-          syncIntervenants(function(){ syncContenus(function(){ if (targetView !== 'dashboard') switchView(targetView); }); });
+          syncIntervenants(function(){ syncContenus(function(){ ccLoadSettings(); if (targetView !== 'dashboard') switchView(targetView); }); });
         })
         .catch(function(){
           renderDashboard(); renderCCStats();
-          syncIntervenants(function(){ syncContenus(function(){ if (targetView !== 'dashboard') switchView(targetView); }); });
+          syncIntervenants(function(){ syncContenus(function(){ ccLoadSettings(); if (targetView !== 'dashboard') switchView(targetView); }); });
         });
     } catch(e){ console.error('[beOtop]',e); }
   }
