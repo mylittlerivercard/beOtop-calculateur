@@ -2623,6 +2623,14 @@ function renderRealtimeGrid(occ) {
   // Ajouter les ateliers présents en base mais pas dans META
   Object.keys(occ).forEach(function(a) { if (ateliers.indexOf(a) === -1) ateliers.push(a); });
 
+  // Filtre générique par kiosk_options.ateliers du site courant (même logique que le kiosk).
+  // Si le tableau est non vide, n'afficher que ces ateliers ; sinon, tout afficher (rétro-compat).
+  var siteObj = sites.filter(function(s){ return s.slug === currentSite; })[0];
+  var filtreAteliers = siteObj && siteObj.kiosk_options ? siteObj.kiosk_options.ateliers : null;
+  if (Array.isArray(filtreAteliers) && filtreAteliers.length) {
+    ateliers = ateliers.filter(function(nom){ return filtreAteliers.indexOf(nom) !== -1; });
+  }
+
   var libres = 0, occupes = 0;
 
   var html = ateliers.map(function(nom) {
