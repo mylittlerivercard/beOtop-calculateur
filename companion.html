@@ -3128,7 +3128,7 @@ async function logoutCompanion() {
 
 function switchView(id) {
   if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Audios régénérants
-  if (ccRunning && id !== 'coherence') resetCC();   // sortie de vue pendant une séance active → enregistrée puis réinitialisée
+  if (ccSessionActive && id !== 'coherence') resetCC();   // sortie de vue pendant une séance (même en pause) → enregistrée puis réinitialisée
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
@@ -6397,6 +6397,7 @@ var ccProtocol = CC_PROTOCOLS[0];
 var ccPhaseIdx = 0, ccPhaseSec = 0;
 var ccProtocolName = '365 (6 cpm)';
 var ccSessionLogged = false;  // garde anti-doublon d'une même séance
+var ccSessionActive = false;  // une séance existe (démarrée, non encore loggée ni réinitialisée) — indépendant de la pause
 
 var ccSettings = { guide: true, guideType: 'gong', ambiance: false, ambianceId: null, vibreur: true };
 
@@ -6505,6 +6506,7 @@ function startCC() {
   document.getElementById('cc-start-btn').textContent = '⏸ Pause';
   ccPhaseIdx = 0; ccPhaseSec = 0;
   ccSessionLogged = false;
+  ccSessionActive = true;   // une séance est en cours (le reste vrai même si mise en pause)
   const orb0 = document.getElementById('breathe-orb');
   orb0.style.transitionDuration = ccProtocol.phases[0].sec + 's';
   orb0.classList.remove('inhale','exhale');
@@ -6520,7 +6522,7 @@ function pauseCC() {
 }
 
 function resetCC() {
-  if (ccRunning) ccLogSession(false);   // séance interrompue → enregistrée si seuil atteint
+  if (ccSessionActive) ccLogSession(false);   // séance interrompue (même en pause) → enregistrée si seuil atteint
   clearInterval(ccInterval);
   ccRunning = false; ccRemain = ccTotalSec; ccPhaseIdx = 0; ccPhaseSec = 0;
   document.getElementById('cc-start-btn').textContent = '▶ Démarrer';
@@ -6531,6 +6533,7 @@ function resetCC() {
   orb.style.transitionDuration = '.4s';
   orb.classList.remove('inhale','exhale');
   ccStopAmbiance();
+  ccSessionActive = false;   // réinitialisation complète → plus de séance en cours
 }
 
 function tickCC() {
@@ -6578,6 +6581,7 @@ function ccLogSession(complete) {
   const elapsedSec = ccTotalSec - ccRemain;
   if (elapsedSec < 15) return;
   ccSessionLogged = true;
+  ccSessionActive = false;   // séance loggée → plus de séance en attente d'enregistrement
   const duree = Math.max(1, Math.round(elapsedSec / 60));
   DB.cc_sessions.push({
     date: new Date().toISOString(), label: 'Cohérence cardiaque',
@@ -6608,9 +6612,10 @@ function ccPostSession(duree, complete) {
 
 /* Enregistre la séance en cours si l'onglet est masqué/fermé pendant une séance active. */
 function ccHandleHide() {
-  if (ccRunning) ccLogSession(false);
+  if (ccSessionActive) ccLogSession(false);
 }
 window.addEventListener('beforeunload', ccHandleHide);
+window.addEventListener('pagehide', ccHandleHide);   // plus fiable que beforeunload sur mobile/PWA
 document.addEventListener('visibilitychange', function(){ if (document.hidden) ccHandleHide(); });
 
 /* Stats CC du mois — source d'autorité = serveur (/api/companion/stats, scopé par user_id).
