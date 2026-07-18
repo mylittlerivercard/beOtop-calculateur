@@ -145,7 +145,7 @@
 <div class="screen" id="screen-dept">
   <div class="step-header">
     <div class="step-eyebrow">Étape 1 · 3</div>
-    <div class="step-title">Vous êtes dans quel <em><span class="step2-label">Département</span> ?</em></div>
+    <div class="step-title">Vous êtes dans <span class="step2-quel">quel</span> <em><span class="step2-label">Département</span> ?</em></div>
     <div class="step-sub">Un seul choix</div>
   </div>
   <div class="progress-dots">
@@ -412,6 +412,9 @@ function initSite(){
       if (opts.step2_label) {
         var labels = document.querySelectorAll('.step2-label');
         labels.forEach(function(el){ el.textContent = opts.step2_label; });
+        // Accord féminin quand une valeur personnalisée est fournie (entité, structure, agence…)
+        var quels = document.querySelectorAll('.step2-quel');
+        quels.forEach(function(el){ el.textContent = 'quelle'; });
       }
 
       // Override liste départements/entités (clé `departements`, rétro-compat `step2_items`)
