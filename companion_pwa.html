@@ -4216,6 +4216,7 @@ function renderChallenges() {
 ════════════════════════════════════════════ */
 function switchView(id) {
   if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Audios régénérants
+  if (ccRunning && id !== 'coherence') resetCC();   // sortie de vue pendant une séance active → enregistrée puis réinitialisée
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const view = document.getElementById('view-' + id);
@@ -7508,6 +7509,7 @@ var CC_PROTOCOLS = [
 var ccProtocol = CC_PROTOCOLS[0];
 var ccPhaseIdx = 0, ccPhaseSec = 0;
 var ccProtocolName = '365 (6 cpm)';
+var ccSessionLogged = false;  // garde anti-doublon d'une même séance
 
 var ccSettings = { guide: true, guideType: 'gong', ambiance: false, ambianceId: null, vibreur: true };
 
@@ -7615,6 +7617,7 @@ function startCC() {
   ccRunning = true;
   document.getElementById('cc-start-btn').textContent = '⏸ Pause';
   ccPhaseIdx = 0; ccPhaseSec = 0;
+  ccSessionLogged = false;
   const orb0 = document.getElementById('breathe-orb');
   orb0.style.transitionDuration = ccProtocol.phases[0].sec + 's';
   orb0.classList.remove('inhale','exhale');
@@ -7630,6 +7633,7 @@ function pauseCC() {
 }
 
 function resetCC() {
+  if (ccRunning) ccLogSession(false);   // séance interrompue → enregistrée si seuil atteint
   clearInterval(ccInterval);
   ccRunning = false; ccRemain = ccTotalSec; ccPhaseIdx = 0; ccPhaseSec = 0;
   document.getElementById('cc-start-btn').textContent = '▶ Démarrer';
@@ -7668,39 +7672,59 @@ function tickCC() {
   ph.textContent = phase.label + ' · ' + (phase.sec - ccPhaseSec) + 's';
 }
 
-async function finishCC() {
+function finishCC() {
   clearInterval(ccInterval); ccRunning = false;
   ccStopAmbiance();
   document.getElementById('cc-start-btn').textContent = '▶ Recommencer';
   document.getElementById('breathe-label').textContent = 'Terminé';
   document.getElementById('breathe-phase').textContent = 'Bravo !';
   const duree = Math.round(ccTotalSec / 60);
+  ccLogSession(true);
+  showToast('✓ Session terminée · ' + duree + ' minutes');
+}
 
-  /* Enregistrement local */
+/* Enregistrement centralisé d'une séance CC (complète ou interrompue).
+   Seuil : ≥ 15 s réellement écoulées (calculé en secondes avant conversion).
+   Garde anti-doublon : ccSessionLogged. */
+function ccLogSession(complete) {
+  if (ccSessionLogged) return;
+  const elapsedSec = ccTotalSec - ccRemain;
+  if (elapsedSec < 15) return;
+  ccSessionLogged = true;
+  const duree = Math.max(1, Math.round(elapsedSec / 60));
   DB.cc_sessions.push({
     date: new Date().toISOString(), label: 'Cohérence cardiaque',
-    detail: ccProtocolName + ' · ' + duree + ' min', duree
+    detail: ccProtocolName + ' · ' + duree + ' min' + (complete ? '' : ' (interrompue)'),
+    duree: duree, complete: complete
   });
   saveDB(DB);
-
-  /* Enregistrement serveur */
-  try {
-    const siteSlug = await getSiteSlug();
-    await fetch('/api/companion/cc', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        duree_min: duree,
-        protocole: ccProtocolName,
-        complete:  true,
-        site_slug: siteSlug
-      })
-    });
-  } catch(e) { console.warn('CC API indisponible — données locales conservées'); }
-
-  showToast('✓ Session terminée · ' + duree + ' minutes');
+  ccPostSession(duree, complete);
   renderCCStats();
 }
+
+/* POST serveur robuste (survit à la fermeture d'onglet via sendBeacon).
+   Le site_slug n'est plus envoyé : le serveur le dérive de la session (source d'autorité). */
+function ccPostSession(duree, complete) {
+  const payload = JSON.stringify({ duree_min: duree, protocole: ccProtocolName, complete: complete });
+  try {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon('/api/companion/cc', new Blob([payload], { type: 'application/json' }));
+    } else {
+      fetch('/api/companion/cc', {
+        method: 'POST', credentials: 'include', keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: payload
+      }).catch(function(){});
+    }
+  } catch(e) {}
+}
+
+/* Enregistre la séance en cours si l'onglet est masqué/fermé pendant une séance active. */
+function ccHandleHide() {
+  if (ccRunning) ccLogSession(false);
+}
+window.addEventListener('beforeunload', ccHandleHide);
+document.addEventListener('visibilitychange', function(){ if (document.hidden) ccHandleHide(); });
 
 function renderCCStats() {
   const all = DB.cc_sessions;

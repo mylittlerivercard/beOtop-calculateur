@@ -2282,11 +2282,22 @@ def companion_save_cc():
     if duree_min < 1 or duree_min > 60:
         return jsonify({'error': 'duree_min entre 1 et 60'}), 400
     user_id   = session.get('user_id')
-    site_slug = data.get('site_slug')
     protocole = data.get('protocole', '365')
     complete  = bool(data.get('complete', True))
+
+    # site_slug dérivé de la session (source d'autorité) — on NE fait PAS confiance
+    # au site_slug envoyé par le client (getSiteSlug renvoie le 1er site du compte,
+    # potentiellement faux pour un compte multi-sites).
+    site_id = session.get('site_id')
+    if not site_id:
+        return jsonify({'error': "Aucun site associé à la session — enregistrement refusé"}), 400
     with get_db() as conn:
         with conn.cursor() as cur:
+            cur.execute("SELECT slug FROM sites WHERE id=%s", [site_id])
+            srow = cur.fetchone()
+            if not srow:
+                return jsonify({'error': "Site de la session introuvable"}), 400
+            site_slug = srow['slug']
             cur.execute("""
                 INSERT INTO companion_cc_sessions
                     (user_id, site_slug, date, protocole, duree_min, complete)
