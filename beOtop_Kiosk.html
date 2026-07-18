@@ -56,6 +56,7 @@
   .dept-card.selected::after{opacity:1}
   .dept-card.selected .dept-check{opacity:1;transform:scale(1)}
   .dept-icon{font-size:2.1rem;line-height:1}
+  .dept-icon img{width:44px;height:44px;object-fit:contain}
   .dept-name{font-size:.95rem;color:var(--cream);font-weight:400;line-height:1.3}
   .dept-check{position:absolute;top:.45rem;right:.45rem;width:22px;height:22px;border-radius:50%;background:var(--dept-color,var(--gold));display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#000;opacity:0;transform:scale(.4);transition:all .22s cubic-bezier(.34,1.56,.64,1)}
 
@@ -269,9 +270,12 @@ function buildDepts(){
   DEPARTEMENTS.forEach(function(d){
     var c=document.createElement('div');
     c.className='dept-card'; c.dataset.id=d.id;
-    c.style.setProperty('--dept-color',d.color);
-    c.style.setProperty('--dept-glow',d.glow);
-    c.innerHTML='<div class="dept-check">✓</div><div class="dept-icon">'+d.icon+'</div><div class="dept-name">'+d.label+'</div>';
+    c.style.setProperty('--dept-color',d.color || '#c9a96e');
+    c.style.setProperty('--dept-glow',d.glow || 'rgba(201,169,110,.12)');
+    var iconHtml = /^(\/|https?:)/.test(d.icon || '')
+      ? '<img src="'+d.icon+'" alt="'+d.label+'" onerror="this.style.display=\'none\'">'
+      : (d.icon || '');
+    c.innerHTML='<div class="dept-check">✓</div><div class="dept-icon">'+iconHtml+'</div><div class="dept-name">'+d.label+'</div>';
     c.onclick=function(){selectDept(c,d);};
     g.appendChild(c);
   });
