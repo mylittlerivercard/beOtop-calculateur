@@ -1535,8 +1535,15 @@ loadOverview();
     <div class="field"><label>Nb employés déclarés</label><input id="se-salaries" type="number" placeholder="ex. 400"></div>
     <div class="field">
       <label>Options kiosque (JSON)</label>
-      <textarea id="se-kiosk-options" rows="6" style="font-family:monospace;font-size:.72rem;width:100%" placeholder='{"step2_label":"Votre entité","step2_items":[{"id":"ex","label":"Exemple","icon":"🏦","color":"#7a9eb5"}],"ateliers":["Méridienne P127"]}'></textarea>
+      <textarea id="se-kiosk-options" rows="6" style="font-family:monospace;font-size:.72rem;width:100%" placeholder='{"step2_label":"Votre entité","departements":[{"id":"ex","label":"Exemple","icon":"/static/logos/exemple.svg","color":"#7a9eb5"}],"ateliers":["Méridienne P127"]}'></textarea>
       <div id="se-kiosk-options-error" style="color:#c0392b;font-size:.65rem;display:none">JSON invalide</div>
+      <div style="color:#7a8a99;font-size:.65rem;margin-top:.35rem;line-height:1.5">
+        <b>departements</b> : liste des entités affichées à l'étape 2. Chaque objet accepte
+        <code>id</code>, <code>label</code>, <code>icon</code>, <code>color</code>, <code>glow</code>.<br>
+        <code>icon</code> peut être un emoji (ex. <code>🏦</code>) <b>ou</b> un chemin/URL d'image
+        (ex. <code>/static/logos/mon-logo.svg</code> ou <code>https://…</code>) — l'image remplace alors l'emoji.
+        <code>color</code>/<code>glow</code> sont optionnels (défaut doré). (Ancienne clé <code>step2_items</code> encore acceptée.)
+      </div>
     </div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
