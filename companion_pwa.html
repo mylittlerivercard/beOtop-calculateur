@@ -401,30 +401,39 @@ input[type=range]::-webkit-slider-thumb {
   align-items: center; justify-content: center; min-height: 360px;
 }
 .breathe-ring {
-  width: 180px; height: 180px; border-radius: 50%;
-  border: 2px solid var(--teal-border);
-  display: flex; align-items: center; justify-content: center;
-  position: relative; margin: 1.5rem 0;
-  transition: transform 4s ease-in-out;
+  width: 100px; height: 260px; border-radius: 50px;
+  border: 1px solid var(--teal-border);
+  background: linear-gradient(180deg, rgba(0,180,180,.10), rgba(245,133,90,.06));
+  position: relative; margin: 1.5rem 0; overflow: hidden;
 }
-.breathe-ring::before {
-  content: '';
-  position: absolute; inset: 8px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,180,180,.2), rgba(245,133,90,.1), transparent);
-  transition: transform 4s ease-in-out, opacity 4s ease-in-out;
+.breathe-track {
+  position: absolute; left: 50%; top: 20px; bottom: 20px; width: 2px;
+  background: rgba(0,0,0,.06); transform: translateX(-50%);
 }
-.breathe-ring.inhale { transform: scale(1.18); }
-.breathe-ring.inhale::before { opacity: 1; transform: scale(1.1); }
-.breathe-ring.exhale { transform: scale(0.88); }
-.breathe-ring.exhale::before { opacity: .3; }
+.breathe-orb {
+  position: absolute; left: 50%; width: 46px; height: 46px; border-radius: 50%;
+  bottom: 20px; transform: translateX(-50%);
+  background: radial-gradient(circle at 35% 30%, #7be8e8, #00b4b4 65%, #048a8a);
+  box-shadow: 0 6px 16px rgba(0,180,180,.35);
+  transition: bottom 4s ease-in-out;
+}
+.breathe-orb.inhale { bottom: calc(100% - 20px - 46px); }
+.breathe-orb.exhale { bottom: 20px; }
+.breathe-hint {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: .58rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-muted); z-index: 1; pointer-events: none;
+}
+.breathe-hint-top { top: 8px; }
+.breathe-hint-bottom { bottom: 8px; }
 .breathe-label {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.1rem; font-weight: 300; letter-spacing: .1em;
-  color: #00b4b4;
+  color: #00b4b4; text-align: center; margin-top: .4rem;
 }
 .breathe-phase {
-  font-size: .82rem; color: var(--text-muted); letter-spacing: .15em;
-  text-transform: uppercase; margin-top: .3rem;
+  font-size: .68rem; color: var(--text-muted); letter-spacing: .15em;
+  text-transform: uppercase; margin-top: .3rem; text-align: center;
 }
 .cc-timer { font-size: 2.5rem; font-weight: 200; color: #00b4b4; letter-spacing: .05em; }
 .cc-controls { display: flex; gap: .6rem; margin-top: 1rem; }
@@ -975,8 +984,8 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     min-height: 280px !important;
   }
   .breathe-ring {
-    width: 140px !important;
-    height: 140px !important;
+    width: 90px !important;
+    height: 220px !important;
   }
   .cc-timer {
     font-size: 2rem !important;
@@ -2306,11 +2315,13 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
     <div class="cc-player">
       <div class="cc-timer" id="cc-timer">05:00</div>
       <div class="breathe-ring" id="breathe-ring">
-        <div style="text-align:center">
-          <div class="breathe-label" id="breathe-label">Prêt</div>
-          <div class="breathe-phase" id="breathe-phase">Appuyez sur démarrer</div>
-        </div>
+        <div class="breathe-hint breathe-hint-top">Inspirez</div>
+        <div class="breathe-track"></div>
+        <div class="breathe-orb" id="breathe-orb"></div>
+        <div class="breathe-hint breathe-hint-bottom">Expirez</div>
       </div>
+      <div class="breathe-label" id="breathe-label">Prêt</div>
+      <div class="breathe-phase" id="breathe-phase">Appuyez sur démarrer</div>
       <div class="cc-controls">
         <button class="btn-primary" id="cc-start-btn" onclick="toggleCC()">▶ Démarrer</button>
         <button class="btn-secondary" onclick="resetCC()">↺ Réinitialiser</button>
@@ -7604,6 +7615,9 @@ function startCC() {
   ccRunning = true;
   document.getElementById('cc-start-btn').textContent = '⏸ Pause';
   ccPhaseIdx = 0; ccPhaseSec = 0;
+  const orb0 = document.getElementById('breathe-orb');
+  orb0.style.transitionDuration = ccProtocol.phases[0].sec + 's';
+  orb0.classList.remove('inhale','exhale');
   ccPlayGuideSound(); ccVibrate(); ccPlayAmbiance();
   ccInterval = setInterval(tickCC, 1000);
 }
@@ -7622,8 +7636,9 @@ function resetCC() {
   document.getElementById('cc-timer').textContent = fmtTime(ccRemain);
   document.getElementById('breathe-label').textContent = 'Prêt';
   document.getElementById('breathe-phase').textContent = 'Appuyez sur démarrer';
-  const ring = document.getElementById('breathe-ring');
-  ring.classList.remove('inhale','exhale');
+  const orb = document.getElementById('breathe-orb');
+  orb.style.transitionDuration = '.4s';
+  orb.classList.remove('inhale','exhale');
   ccStopAmbiance();
 }
 
@@ -7634,23 +7649,23 @@ function tickCC() {
 
   ccPhaseSec++;
   var phase = ccProtocol.phases[ccPhaseIdx];
+  var phaseChanged = false;
   if (ccPhaseSec >= phase.sec) {
     ccPhaseIdx = (ccPhaseIdx + 1) % ccProtocol.phases.length;
     ccPhaseSec = 0;
     phase = ccProtocol.phases[ccPhaseIdx];
+    phaseChanged = true;
     ccPlayGuideSound(); ccVibrate();
   }
-  const ring = document.getElementById('breathe-ring');
+  const orb = document.getElementById('breathe-orb');
   const lbl = document.getElementById('breathe-label');
   const ph = document.getElementById('breathe-phase');
-  const remain = phase.sec - ccPhaseSec;
-  if (phase.key === 'inhale') {
-    ring.classList.add('inhale'); ring.classList.remove('exhale');
-  } else if (phase.key === 'exhale') {
-    ring.classList.add('exhale'); ring.classList.remove('inhale');
-  } /* 'hold' : anneau maintenu à son état courant */
+  if (phaseChanged) { orb.style.transitionDuration = phase.sec + 's'; }
+  if (phase.key === 'inhale') { orb.classList.add('inhale'); orb.classList.remove('exhale'); }
+  else if (phase.key === 'exhale') { orb.classList.add('exhale'); orb.classList.remove('inhale'); }
+  /* 'hold' : orbe maintenu à sa position courante */
   lbl.textContent = phase.label;
-  ph.textContent = phase.label + ' · ' + remain + 's';
+  ph.textContent = phase.label + ' · ' + (phase.sec - ccPhaseSec) + 's';
 }
 
 async function finishCC() {
