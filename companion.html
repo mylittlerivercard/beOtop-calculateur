@@ -8723,6 +8723,17 @@ function renderIntervenants() {
       return '<span style="font-size:.74rem;padding:.2rem .6rem;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.2);border-radius:20px;color:var(--teal)">' + t + '</span>';
     }).join('');
     var contenus = _getContenus(inv);
+    var isMonika = inv.nom && inv.nom.toLowerCase().indexOf('monika') !== -1;
+    if (isMonika) {
+      contenus = [{
+        id: null,
+        type: 'questionnaire',
+        titre: 'Baromètre de Vitalité',
+        label: 'Baromètre de Vitalité · Évaluez votre vitalité en 5 min',
+        icon: '⚡',
+        isBilan: true
+      }].concat(contenus);
+    }
     // Badge contributions
     var nbContenus = contenus.length || inv.nb_contributions || 0;
     var badgeContenus = nbContenus
@@ -8733,14 +8744,19 @@ function renderIntervenants() {
       + '<div style="font-size:.74rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Contenus publiés</div>'
       + contenus.slice(0,3).map(function(c){
           var clickable = c.id !== null && c.id !== undefined;
-          var onclick = clickable
-            ? ' onclick="event.stopPropagation();navigateToContenu(\'' + c.type + '\',' + c.id + ',\'' + c.titre.replace(/'/g,"\\'") + '\')"'
-            : '';
-          return '<div style="font-size:.8rem;padding:.2rem 0;'
-            + (clickable ? 'color:var(--teal);cursor:pointer;font-weight:500;' : 'color:var(--text-dim);')
+          var isBilanCard = c.isBilan === true;
+          var onclick = isBilanCard
+            ? ' onclick="event.stopPropagation();openIntervenant(' + inv.id + ')"'
+            : (clickable
+              ? ' onclick="event.stopPropagation();navigateToContenu(\'' + c.type + '\',' + c.id + ',\'' + c.titre.replace(/'/g,"\\'") + '\')"'
+              : '');
+          return '<div style="font-size:.8rem;'
+            + (isBilanCard
+               ? 'padding:.3rem .5rem;margin-bottom:.3rem;border-radius:6px;background:rgba(0,180,180,.1);border:1px solid rgba(0,180,180,.3);color:var(--teal);font-weight:600;cursor:pointer;'
+               : ('padding:.2rem 0;' + (clickable ? 'color:var(--teal);cursor:pointer;font-weight:500;' : 'color:var(--text-dim);')))
             + '"' + onclick + '>'
             + c.icon + ' ' + c.label
-            + (clickable ? ' →' : '')
+            + ((isBilanCard || clickable) ? ' →' : '')
             + '</div>';
         }).join('')
       + (contenus.length > 3 ? '<div style="font-size:.76rem;color:var(--teal)">+ ' + (contenus.length-3) + ' autres...</div>' : '')
