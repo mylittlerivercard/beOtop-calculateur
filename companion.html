@@ -8746,7 +8746,7 @@ function renderIntervenants() {
           var clickable = c.id !== null && c.id !== undefined;
           var isBilanCard = c.isBilan === true;
           var onclick = isBilanCard
-            ? ' onclick="event.stopPropagation();openIntervenant(' + inv.id + ')"'
+            ? ' onclick="event.stopPropagation();switchView(\'bilan\')"'
             : (clickable
               ? ' onclick="event.stopPropagation();navigateToContenu(\'' + c.type + '\',' + c.id + ',\'' + c.titre.replace(/'/g,"\\'") + '\')"'
               : '');
