@@ -817,6 +817,14 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
 @keyframes fadeUp   { 0%{opacity:0;transform:translateY(16px)} 100%{opacity:1;transform:translateY(0)} }
 @keyframes slideIn  { 0%{opacity:0;transform:translateX(-12px)} 100%{opacity:1;transform:translateX(0)} }
 @keyframes pulseDot { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.08);opacity:0} }
+@keyframes pulse-bilan {
+  0%   { box-shadow: 0 0 0 0 rgba(0,180,180,.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(0,180,180,.0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,180,180,.0); }
+}
+.bilan-pulse {
+  animation: pulse-bilan 2s ease-in-out infinite;
+}
 
 /* ── HERO ── */
 .hero {
@@ -3128,6 +3136,7 @@ async function logoutCompanion() {
 
 function switchView(id) {
   if (id === 'jeux') id = 'audio';   // Jeux cérébraux fusionnés dans la vue Audios régénérants
+  console.log('[CC-DBG] switchView('+id+') active=',ccSessionActive,'running=',ccRunning,'remain=',ccRemain,'total=',ccTotalSec,'logged=',ccSessionLogged);  // DEBUG à retirer
   if (ccSessionActive && id !== 'coherence') resetCC();   // sortie de vue pendant une séance (même en pause) → enregistrée puis réinitialisée
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -6515,6 +6524,7 @@ function startCC() {
 }
 
 function pauseCC() {
+  console.log('[CC-DBG] pauseCC active=',ccSessionActive,'running=',ccRunning,'remain=',ccRemain);  // DEBUG à retirer
   ccRunning = false;
   clearInterval(ccInterval);
   document.getElementById('cc-start-btn').textContent = '▶ Reprendre';
@@ -6522,6 +6532,7 @@ function pauseCC() {
 }
 
 function resetCC() {
+  console.log('[CC-DBG] resetCC active=',ccSessionActive,'running=',ccRunning,'elapsed=',ccTotalSec-ccRemain);  // DEBUG à retirer
   if (ccSessionActive) ccLogSession(false);   // séance interrompue (même en pause) → enregistrée si seuil atteint
   clearInterval(ccInterval);
   ccRunning = false; ccRemain = ccTotalSec; ccPhaseIdx = 0; ccPhaseSec = 0;
@@ -6577,6 +6588,7 @@ function finishCC() {
    Seuil : ≥ 15 s réellement écoulées (calculé en secondes avant conversion).
    Garde anti-doublon : ccSessionLogged. */
 function ccLogSession(complete) {
+  console.log('[CC-DBG] ccLogSession complete=',complete,'logged=',ccSessionLogged,'active=',ccSessionActive,'elapsed=',ccTotalSec-ccRemain);  // DEBUG à retirer
   if (ccSessionLogged) return;
   const elapsedSec = ccTotalSec - ccRemain;
   if (elapsedSec < 15) return;
@@ -8752,19 +8764,37 @@ function openIntervenant(id) {
   var inv = (DB.intervenants||[]).find(function(i){ return i.id === id; });
   if (!inv) return;
   var contenus = _getContenus(inv);
+  var isMonika = inv.nom && inv.nom.toLowerCase().indexOf('monika') !== -1;
+  if (isMonika) {
+    var bilanItem = {
+      id: null,
+      type: 'questionnaire',
+      titre: 'Baromètre de Vitalité',
+      label: 'Baromètre de Vitalité · Évaluez votre vitalité en 5 min',
+      icon: '⚡',
+      isBilan: true
+    };
+    contenus = [bilanItem].concat(contenus);
+  }
   var contenuHtml = contenus.length ? '<div style="margin-bottom:1rem">'
     + '<div style="font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem">Contenus publiés dans le Companion</div>'
     + '<div style="display:flex;flex-direction:column;gap:.3rem">'
     + contenus.map(function(c){
         var clickable = c.id !== null && c.id !== undefined;
-        var style = 'display:flex;align-items:center;gap:.6rem;font-size:.87rem;padding:.35rem .6rem;background:var(--surface2);border-radius:8px;'
-          + (clickable ? 'cursor:pointer;color:var(--teal);font-weight:500;' : 'color:var(--text-dim);');
-        var onclick = clickable
-          ? ' onclick="navigateToContenu(\'' + c.type + '\',' + c.id + ',\'' + c.titre.replace(/'/g,"\\'") + '\')"'
-          : '';
-        return '<div style="' + style + '"' + onclick + '>'
+        var isBilanCard = c.isBilan === true;
+        var style = 'display:flex;align-items:center;gap:.6rem;font-size:.87rem;padding:.35rem .6rem;border-radius:8px;'
+          + (isBilanCard
+             ? 'cursor:pointer;color:var(--teal);font-weight:600;background:rgba(0,180,180,.12);border:1px solid rgba(0,180,180,.3);'
+             : (clickable ? 'cursor:pointer;color:var(--teal);font-weight:500;background:var(--surface2);' : 'color:var(--text-dim);background:var(--surface2);'));
+        var onclick = isBilanCard
+          ? ' onclick="closeModal();setTimeout(function(){switchView(\'bilan\');},200)"'
+          : (clickable
+             ? ' onclick="navigateToContenu(\'' + c.type + '\',' + c.id + ',\'' + c.titre.replace(/'/g,"\\'") + '\')"'
+             : '');
+        var className = isBilanCard ? ' class="bilan-pulse"' : '';
+        return '<div' + className + ' style="' + style + '"' + onclick + '>'
           + c.icon + ' <span>' + c.label + '</span>'
-          + (clickable ? '<span style="margin-left:auto;font-size:.76rem;opacity:.6">→</span>' : '')
+          + ((isBilanCard || clickable) ? '<span style="margin-left:auto;font-size:.76rem;opacity:.6">→</span>' : '')
           + '</div>';
       }).join('')
     + '</div></div>' : '';
