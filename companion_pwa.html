@@ -4721,6 +4721,7 @@ function renderDashboard() {
   else                                greet = "Bonne nuit";
 
   greetSub = messageCircadien(heure);
+  var _h = heure;
 
   var greetEl = document.getElementById('dash-greeting');
   if (greetEl) greetEl.textContent = greet;
