@@ -4619,6 +4619,74 @@ function _refreshSkyWidgets() {
 /* ════════════════════════════════════════════
    DASHBOARD
 ════════════════════════════════════════════ */
+/* À REMPLACER, textes en attente de validation Laurent Thiry */
+function messageCircadien(heure) {
+  var creneaux = [
+    { debut: 7,    fin: 8.5,  textes: [
+      "Votre organisme sort de sa phase de repos, une transition en douceur avant la journée.",
+      "La mélatonine cesse d'agir à cette heure, le corps s'active progressivement.",
+      "Début de la phase d'éveil physiologique, un bon moment pour démarrer calmement.",
+      "L'horloge biologique amorce sa montée, quelques minutes de respiration peuvent aider à démarrer."
+    ]},
+    { debut: 8.5,  fin: 10,   textes: [
+      "La vigilance augmente progressivement, les tâches de mise en route sont bien placées ici.",
+      "Cette tranche horaire favorise la mise en route cognitive avant les tâches complexes.",
+      "L'attention monte en puissance, un bon moment pour planifier la journée.",
+      "La concentration s'installe progressivement, idéal pour prioriser les sujets du jour."
+    ]},
+    { debut: 10,   fin: 11.5, textes: [
+      "Votre vigilance atteint un des pics de la journée, moment propice aux tâches exigeantes.",
+      "C'est l'un des créneaux les plus favorables à la concentration soutenue.",
+      "Pic d'éveil matinal, un bon moment pour les décisions qui demandent de la clarté.",
+      "La capacité de concentration est à son maximum matinal sur ce créneau."
+    ]},
+    { debut: 11.5, fin: 13.5, textes: [
+      "Une baisse d'énergie après le déjeuner est normale, une courte pause peut aider.",
+      "Le corps redirige ses ressources vers la digestion, la vigilance baisse naturellement ici.",
+      "Ce creux d'après-midi est physiologique, quelques minutes de récupération sont bien placées.",
+      "La vigilance ralentit temporairement après le repas, un moment adapté pour souffler."
+    ]},
+    { debut: 13.5, fin: 15,   textes: [
+      "L'attention remonte progressivement après le creux du déjeuner.",
+      "Bon moment pour reprendre des tâches qui demandent un peu de concentration.",
+      "La vigilance repart à la hausse, idéal pour reprendre un rythme actif.",
+      "Sortie progressive du creux d'après-midi, la concentration revient par étapes."
+    ]},
+    { debut: 15,   fin: 17,   textes: [
+      "Coordination et réflexes sont au meilleur de la journée sur ce créneau.",
+      "C'est l'un des moments où la vitesse de réaction est la plus élevée.",
+      "Les capacités motrices sont à leur pic, bien adapté aux tâches manuelles ou actives.",
+      "Ce créneau favorise la précision gestuelle et les réflexes."
+    ]},
+    { debut: 17,   fin: 19,   textes: [
+      "Le système cardiovasculaire est à son efficacité maximale sur ce créneau.",
+      "La température corporelle atteint un de ses points hauts en fin de journée.",
+      "Ce créneau correspond à un pic d'endurance physique naturel.",
+      "Bon moment pour une activité physique légère avant la fin de journée."
+    ]},
+    { debut: 19,   fin: 21,   textes: [
+      "La mélatonine recommence à être sécrétée, le corps amorce son ralentissement.",
+      "C'est le début de la phase de transition vers le repos du soir.",
+      "L'organisme entame sa descente progressive, un bon moment pour lever le pied.",
+      "Cette tranche horaire marque le passage vers un rythme plus calme."
+    ]}
+  ];
+
+  var index = -1;
+  for (var i = 0, longueur = creneaux.length; i < longueur; i++) {
+    if (heure >= creneaux[i].debut && heure < creneaux[i].fin) { index = i; break; }
+  }
+  if (index === -1) return "Prenez soin de vous.";
+
+  var debutAnnee = new Date(new Date().getFullYear(), 0, 0),
+      jourAnnee = Math.floor((Date.now() - debutAnnee) / 86400000),
+      graine = jourAnnee * 8 + index,
+      textesCreneau = creneaux[index].textes,
+      choix = graine % textesCreneau.length;
+
+  return textesCreneau[choix];
+}
+
 function renderDashboard() {
   var skEl = document.getElementById('sk-dashboard');
   var dashView = document.getElementById('view-dashboard');
@@ -4643,16 +4711,21 @@ function renderDashboard() {
   if (prenomEl) prenomEl.textContent = u.prenom;
 
   // Salutation contextuelle selon l'heure + sous-titre
-  var _h = new Date().getHours();
-  var _greet, _greetSub;
-  if (_h >= 5 && _h < 12)       { _greet = "Bonjour";        _greetSub = "Commencez bien cette journée."; }
-  else if (_h >= 12 && _h < 18) { _greet = "Bon après-midi"; _greetSub = "Une pause s'impose ?"; }
-  else if (_h >= 18 && _h < 22) { _greet = "Bonsoir";        _greetSub = "Une courte séance avant de partir ?"; }
-  else                          { _greet = "Bonne nuit";     _greetSub = "Prenez soin de vous."; }
-  var _gEl  = document.getElementById('dash-greeting');
-  if (_gEl)  _gEl.textContent  = _greet;
-  var _gsEl = document.getElementById('dash-greeting-sub');
-  if (_gsEl) _gsEl.textContent = _greetSub;
+  var heure = new Date().getHours(),
+      greet = "",
+      greetSub = "";
+
+  if (heure >= 5 && heure < 12)       greet = "Bonjour";
+  else if (heure >= 12 && heure < 18) greet = "Bon après-midi";
+  else if (heure >= 18 && heure < 22) greet = "Bonsoir";
+  else                                greet = "Bonne nuit";
+
+  greetSub = messageCircadien(heure);
+
+  var greetEl = document.getElementById('dash-greeting');
+  if (greetEl) greetEl.textContent = greet;
+  var greetSubEl = document.getElementById('dash-greeting-sub');
+  if (greetSubEl) greetSubEl.textContent = greetSub;
 
   // CTA suggestion du moment selon l'heure → bibliothèque audio
   var _ctaEl = document.getElementById('hero-cta-moment');
