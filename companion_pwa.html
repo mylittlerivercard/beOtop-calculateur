@@ -2044,6 +2044,7 @@ tr:hover td { background: rgba(0,180,180,.05); color: var(--text); }
           <button id="hero-cta-moment" onclick="switchView('audio')" style="display:none;align-items:center;gap:6px;background:#f0957a;color:#4A1B0C;border:1px solid #f0957a;border-radius:20px;padding:7px 15px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit"></button>
           <div class="hero-chip teal"><span class="dot-pulse"></span><span id="v3-chip-libres">— espaces disponibles</span></div>
           <span id="hero-social" style="display:none;align-items:center;gap:5px;font-size:13px;color:rgba(255,255,255,0.70)"></span>
+          <span id="hero-lumiere" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.70)"></span>
         </div>
       </div>
       <div class="hero-right" id="v3-hero-right">
@@ -4687,6 +4688,52 @@ function messageCircadien(heure) {
   return textesCreneau[choix];
 }
 
+var SUNSET_CACHE = null;
+
+function updateLumiereChip() {
+  var chipEl = document.getElementById('hero-lumiere');
+  if (!chipEl) return;
+
+  var maintenant = new Date();
+  if (maintenant.getHours() < 16) { chipEl.style.display = 'none'; return; }
+
+  var aujourdHui = maintenant.toISOString().slice(0, 10);
+  if (SUNSET_CACHE && SUNSET_CACHE.date === aujourdHui) {
+    afficherLumiereChip(chipEl, SUNSET_CACHE.sunset);
+    return;
+  }
+
+  var latitude = 46.16,
+      longitude = 2.35;
+
+  fetch('https://api.sunrise-sunset.org/json?lat=' + latitude + '&lng=' + longitude + '&formatted=0')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status !== 'OK') { chipEl.style.display = 'none'; return; }
+      var sunset = new Date(data.results.sunset);
+      SUNSET_CACHE = { date: aujourdHui, sunset: sunset };
+      afficherLumiereChip(chipEl, sunset);
+    })
+    .catch(function() { chipEl.style.display = 'none'; });
+}
+
+function afficherLumiereChip(chipEl, sunset) {
+  var maintenant = new Date(),
+      diffMs = sunset.getTime() - maintenant.getTime();
+
+  if (diffMs <= 0) { chipEl.style.display = 'none'; return; }
+
+  var diffH = diffMs / 3600000,
+      heuresRestantes = Math.floor(diffH),
+      minutesRestantes = Math.round((diffH - heuresRestantes) * 60),
+      texte = heuresRestantes > 0
+        ? (heuresRestantes + 'h' + (minutesRestantes < 10 ? '0' : '') + minutesRestantes + ' de lumière naturelle')
+        : (minutesRestantes + ' min de lumière naturelle');
+
+  chipEl.innerHTML = '<i class="ti ti-sunset-2" style="font-size:12px"></i><span>' + texte + '</span>';
+  chipEl.style.display = 'inline-flex';
+}
+
 function renderDashboard() {
   var skEl = document.getElementById('sk-dashboard');
   var dashView = document.getElementById('view-dashboard');
@@ -4761,6 +4808,8 @@ function renderDashboard() {
       + " collègue" + (_social > 1 ? "s" : "") + " actif" + (_social > 1 ? "s" : "") + " aujourd'hui</span>";
     _socEl.style.display = _social > 0 ? "inline-flex" : "none";
   }
+
+  updateLumiereChip();
 
   // Date hero
   var dateEl = document.getElementById('v3-date');
