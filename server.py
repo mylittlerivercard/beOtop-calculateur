@@ -41,7 +41,7 @@ def add_headers(response):
         "frame-src https://www.youtube.com https://player.vimeo.com https://w.soundcloud.com; "
         "img-src 'self' data: https:; "
         "media-src 'self' https://res.cloudinary.com https://mylittlerivercard.github.io https://beotop-api.onrender.com https://soundcloud.com https://*.sndcdn.com blob:; "
-        "connect-src 'self' https://mylittlerivercard.github.io https://api.qrserver.com https://soundcloud.com https://api.soundcloud.com https://speech.platform.bing.com wss://speech.platform.bing.com; "
+        "connect-src 'self' https://mylittlerivercard.github.io https://api.qrserver.com https://soundcloud.com https://api.soundcloud.com https://speech.platform.bing.com wss://speech.platform.bing.com https://api.sunrise-sunset.org; "
     )
     return response
 
